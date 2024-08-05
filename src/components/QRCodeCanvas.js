@@ -1,0 +1,77 @@
+import React, { useRef, useEffect } from 'react';
+
+function QRCodeCanvas({ matrix, onBitToggle }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const moduleSize = canvas.width / matrix.length;
+
+    // Draw the QR code on the canvas
+    drawQRCodeMatrix(ctx, matrix, moduleSize);
+  }, [matrix]);
+  
+  const drawQRCodeMatrix = (ctx, matrix, moduleSize) => {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    for (let y = 0; y < matrix.length; y++) {
+      for (let x = 0; x < matrix[y].length; x++) {
+        const module = matrix[y][x];
+        ctx.fillStyle = module.isDark() ? 'black' : 'white';
+        ctx.fillRect(
+          x * moduleSize,
+          y * moduleSize,
+          moduleSize,
+          moduleSize
+        );
+
+        // Draw a border if highlighted
+        if (module.isHighlighted()) {
+          ctx.strokeStyle = 'red';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(
+            x * moduleSize,
+            y * moduleSize,
+            moduleSize,
+            moduleSize
+          );
+        }
+      }
+    }
+  };
+
+  const handleClick = (event) => {
+    const canvas = canvasRef.current;
+    const moduleSize = canvas.width / matrix.length;
+
+    handleCanvasClick(
+      event,
+      matrix,
+      moduleSize,
+      (module) => {
+        // Left click
+        module.highlight();
+      },
+      (module) => {
+        // Right click
+        event.preventDefault();
+        module.toggleBit();
+        onBitToggle(module);
+      }
+    );
+  };
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width="420"
+      height="420"
+      onClick={handleClick}
+      onContextMenu={handleClick} // Handle right-click as well
+      style={{ border: '1px solid #000' }}
+    ></canvas>
+  );
+}
+
+export default QRCanvas;

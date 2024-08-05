@@ -13,7 +13,8 @@
     "react-spring": "^9.7.2",
     "wouter": "^2.11.0",
     "react-helmet-async": "^1.3.0",
-    "@vitejs/plugin-react": "^4.0.3"
+    "@vitejs/plugin-react": "^4.0.3",
+    "jsqr": "https://github.com/ace42588/jsqr"
   },
   "devDependencies": {
     "vite": "^4.0.0"
@@ -24,9 +25,6 @@
   ],
   "engines": {
     "node": "14.x"
-  },
-  "repository": {
-    "url": "https://glitch.com/edit/#!/glitch-hello-react"
   },
   "glitch": {
     "projectType": "generated_static"

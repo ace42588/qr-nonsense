@@ -1,0 +1,108 @@
+export class TaggedBit {
+  constructor({ bit, type, source, idx }) {
+    this.value = !!(bit == "1");
+    this.orginalValue = this.value;
+    this.type = type; // (e.g., 'mode', 'character indicator')
+    this.source = source; // Source value (e.g., the character or byte that generated this bit)
+    this.idx = idx;
+    this.codeword = null;
+    this.altered = false;
+  }
+
+  toggle() {
+    this.altered = true;
+    this.value = !this.value;
+
+  }
+
+  toString() {
+    return this.value ? "1" : "0";
+  }
+}
+
+export class ModeBit extends TaggedBit {
+  constructor({ bit, mode }) {
+    super({ bit, type: "modeIndicator", source: mode });
+    this.encoding = "none";
+  }
+}
+
+export class CharCountBit extends TaggedBit {
+  constructor({ bit, charCount }) {
+    super({
+      bit,
+      type: "characterCountIndicator",
+      source: charCount,
+    });
+    this.encoding = "none";
+  }
+}
+
+export class PatternBit extends TaggedBit {
+  constructor({ bit, patternType }) {
+    super({
+      bit: bit ? "1" : "0",
+      type: "pattern",
+      source: patternType,
+    });
+    this.encoding = "none";
+  }
+
+  isDark() {
+    return this.value;
+  }
+}
+
+export class FormatBit extends TaggedBit {
+  constructor({ bit, source, x, y }) {
+    super({
+      bit: bit ? "1" : "0",
+      type: "formatInfo",
+      source: source,
+    });
+    this.x = x;
+    this.y = y;
+    this.encoding = "BCH";
+  }
+
+  isDark() {
+    return this.value;
+  }
+}
+
+export class VersionBit extends TaggedBit {
+  constructor({ bit }) {
+    super({
+      bit: bit ? "1" : "0",
+      type: "versionInfo",
+      source: "none",
+    });
+    this.encoding = "BCH";
+  }
+
+  isDark() {
+    return this.value;
+  }
+}
+
+export class ECBit extends TaggedBit {
+  constructor({ bit }) {
+    super({
+      bit: bit,
+      type: "errorCorrection",
+      source: null,
+    });
+    this.encoding = "reed-solomon";
+  }
+}
+
+export class RemainderBit extends TaggedBit {
+  constructor() {
+    super({
+      bit: "0",
+      type: "remainder",
+      source: null,
+    });
+    this.encoding = "none";
+  }
+}
