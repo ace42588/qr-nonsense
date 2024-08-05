@@ -10,6 +10,7 @@ import { TaggedBitstream } from "./encode/TaggedBitstream";
 import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
 
+
 const segments = [];
 const dataCodewords = [];
 
@@ -57,10 +58,15 @@ function App() {
 
     setMatrix(qrMatrix.matrix); // Set the matrix state
   };
+  
+  const handleSegmentClick = (segment, index) => {
+    // Handle the logic when a segment is clicked
+    console.log({segment, index});
+  };
 
   const handleBitToggle = (module) => {
     const segment = module.bit.source;
-    segment.updateValue();
+    //segment.updateValue();
     setSegments([...segments]);
   };
 
@@ -74,7 +80,7 @@ function App() {
         <VideoScanner onQRCodeScanned={handleQRCodeScanned} />
       )}
       <QRCodeCanvas matrix={matrix} onBitToggle={handleBitToggle} />
-      <SegmentDisplay segments={segments} />
+      <SegmentDisplay segments={segments} onSegmentClick={handleSegmentClick} />
     </div>
   );
 }

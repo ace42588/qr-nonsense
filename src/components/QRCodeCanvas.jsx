@@ -37,6 +37,7 @@ function QRCodeCanvas({ matrix, onBitToggle }) {
   };
 
   const handleClick = (event) => {
+    event.preventDefault();
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -44,9 +45,10 @@ function QRCodeCanvas({ matrix, onBitToggle }) {
     const moduleSize = canvas.width / matrix.length;
     const xIndex = Math.floor(x / moduleSize);
     const yIndex = Math.floor(y / moduleSize);
-
-    if (matrix[yIndex][xIndex]) {
-      onBitToggle(matrix[yIndex][xIndex]);
+    
+    const module = matrix[yIndex][xIndex];
+    if (module) {
+      console.log(module);
       if (event.type === "click") {
         module.highlight();
       } else if (event.type === "contextmenu") {
@@ -54,6 +56,7 @@ function QRCodeCanvas({ matrix, onBitToggle }) {
         onBitToggle(module);
       }
     }
+    return false;
   };
 
   return (
