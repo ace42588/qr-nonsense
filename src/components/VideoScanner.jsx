@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
-import jsQR from 'jsqr';
+import React, { useRef, useEffect, useState } from "react";
+import jsQR from "jsqr";
 
 function VideoScanner({ onQRCodeScanned }) {
   const videoRef = useRef(null);
@@ -9,18 +9,18 @@ function VideoScanner({ onQRCodeScanned }) {
   useEffect(() => {
     const video = videoRef.current;
     const canvasElement = canvasRef.current;
-    const canvas = canvasElement.getContext('2d');
+    const canvas = canvasElement.getContext("2d");
 
     // Set up the video stream
     navigator.mediaDevices
       .getUserMedia({
         video: {
-          facingMode: 'environment',
+          facingMode: "environment",
         },
       })
       .then((stream) => {
         video.srcObject = stream;
-        video.setAttribute('playsinline', true);
+        video.setAttribute("playsinline", true);
         video.play();
         requestAnimationFrame(scanQR);
       });
@@ -29,11 +29,22 @@ function VideoScanner({ onQRCodeScanned }) {
       if (video.readyState === video.HAVE_ENOUGH_DATA && scanning) {
         canvasElement.height = video.videoHeight;
         canvasElement.width = video.videoWidth;
-        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-        const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+        canvas.drawImage(
+          video,
+          0,
+          0,
+          canvasElement.width,
+          canvasElement.height
+        );
+        const imageData = canvas.getImageData(
+          0,
+          0,
+          canvasElement.width,
+          canvasElement.height
+        );
         const code = jsQR(imageData.data, imageData.width, imageData.height);
 
-        if (code && code.data !== '') {
+        if (code && code.data !== "") {
           setScanning(false); // Stop scanning when a QR code is found
           onQRCodeScanned(code);
         } else {
@@ -55,7 +66,7 @@ function VideoScanner({ onQRCodeScanned }) {
   }, [scanning, onQRCodeScanned]);
 
   return (
-    <div id="scanner" style={{ position: 'relative' }}>
+    <div id="scanner" style={{ position: "relative" }}>
       <video ref={videoRef} width="640" height="480" />
       <canvas ref={canvasRef} hidden />
     </div>

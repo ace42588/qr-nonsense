@@ -8,7 +8,7 @@ import { createBlocks } from "./encode/Block";
 import { getEncoder } from "./encode/Encoder";
 import { TaggedBitstream } from "./encode/TaggedBitstream";
 import { VERSIONS } from "./encode/version";
-import { QRCodeMatrix } from "./qrCodeMatrix";
+import { QRCodeMatrix } from "./QRCodeMatrix";
 
 const segments = [];
 const blocks = [];
@@ -45,14 +45,16 @@ function App() {
       const data = text ? text : bytes ? bytes : assignmentNumber;
       getEncoder({ type, bitStream }).encode(data);
     }
-    blocks = createBlocks(bitStream, errorCorrectionLevel, versionInfo);
-    
     
     setSegments(bitStream.segments);
+    blocks = createBlocks(bitStream, errorCorrectionLevel, versionInfo);
+    for (const block of blocks) {
+    block.generateErrorCorrection();
+  }
 
     const qrMatrix = new QRCodeMatrix({ versionInfo, formatInfo });
     qrMatrix.placeFunctionPatterns();
-    qrMatrix.placeCodewords(qrGenerator.codewords);
+    qrMatrix.placeCodewords(getCodewords(blocks));
 
     setMatrix(qrMatrix.matrix); // Set the matrix state
   };
@@ -87,11 +89,6 @@ function generateMatrixFromCodewords(codewords, versionInfo) {
   return qrMatrix.getMatrix();
 }
 
-function generateErrorCorrection(blocks) {
-  for (const block of blocks) {
-    block.generateErrorCorrection();
-  }
-}
 
 function getCodewords(blocks) {
   let cw = [];

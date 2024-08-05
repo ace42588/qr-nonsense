@@ -1,5 +1,5 @@
 import { FormatBit } from "./TaggedBit";
-import { QRModule } from "./qrModule.js";
+import { QRModule } from "../QRModule";
 
 export const ErrorCorrectionLevel = ["M", "L", "H", "Q"];
 

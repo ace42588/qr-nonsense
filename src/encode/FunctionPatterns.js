@@ -1,6 +1,6 @@
 import { VERSIONS } from "./version";
 import { PatternBit } from "./TaggedBit";
-import { QRModule } from "./qrModule.js";
+import { QRModule } from "../QRModule";
 
 const FINDER_BITS = [
   new PatternBit({ bit: 0, patternType: "format", x: null, y: null }),

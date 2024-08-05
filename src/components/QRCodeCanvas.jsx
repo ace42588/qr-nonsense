@@ -74,4 +74,4 @@ function QRCodeCanvas({ matrix, onBitToggle }) {
   );
 }
 
-export default QRCanvas;
+export default QRCodeCanvas;
