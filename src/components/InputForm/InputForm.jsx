@@ -1,13 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
+import './InputForm.css'; // Import your component-specific styles
 
-const inputModes = ['Numeric', 'Alphanumeric', 'Byte', 'Kanji'];
+const modes = ['numeric', 'alphanumeric', 'byte', 'kanji', 'eci']; // Available modes
 
-function InputForm({ inputs, onInputChange, onAddInput, onRemoveInput, onSubmit }) {
+function InputForm({ inputs, onInputChange, onModeChange, onAddInput, onRemoveInput, onSubmit }) {
   return (
     <form onSubmit={onSubmit} className="input-form">
       <h3>Manual Inputs</h3>
       {inputs.map((input, index) => (
         <div key={index} className="input-group">
+          <select
+            value={input.type}
+            onChange={(e) => onModeChange(index, e.target.value)}
+          >
+            {modes.map((mode) => (
+              <option key={mode} value={mode}>
+                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+              </option>
+            ))}
+          </select>
           <input
             type="text"
             value={input.value}

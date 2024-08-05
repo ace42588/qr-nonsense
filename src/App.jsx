@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import QRCodeCanvas from "./components/QRCodeCanvas";
+import QRCodeCanvas from "./components/QRCodeCanvas/QRCodeCanvas";
 import SegmentDisplay from "./components/SegmentDisplay";
 import ModeSelector from "./components/ModeSelector";
 import InputForm from "./components/InputForm";
@@ -16,13 +16,19 @@ let errorCorrectionLevel;
 
 function App() {
   const [mode, setMode] = useState("scan"); // Default to scan mode
-  const [inputs, setInputs] = useState([{ type: "text", value: "" }]);
+const [inputs, setInputs] = useState([{ type: 'byte', value: '' }]); // Include default mode
   const [segments, setSegments] = useState([]);
   const [matrix, setMatrix] = useState([]);
 
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
     newInputs[index].value = event.target.value;
+    setInputs(newInputs);
+  };
+  
+  const handleModeChange = (index, newMode) => {
+    const newInputs = [...inputs];
+    newInputs[index].type = newMode;
     setInputs(newInputs);
   };
 
@@ -109,6 +115,7 @@ function App() {
         <InputForm
           inputs={inputs}
           onInputChange={handleInputChange}
+          onModeChange={handleModeChange}
           onAddInput={handleAddInput}
           onRemoveInput={handleRemoveInput}
           onSubmit={handleInputSubmit}
