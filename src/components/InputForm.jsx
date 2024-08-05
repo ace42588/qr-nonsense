@@ -2,41 +2,26 @@ import React, { useState } from 'react';
 
 const inputModes = ['Numeric', 'Alphanumeric', 'Byte', 'Kanji'];
 
-function InputForm({ onSubmit }) {
-  const [inputData, setInputData] = useState('');
-  const [inputMode, setInputMode] = useState(inputModes[0]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(inputData, inputMode);
-  };
-
+function InputForm({ inputs, onInputChange, onAddInput, onRemoveInput, onSubmit }) {
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="input-group">
-        <label htmlFor="data-input">Input Data:</label>
-        <input
-          type="text"
-          id="data-input"
-          value={inputData}
-          onChange={(e) => setInputData(e.target.value)}
-          required
-        />
-      </div>
-      <div className="input-group">
-        <label htmlFor="mode-select">Input Mode:</label>
-        <select
-          id="mode-select"
-          value={inputMode}
-          onChange={(e) => setInputMode(e.target.value)}
-        >
-          {inputModes.map((mode) => (
-            <option key={mode} value={mode}>
-              {mode}
-            </option>
-          ))}
-        </select>
-      </div>
+    <form onSubmit={onSubmit} className="input-form">
+      <h3>Manual Inputs</h3>
+      {inputs.map((input, index) => (
+        <div key={index} className="input-group">
+          <input
+            type="text"
+            value={input.value}
+            onChange={(e) => onInputChange(index, e)}
+            placeholder={`Input ${index + 1}`}
+          />
+          <button type="button" onClick={() => onRemoveInput(index)}>
+            Remove
+          </button>
+        </div>
+      ))}
+      <button type="button" onClick={onAddInput}>
+        Add Input
+      </button>
       <button type="submit">Generate QR Code</button>
     </form>
   );
