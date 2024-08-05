@@ -11,7 +11,6 @@ import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
 
 const segments = [];
-const blocks = [];
 const dataCodewords = [];
 
 let bitStream;
@@ -47,7 +46,7 @@ function App() {
     }
     
     setSegments(bitStream.segments);
-    blocks = createBlocks(bitStream, errorCorrectionLevel, versionInfo);
+    const blocks = createBlocks(bitStream, errorCorrectionLevel, versionInfo);
     for (const block of blocks) {
     block.generateErrorCorrection();
   }
