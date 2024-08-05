@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import QRCodeCanvas from "./components/QRCodeCanvas/QRCodeCanvas";
-import SegmentDisplay from "./components/SegmentDisplay";
-import ModeSelector from "./components/ModeSelector";
-import InputForm from "./components/InputForm";
-import VideoScanner from "./components/VideoScanner";
+import SegmentDisplay from "./components/SegmentDisplay/SegmentDisplay";
+import ModeSelector from "./components/ModeSelector/ModeSelector";
+import InputForm from "./components/InputForm/InputForm";
+import VideoScanner from "./components/VideoScanner/VideoScanner";
 import { createBlocks } from "./encode/Block";
 import { getEncoder } from "./encode/Encoder";
 import { TaggedBitstream } from "./encode/TaggedBitstream";
@@ -96,9 +96,16 @@ const [inputs, setInputs] = useState([{ type: 'byte', value: '' }]); // Include 
     setMatrix(qrMatrix.matrix); // Set the matrix state
   };
 
-  const handleSegmentClick = (segment, index) => {
-    // Handle the logic when a segment is clicked
-    console.log({ segment, index });
+  const handleSegmentClick = (segment) => {
+    const newMatrix = matrix.map((row) =>
+      row.map((module) => {
+        if (module.segment === segment) {
+          module.highlight();
+        }
+        return module;
+      })
+    );
+    setMatrix(newMatrix); // Update the matrix state to trigger a re-render
   };
 
   const handleBitToggle = (module) => {

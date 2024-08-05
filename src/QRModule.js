@@ -16,6 +16,7 @@ const REMAINDER_BIT = new RemainderBit();
 export class QRModule {
   constructor({ taggedBit, x, y, masked }) {
     this.bit = taggedBit;
+    this.segment = this.bit.source;
     this.x = x;
     this.y = y;
     this.masked = masked;
