@@ -23,7 +23,7 @@ const PAD_BYTES = [
   ],
 ];
 
-export class TaggedBitStream {
+export class TaggedBitstream {
   constructor() {
     this.dataBits = [];
     this.segments = [];

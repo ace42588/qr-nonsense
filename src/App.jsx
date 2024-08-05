@@ -4,12 +4,17 @@ import SegmentDisplay from "./components/SegmentDisplay";
 import ModeSelector from "./components/ModeSelector";
 import InputForm from "./components/InputForm";
 import VideoScanner from "./components/VideoScanner";
-import { QRCodeGenerator } from './qrCodeGenerator';
-import { VERSIONS } from './encode/version.js';
-import { QRCodeMatrix } from './qrCodeMatrix';
-import { Block } from "./Block"
+import { Block } from "./encode/Block";
+import { getEncoder } from "./encode/Encoder";
+import { TaggedBitstream } from "./encode/TaggedBitstream";
+import { VERSIONS } from "./encode/version";
+import { QRCodeMatrix } from "./qrCodeMatrix";
 
 const segments = [];
+const blocks = [];
+
+let bitStream;
+let errorCorrectionLevel;
 
 function App() {
   const [mode, setMode] = useState("scan"); // Default to scan mode
@@ -30,13 +35,16 @@ function App() {
   const processQRCodeData = (chunks, version, formatInfo) => {
     const versionInfo = VERSIONS[version <= 6 ? version - 1 : version];
 
-    const qrGenerator = new QRCodeGenerator({
-      chunks,
-      formatInfo,
-      versionInfo,
-    });
+    errorCorrectionLevel = formatInfo.errorCorrectionLevel;
+  bitStream = new TaggedBitstream();
+  for (const chunk of chunks) {
+    const { type, text, bytes, assignmentNumber } = chunk;
+    const data = text ? text : bytes ? bytes : assignmentNumber;
+    getEncoder({ type, bitStream }).encode(data);
+  }
+  blocks = createBlocks(bitStream, errorCorrectionLevel, versionInfo);
 
-    const newSegments = qrGenerator.segments;
+    const newSegments = bitStream.segments;
     setSegments(newSegments);
 
     const qrMatrix = new QRCodeMatrix({ versionInfo, formatInfo });
@@ -69,7 +77,6 @@ function App() {
 
 export default App;
 
-
 // Utility function to generate matrix
 function generateMatrixFromCodewords(codewords, versionInfo) {
   const qrMatrix = new QRCodeMatrix({ versionInfo });
@@ -78,43 +85,39 @@ function generateMatrixFromCodewords(codewords, versionInfo) {
 }
 
 function qrCodeGenerator({ chunks, formatInfo, versionInfo }) {
-    //console.log("QRCodeGenerator", { chunks, errorCorrectionLevel, version });
-    const { errorCorrectionLevel } = formatInfo;
-    const bitStream = new TaggedBitStream();
-    for (const chunk of chunks) {
-      const { type, text, bytes, assignmentNumber } = chunk;
-      const data = text ? text : bytes ? bytes : assignmentNumber;
-      getEncoder({ type, bitStream }).encode(data);
-    }
-    const blocks = createBlocks(
-      bitStream,
-      errorCorrectionLevel,
-      versionInfo
-    );
+  //console.log("QRCodeGenerator", { chunks, errorCorrectionLevel, version });
+  errorCorrectionLevel = formatInfo.errorCorrectionLevel;
+  bitStream = new TaggedBitstream();
+  for (const chunk of chunks) {
+    const { type, text, bytes, assignmentNumber } = chunk;
+    const data = text ? text : bytes ? bytes : assignmentNumber;
+    getEncoder({ type, bitStream }).encode(data);
   }
+  blocks = createBlocks(bitStream, errorCorrectionLevel, versionInfo);
+}
 
-  function generateErrorCorrection(blocks) {
-    for (const block of blocks) {
-      block.generateErrorCorrection();
-    }
+function generateErrorCorrection(blocks) {
+  for (const block of blocks) {
+    block.generateErrorCorrection();
   }
+}
 
-  function getCodewords(blocks) {
-    generateErrorCorrection(blocks);
-    let cw = [];
-    let totalCodewords = blocks.reduce(
-      (total, block) => total + block.totalCodewords,
-      0
-    );
-    for (let i = 0; i < totalCodewords; i++) {
-      const blockIdx = i % blocks.length;
-      const cwIdx = Math.floor(i / blocks.length);
-      let block = blocks[blockIdx];
-      let codeword = block.codewords[cwIdx];
-      cw.push(codeword);
-    }
-    return cw;
+function getCodewords(blocks) {
+  generateErrorCorrection(blocks);
+  let cw = [];
+  let totalCodewords = blocks.reduce(
+    (total, block) => total + block.totalCodewords,
+    0
+  );
+  for (let i = 0; i < totalCodewords; i++) {
+    const blockIdx = i % blocks.length;
+    const cwIdx = Math.floor(i / blocks.length);
+    let block = blocks[blockIdx];
+    let codeword = block.codewords[cwIdx];
+    cw.push(codeword);
   }
+  return cw;
+}
 
 function createBlocks(bitStream, errorCorrectionLevel, version) {
   console.log("createBlocks", { bitStream, errorCorrectionLevel, version });
