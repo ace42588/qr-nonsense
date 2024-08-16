@@ -7,6 +7,8 @@ function VideoScanner({ onQRCodeScanned }) {
   const [scanning, setScanning] = useState(true);
 
   useEffect(() => {
+    if (!scanning) return;
+
     const video = videoRef.current;
     const canvasElement = canvasRef.current;
     const canvas = canvasElement.getContext("2d");
@@ -66,9 +68,22 @@ function VideoScanner({ onQRCodeScanned }) {
   }, [scanning, onQRCodeScanned]);
 
   return (
-    <div id="scanner" style={{ position: "relative" }}>
-      <video ref={videoRef} width="640" height="480" />
-      <canvas ref={canvasRef} hidden />
+    <div
+      id="scanner"
+      style={{
+        position: "relative",
+        display: scanning ? "block" : "none", // Hide when not scanning
+        width: scanning ? "640px" : "0", // Minimize width when not scanning
+        height: scanning ? "480px" : "0", // Minimize height when not scanning
+        overflow: "hidden", // Prevent overflow when minimized
+      }}
+    >
+      {scanning && (
+        <>
+          <video ref={videoRef} width="640" height="480" />
+          <canvas ref={canvasRef} hidden />
+        </>
+      )}
     </div>
   );
 }

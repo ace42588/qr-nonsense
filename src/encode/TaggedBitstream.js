@@ -133,4 +133,8 @@ export class TaggedBitstream {
 
     return this.dataBits.slice(start, this.readIdx);
   }
+  
+  resetReadPosition() {
+    this.readIdx = 0;
+  }
 }
