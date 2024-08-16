@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import jsQR from "jsqr";
-import './VideoScanner.css';
+import "./VideoScanner.css";
 
 function VideoScanner({ onQRCodeScanned }) {
   const videoRef = useRef(null);
@@ -73,9 +73,12 @@ function VideoScanner({ onQRCodeScanned }) {
       id="scanner"
       style={{
         position: "relative",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
         display: scanning ? "flex" : "none", // Hide when not scanning
-        width: scanning ? "640px" : "0", // Minimize width when not scanning
-        height: scanning ? "480px" : "0", // Minimize height when not scanning
+        width: "100%",
+        height: "100vh",
         overflow: "hidden", // Prevent overflow when minimized
       }}
     >
