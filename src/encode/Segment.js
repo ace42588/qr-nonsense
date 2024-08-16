@@ -45,12 +45,12 @@ export class NumericSegment extends Segment {
     super(data, index);
     this.encoding = "numeric";
     this._value = parseInt(this.data, 10);
-    this.length = this.value.length * 3 + 1;
+    this.length = this._value.toString().length * 3 + 1;
     this.bits = this.getEncodedBits();
   }
 
   toString() {
-    return parseInt(this.value);
+    return this.value.toString().padStart(this.data.length, '0');
   }
 }
 

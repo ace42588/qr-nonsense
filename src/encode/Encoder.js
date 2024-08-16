@@ -80,7 +80,7 @@ class NumericEncoder extends Encoder {
   }
 
   *encodeData(input) {
-    const groupsOfThree = this.input.match(/\d{1,3}/g);
+    const groupsOfThree = input.match(/\d{1,3}/g);
     for (let i = 0; i < groupsOfThree.length; i++) {
       yield new NumericSegment(groupsOfThree[i], i);
     }
