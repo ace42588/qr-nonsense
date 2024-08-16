@@ -17,11 +17,11 @@ function setRegion(matrix, left, top, width, height, v) {
 }
 
 export class QRCodeMatrix {
-  constructor({ versionInfo, formatInfo }) {
-    //console.log("QRCodeMatrix", { versionInfo, formatInfo });
+  constructor({ versionDetails, formatInfo }) {
+    console.log("QRCodeMatrix", { versionDetails, formatInfo });
     const { errorCorrectionLevel, dataMask } = formatInfo;
-    this.versionInfo = new VersionInfo(versionInfo);
-    this.alignmentPattern = new AlignmentPattern(versionInfo.versionNumber);
+    this.versionInfo = new VersionInfo(versionDetails);
+    this.alignmentPattern = new AlignmentPattern(versionDetails.versionNumber);
     this.formatInfo = new FormatInfo(formatInfo);
     this.moduleCount = this.versionInfo.numModules;
     this.matrix = Array.from({ length: this.moduleCount }, () =>

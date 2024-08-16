@@ -58,12 +58,13 @@ const [inputs, setInputs] = useState([{ type: 'byte', value: '' }]); // Include 
 
   const handleQRCodeScanned = (code) => {
     // Handle the scanned QR code data
-    processQRCodeData(code.chunks, code.version, code.formatInfo);
+    processQRCodeData(code);
   };
 
-  const processQRCodeData = (chunks, version, formatInfo) => {
+  const processQRCodeData = ({chunks, version, formatInfo}) => {
+    console.log({chunks, version, formatInfo});
     let codewords = [];
-    versionDetails = VERSIONS[version <= 6 ? version - 1 : version];
+    versionDetails = VERSIONS[version - 1];
     errorCorrectionLevels = versionDetails.errorCorrectionLevels;
     errorCorrectionLevel = formatInfo.errorCorrectionLevel;
     
