@@ -46,6 +46,8 @@ export function createBlocks(bitStream, errorCorrectionLevel, version) {
 
   // Complete bytes and add padding
   bitStream.finalize(requiredDataCodewords);
+  // If we are recalculating, we need to reset the read index
+  bitStream.resetReadPosition();
   // fill blocks with codewords
   for (const block of blocks) {
     const { dataCodewords, numDataCodewords } = block;
