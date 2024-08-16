@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from "react";
+import './QRCodeCanvas.css';
 
 function QRCodeCanvas({ matrix, onBitToggle }) {
   const canvasRef = useRef(null);

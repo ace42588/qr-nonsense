@@ -9,6 +9,7 @@ import { getEncoder } from "./encode/Encoder";
 import { TaggedBitstream } from "./encode/TaggedBitstream";
 import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
+//import './App.css';
 
 let versionDetails;
 let errorCorrectionLevels;

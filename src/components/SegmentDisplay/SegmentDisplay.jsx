@@ -1,4 +1,5 @@
 import React from 'react';
+import './SegmentDisplay.css';
 
 function SegmentDisplay({ segments, onSegmentClick }) {
   return (

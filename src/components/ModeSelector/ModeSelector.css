@@ -1,0 +1,17 @@
+/* ModeSelector Styles */
+.mode-selector {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.mode-selector button {
+  padding: 10px 20px;
+}
+
+@media (min-width: 768px) {
+  .mode-selector {
+    justify-content: flex-start;
+  }
+}
