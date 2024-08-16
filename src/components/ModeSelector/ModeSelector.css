@@ -9,9 +9,3 @@
 .mode-selector button {
   padding: 10px 20px;
 }
-
-@media (min-width: 768px) {
-  .mode-selector {
-    justify-content: flex-start;
-  }
-}

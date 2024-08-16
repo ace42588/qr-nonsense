@@ -72,20 +72,18 @@ function VideoScanner({ onQRCodeScanned }) {
     <div
       id="scanner"
       style={{
-        position: "relative",
+        display: scanning ? "flex" : "none",
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        display: scanning ? "flex" : "none", // Hide when not scanning
         width: "100%",
         height: "100vh",
-        overflow: "hidden", // Prevent overflow when minimized
       }}
     >
       {scanning && (
         <>
           <video ref={videoRef} width="640" height="480" />
-          <canvas ref={canvasRef} hidden />
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
         </>
       )}
     </div>
