@@ -55,8 +55,11 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
           }
           bytes = new Uint8Array(bin.length / 8);
           for (let i = 0; i < bin.length; i += 8) {
-            bytes[i/8] = parseInt(bin.substr)
+            bytes[i/8] = parseInt(bin.substring(i, i+8), 2);
           }
+        } else if (hexRE.test(newValue)) {
+          let hex = newValue.replace(/0x/ig, "");
+          hex = hex.replace(/\s+/g, "");
         }
         
       }
