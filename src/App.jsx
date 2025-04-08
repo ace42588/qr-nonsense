@@ -27,35 +27,6 @@ function App() {
   const [segments, setSegments] = useState([]);
   const [matrix, setMatrix] = useState([]);
 
-  const handleInputChange = (index, event) => {
-    const newInputs = [...inputs];
-    newInputs[index].value = event.target.value;
-    setInputs(newInputs);
-  };
-
-  const handleModeChange = (index, newMode) => {
-    const newInputs = [...inputs];
-    newInputs[index].type = newMode;
-    setInputs(newInputs);
-  };
-
-  const handleAddInput = () => {
-    setInputs([...inputs, { type: "text", value: "" }]);
-  };
-
-  const handleRemoveInput = (index) => {
-    const newInputs = inputs.filter((_, i) => i !== index);
-    setInputs(newInputs);
-  };
-
-  const handleInputSubmit = (event) => {
-    event.preventDefault();
-    const chunks = inputs.map((input) => ({ type: "byte", text: input.value }));
-    const version = 1;
-    const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
-    processQRCodeData({ chunks, version, formatInfo });
-  };
-
   const processQRCodeData = ({ chunks, version, formatInfo }) => {
     console.log({ chunks, version, formatInfo });
     let codewords = [];
@@ -66,7 +37,7 @@ function App() {
     bitStream = new TaggedBitstream();
 
     for (const chunk of chunks) {
-      const { type, text, bytes, assignmentNumber } = chunk;
+      const { type, text, bytes, assignmentNumber, encoding } = chunk;
       const data = text ? text : bytes ? bytes : assignmentNumber;
       getEncoder({ type, bitStream }).encode(data);
     }
@@ -135,33 +106,13 @@ function App() {
     setMatrix(qrMatrix.matrix);
   };
 
-  /*return (
-    <div className="App">
-      <h1>QR Code Generator</h1>
-      <ModeSelector mode={mode} setMode={setMode} />
-      {mode === "manual" ? (
-        <InputForm
-          inputs={inputs}
-          onInputChange={handleInputChange}
-          onModeChange={handleModeChange}
-          onAddInput={handleAddInput}
-          onRemoveInput={handleRemoveInput}
-          onSubmit={handleInputSubmit}
-        />
-      ) : (
-        <VideoScanner onQRCodeScanned={processQRCodeData} />
-      )}
-      <QRCodeCanvas matrix={matrix} onBitToggle={handleBitToggle} />
-      <SegmentDisplay segments={segments} onSegmentClick={handleSegmentClick} />
-    </div>
-  );*/
   return (
     <div className="App">
-      <div class="row">
+      <div className="row">
         <h1>QR Code Generator</h1>
       </div>
-      <div class="row">
-        <div class="column">
+      <div className="row">
+        <div className="column">
           <ModeSelector mode={mode} setMode={setMode} />
           {mode === "manual" ? (
             <InputForm
@@ -173,11 +124,11 @@ function App() {
             <VideoScanner onQRCodeScanned={processQRCodeData} />
           )}
         </div>
-        <div class="column">
+        <div className="column">
           <QRCodeCanvas matrix={matrix} onBitToggle={handleBitToggle} />
         </div>
       </div>
-      <div class="row">
+      <div className="row">
         <SegmentDisplay
           segments={segments}
           onSegmentClick={handleSegmentClick}

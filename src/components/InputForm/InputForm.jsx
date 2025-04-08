@@ -46,50 +46,33 @@ const parseInput = (input) => {
           hex = hex.concat(val.toString(16));
         }
         parsedInput.encoding = "hex";
-        parsedInput.value = hex;
+        parsedInput.bytes = hex;
       } else if (isHex(value)) {
         let hex = value.replace(/0x/gi, "");
         hex = hex.replace(/\s+/g, "");
 
-        if (hex.length % 8 !== 0) {
+        if (hex.length % 2 !== 0) {
           throw new Error("Invalid hex string: length must be even.");
         }
         parsedInput.encoding = "hex";
-        parsedInput.value = hex;
+        parsedInput.bytes = hex;
       } else {
         console.log(
           "input value for byte mode did not match binary or hex encoding"
         );
         parsedInput.encoding = "utf-8";
-        parsedInput.value = value;
+        parsedInput.text = value;
       }
 
       break;
     }
     default: {
-      parsedInput.value = value;
+      parsedInput.text = value;
     }
   }
 
   return parsedInput;
 };
-
-/*
-inputs={inputs}
-onInputChange={handleInputChange}
-onModeChange={handleModeChange}
-onAddInput={handleAddInput}
-onRemoveInput={handleRemoveInput}
-onSubmit={handleInputSubmit}
-function InputForm({
-  inputs,
-  onInputChange,
-  onModeChange,
-  onAddInput,
-  onRemoveInput,
-  onSubmit,
-}) {
-*/
 
 function InputForm({ inputs, setInputs, processQRCodeData }) {
   const handleInputChange = (index, event) => {
@@ -118,8 +101,7 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
     const chunks = inputs.map((i) => {
       const parsed = parseInput(i);
       console.log({ parsed });
-      const { type, value, encoding } = parsed;
-      return { type, text: value };
+      return parsed;
     });
     const version = 1;
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
@@ -128,10 +110,10 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
 
   return (
     <form onSubmit={handleInputSubmit} className="input-form">
-      <div class="row">
+      <div className="row">
         <h3>Manual Inputs</h3>
       </div>
-      <div class="row">
+      <div className="row">
         {inputs.map((input, index) => (
           <div key={index} className="input-group">
             <select
@@ -156,7 +138,7 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
           </div>
         ))}
       </div>
-      <div class="row">
+      <div className="row">
         <button type="button" onClick={handleAddInput}>
           Add Input
         </button>
