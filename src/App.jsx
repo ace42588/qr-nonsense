@@ -50,11 +50,10 @@ function App() {
 
   const handleInputSubmit = (event) => {
     event.preventDefault();
-    processQRCodeData(
-      inputs.map((input) => ({ type: "byte", text: input.value })),
-      1,
-      { errorCorrectionLevel: 1 }
-    );
+    const chunks = inputs.map((input) => ({ type: "byte", text: input.value }));
+    const version = 1;
+    const formatInfo = { errorCorrectionLevel: 1 };
+    processQRCodeData({});
   };
 
   const processQRCodeData = ({ chunks, version, formatInfo }) => {
