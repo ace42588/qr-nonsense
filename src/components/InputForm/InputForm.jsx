@@ -107,6 +107,12 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
     processQRCodeData({ chunks, version, formatInfo });
   };
+  
+  const createCheckbox = (input) => {
+    if (input.type === "byte") {
+      
+    }
+  }
 
   return (
     <form onSubmit={handleInputSubmit} className="input-form">
@@ -132,6 +138,7 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
               onChange={(e) => handleInputChange(index, e)}
               placeholder={`Input ${index + 1}`}
             />
+            {input.type === "byte" ? <input label="Force String" type="checkbox" handleCheckboxChange=/> : <div></div>}
             <button type="button" onClick={() => handleRemoveInput(index)}>
               Remove
             </button>
