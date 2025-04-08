@@ -4,22 +4,21 @@ import "./InputForm.css"; // Import your component-specific styles
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 
 const parseInput = (input) => {
-  let { type, value } = input;
-  let parsedValue;
+  let { type, value, encoding } = input;
   let parsedInput = { type };
 
   switch (type) {
     case "numeric": {
       const regex = /\d+/gm;
       const match = value.match(regex);
-      parsedValue = match ? match.join("") : "";
+      parsedInput.text = match ? match.join("") : "";
       break;
     }
     case "alphanumeric": {
       const regex = /[0-9A-Z \$\%\*\+\-\.\/:]+/gm;
       let upperCase = value.toUpperCase();
       const match = upperCase.match(regex);
-      parsedValue = match ? match.join("") : "";
+      parsedInput.text = match ? match.join("") : "";
       break;
     }
     case "byte": {
@@ -84,11 +83,16 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
   const handleModeChange = (index, newMode) => {
     const newInputs = [...inputs];
     newInputs[index].type = newMode;
+    if (newMode === "byte") {
+      newInputs[index].encoding = "";
+    } else {
+      delete newInputs[index].encoding;
+    }
     setInputs(newInputs);
   };
 
   const handleAddInput = () => {
-    setInputs([...inputs, { type: "text", value: "" }]);
+    setInputs([...inputs, { type: "byte", value: "" }]);
   };
 
   const handleRemoveInput = (index) => {
