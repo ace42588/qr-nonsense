@@ -28,8 +28,9 @@ const parseInput = (input) => {
         /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(
           str
         );
+      const forceUtf = encoding === "utf-8";
 
-      if (isBinary(value)) {
+      if (isBinary(value) && !forceUtf) {
         let hex = "";
         let bin = value.replace(/^0b/i, "");
         bin = bin.replace(/\s+/g, "");
@@ -46,7 +47,7 @@ const parseInput = (input) => {
         }
         parsedInput.encoding = "hex";
         parsedInput.bytes = hex;
-      } else if (isHex(value)) {
+      } else if (isHex(value) && !forceUtf) {
         let hex = value.replace(/0x/gi, "");
         hex = hex.replace(/\s+/g, "");
 
@@ -107,24 +108,30 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
     processQRCodeData({ chunks, version, formatInfo });
   };
-  
+
   const handleCheckboxChange = (input) => {
     if (input.encoding === "utf-8") {
       input.encoding = "";
     } else {
       input.encoding = "utf-8";
     }
-  }
-  
+    console.log("handleCheckboxChange", input);
+  };
+
   const createCheckbox = (input) => {
     if (input.type === "byte") {
-      return (<Checkbox
-      label="Force string encoding"
-      isSelected={inputs.encoding === "utf-8"}
-      onCheckboxChange={handleCheckboxChange(input)}
-    />)
+      return (
+        <label>
+          Force string encoding
+          <input
+            type="checkbox"
+            value={inputs.encoding === "utf-8"}
+            onChange={() => handleCheckboxChange(input)}
+          />
+        </label>
+      );
     }
-  }
+  };
 
   return (
     <form onSubmit={handleInputSubmit} className="input-form">
