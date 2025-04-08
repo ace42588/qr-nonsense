@@ -4,9 +4,7 @@ import "./InputForm.css"; // Import your component-specific styles
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 
 const parseInput = (input) => {
-  console.log("parseInput", { input });
-  const { type, value } = input;
-  console.log("parseInput", { value, type });
+  let { type, value } = input;
   let parsedValue;
   let parsedInput = { type };
 
@@ -32,9 +30,8 @@ const parseInput = (input) => {
           str
         );
 
-      let hex = "";
-
       if (isBinary(value)) {
+        let hex = "";
         let bin = value.replace(/^0b/i, "");
         bin = bin.replace(/\s+/g, "");
 
@@ -48,6 +45,8 @@ const parseInput = (input) => {
           let val = parseInt(bin.substring(i, i + 4), 2);
           hex = hex.concat(val.toString(16));
         }
+        parsedInput.encoding = "hex";
+        parsedInput.value = hex;
       } else if (isHex(value)) {
         let hex = value.replace(/0x/gi, "");
         hex = hex.replace(/\s+/g, "");
@@ -55,25 +54,23 @@ const parseInput = (input) => {
         if (hex.length % 8 !== 0) {
           throw new Error("Invalid hex string: length must be even.");
         }
-      }
-
-      if (hex !== "") {
         parsedInput.encoding = "hex";
-        parsedValue = hex;
+        parsedInput.value = hex;
       } else {
         console.log(
           "input value for byte mode did not match binary or hex encoding"
         );
         parsedInput.encoding = "utf-8";
-        parsedValue = value;
+        parsedInput.value = value;
       }
+
+      break;
     }
     default: {
-      parsedValue = value;
+      parsedInput.value = value;
     }
   }
 
-  parsedInput.value = parsedValue;
   return parsedInput;
 };
 
