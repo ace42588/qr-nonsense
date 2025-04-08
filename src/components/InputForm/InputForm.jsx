@@ -51,11 +51,13 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
         if (binRE.test(newValue)) {
           let bin = newValue.replace(/^0b/i, "");
           bin = bin.replace(/\s+/g, "");
+          /*
           if (bin.length % 8 !== 0) {
             throw new Error(
               "Invalid binary string: length must be byte aligned."
             );
           }
+          */
           for (let i = 0; i < bin.length; i += 4) {
             let val = parseInt(bin.substring(i, i + 4), 2);
             hex = hex.concat(val.toString(16));
@@ -63,13 +65,19 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
         } else if (hexRE.test(newValue)) {
           let hex = newValue.replace(/0x/gi, "");
           hex = hex.replace(/\s+/g, "");
+          /*
           if (hex.length % 8 !== 0) {
             throw new Error("Invalid hex string: length must be even.");
           }
+          */
         }
 
         if (hex !== "") {
-          
+          newInputs[index].encoding = "hex";
+          parsedInput = hex;
+        } else {
+          newInputs[index].encoding = "utf-8";
+          parsedInput = newValue;
         }
       }
       default: {
@@ -98,6 +106,7 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
 
   const handleInputSubmit = (event) => {
     event.preventDefault();
+    console.log({ inputs });
     const chunks = inputs.map((input) => ({ type: "byte", text: input.value }));
     const version = 1;
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
