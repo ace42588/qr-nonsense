@@ -4,7 +4,9 @@ import "./InputForm.css"; // Import your component-specific styles
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 
 const parseInput = (input) => {
+  console.log("parseInput", { input });
   const { type, value } = input;
+  console.log("parseInput", { value, type });
   let parsedValue;
   let parsedInput = { type };
 
@@ -23,13 +25,16 @@ const parseInput = (input) => {
       break;
     }
     case "byte": {
-      const binRE = /^(?:0b)?(?:[01]{8}(?:\s+[01]{8})+|(?:[01]{8})+)$/i;
-      const hexRE =
-        /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i;
+      const isBinary = (str) =>
+        /^(?:0b)?(?:[01]{8}(?:\s+[01]{8})+|(?:[01]{8})+)$/i.test(str);
+      const isHex = (str) =>
+        /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(
+          str
+        );
 
       let hex = "";
 
-      if (binRE.test(value)) {
+      if (isBinary(value)) {
         let bin = value.replace(/^0b/i, "");
         bin = bin.replace(/\s+/g, "");
 
@@ -43,7 +48,7 @@ const parseInput = (input) => {
           let val = parseInt(bin.substring(i, i + 4), 2);
           hex = hex.concat(val.toString(16));
         }
-      } else if (hexRE.test(value)) {
+      } else if (isHex(value)) {
         let hex = value.replace(/0x/gi, "");
         hex = hex.replace(/\s+/g, "");
 
@@ -56,6 +61,9 @@ const parseInput = (input) => {
         parsedInput.encoding = "hex";
         parsedValue = hex;
       } else {
+        console.log(
+          "input value for byte mode did not match binary or hex encoding"
+        );
         parsedInput.encoding = "utf-8";
         parsedValue = value;
       }
@@ -89,69 +97,7 @@ function InputForm({
 function InputForm({ inputs, setInputs, processQRCodeData }) {
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
-    const newValue = event.target.value;
-    const { type } = newInputs[index];
-    let parsedInput;
-
-    switch (type) {
-      case "numeric": {
-        const regex = /\d+/gm;
-        const match = newValue.match(regex);
-        parsedInput = match ? match.join("") : "";
-        break;
-      }
-      case "alphanumeric": {
-        const regex = /[0-9A-Z \$\%\*\+\-\.\/:]+/gm;
-        let upperCase = newValue.toUpperCase();
-        const match = upperCase.match(regex);
-        parsedInput = match ? match.join("") : "";
-        break;
-      }
-      case "byte": {
-        const binRE = /(?:0b)?(?:[01 ]+)/gim;
-        const hexRE =
-          /(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)/gim;
-
-        let hex = "";
-
-        if (binRE.test(newValue)) {
-          let bin = newValue.replace(/^0b/i, "");
-          bin = bin.replace(/\s+/g, "");
-          /*
-          if (bin.length % 8 !== 0) {
-            throw new Error(
-              "Invalid binary string: length must be byte aligned."
-            );
-          }
-          */
-          for (let i = 0; i < bin.length; i += 4) {
-            let val = parseInt(bin.substring(i, i + 4), 2);
-            hex = hex.concat(val.toString(16));
-          }
-        } else if (hexRE.test(newValue)) {
-          let hex = newValue.replace(/0x/gi, "");
-          hex = hex.replace(/\s+/g, "");
-          /*
-          if (hex.length % 8 !== 0) {
-            throw new Error("Invalid hex string: length must be even.");
-          }
-          */
-        }
-
-        if (hex !== "") {
-          newInputs[index].encoding = "hex";
-          parsedInput = hex;
-        } else {
-          newInputs[index].encoding = "utf-8";
-          parsedInput = newValue;
-        }
-      }
-      default: {
-        parsedInput = newValue;
-      }
-    }
-
-    newInputs[index].value = parsedInput;
+    newInputs[index].value = event.target.value;
     setInputs(newInputs);
   };
 
@@ -172,9 +118,10 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
 
   const handleInputSubmit = (event) => {
     event.preventDefault();
-    console.log({ inputs });
     const chunks = inputs.map((i) => {
-      const { type, value } = parseInput(i);
+      const parsed = parseInput(i);
+      console.log({ parsed });
+      const { type, value, encoding } = parsed;
       return { type, text: value };
     });
     const version = 1;
