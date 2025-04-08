@@ -53,7 +53,7 @@ function App() {
     const chunks = inputs.map((input) => ({ type: "byte", text: input.value }));
     const version = 1;
     const formatInfo = { errorCorrectionLevel: 1 };
-    processQRCodeData({});
+    processQRCodeData({ chunks, version, formatInfo });
   };
 
   const processQRCodeData = ({ chunks, version, formatInfo }) => {
