@@ -108,9 +108,21 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
     processQRCodeData({ chunks, version, formatInfo });
   };
   
+  const handleCheckboxChange = (input) => {
+    if (input.encoding === "utf-8") {
+      input.encoding = "";
+    } else {
+      input.encoding = "utf-8";
+    }
+  }
+  
   const createCheckbox = (input) => {
     if (input.type === "byte") {
-      
+      return (<Checkbox
+      label="Force string encoding"
+      isSelected={inputs.encoding === "utf-8"}
+      onCheckboxChange={handleCheckboxChange(input)}
+    />)
     }
   }
 
@@ -138,7 +150,7 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
               onChange={(e) => handleInputChange(index, e)}
               placeholder={`Input ${index + 1}`}
             />
-            {input.type === "byte" ? <input label="Force String" type="checkbox" handleCheckboxChange=/> : <div></div>}
+            {createCheckbox(input)}
             <button type="button" onClick={() => handleRemoveInput(index)}>
               Remove
             </button>
