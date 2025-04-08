@@ -23,9 +23,9 @@ const parseInput = (input) => {
       break;
     }
     case "byte": {
-      const binRE = /(?:0b)?(?:[01 ]+)/gim;
+      const binRE = /^(?:0b)?(?:[01]{8}(?:\s+[01]{8})+|(?:[01]{8})+)$/i;
       const hexRE =
-        /(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)/gim;
+        /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i;
 
       let hex = "";
 
@@ -64,7 +64,7 @@ const parseInput = (input) => {
       parsedValue = value;
     }
   }
-  
+
   parsedInput.value = parsedValue;
   return parsedInput;
 };
@@ -173,9 +173,9 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
   const handleInputSubmit = (event) => {
     event.preventDefault();
     console.log({ inputs });
-    const chunks = inputs.map((i) => { 
-      let data = parseInput(i);
-       return { type: "byte", text: data.value }
+    const chunks = inputs.map((i) => {
+      const { type, value } = parseInput(i);
+      return { type, text: value };
     });
     const version = 1;
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
