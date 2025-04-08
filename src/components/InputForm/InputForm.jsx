@@ -3,6 +3,72 @@ import "./InputForm.css"; // Import your component-specific styles
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 
+const parseInput = (input) => {
+  const { type, value } = input;
+  let parsedValue;
+  let parsedInput = { type };
+
+  switch (type) {
+    case "numeric": {
+      const regex = /\d+/gm;
+      const match = value.match(regex);
+      parsedValue = match ? match.join("") : "";
+      break;
+    }
+    case "alphanumeric": {
+      const regex = /[0-9A-Z \$\%\*\+\-\.\/:]+/gm;
+      let upperCase = value.toUpperCase();
+      const match = upperCase.match(regex);
+      parsedValue = match ? match.join("") : "";
+      break;
+    }
+    case "byte": {
+      const binRE = /(?:0b)?(?:[01 ]+)/gim;
+      const hexRE =
+        /(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)/gim;
+
+      let hex = "";
+
+      if (binRE.test(value)) {
+        let bin = value.replace(/^0b/i, "");
+        bin = bin.replace(/\s+/g, "");
+
+        if (bin.length % 8 !== 0) {
+          throw new Error(
+            "Invalid binary string: length must be byte aligned."
+          );
+        }
+
+        for (let i = 0; i < bin.length; i += 4) {
+          let val = parseInt(bin.substring(i, i + 4), 2);
+          hex = hex.concat(val.toString(16));
+        }
+      } else if (hexRE.test(value)) {
+        let hex = value.replace(/0x/gi, "");
+        hex = hex.replace(/\s+/g, "");
+
+        if (hex.length % 8 !== 0) {
+          throw new Error("Invalid hex string: length must be even.");
+        }
+      }
+
+      if (hex !== "") {
+        parsedInput.encoding = "hex";
+        parsedValue = hex;
+      } else {
+        parsedInput.encoding = "utf-8";
+        parsedValue = value;
+      }
+    }
+    default: {
+      parsedValue = value;
+    }
+  }
+  
+  parsedInput.value = parsedValue;
+  return parsedInput;
+};
+
 /*
 inputs={inputs}
 onInputChange={handleInputChange}
@@ -107,7 +173,10 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
   const handleInputSubmit = (event) => {
     event.preventDefault();
     console.log({ inputs });
-    const chunks = inputs.map((input) => ({ type: "byte", text: input.value }));
+    const chunks = inputs.map((i) => { 
+      let data = parseInput(i);
+       return { type: "byte", text: data.value }
+    });
     const version = 1;
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
     processQRCodeData({ chunks, version, formatInfo });
