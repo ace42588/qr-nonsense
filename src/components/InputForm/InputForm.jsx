@@ -98,11 +98,7 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
 
   const handleInputSubmit = (event) => {
     event.preventDefault();
-    const chunks = inputs.map((i) => {
-      const parsed = parseInput(i);
-      console.log({ parsed });
-      return parsed;
-    });
+    const chunks = inputs.map((i) => parseInput(i));
     const version = 1;
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
     processQRCodeData({ chunks, version, formatInfo });

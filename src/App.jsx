@@ -39,7 +39,7 @@ function App() {
     for (const chunk of chunks) {
       const { type, text, bytes, assignmentNumber, encoding } = chunk;
       const data = text ? text : bytes ? bytes : assignmentNumber;
-      getEncoder({ type, bitStream }).encode(data);
+      getEncoder({ type, bitStream }).encode(data, encoding);
     }
 
     setSegments(bitStream.segments);

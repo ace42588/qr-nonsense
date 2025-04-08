@@ -1,8 +1,4 @@
-import {
-  NumericSegment,
-  AlphanumericSegment,
-  ByteSegment,
-} from "./Segment";
+import { NumericSegment, AlphanumericSegment, ByteSegment } from "./Segment";
 
 const Mode = {
   Numeric: "numeric",
@@ -38,7 +34,7 @@ class Encoder {
     );
   }
 
-  encodeData(input) {
+  encodeData(input, encoding) {
     throw new Error("encodeData() must be implemented in subclasses");
   }
 
@@ -58,11 +54,11 @@ class Encoder {
     );
   }
 
-  encode(data) {
+  encode(data, encoding) {
     this.addModeIndicator();
     this.addCharacterCountIndicator(data.length);
 
-    for (const encoded of this.encodeData(data)) {
+    for (const encoded of this.encodeData(data, encoding)) {
       this.bitStream.addSegment(encoded);
     }
   }
@@ -119,15 +115,22 @@ class ByteEncoder extends Encoder {
     return charCount.toString(2).padStart(indicatorLength, "0");
   }
 
-  *encodeData(input) {
-    // TODO: optionally conver to UTF-8
-    const chars = [...input];
-    const encoder = new TextEncoder("latin1");
+  *encodeData(input, encoding) {
+    // TODO: optionally convert to UTF-8
+    if (encoding === "hex") {
+      for (let i = 0; i < input.length; i += 2) {
+        const byte = parseInt(input.substring(i, i+2), 16);
+        yield new ByteSegment(byte, i/2);
+      }
+    } else {
+      const chars = [...input];
+      const encoder = new TextEncoder("latin1");
 
-    for (let i = 0; i < chars.length; i++) {
-      const char = chars[i];
-      const byte = encoder.encode(char);
-      yield new ByteSegment(byte, i);
+      for (let i = 0; i < chars.length; i++) {
+        const char = chars[i];
+        const byte = encoder.encode(char);
+        yield new ByteSegment(byte, i);
+      }
     }
   }
 }
