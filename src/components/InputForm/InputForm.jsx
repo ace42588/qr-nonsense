@@ -1,17 +1,67 @@
-import React from 'react';
-import './InputForm.css'; // Import your component-specific styles
+import React from "react";
+import "./InputForm.css"; // Import your component-specific styles
 
-const modes = ['numeric', 'alphanumeric', 'byte', 'kanji', 'eci']; // Available modes
+const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 
-function InputForm({ inputs, onInputChange, onModeChange, onAddInput, onRemoveInput, onSubmit }) {
+/*
+inputs={inputs}
+onInputChange={handleInputChange}
+onModeChange={handleModeChange}
+onAddInput={handleAddInput}
+onRemoveInput={handleRemoveInput}
+onSubmit={handleInputSubmit}
+function InputForm({
+  inputs,
+  onInputChange,
+  onModeChange,
+  onAddInput,
+  onRemoveInput,
+  onSubmit,
+}) {
+*/
+
+function InputForm({
+  inputs,
+  setInputs,
+  processQRCodeData
+}) {
+  const handleInputChange = (index, event) => {
+    const newInputs = [...inputs];
+    newInputs[index].value = event.target.value;
+    setInputs(newInputs);
+  };
+
+  const handleModeChange = (index, newMode) => {
+    const newInputs = [...inputs];
+    newInputs[index].type = newMode;
+    setInputs(newInputs);
+  };
+
+  const handleAddInput = () => {
+    setInputs([...inputs, { type: "text", value: "" }]);
+  };
+
+  const handleRemoveInput = (index) => {
+    const newInputs = inputs.filter((_, i) => i !== index);
+    setInputs(newInputs);
+  };
+
+  const handleInputSubmit = (event) => {
+    event.preventDefault();
+    const chunks = inputs.map((input) => ({ type: "byte", text: input.value }));
+    const version = 1;
+    const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
+    processQRCodeData({ chunks, version, formatInfo });
+  };
+
   return (
-    <form onSubmit={onSubmit} className="input-form">
+    <form onSubmit={handleInputSubmit} className="input-form">
       <h3>Manual Inputs</h3>
       {inputs.map((input, index) => (
         <div key={index} className="input-group">
           <select
             value={input.type}
-            onChange={(e) => onModeChange(index, e.target.value)}
+            onChange={(e) => handleModeChange(index, e.target.value)}
           >
             {modes.map((mode) => (
               <option key={mode} value={mode}>
@@ -22,15 +72,15 @@ function InputForm({ inputs, onInputChange, onModeChange, onAddInput, onRemoveIn
           <input
             type="text"
             value={input.value}
-            onChange={(e) => onInputChange(index, e)}
+            onChange={(e) => handleInputChange(index, e)}
             placeholder={`Input ${index + 1}`}
           />
-          <button type="button" onClick={() => onRemoveInput(index)}>
+          <button type="button" onClick={() => handleRemoveInput(index)}>
             Remove
           </button>
         </div>
       ))}
-      <button type="button" onClick={onAddInput}>
+      <button type="button" onClick={handleAddInput}>
         Add Input
       </button>
       <button type="submit">Generate QR Code</button>

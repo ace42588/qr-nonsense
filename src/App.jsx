@@ -135,7 +135,7 @@ function App() {
     setMatrix(qrMatrix.matrix);
   };
 
-  return (
+  /*return (
     <div className="App">
       <h1>QR Code Generator</h1>
       <ModeSelector mode={mode} setMode={setMode} />
@@ -147,6 +147,23 @@ function App() {
           onAddInput={handleAddInput}
           onRemoveInput={handleRemoveInput}
           onSubmit={handleInputSubmit}
+        />
+      ) : (
+        <VideoScanner onQRCodeScanned={processQRCodeData} />
+      )}
+      <QRCodeCanvas matrix={matrix} onBitToggle={handleBitToggle} />
+      <SegmentDisplay segments={segments} onSegmentClick={handleSegmentClick} />
+    </div>
+  );*/
+  return (
+    <div className="App">
+      <h1>QR Code Generator</h1>
+      <ModeSelector mode={mode} setMode={setMode} />
+      {mode === "manual" ? (
+        <InputForm
+          inputs={inputs}
+          setInputs={setInputs}
+          processQRCodeData={processQRCodeData}
         />
       ) : (
         <VideoScanner onQRCodeScanned={processQRCodeData} />
