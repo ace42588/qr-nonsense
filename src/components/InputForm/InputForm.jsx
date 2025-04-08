@@ -23,6 +23,9 @@ function InputForm({
 function InputForm({ inputs, setInputs, processQRCodeData }) {
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
+    const { type } = newInputs[index];
+    
+    
     newInputs[index].value = event.target.value;
     setInputs(newInputs);
   };
