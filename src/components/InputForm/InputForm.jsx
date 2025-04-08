@@ -42,8 +42,8 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
         break;
         }
       case "byte": {
-        const binRE = /[01 ]+/gm;
-        const hexRE = /(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)/ig;
+        const binRE = /(?:0b)?[01 ]+/gm;
+        const hexRE = /(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)/igm;
         
       }
       default: {
