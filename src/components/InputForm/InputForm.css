@@ -46,11 +46,3 @@
     flex-shrink: 0;
   }
 }
-
-.row {
-  display: flex;
-}
-
-.column {
-  flex: 50%;
-}

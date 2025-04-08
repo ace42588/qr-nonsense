@@ -9,7 +9,7 @@ import { getEncoder } from "./encode/Encoder";
 import { TaggedBitstream } from "./encode/TaggedBitstream";
 import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
-//import './App.css';
+import './App.css';
 
 let versionDetails;
 let errorCorrectionLevels;
@@ -157,19 +157,30 @@ function App() {
   );*/
   return (
     <div className="App">
-      <h1>QR Code Generator</h1>
-      <ModeSelector mode={mode} setMode={setMode} />
-      {mode === "manual" ? (
-        <InputForm
-          inputs={inputs}
-          setInputs={setInputs}
-          processQRCodeData={processQRCodeData}
+      <div class="row">
+        <h1>QR Code Generator</h1>
+      </div>
+      <div class="column">
+        <ModeSelector mode={mode} setMode={setMode} />
+        {mode === "manual" ? (
+          <InputForm
+            inputs={inputs}
+            setInputs={setInputs}
+            processQRCodeData={processQRCodeData}
+          />
+        ) : (
+          <VideoScanner onQRCodeScanned={processQRCodeData} />
+        )}
+      </div>
+      <div class="column">
+        <QRCodeCanvas matrix={matrix} onBitToggle={handleBitToggle} />
+      </div>
+      <div class="row">
+        <SegmentDisplay
+          segments={segments}
+          onSegmentClick={handleSegmentClick}
         />
-      ) : (
-        <VideoScanner onQRCodeScanned={processQRCodeData} />
-      )}
-      <QRCodeCanvas matrix={matrix} onBitToggle={handleBitToggle} />
-      <SegmentDisplay segments={segments} onSegmentClick={handleSegmentClick} />
+      </div>
     </div>
   );
 }

@@ -52,10 +52,10 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
 
   return (
     <form onSubmit={handleInputSubmit} className="input-form">
-      <div>
+      <div class="row">
         <h3>Manual Inputs</h3>
       </div>
-      <div>
+      <div class="row">
         {inputs.map((input, index) => (
           <div key={index} className="input-group">
             <select
@@ -80,7 +80,7 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
           </div>
         ))}
       </div>
-      <div>
+      <div class="row">
         <button type="button" onClick={handleAddInput}>
           Add Input
         </button>
