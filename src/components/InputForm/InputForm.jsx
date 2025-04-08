@@ -23,8 +23,19 @@ function InputForm({
 function InputForm({ inputs, setInputs, processQRCodeData }) {
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
+    const newValue = event.target.value;
     const { type } = newInputs[index];
+    let parsedInput
     
+    switch (type) {
+      case "numeric":
+        const regex = /\d+/gm
+        const match = newValue.match(regex);
+        parsedInput = match ? match[0] : "";
+        break;
+      case "alphanumeric":
+        const regex = /\d+/gm
+      
     
     newInputs[index].value = event.target.value;
     setInputs(newInputs);
