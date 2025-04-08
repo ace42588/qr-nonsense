@@ -20,11 +20,7 @@ function InputForm({
 }) {
 */
 
-function InputForm({
-  inputs,
-  setInputs,
-  processQRCodeData
-}) {
+function InputForm({ inputs, setInputs, processQRCodeData }) {
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
     newInputs[index].value = event.target.value;
@@ -56,34 +52,40 @@ function InputForm({
 
   return (
     <form onSubmit={handleInputSubmit} className="input-form">
-      <h3>Manual Inputs</h3>
-      {inputs.map((input, index) => (
-        <div key={index} className="input-group">
-          <select
-            value={input.type}
-            onChange={(e) => handleModeChange(index, e.target.value)}
-          >
-            {modes.map((mode) => (
-              <option key={mode} value={mode}>
-                {mode.charAt(0).toUpperCase() + mode.slice(1)}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            value={input.value}
-            onChange={(e) => handleInputChange(index, e)}
-            placeholder={`Input ${index + 1}`}
-          />
-          <button type="button" onClick={() => handleRemoveInput(index)}>
-            Remove
-          </button>
-        </div>
-      ))}
-      <button type="button" onClick={handleAddInput}>
-        Add Input
-      </button>
-      <button type="submit">Generate QR Code</button>
+      <div>
+        <h3>Manual Inputs</h3>
+      </div>
+      <div>
+        {inputs.map((input, index) => (
+          <div key={index} className="input-group">
+            <select
+              value={input.type}
+              onChange={(e) => handleModeChange(index, e.target.value)}
+            >
+              {modes.map((mode) => (
+                <option key={mode} value={mode}>
+                  {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              value={input.value}
+              onChange={(e) => handleInputChange(index, e)}
+              placeholder={`Input ${index + 1}`}
+            />
+            <button type="button" onClick={() => handleRemoveInput(index)}>
+              Remove
+            </button>
+          </div>
+        ))}
+      </div>
+      <div>
+        <button type="button" onClick={handleAddInput}>
+          Add Input
+        </button>
+        <button type="submit">Generate QR Code</button>
+      </div>
     </form>
   );
 }

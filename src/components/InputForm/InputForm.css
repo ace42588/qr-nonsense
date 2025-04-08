@@ -12,6 +12,11 @@
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
+.input-form div {
+  display: flex;
+  flex-direction: column;
+}
+
 .input-form input,
 .input-form select {
   padding: 10px;
@@ -40,4 +45,12 @@
     width: auto;
     flex-shrink: 0;
   }
+}
+
+.row {
+  display: flex;
+}
+
+.column {
+  flex: 50%;
 }
