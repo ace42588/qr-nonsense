@@ -25,8 +25,8 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
     const newInputs = [...inputs];
     const newValue = event.target.value;
     const { type } = newInputs[index];
-    let parsedInput
-    
+    let parsedInput;
+
     switch (type) {
       case "numeric": {
         const regex = /\d+/gm;
@@ -40,35 +40,47 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
         const match = upperCase.match(regex);
         parsedInput = match ? match.join("") : "";
         break;
-        }
+      }
       case "byte": {
-        const binRE = /(?:0b)?(?:[01 ]+)/igm;
-        const hexRE = /(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)/igm;
-        
+        const binRE = /(?:0b)?(?:[01 ]+)/gim;
+        const hexRE =
+          /(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)/gim;
+
         let bytes;
-        
+
         if (binRE.test(newValue)) {
           let bin = newValue.replace(/^0b/i, "");
           bin = bin.replace(/\s+/g, "");
           if (bin.length % 8 !== 0) {
-            throw new Error("Invalid binary string: length must be byte aligned.");
+            throw new Error(
+              "Invalid binary string: length must be byte aligned."
+            );
           }
           bytes = new Uint8Array(bin.length / 8);
           for (let i = 0; i < bin.length; i += 8) {
-            bytes[i/8] = parseInt(bin.substring(i, i+8), 2);
+            bytes[i / 8] = parseInt(bin.substring(i, i + 8), 2);
           }
         } else if (hexRE.test(newValue)) {
-          let hex = newValue.replace(/0x/ig, "");
+          let hex = newValue.replace(/0x/gi, "");
           hex = hex.replace(/\s+/g, "");
+          if (hex.length % 8 !== 0) {
+            throw new Error("Invalid hex string: length must be even.");
+          }
+          bytes = new Uint8Array(hex.length / 2);
+          for (let i = 0; i < hex.length; i += 2) {
+            bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
+          }
         }
         
+        if (bytes) {
+          
+        }
       }
       default: {
         parsedInput = newValue;
       }
     }
-      
-    
+
     newInputs[index].value = parsedInput;
     setInputs(newInputs);
   };
