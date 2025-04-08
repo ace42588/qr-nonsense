@@ -42,16 +42,28 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
         break;
         }
       case "byte": {
-        const binRE = /(?:0b)?[01 ]+/gm;
-        //const hexRE = /(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)/igm;
-        if (binRE.text(newValue)) {
-          
+        const binRE = /(?:0b)?(?:[01 ]+)/igm;
+        const hexRE = /(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)/igm;
+        
+        let bytes;
+        
+        if (binRE.test(newValue)) {
+          let bin = newValue.replace(/^0b/i, "");
+          bin = bin.replace(/\s+/g, "");
+          if (bin.length % 8 !== 0) {
+            throw new Error("Invalid binary string: length must be byte aligned.");
+          }
+          bytes = new Uint8Array(bin.length / 8);
+          for (let i = 0; i < bin.length; i += 8) {
+            bytes[i/8] = parseInt(bin.substr)
+          }
         }
         
       }
       default: {
         parsedInput = newValue;
       }
+    }
       
     
     newInputs[index].value = parsedInput;
