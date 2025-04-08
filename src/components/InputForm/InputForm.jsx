@@ -28,16 +28,30 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
     let parsedInput
     
     switch (type) {
-      case "numeric":
-        const regex = /\d+/gm
+      case "numeric": {
+        const regex = /\d+/gm;
         const match = newValue.match(regex);
-        parsedInput = match ? match[0] : "";
+        parsedInput = match ? match.join("") : "";
         break;
-      case "alphanumeric":
-        const regex = /\d+/gm
+      }
+      case "alphanumeric": {
+        const regex = /[0-9A-Z \$\%\*\+\-\.\/:]+/gm;
+        let upperCase = newValue.toUpperCase();
+        const match = upperCase.match(regex);
+        parsedInput = match ? match.join("") : "";
+        break;
+        }
+      case "byte": {
+        const binRE = /[01 ]+/gm;
+        const hexRE
+        
+      }
+      default: {
+        parsedInput = newValue;
+      }
       
     
-    newInputs[index].value = event.target.value;
+    newInputs[index].value = parsedInput;
     setInputs(newInputs);
   };
 
