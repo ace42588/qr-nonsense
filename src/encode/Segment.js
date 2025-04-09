@@ -101,6 +101,8 @@ export class ByteSegment extends Segment {
   }
 
   toString() {
-    return String.fromCharCode(this.value);
+    console.log("Segment.toString()", this.value.toString(16));
+    //return String.fromCharCode(this.value);
+    return `0x${this.value.toString(16)}`;
   }
 }
