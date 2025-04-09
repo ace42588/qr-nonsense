@@ -2,6 +2,22 @@ import React from "react";
 import "./MerchForm.css"; // Import your component-specific styles
 
 const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
+const sampleInput = {
+    "p": "A",
+	"cc": 133,
+	"txn": "99999",
+    "i": [{
+            "v": 5432,
+            "q": 1
+        }, {
+            "v": 6666,
+            "q": 3
+        }, {
+            "v": 1234,
+            "q": 2
+        }
+    ]
+};
 
 function getMinimumQRCodeVersion(chunks) {
   // Data capacities (in bytes) for Byte mode, Error Correction Level L, for versions 1 to 40.
@@ -169,7 +185,7 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-function InputForm({ inputs, setInputs, processQRCodeData }) {
+function MerchForm({ inputs, setInputs, onSubmit }) {
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
     newInputs[index].value = event.target.value;
@@ -192,14 +208,17 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
     const chunks = inputs.map((i) => parseInput(i));
     const version = getMinimumQRCodeVersion(chunks);
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
-    processQRCodeData({ chunks, version, formatInfo });
+    onSubmit({ chunks, version, formatInfo });
   };
+  
+  const setInitialInput = (input) => {
+    if (!input.value)
+      input.value = JSON.stringify(sampleInput, null, 2);
+    return input;
+  }
 
   return (
     <form onSubmit={handleInputSubmit} className="merch-form">
-      <div className="row">
-        <h3>Manual Inputs</h3>
-      </div>
       <div className="row">
         {inputs.map((input, index) => (
           <div key={index} className="input-group">
@@ -213,26 +232,12 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
                 </option>
               ))}
             </select>
+            {}
             <textarea
               type="text"
-              value={input.value}
+              rows={16}
+              value={input.value || JSON.stringify(sampleInput, null, 2)}
               onChange={(e) => handleInputChange(index, e)}
-              defaultValue='{
-    "p": "A",
-	"cc": 133,
-	"txn": "99999",
-    "i": [{
-            "v": 5432,
-            "q": 1
-        }, {
-            "v": 6666,
-            "q": 3
-        }, {
-            "v": 1234,
-            "q": 2
-        }
-    ]
-}'
             />
           </div>
         ))}
@@ -244,4 +249,4 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
   );
 }
 
-export default InputForm;
+export default MerchForm;
