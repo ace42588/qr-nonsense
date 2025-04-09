@@ -45,7 +45,6 @@ function getMinimumQRCodeVersion(chunks) {
       const byteCount = chunk.bytes.length / 2;
       dataBits = byteCount * 8;
     } else if (
-      chunk.encoding === "utf-8" &&
       chunk.type === "byte" &&
       typeof chunk.text === "string"
     ) {
@@ -176,7 +175,7 @@ const parseInput = (input) => {
       break;
     }
     default: {
-      parsedInput.encoding = "utf-8";
+      //parsedInput.encoding = "utf-8";
       parsedInput.type = "byte";
       parsedInput.text = value;
     }

@@ -1,3 +1,84 @@
+export function getMinimumQRCodeVersion(chunks) {
+  // Data capacities (in bytes) for Byte mode, Error Correction Level L, for versions 1 to 40.
+  // (Source: https://www.thonky.com/qr-code-tutorial/data-capacity-per-version)
+  const capacities = [
+    17, 32, 53, 78, 106, 134, 154, 192, 230, 271, 321, 367, 425, 458, 520, 586,
+    644, 718, 792, 858, 929, 1003, 1091, 1171, 1273, 1367, 1465, 1528, 1628,
+    1732, 1840, 1952, 2068, 2188, 2303, 2431, 2563, 2699, 2809, 2953,
+  ];
+
+  // Helper to compute the number of bits needed for a given chunk under the candidate version.
+  // For Byte mode:
+  //   - Mode indicator: 4 bits.
+  //   - Character count indicator: 8 bits for versions 1-9, 16 bits for versions 10+.
+  //   - Data bits: 8 bits per byte.
+  function getSegmentBitLength(chunk, version) {
+    const modeIndicator = 4;
+    // For byte mode in QR codes, the character count indicator is 8 bits for versions 1-9,
+    // and 16 bits for versions 10 to 40.
+    const ccBits = version <= 9 ? 8 : 16;
+    let dataBits;
+
+    if (chunk.encoding === "hex" && typeof chunk.bytes === "string") {
+      // Each 2 hex characters represent 1 byte.
+      const byteCount = chunk.bytes.length / 2;
+      dataBits = byteCount * 8;
+    } else if (
+      chunk.type === "byte" &&
+      typeof chunk.text === "string"
+    ) {
+      // Use the TextEncoder API to determine the number of UTF-8 bytes.
+      const byteCount = chunk.text.length;
+      dataBits = byteCount * 8;
+    } else if (
+      chunk.type === "alphanumeric" &&
+      typeof chunk.text === "string"
+    ) {
+      const byteCount = chunk.text.length;
+      dataBits = Math.ceil(byteCount * (11 / 2));
+    } else {
+      throw new Error("Unsupported chunk encoding or type.");
+    }
+    return modeIndicator + ccBits + dataBits;
+  }
+
+  // Iterate over QR code versions from 1 to 40.
+  for (let version = 1; version <= 40; version++) {
+    // Get the available capacity for this version in bits.
+    const capacityBytes = capacities[version - 1];
+    const capacityBits = capacityBytes * 8;
+
+    // Sum up the bits required for all chunks.
+    let totalDataBits = 0;
+    try {
+      for (const chunk of chunks) {
+        totalDataBits += getSegmentBitLength(chunk, version);
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+
+    // According to the spec, we can add a terminator of up to 4 bits.
+    // (If capacityBits - totalDataBits is less than 4, then that difference is used.)
+    const terminatorBits = Math.min(
+      4,
+      Math.max(0, capacityBits - totalDataBits)
+    );
+    const totalBitsWithTerminator = totalDataBits + terminatorBits;
+
+    // QR codes work in 8-bit "codewords"; if total bits is not a multiple of 8, it is
+    // padded (but that padding still consumes a codeword if any bits are missing).
+    const requiredBytes = Math.ceil(totalBitsWithTerminator / 8);
+
+    // If the number of codewords required fits within the capacity, this version is sufficient.
+    if (requiredBytes <= capacityBytes) {
+      return version;
+    }
+  }
+  throw new Error("Data too large to fit in a QR code version 40.");
+}
+
 export const VERSIONS = [
   {
     infoBits: null,

@@ -42,7 +42,7 @@ export class QRCodeMatrix {
       console.log({element});
       console.log({index});
       console.log({array});
-      re
+      return element.bits;
     });
     mf.setBitSource(bits);
 
