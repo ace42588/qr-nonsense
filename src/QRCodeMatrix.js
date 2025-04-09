@@ -36,7 +36,9 @@ export class QRCodeMatrix {
     this.reset();
     const dimension = this.matrix.length;
     const mf = this.moduleFactory;
-    mf.setBitSource(codewords.flatMap((c) => c.bits));
+    console.log({codewords});
+    const bits = codewords.flatMap((codeword) => codeword.bits)
+    mf.setBitSource(bits);
 
     let up = true;
     // write columns in pairs, right to left
