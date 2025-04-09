@@ -5,30 +5,22 @@ const modes = ["p1", "p2", "p3"]; // Available modes
 
 // {"txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}
 
-const jsonLike = (order) => {
-  const ENCAPSULATOR = "$";
-  const FIELD_SEPARATOR = "%";
-  const parseItem = (item) => {
-    // QTY_SEPARATOR = ":";
-    // TERMINATOR = "/";
-    const { v, q } = item;
-    return `${v}:${q}/`;
-  }
-  const {txn, conf, plat, i} = order;
-  const items = i.map((item) => parseItem(item));
-  return `$`
-  
-}
-
 const parseInput = (input) => {
   const { type, value } = input;
-  let order = JSON.parse(value);
+  let { txn, conf, plat, i } = JSON.parse(value);
   let parsedInput = {};
 
   switch (type) {
     case "p1": {
-      parsedInput.type = "alphanumeric"
-      parsedInput.text = jsonLike(order);
+      // ENCAPSULATOR = "$";
+      // FIELD_SEPARATOR = "%";
+      // QTY_SEPARATOR = ":";
+      // TERMINATOR = "/";
+      const items = i.reduce((str, { v, q }) => `${str}${v}:${q}/`, "");
+      parsedInput.type = "alphanumeric";
+      parsedInput.text = `$1${plat ? "%" + plat : ""}${
+        conf ? "%" + conf : ""
+      }%${txn}%${items}$`;
       break;
     }
     case "p2": {
@@ -92,7 +84,6 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
               onChange={(e) => handleInputChange(index, e)}
               placeholder={`Input ${index + 1}`}
             />
-
           </div>
         ))}
       </div>
