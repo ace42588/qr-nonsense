@@ -1,9 +1,13 @@
 import React from "react";
 import "./MerchForm.css"; // Import your component-specific styles
 
-const modes = ["p1", "p2", "p3"]; // Available modes
+const modes = ["base", "p1", "p2"]; // Available modes
 
 // {"txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}
+const buildHeader = (txn, conf, plat) => {
+  const bytes = new Uint8Array(4);
+  
+}
 
 const parseInput = (input) => {
   const { type, value } = input;
@@ -24,6 +28,9 @@ const parseInput = (input) => {
       break;
     }
     case "p2": {
+      let hex;
+      parsedInput.encoding = "hex";
+      parsedInput.bytes = hex;
       break;
     }
     default: {
