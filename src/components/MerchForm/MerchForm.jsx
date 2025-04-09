@@ -134,7 +134,6 @@ const buildHeader = (txn, confId, platform) => {
 };
 
 const parseInput = (input) => {
-  console.log("parseInput", {input});
   const { type, value } = input;
   let { txn, cc, p, i } = JSON.parse(value);
   let parsedInput = {};
@@ -186,8 +185,7 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-function MerchForm({ inputs, setInputs, onSubmit }) {
-  
+function MerchForm({ inputs, setInputs, processQRCodeData }) {
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
     newInputs[index].value = event.target.value;
@@ -210,8 +208,17 @@ function MerchForm({ inputs, setInputs, onSubmit }) {
     const chunks = inputs.map((i) => parseInput(i));
     const version = getMinimumQRCodeVersion(chunks);
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
-    onSubmit({ chunks, version, formatInfo });
+    processQRCodeData({ chunks, version, formatInfo });
   };
+  
+  const setInitialInput = (input) => {
+    if (!input.value) {
+      input.value = JSON.stringify(sampleInput, null, 2);
+      setInputs[input];
+    }
+    return input.value;
+    
+  }
 
   return (
     <form onSubmit={handleInputSubmit} className="merch-form">
@@ -232,7 +239,7 @@ function MerchForm({ inputs, setInputs, onSubmit }) {
             <textarea
               type="text"
               rows={16}
-              value={input.value}
+              value={setInitialInput(input)}
               onChange={(e) => handleInputChange(index, e)}
             />
           </div>
