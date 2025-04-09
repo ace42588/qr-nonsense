@@ -134,6 +134,7 @@ const buildHeader = (txn, confId, platform) => {
 };
 
 const parseInput = (input) => {
+  console.log("parseInput", {input});
   const { type, value } = input;
   let { txn, cc, p, i } = JSON.parse(value);
   let parsedInput = {};
@@ -186,6 +187,7 @@ const parseInput = (input) => {
 };
 
 function MerchForm({ inputs, setInputs, onSubmit }) {
+  
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
     newInputs[index].value = event.target.value;
@@ -210,12 +212,6 @@ function MerchForm({ inputs, setInputs, onSubmit }) {
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
     onSubmit({ chunks, version, formatInfo });
   };
-  
-  const setInitialInput = (input) => {
-    if (!input.value)
-      input.value = JSON.stringify(sampleInput, null, 2);
-    return input;
-  }
 
   return (
     <form onSubmit={handleInputSubmit} className="merch-form">
@@ -236,7 +232,7 @@ function MerchForm({ inputs, setInputs, onSubmit }) {
             <textarea
               type="text"
               rows={16}
-              value={input.value || JSON.stringify(sampleInput, null, 2)}
+              value={input.value}
               onChange={(e) => handleInputChange(index, e)}
             />
           </div>
