@@ -3,7 +3,7 @@ import "./MerchForm.css"; // Import your component-specific styles
 
 const modes = ["base", "p1", "p2"]; // Available modes
 
-// {"p":"A","txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}
+// {"p":"A","cc":"133","txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}
 const buildHeader = (txn, confId, platform) => {
   const PLATFORMS = ["A", "I", "W"]; // Android, iOS, Web
   let p = PLATFORMS.indexOf(platform);
@@ -55,7 +55,9 @@ const parseInput = (input) => {
     }
     case "p2": {
       let hex;
-      let headerBytes = buildHeader(txn, cc, p)
+      let headerBytes = buildHeader(txn, cc, p);
+      let itemsBytes = new Uint8Array(i.length * 3);
+      i.forEach({v})
       parsedInput.encoding = "hex";
       parsedInput.bytes = hex;
       break;
