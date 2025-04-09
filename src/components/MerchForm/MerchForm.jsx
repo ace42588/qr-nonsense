@@ -77,6 +77,8 @@ const parseInput = (input) => {
       break;
     }
     default: {
+      parsedInput.encoding = "utf-8";
+      parsedInput.type = "byte";
       parsedInput.text = value;
     }
   }
