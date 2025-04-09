@@ -7,7 +7,7 @@ const modes = ["base", "p1", "p2"]; // Available modes
 const buildHeader = (txn, confId, platform) => {
   const PLATFORMS = ["A", "I", "W"]; // Android, iOS, Web
   let p = PLATFORMS.indexOf(platform);
-  if (p === -1) p = 4;
+  if (p === -1) p = 3;
   if (confId < 0 || confId > 255) {
     throw new Error("confId must be an 8-bit number (0-255).");
   }
@@ -57,7 +57,17 @@ const parseInput = (input) => {
       let hex;
       let headerBytes = buildHeader(txn, cc, p);
       let itemsBytes = new Uint8Array(i.length * 3);
-      i.forEach({v})
+      for(let j = 0; j < i.length; j++){
+        let idx = j*3;
+        const { v, q } = i[j];
+        const variantNum = parseInt(v);
+        itemsBytes[idx] = variantNum & 0xff;
+        itemsBytes[++idx] = (variantNum >> 8) & 0xff;
+        
+      }
+      i.forEach(({v, q}, idx) =>{
+        
+      });
       parsedInput.encoding = "hex";
       parsedInput.bytes = hex;
       break;
