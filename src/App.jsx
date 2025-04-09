@@ -3,6 +3,7 @@ import QRCodeCanvas from "./components/QRCodeCanvas/QRCodeCanvas";
 import SegmentDisplay from "./components/SegmentDisplay/SegmentDisplay";
 import ModeSelector from "./components/ModeSelector/ModeSelector";
 import InputForm from "./components/InputForm/InputForm";
+import MerchForm from "./components/MerchForm/MerchForm";
 import VideoScanner from "./components/VideoScanner/VideoScanner";
 import { createBlocks } from "./encode/Block";
 import { getEncoder } from "./encode/Encoder";
@@ -106,6 +107,25 @@ function App() {
     setMatrix(qrMatrix.matrix);
   };
 
+  const createInputForm = () => {
+    if (mode === "merch") {
+      return (
+        <MerchForm
+          inputs={inputs}
+          setInputs={setInputs}
+          processQRCodeData={processQRCodeData}
+        />
+      );
+    }
+    return (
+      <InputForm
+        inputs={inputs}
+        setInputs={setInputs}
+        processQRCodeData={processQRCodeData}
+      />
+    );
+  };
+
   return (
     <div className="App">
       <div className="row">
@@ -114,14 +134,10 @@ function App() {
       <div className="row">
         <div className="column">
           <ModeSelector mode={mode} setMode={setMode} />
-          {mode === "manual" ? (
-            <InputForm
-              inputs={inputs}
-              setInputs={setInputs}
-              processQRCodeData={processQRCodeData}
-            />
-          ) : (
+          {mode === "scan" ? (
             <VideoScanner onQRCodeScanned={processQRCodeData} />
+          ) : (
+            createInputForm()
           )}
         </div>
         <div className="column">

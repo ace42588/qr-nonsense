@@ -22,6 +22,15 @@ function ModeSelector({ mode, setMode }) {
         />
         Manual Input
       </label>
+      <label>
+        <input
+          type="radio"
+          value="merch"
+          checked={mode === 'merch'}
+          onChange={() => setMode('merch')}
+        />
+        Merch Input
+      </label>
     </div>
   );
 }

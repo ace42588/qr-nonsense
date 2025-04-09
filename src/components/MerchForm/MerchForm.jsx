@@ -68,6 +68,10 @@ const parseInput = (input) => {
       hex = headerBytes.reduce((acc, curr) => {
         return acc.concat(curr.toString(16));
       }, hex);
+      hex = itemsBytes.reduce((acc, curr) => {
+        return acc.concat(curr.toString(16));
+      }, hex);
+      
       parsedInput.encoding = "hex";
       parsedInput.bytes = hex;
       break;
