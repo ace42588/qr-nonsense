@@ -50,7 +50,7 @@ export class NumericSegment extends Segment {
   }
 
   toString() {
-    return this.value.toString().padStart(this.data.length, '0');
+    return this.value.toString().padStart(this.data.length, "0");
   }
 }
 
@@ -101,8 +101,8 @@ export class ByteSegment extends Segment {
   }
 
   toString() {
-    console.log("Segment.toString()", this.value.toString(16));
-    //return String.fromCharCode(this.value);
-    return `0x${this.value.toString(16)}`;
+    if (this.encoding === "hex") return `0x${this.value.toString(16)}`;
+
+    return String.fromCharCode(this.value);
   }
 }

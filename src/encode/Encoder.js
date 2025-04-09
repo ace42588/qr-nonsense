@@ -120,7 +120,7 @@ class ByteEncoder extends Encoder {
     if (encoding === "hex") {
       for (let i = 0; i < input.length; i += 2) {
         const byte = parseInt(input.substring(i, i+2), 16);
-        yield new ByteSegment(byte, i/2);
+        yield new ByteSegment(byte, i/2, encoding);
       }
     } else {
       const chars = [...input];

@@ -1,7 +1,7 @@
 import React from "react";
 import "./MerchForm.css"; // Import your component-specific styles
 
-const modes = ["base", "p1", "p2"]; // Available modes
+const modes = ["base", "alphanumeric", "PER"]; // Available modes
 
 function getMinimumQRCodeVersion(chunks) {
   // Data capacities (in bytes) for Byte mode, Error Correction Level L, for versions 1 to 40.
@@ -120,7 +120,7 @@ const parseInput = (input) => {
   let parsedInput = {};
 
   switch (type) {
-    case "p1": {
+    case "alphanumeric": {
       // ENCAPSULATOR = "$";
       // FIELD_SEPARATOR = "%";
       // QTY_SEPARATOR = ":";
@@ -132,7 +132,7 @@ const parseInput = (input) => {
       }%${txn}%${items}$`;
       break;
     }
-    case "p2": {
+    case "PER": {
       let hex = "";
       let headerBytes = buildHeader(txn, cc, p);
       let itemsBytes = new Uint8Array(i.length * 3);
