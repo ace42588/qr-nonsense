@@ -1,82 +1,180 @@
-export function getMinimumQRCodeVersion(chunks) {
-  // Data capacities (in bytes) for Byte mode, Error Correction Level L, for versions 1 to 40.
-  // (Source: https://www.thonky.com/qr-code-tutorial/data-capacity-per-version)
-  const capacities = [
-    17, 32, 53, 78, 106, 134, 154, 192, 230, 271, 321, 367, 425, 458, 520, 586,
-    644, 718, 792, 858, 929, 1003, 1091, 1171, 1273, 1367, 1465, 1528, 1628,
-    1732, 1840, 1952, 2068, 2188, 2303, 2431, 2563, 2699, 2809, 2953,
-  ];
-
-  // Helper to compute the number of bits needed for a given chunk under the candidate version.
-  // For Byte mode:
-  //   - Mode indicator: 4 bits.
-  //   - Character count indicator: 8 bits for versions 1-9, 16 bits for versions 10+.
-  //   - Data bits: 8 bits per byte.
-  function getSegmentBitLength(chunk, version) {
-    const modeIndicator = 4;
-    // For byte mode in QR codes, the character count indicator is 8 bits for versions 1-9,
-    // and 16 bits for versions 10 to 40.
-    const ccBits = version <= 9 ? 8 : 16;
-    let dataBits;
-
-    if (chunk.encoding === "hex" && typeof chunk.bytes === "string") {
-      // Each 2 hex characters represent 1 byte.
-      const byteCount = chunk.bytes.length / 2;
-      dataBits = byteCount * 8;
-    } else if (
-      chunk.type === "byte" &&
-      typeof chunk.text === "string"
-    ) {
-      // Use the TextEncoder API to determine the number of UTF-8 bytes.
-      const byteCount = chunk.text.length;
-      dataBits = byteCount * 8;
-    } else if (
-      chunk.type === "alphanumeric" &&
-      typeof chunk.text === "string"
-    ) {
-      const byteCount = chunk.text.length;
-      dataBits = Math.ceil(byteCount * (11 / 2));
-    } else {
-      throw new Error("Unsupported chunk encoding or type.");
+/**
+ * Given an array of data chunks and an error correction level,
+ * returns the smallest QR code version (1 to 40) that can hold the data.
+ *
+ * Each chunk may be in a different mode and must supply data using a property such as:
+ *
+ *   - For numeric or alphanumeric modes: use a "text" property containing the characters.
+ *   - For byte mode:
+ *       • If using a hexadecimal string, include an "encoding" property set to "hex" and a "bytes" property.
+ *       • If using UTF‑8 text, include an "encoding" property like "utf-8" (or "utf8") and a "text" property.
+ *   - For kanji mode: provide the string (via "text") that is assumed to contain only double-byte Kanji.
+ *
+ * You may also explicitly specify the mode in each chunk by using a "mode" property.
+ *
+ * @param {Array<Object>} chunks - Array of data chunks.
+ * @param {string} errorCorrectionLevel - One of "L", "M", "Q", or "H".
+ * @returns {number} The smallest QR code version (1–40) that fits the data.
+ * @throws {Error} if data is too large for a version 40 code.
+ */
+export function getMinimumQRCodeVersion(chunks, errorCorrectionLevel) {
+  // Lookup table organized by error correction level (outer key) and version (inner key).
+  // The numbers given are the maximum number of data bytes (8-bit codewords) for Byte mode.
+  // (When encoding mixed segments, the entire final bit stream must fit within these many bytes.)
+  const qrCapacityBytes = {
+    L: {
+      1: 17,  2: 32,  3: 53,  4: 78,  5: 106, 6: 134, 7: 154, 8: 192, 9: 230, 10: 271,
+      11: 321, 12: 367, 13: 425, 14: 458, 15: 520, 16: 586, 17: 644, 18: 718, 19: 792, 20: 858,
+      21: 929, 22: 1003, 23: 1091, 24: 1171, 25: 1273, 26: 1367, 27: 1465, 28: 1528, 29: 1628, 30: 1732,
+      31: 1840, 32: 1952, 33: 2068, 34: 2188, 35: 2303, 36: 2431, 37: 2563, 38: 2699, 39: 2809, 40: 2953
+    },
+    M: {
+      1: 14,  2: 26,  3: 42,  4: 62,  5: 84,  6: 106, 7: 122, 8: 152, 9: 180, 10: 213,
+      11: 251, 12: 287, 13: 331, 14: 362, 15: 412, 16: 450, 17: 504, 18: 560, 19: 624, 20: 666,
+      21: 711, 22: 779, 23: 857, 24: 911, 25: 997, 26: 1059, 27: 1125, 28: 1190, 29: 1264, 30: 1370,
+      31: 1452, 32: 1538, 33: 1628, 34: 1722, 35: 1809, 36: 1911, 37: 1989, 38: 2099, 39: 2213, 40: 2331
+    },
+    Q: {
+      1: 11,  2: 20,  3: 32,  4: 46,  5: 60,  6: 74,  7: 86,  8: 108, 9: 130, 10: 151,
+      11: 177, 12: 203, 13: 241, 14: 258, 15: 292, 16: 322, 17: 364, 18: 394, 19: 442, 20: 482,
+      21: 509, 22: 565, 23: 611, 24: 661, 25: 715, 26: 751, 27: 805, 28: 868, 29: 908, 30: 982,
+      31: 1030, 32: 1112, 33: 1168, 34: 1228, 35: 1283, 36: 1351, 37: 1423, 38: 1499, 39: 1579, 40: 1663
+    },
+    H: {
+      1: 7,   2: 14,  3: 24,  4: 34,  5: 44,  6: 58,  7: 64,  8: 84,  9: 98,  10: 119,
+      11: 137, 12: 155, 13: 177, 14: 194, 15: 220, 16: 250, 17: 280, 18: 310, 19: 338, 20: 382,
+      21: 403, 22: 439, 23: 461, 24: 511, 25: 535, 26: 593, 27: 625, 28: 658, 29: 698, 30: 742,
+      31: 790, 32: 842, 33: 898, 34: 958, 35: 983, 36: 1051, 37: 1093, 38: 1139, 39: 1219, 40: 1273
     }
-    return modeIndicator + ccBits + dataBits;
+  };
+
+  // Ensure error correction level is in uppercase.
+  errorCorrectionLevel = errorCorrectionLevel.toUpperCase();
+  if (!qrCapacityBytes[errorCorrectionLevel]) {
+    throw new Error("Invalid error correction level: " + errorCorrectionLevel);
   }
 
-  // Iterate over QR code versions from 1 to 40.
+  // Try each version until one is found that fits the data.
   for (let version = 1; version <= 40; version++) {
-    // Get the available capacity for this version in bits.
-    const capacityBytes = capacities[version - 1];
-    const capacityBits = capacityBytes * 8;
+    let capacityBytes = qrCapacityBytes[errorCorrectionLevel][version];
+    let capacityBits = capacityBytes * 8;
 
-    // Sum up the bits required for all chunks.
     let totalDataBits = 0;
     try {
       for (const chunk of chunks) {
         totalDataBits += getSegmentBitLength(chunk, version);
       }
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
+      console.error(e);
       return null;
     }
 
-    // According to the spec, we can add a terminator of up to 4 bits.
-    // (If capacityBits - totalDataBits is less than 4, then that difference is used.)
-    const terminatorBits = Math.min(
-      4,
-      Math.max(0, capacityBits - totalDataBits)
-    );
+    // A terminator of up to 4 bits can be added.
+    const terminatorBits = Math.min(4, Math.max(0, capacityBits - totalDataBits));
     const totalBitsWithTerminator = totalDataBits + terminatorBits;
 
-    // QR codes work in 8-bit "codewords"; if total bits is not a multiple of 8, it is
-    // padded (but that padding still consumes a codeword if any bits are missing).
+    // The total bits must be rounded up to the next whole 8-bit codeword.
     const requiredBytes = Math.ceil(totalBitsWithTerminator / 8);
 
-    // If the number of codewords required fits within the capacity, this version is sufficient.
     if (requiredBytes <= capacityBytes) {
       return version;
     }
   }
   throw new Error("Data too large to fit in a QR code version 40.");
+}
+
+/**
+ * Helper function to determine the mode of a chunk.
+ * If a chunk already specifies a "mode" property, that value is used.
+ * Otherwise, based on its encoding/type the mode is deduced.
+ *
+ * @param {Object} chunk
+ * @returns {string} "numeric", "alphanumeric", "byte", or "kanji"
+ */
+function getModeForChunk(chunk) {
+  if (chunk.mode) return chunk.mode;
+
+  // In our example data, "hex" and "utf-8" (with type "byte") default to byte mode.
+  if (chunk.encoding === "hex") return "byte";
+  if ((chunk.encoding === "utf-8" || chunk.encoding === "utf8") && chunk.type === "byte")
+    return "byte";
+
+  // Fallback: assume byte mode.
+  return "byte";
+}
+
+/**
+ * Compute the number of bits required to represent a data chunk in a QR segment,
+ * including the mode indicator and the character count indicator.
+ *
+ * The character count indicator length depends on the mode and the version.
+ *
+ * @param {Object} chunk - Data chunk.
+ * @param {number} version - Candidate QR code version (1–40).
+ * @returns {number} Bit length for this segment.
+ */
+function getSegmentBitLength(chunk, version) {
+  const mode = getModeForChunk(chunk);
+  const modeIndicatorBits = 4; // All modes use 4 bits for the mode indicator.
+  let ccBits; // Character count indicator bits
+
+  // Define character count indicator sizes per mode:
+  if (mode === "numeric") {
+    if (version < 10) ccBits = 10;
+    else if (version < 27) ccBits = 12;
+    else ccBits = 14;
+  } else if (mode === "alphanumeric") {
+    if (version < 10) ccBits = 9;
+    else if (version < 27) ccBits = 11;
+    else ccBits = 13;
+  } else if (mode === "byte") {
+    if (version < 10) ccBits = 8;
+    else ccBits = 16;
+  } else if (mode === "kanji") {
+    if (version < 10) ccBits = 8;
+    else ccBits = 10;
+  } else {
+    throw new Error("Unsupported mode: " + mode);
+  }
+
+  let dataBits = 0;
+  // Compute how many bits the actual data needs depending on the mode.
+  if (mode === "numeric") {
+    // Numeric mode: groups of 3 digits -> 10 bits, 2 digits -> 7 bits, 1 digit -> 4 bits.
+    const text = chunk.text || "";
+    const n = text.length;
+    const groups = Math.floor(n / 3);
+    const remainder = n % 3;
+    dataBits = groups * 10;
+    if (remainder === 1) dataBits += 4;
+    else if (remainder === 2) dataBits += 7;
+  } else if (mode === "alphanumeric") {
+    // Alphanumeric mode: each two characters uses 11 bits; one extra uses 6 bits.
+    const text = chunk.text || "";
+    const n = text.length;
+    const pairs = Math.floor(n / 2);
+    const remainder = n % 2;
+    dataBits = pairs * 11;
+    if (remainder === 1) dataBits += 6;
+  } else if (mode === "byte") {
+    // Byte mode: each byte is 8 bits.
+    if (chunk.encoding === "hex" && chunk.bytes) {
+      const byteCount = chunk.bytes.length / 2;
+      dataBits = byteCount * 8;
+    } else if ((chunk.encoding === "utf-8" || chunk.encoding === "utf8") && chunk.text) {
+      // Use TextEncoder to determine byte count.
+      const byteCount = new TextEncoder().encode(chunk.text).length;
+      dataBits = byteCount * 8;
+    } else {
+      throw new Error("No valid data provided for byte mode.");
+    }
+  } else if (mode === "kanji") {
+    // Kanji mode: each character is represented in 13 bits.
+    const text = chunk.text || "";
+    dataBits = text.length * 13;
+  }
+
+  return modeIndicatorBits + ccBits + dataBits;
 }
 
 export const VERSIONS = [
