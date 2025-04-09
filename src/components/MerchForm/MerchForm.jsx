@@ -3,7 +3,20 @@ import "./MerchForm.css"; // Import your component-specific styles
 
 const modes = ["p1", "p2", "p3"]; // Available modes
 
+// {"txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}
+
 const jsonLike = (order) => {
+  const ENCAPSULATOR = "$";
+  const FIELD_SEPARATOR = "%";
+  const parseItem = (item) => {
+    // QTY_SEPARATOR = ":";
+    // TERMINATOR = "/";
+    const { v, q } = item;
+    return `${v}:${q}/`;
+  }
+  const {txn, conf, plat, i} = order;
+  const items = i.map((item) => parseItem(item));
+  return `$`
   
 }
 
