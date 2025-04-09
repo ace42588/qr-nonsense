@@ -34,8 +34,11 @@ function getMinimumQRCodeVersion(chunks) {
       typeof chunk.text === "string"
     ) {
       // Use the TextEncoder API to determine the number of UTF-8 bytes.
-      const byteCount = new TextEncoder().encode(chunk.text).length;
+      const byteCount = chunk.text.length;
       dataBits = byteCount * 8;
+    } else if (chunk.type === "alphanumeric" && typeof chunk.text === "string") {
+      const byteCount = chunk.text.length;
+      dataBits = Math.ceil(byteCount * (11/2));
     } else {
       throw new Error("Unsupported chunk encoding or type.");
     }
@@ -149,6 +152,7 @@ const parseInput = (input) => {
       }, hex);
 
       parsedInput.encoding = "hex";
+      parsedInput.type = "byte";
       parsedInput.bytes = hex;
       break;
     }
