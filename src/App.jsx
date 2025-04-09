@@ -23,6 +23,9 @@ let qrMatrix;
 let totalCodewords;
 
 function App() {
+  const [errorCorrection, setErrorCorrection] = useState("M");
+  const [version, setVersion] = useState("auto");
+  const [mask, setMask] = useState("auto");
   const [mode, setMode] = useState("merch"); // Default to merch mode
   const [inputs, setInputs] = useState([{ type: "byte", value: "" }]); // Include default mode
   const [segments, setSegments] = useState([]);

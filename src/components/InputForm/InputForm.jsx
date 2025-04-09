@@ -77,7 +77,6 @@ const parseInput = (input) => {
 function InputForm({ inputs, setInputs, processQRCodeData }) {
   const [version, setVersion] = useState("auto");
   const [mask, setMask] = useState("auto");
-  const [errorCorrection, setErrorCorrection] = useState("M");
   
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
