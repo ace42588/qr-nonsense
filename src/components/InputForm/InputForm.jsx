@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "./InputForm.css"; // Import your component-specific styles
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
@@ -75,6 +75,10 @@ const parseInput = (input) => {
 };
 
 function InputForm({ inputs, setInputs, processQRCodeData }) {
+  const [version, setVersion] = useState("auto");
+  const [mask, setMask] = useState("auto");
+  const [errorCorrection, setErrorCorrection] = useState("M");
+  
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
     newInputs[index].value = event.target.value;

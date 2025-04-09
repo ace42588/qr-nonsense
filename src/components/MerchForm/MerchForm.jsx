@@ -100,7 +100,7 @@ const parseInput = (input) => {
       parsedInput.type = "byte";
       try {
         const obj = JSON.parse(value);
-        console.log()
+        console.log("stringifying object...");
         parsedInput.text = JSON.stringify(obj);
       } catch (e) {
         parsedInput.text = value;
