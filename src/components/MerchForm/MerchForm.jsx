@@ -1,7 +1,7 @@
 import React from "react";
 import "./MerchForm.css"; // Import your component-specific styles
 
-const modes = ["base", "alphanumeric", "PER"]; // Available modes
+const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
 
 function getMinimumQRCodeVersion(chunks) {
   // Data capacities (in bytes) for Byte mode, Error Correction Level L, for versions 1 to 40.
@@ -36,9 +36,12 @@ function getMinimumQRCodeVersion(chunks) {
       // Use the TextEncoder API to determine the number of UTF-8 bytes.
       const byteCount = chunk.text.length;
       dataBits = byteCount * 8;
-    } else if (chunk.type === "alphanumeric" && typeof chunk.text === "string") {
+    } else if (
+      chunk.type === "alphanumeric" &&
+      typeof chunk.text === "string"
+    ) {
       const byteCount = chunk.text.length;
-      dataBits = Math.ceil(byteCount * (11/2));
+      dataBits = Math.ceil(byteCount * (11 / 2));
     } else {
       throw new Error("Unsupported chunk encoding or type.");
     }
@@ -193,7 +196,7 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
   };
 
   return (
-    <form onSubmit={handleInputSubmit} className="input-form">
+    <form onSubmit={handleInputSubmit} className="merch-form">
       <div className="row">
         <h3>Manual Inputs</h3>
       </div>
@@ -210,11 +213,26 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
                 </option>
               ))}
             </select>
-            <input
+            <textarea
               type="text"
               value={input.value}
               onChange={(e) => handleInputChange(index, e)}
-              placeholder={`Input ${index + 1}`}
+              defaultValue='{
+    "p": "A",
+	"cc": 133,
+	"txn": "99999",
+    "i": [{
+            "v": 5432,
+            "q": 1
+        }, {
+            "v": 6666,
+            "q": 3
+        }, {
+            "v": 1234,
+            "q": 2
+        }
+    ]
+}'
             />
           </div>
         ))}

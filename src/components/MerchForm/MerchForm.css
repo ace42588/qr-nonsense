@@ -1,6 +1,5 @@
 /* MerchForm Styles */
-.input-form {
-  display: flex;
+.merch-form {
   gap: 10px;
   width: 100%;
   max-width: 600px;
@@ -11,35 +10,35 @@
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
-.input-form div {
+.merch-form div {
   display: flex;
   flex-direction: column;
 }
 
-.input-form input,
-.input-form select {
+.merch-form input,
+.merch-form select {
   padding: 10px;
   border: 1px solid #dddddd;
   border-radius: 4px;
   width: 100%;
 }
 
-.input-form button {
+.merch-form button {
   align-self: flex-end;
 }
 
 @media (min-width: 768px) {
-  .input-form {
+  .merch-form {
     align-items: center;
   }
 
-  .input-form input,
-  .input-form select {
+  .merch-form input,
+  .merch-form select {
     flex: 1;
     margin-right: 10px;
   }
 
-  .input-form button {
+  .merch-form button {
     width: auto;
     flex-shrink: 0;
   }
