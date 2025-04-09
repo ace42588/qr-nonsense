@@ -37,7 +37,13 @@ export class QRCodeMatrix {
     const dimension = this.matrix.length;
     const mf = this.moduleFactory;
     console.log({codewords});
-    const bits = codewords.flatMap((codeword) => codeword.bits)
+    //const bits = codewords.flatMap((codeword) => codeword.bits)
+    const bits = codewords.flatMap((element, index, array) => {
+      console.log({element});
+      console.log({index});
+      console.log({array});
+      re
+    });
     mf.setBitSource(bits);
 
     let up = true;
