@@ -54,20 +54,20 @@ const parseInput = (input) => {
       break;
     }
     case "p2": {
-      let hex;
+      let hex = "";
       let headerBytes = buildHeader(txn, cc, p);
       let itemsBytes = new Uint8Array(i.length * 3);
-      for(let j = 0; j < i.length; j++){
+      i.forEach(({v, q}, j) =>{
         let idx = j*3;
-        const { v, q } = i[j];
         const variantNum = parseInt(v);
         itemsBytes[idx] = variantNum & 0xff;
         itemsBytes[++idx] = (variantNum >> 8) & 0xff;
-        
-      }
-      i.forEach(({v, q}, idx) =>{
-        
+        itemsBytes[++idx] = parseInt(q) & 0xff; 
       });
+      
+      hex = headerBytes.reduce((acc, curr) => {
+        return acc.concat(curr.toString(16));
+      }, hex);
       parsedInput.encoding = "hex";
       parsedInput.bytes = hex;
       break;
