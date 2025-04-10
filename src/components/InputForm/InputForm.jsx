@@ -3,7 +3,6 @@ import "./InputForm.css"; // Import your component-specific styles
 
 import VersionSelector from "../VersionSelector/VersionSelector";
 import DataMaskSelector from "../DataMaskSelector/DataMaskSelector";
-import { getMinimumQRCodeVersion} from "../../encode/version.js";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 
@@ -112,7 +111,6 @@ function InputForm({ onSubmit }) {
   const handleInputSubmit = (event) => {
     event.preventDefault();
     const chunks = inputs.map((i) => parseInput(i));
-    const version = version;
     const formatInfo = { dataMask: mask };
     onSubmit({ chunks, version, formatInfo });
   };

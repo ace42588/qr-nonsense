@@ -4,10 +4,8 @@ import "./MerchForm.css"; // Import your component-specific styles
 import VersionSelector from "../VersionSelector/VersionSelector";
 import DataMaskSelector from "../DataMaskSelector/DataMaskSelector";
 import ErrorCorrectionSelector from "../ECSelector/ECSelector";
-import { getMinimumQRCodeVersion } from "../../encode/version.js";
 
 const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
-const ErrorCorrectionLevel = ["M", "L", "H", "Q"];
 const sampleInput = {
   p: "A",
   cc: 133,

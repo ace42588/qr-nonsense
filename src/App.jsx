@@ -249,7 +249,7 @@ function App() {
     setBitStream(new TaggedBitstream());
 
     chunks.forEach(({ type, encoding, ...data }) =>
-      getEncoder({ type, bitStream }).encode(data, encoding)
+      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
     );
 
     if (version === "auto") {
@@ -268,7 +268,7 @@ function App() {
       (total, block) => total + block.totalCodewords,
       0
     );
-    
+
     if (!formatInfo.errorCorrectionLevel)
       formatInfo.errorCorrectionLevel = errorCorrectionLevel;
 
