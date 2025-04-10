@@ -161,28 +161,28 @@ export class QRCodeMatrix {
     this.matrix = Array.from({ length: this.moduleCount }, () =>
       Array(this.moduleCount).fill(false)
     );
-    this.bits = [];
+    this.moduleFactory = new ModuleFactory();
     this.placeFunctionPatterns();
     this.firstUse = true;
     this.history = [];
   }
 
   setData(codewords) {
-    this.bits = codewords.flatMap((codeword) => codeword.bits);
+    const bits = codewords.flatMap((codeword) => codeword.bits);
+    this.moduleFactory.setBitSource(bits);
   }
 
   setMask(mask) {
     const { errorCorrectionLevel, dataMask } = this.formatInfo;
-    if (dataMask !== mask)
+    if (dataMask !== mask) {
       this.formatInfo = new FormatInfo({ errorCorrectionLevel, mask });
+      this.moduleFactory.setDataMask(mask);
+    }
   }
 
   placeCodewords() {
     this.reset();
     const dimension = this.matrix.length;
-    const { dataMask } = this.formatInfo;
-    const mf = new ModuleFactory(dataMask, this.bits);
-    mf.setBitSource(this.bits);
 
     let up = true;
     // write columns in pairs, right to left
@@ -198,7 +198,7 @@ export class QRCodeMatrix {
 
           // check for pattern
           if (!this.matrix[y][x]) {
-            this.matrix[y][x] = mf.getDataModule({ x, y });
+            this.matrix[y][x] = this.moduleFactory.getDataModule({ x, y });
           }
         }
       }

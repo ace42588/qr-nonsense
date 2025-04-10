@@ -34,7 +34,7 @@ export class QRModule {
   highlight() {
     this.highlighted = !this.highlighted;
   }
-  
+
   toggleBit() {
     this.bit.toggle();
   }
@@ -42,22 +42,26 @@ export class QRModule {
 
 export class ModuleFactory {
   constructor(dataMask, bits) {
-    this.dataMask = dataMask;
+    this.dataMask = dataMask || 0;
     this.bits = bits || [];
     this.bitIdx = 0;
   }
-  
+
+  setDataMask(mask) {
+    if (-1 < mask < 8) this.dataMask = mask;
+  }
+
   setBitSource(bits) {
     this.bitIdx = 0;
     this.bits = bits;
   }
 
-  getDataModule({x, y}) {
-    let taggedBit
+  getDataModule({ x, y }) {
+    let taggedBit;
     if (this.bitIdx < this.bits.length) {
       taggedBit = this.bits[this.bitIdx++];
       if (taggedBit instanceof ECBit) {
-        this
+        this;
       }
     } else {
       taggedBit = REMAINDER_BIT;
@@ -68,9 +72,8 @@ export class ModuleFactory {
       y,
       masked: DATA_MASKS[this.dataMask]({ x, y }),
     });
-    if (taggedBit.altered)
-      module.highlight();
-    
+    if (taggedBit.altered) module.highlight();
+
     return module;
   }
 }
