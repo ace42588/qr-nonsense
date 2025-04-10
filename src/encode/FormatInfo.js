@@ -43,13 +43,10 @@ const FORMAT_INFO_TABLE = [
   { bits: 0x2183, formatInfo: { errorCorrectionLevel: 2, dataMask: 5 } },
   { bits: 0x2eda, formatInfo: { errorCorrectionLevel: 2, dataMask: 6 } },
   { bits: 0x2bed, formatInfo: { errorCorrectionLevel: 2, dataMask: 7 } },
-  { bits: 0x0000, formatInfo: { errorCorrectionLevel: 0, dataMask: "auto" } },
-  { bits: 0x0000, formatInfo: { errorCorrectionLevel: 1, dataMask: "auto" } },
-  { bits: 0x0000, formatInfo: { errorCorrectionLevel: 2, dataMask: "auto" } },
-  { bits: 0x0000, formatInfo: { errorCorrectionLevel: 3, dataMask: "auto" } },
 ];
 
 function getBitsFromFormatInfo(ecLevel, mask) {
+  if (mask === "auto") return 0x0000;
   for (const entry of FORMAT_INFO_TABLE) {
     if (
       entry.formatInfo.errorCorrectionLevel ===
