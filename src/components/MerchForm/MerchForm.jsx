@@ -119,10 +119,11 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-function MerchForm({ inputs, setInputs, processQRCodeData }) {
+function MerchForm({ processQRCodeData }) {
   const [errorCorrection, setErrorCorrection] = useState("M");
   const [version, setVersion] = useState("auto");
   const [mask, setMask] = useState("auto");
+  const [inputs, setInputs] = useState([{ type: "JSON", value: "" }]);
 
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];

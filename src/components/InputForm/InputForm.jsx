@@ -79,7 +79,7 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-function InputForm({ processQRCodeData }) {
+function InputForm({ onSubmit }) {
   const [errorCorrection, setErrorCorrection] = useState("M");
   const [version, setVersion] = useState("auto");
   const [mask, setMask] = useState("auto");
@@ -116,7 +116,7 @@ function InputForm({ processQRCodeData }) {
     const chunks = inputs.map((i) => parseInput(i));
     const version = getMinimumQRCodeVersion(chunks, errorCorrection);
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
-    processQRCodeData({ chunks, version, formatInfo });
+    onSubmit({ chunks, version, formatInfo });
   };
 
   const handleCheckboxChange = (input) => {

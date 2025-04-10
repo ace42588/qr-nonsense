@@ -23,7 +23,6 @@ let totalCodewords;
 
 function App() {
   const [mode, setMode] = useState("merch"); // Default to merch mode
-  const [inputs, setInputs] = useState([{ type: "byte", value: "" }]); // Include default mode
   const [segments, setSegments] = useState([]);
   const [matrix, setMatrix] = useState([]);
 
@@ -70,18 +69,6 @@ function App() {
     setMatrix(qrMatrix.matrix); // Set the matrix state
   };
 
-  const handleSegmentClick = (segment) => {
-    const newMatrix = matrix.map((row) =>
-      row.map((module) => {
-        if (module.segment === segment) {
-          module.highlight();
-        }
-        return module;
-      })
-    );
-    setMatrix(newMatrix); // Update the matrix state to trigger a re-render
-  };
-
   const handleBitToggle = (module) => {
     let codewords = [];
 
@@ -109,23 +96,11 @@ function App() {
 
   const selectUI = () => {
     if (mode === "merch") {
-      return (
-        <MerchForm
-          inputs={inputs}
-          setInputs={setInputs}
-          processQRCodeData={processQRCodeData}
-        />
-      );
+      return <MerchForm onSubmit={processQRCodeData} />;
     } else if (mode === "scan") {
       return <VideoScanner onQRCodeScanned={processQRCodeData} />;
     }
-    return (
-      <InputForm
-        inputs={inputs}
-        setInputs={setInputs}
-        processQRCodeData={processQRCodeData}
-      />
-    );
+    return <InputForm onSubmit={processQRCodeData} />;
   };
 
   return (
