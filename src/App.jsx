@@ -32,10 +32,8 @@ import "./App.css";
  * @returns {number} The smallest QR code version (1–40) that fits the data.
  * @throws {Error} if data is too large for a version 40 code.
  */
-function getMinimumQRCodeVersion(bitStream, errorCorrectionLevel) {
-  // Lookup table organized by error correction level (outer key) and version (inner key).
-  // The numbers given are the maximum number of data bytes (8-bit codewords) for Byte mode.
-  // (When encoding mixed segments, the entire final bit stream must fit within these many bytes.)
+function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
+  const ErrorCorrectionLevel = ["M", "L", "H", "Q"];
   const qrCapacityBytes = {
     L: {
       1: 17,
@@ -212,8 +210,6 @@ function getMinimumQRCodeVersion(bitStream, errorCorrectionLevel) {
   if (!qrCapacityBytes[errorCorrectionLevel]) {
     throw new Error("Invalid error correction level: " + errorCorrectionLevel);
   }
-  
-  const totalDataBits = bitStream.length;
 
   // Try each version until one is found that fits the data.
   for (let version = 1; version <= 40; version++) {
@@ -243,25 +239,23 @@ function App() {
   const [matrix, setMatrix] = useState([]);
   const [bitStream, setBitStream] = useState(new TaggedBitstream());
   const [errorCorrectionLevel, setErrorCorrectionLevel] = useState("M");
+  const [versionDetails, setVersionDetails] = useState();
 
   let qrMatrix;
   let blocks;
-  let versionDetails;
 
   const processQRCodeData = ({ chunks, version, formatInfo }) => {
     console.log({ chunks, version, formatInfo });
     setBitStream(new TaggedBitstream());
-    versionDetails = VERSIONS[version - 1];
 
-    for (const chunk of chunks) {
-      const { type, text, bytes, assignmentNumber, encoding } = chunk;
-      const data = text ? text : bytes ? bytes : assignmentNumber;
-      getEncoder({ type, bitStream }).encode(data, encoding);
-    }
-    
-    if (version === "auto"){
-      
-    }
+    chunks.forEach(({ type, encoding, ...data }) =>
+      getEncoder({ type, bitStream }).encode(data, encoding)
+    );
+
+    if (version === "auto") {
+      version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
+    } else {
+      setVersionDetails(VERSIONS[version - 1]);
 
     setSegments(bitStream.segments);
 
@@ -327,11 +321,7 @@ function App() {
         />
       );
     } else if (mode === "scan") {
-      return (
-        <VideoScanner
-          onQRCodeScanned={processQRCodeData}
-        />
-      );
+      return <VideoScanner onQRCodeScanned={processQRCodeData} />;
     }
     return (
       <InputForm

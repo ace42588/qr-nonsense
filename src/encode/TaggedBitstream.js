@@ -99,6 +99,10 @@ export class TaggedBitstream {
   available() {
     return this.dataBits.length - this.readIdx;
   }
+  
+  size() {
+    return this.dataBits.length;
+  }
 
   fillLastByte() {
     const bitsNeeded = 8 - (this.dataBits.length % 8);
