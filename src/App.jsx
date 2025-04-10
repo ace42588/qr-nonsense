@@ -254,8 +254,8 @@ function App() {
 
     if (version === "auto") {
       version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
-    } else {
-      setVersionDetails(VERSIONS[version - 1]);
+    }
+    setVersionDetails(VERSIONS[version - 1]);
 
     setSegments(bitStream.segments);
 
@@ -268,6 +268,9 @@ function App() {
       (total, block) => total + block.totalCodewords,
       0
     );
+    
+    if (!formatInfo.errorCorrectionLevel)
+      formatInfo.errorCorrectionLevel = errorCorrectionLevel;
 
     setMatrix(new QRCodeMatrix({ versionDetails, formatInfo }));
     for (let i = 0; i < totalCodewords; i++) {

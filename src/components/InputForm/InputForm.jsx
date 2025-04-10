@@ -78,7 +78,7 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-function InputForm({ onSubmit, errorCorrectionLevel }) {
+function InputForm({ onSubmit }) {
   const [version, setVersion] = useState("auto");
   const [mask, setMask] = useState("auto");
   const [inputs, setInputs] = useState([{ type: "byte", value: "" }]);
@@ -112,8 +112,8 @@ function InputForm({ onSubmit, errorCorrectionLevel }) {
   const handleInputSubmit = (event) => {
     event.preventDefault();
     const chunks = inputs.map((i) => parseInput(i));
-    const version = getMinimumQRCodeVersion(chunks, errorCorrectionLevel);
-    const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
+    const version = version;
+    const formatInfo = { dataMask: mask };
     onSubmit({ chunks, version, formatInfo });
   };
 

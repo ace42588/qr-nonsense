@@ -119,7 +119,7 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-function MerchForm({ processQRCodeData, errorCorrectionLevel }) {
+function MerchForm({ processQRCodeData }) {
 
   const [version, setVersion] = useState("auto");
   const [mask, setMask] = useState("auto");
@@ -147,8 +147,8 @@ function MerchForm({ processQRCodeData, errorCorrectionLevel }) {
     let qrData = {}
     const chunks = inputs.map((i) => parseInput(i));
     qrData.chunks = chunks;
-    qrData.version = (version === "auto") ? getMinimumQRCodeVersion(chunks, errorCorrectionLevel) : version;
-    qrData.formatInfo = { errorCorrectionLevel: ErrorCorrectionLevel.indexOf(errorCorrectionLevel), dataMask: mask };
+    qrData.version = version;
+    qrData.formatInfo = { dataMask: mask };
     processQRCodeData(qrData);
   };
 
