@@ -144,7 +144,7 @@ function MerchForm({ inputs, setInputs, processQRCodeData }) {
     event.preventDefault();
     const chunks = inputs.map((i) => parseInput(i));
     const version = getMinimumQRCodeVersion(chunks, errorCorrection);
-    const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
+    const formatInfo = { errorCorrectionLevel: errorCorrection, dataMask: mask };
     processQRCodeData({ chunks, version, formatInfo });
   };
 

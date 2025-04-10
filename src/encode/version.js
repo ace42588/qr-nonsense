@@ -313,11 +313,10 @@ function getSegmentBitLength(chunk, version) {
       const byteCount = chunk.bytes.length / 2;
       dataBits = byteCount * 8;
     } else if (
-      (chunk.encoding === "utf-8" || chunk.encoding === "utf8") &&
       chunk.text
     ) {
       // Use TextEncoder to determine byte count.
-      const byteCount = new TextEncoder().encode(chunk.text).length;
+      const byteCount = chunk.text.length;
       dataBits = byteCount * 8;
     } else {
       throw new Error("No valid data provided for byte mode.");
