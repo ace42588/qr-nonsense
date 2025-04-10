@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import "./MerchForm.css"; // Import your component-specific styles
 
+import VersionSelector from "../VersionSelector/VersionSelector";
+import DataMaskSelector from "../DataMaskSelector/DataMaskSelector";
+import ErrorCorrectionSelector from "../ECSelector/ECSelector";
 import getMinimumQRCodeVersion from "../../encode/version.js";
 
 const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
@@ -116,6 +119,10 @@ const parseInput = (input) => {
 };
 
 function MerchForm({ inputs, setInputs, processQRCodeData }) {
+  const [errorCorrection, setErrorCorrection] = useState("M");
+  const [version, setVersion] = useState("auto");
+  const [mask, setMask] = useState("auto");
+  
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
     newInputs[index].value = event.target.value;
@@ -151,6 +158,15 @@ function MerchForm({ inputs, setInputs, processQRCodeData }) {
 
   return (
     <form onSubmit={handleInputSubmit} className="merch-form">
+      <div className="row">
+        <VersionSelector value={version} onChange={setVersion} />
+      </div>
+      <div className="row">
+        <VersionSelector value={version} onChange={setVersion} />
+      </div>
+      <div className="row">
+        <VersionSelector value={version} onChange={setVersion} />
+      </div>
       <div className="row">
         {inputs.map((input, index) => (
           <div key={index} className="input-group">

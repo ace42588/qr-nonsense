@@ -23,9 +23,6 @@ let qrMatrix;
 let totalCodewords;
 
 function App() {
-  const [errorCorrection, setErrorCorrection] = useState("M");
-  const [version, setVersion] = useState("auto");
-  const [mask, setMask] = useState("auto");
   const [mode, setMode] = useState("merch"); // Default to merch mode
   const [inputs, setInputs] = useState([{ type: "byte", value: "" }]); // Include default mode
   const [segments, setSegments] = useState([]);
@@ -68,7 +65,7 @@ function App() {
 
     qrMatrix = new QRCodeMatrix({ versionDetails, formatInfo });
     qrMatrix.placeFunctionPatterns();
-    console.log({codewords});
+    console.log({ codewords });
     qrMatrix.placeCodewords(codewords);
 
     setMatrix(qrMatrix.matrix); // Set the matrix state
@@ -121,7 +118,7 @@ function App() {
         />
       );
     } else if (mode === "scan") {
-      <VideoScanner onQRCodeScanned={processQRCodeData} />
+      return <VideoScanner onQRCodeScanned={processQRCodeData} />;
     }
     return (
       <InputForm
@@ -140,7 +137,7 @@ function App() {
       <div className="row">
         <div className="column">
           <ModeSelector mode={mode} setMode={setMode} />
-          {selectUI}
+          {selectUI()}
         </div>
         <div className="column">
           <QRCodeCanvas matrix={matrix} onBitToggle={handleBitToggle} />
