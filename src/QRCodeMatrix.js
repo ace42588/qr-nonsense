@@ -177,7 +177,7 @@ export class QRCodeMatrix {
       this.formatInfo = new FormatInfo({ errorCorrectionLevel, mask });
   }
 
-  placeCodewords(codewords) {
+  placeCodewords() {
     this.reset();
     const dimension = this.matrix.length;
     const { dataMask } = this.formatInfo;
