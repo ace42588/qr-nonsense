@@ -111,7 +111,7 @@ function App() {
     setMatrix(qrMatrix.matrix);
   };
 
-  const createInputForm = () => {
+  const selectUI = () => {
     if (mode === "merch") {
       return (
         <MerchForm
@@ -120,6 +120,8 @@ function App() {
           processQRCodeData={processQRCodeData}
         />
       );
+    } else if (mode === "scan") {
+      <VideoScanner onQRCodeScanned={processQRCodeData} />
     }
     return (
       <InputForm
@@ -138,11 +140,7 @@ function App() {
       <div className="row">
         <div className="column">
           <ModeSelector mode={mode} setMode={setMode} />
-          {mode === "scan" ? (
-            <VideoScanner onQRCodeScanned={processQRCodeData} />
-          ) : (
-            createInputForm()
-          )}
+          {selectUI}
         </div>
         <div className="column">
           <QRCodeCanvas matrix={matrix} onBitToggle={handleBitToggle} />
