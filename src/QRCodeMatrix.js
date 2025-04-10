@@ -161,6 +161,7 @@ export class QRCodeMatrix {
     this.matrix = Array.from({ length: this.moduleCount }, () =>
       Array(this.moduleCount).fill(false)
     );
+    this.bits = [];
     this.moduleFactory = new ModuleFactory();
     this.placeFunctionPatterns();
     this.firstUse = true;
@@ -170,6 +171,11 @@ export class QRCodeMatrix {
   setData(codewords) {
     const bits = codewords.flatMap((codeword) => codeword.bits);
     this.moduleFactory.setBitSource(bits);
+  }
+  
+  push(codeword) {
+    const { bits } = codeword;
+    this.bits.push(...bits);
   }
 
   setMask(mask) {

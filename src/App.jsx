@@ -17,17 +17,17 @@ function App() {
   const [segments, setSegments] = useState([]);
   const [matrix, setMatrix] = useState([]);
   const [bitStream, setBitStream] = useState(new TaggedBitstream());
+  const [errorCorrectionLevel, setErrorCorrectionLevel] = useState([]);
 
   let qrMatrix;
   let blocks;
-  let errorCorrectionLevel;
   let versionDetails;
 
   const processQRCodeData = ({ chunks, version, formatInfo }) => {
     console.log({ chunks, version, formatInfo });
     setBitStream(new TaggedBitstream());
     versionDetails = VERSIONS[version - 1];
-    errorCorrectionLevel = formatInfo.errorCorrectionLevel;
+    setErrorCorrectionLevel(formatInfo.errorCorrectionLevel);
 
     for (const chunk of chunks) {
       const { type, text, bytes, assignmentNumber, encoding } = chunk;
@@ -47,22 +47,16 @@ function App() {
       0
     );
 
-    let codewords = [];
+    setMatrix(new QRCodeMatrix({ versionDetails, formatInfo }));
     for (let i = 0; i < totalCodewords; i++) {
       const blockIdx = i % blocks.length;
       const cwIdx = Math.floor(i / blocks.length);
       let block = blocks[blockIdx];
       let codeword = block.codewords[cwIdx];
-      codewords.push(codeword);
+      matrix.push(codeword);
     }
 
-    qrMatrix = new QRCodeMatrix({ versionDetails, formatInfo });
-    //qrMatrix.placeFunctionPatterns();
-    //qrMatrix.placeCodewords(codewords);
-    qrMatrix.setData(codewords);
-    qrMatrix.placeCodewords();
-
-    setMatrix(qrMatrix); // Set the matrix state
+    matrix.placeCodewords();
   };
 
   const handleBitToggle = (module) => {
@@ -98,11 +92,26 @@ function App() {
 
   const selectUI = () => {
     if (mode === "merch") {
-      return <MerchForm onSubmit={processQRCodeData} />;
+      return (
+        <MerchForm
+          setECLevel={setErrorCorrectionLevel}
+          onSubmit={processQRCodeData}
+        />
+      );
     } else if (mode === "scan") {
-      return <VideoScanner onQRCodeScanned={processQRCodeData} />;
+      return (
+        <VideoScanner
+          setECLevel={setErrorCorrectionLevel}
+          onQRCodeScanned={processQRCodeData}
+        />
+      );
     }
-    return <InputForm onSubmit={processQRCodeData} />;
+    return (
+      <InputForm
+        setECLevel={setErrorCorrectionLevel}
+        onSubmit={processQRCodeData}
+      />
+    );
   };
 
   return (
