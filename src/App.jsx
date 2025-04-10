@@ -63,7 +63,6 @@ function App() {
 
     qrMatrix = new QRCodeMatrix({ versionDetails, formatInfo });
     qrMatrix.placeFunctionPatterns();
-    console.log({ codewords });
     qrMatrix.placeCodewords(codewords);
 
     setMatrix(qrMatrix.matrix); // Set the matrix state
