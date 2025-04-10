@@ -230,28 +230,6 @@ export function getMinimumQRCodeVersion(chunks, errorCorrectionLevel) {
   throw new Error("Data too large to fit in a QR code version 40.");
 }
 
-/**
- * Helper function to determine the mode of a chunk.
- * If a chunk already specifies a "mode" property, that value is used.
- * Otherwise, based on its encoding/type the mode is deduced.
- *
- * @param {Object} chunk
- * @returns {string} "numeric", "alphanumeric", "byte", or "kanji"
- */
-function getModeForChunk(chunk) {
-  if (chunk.mode) return chunk.mode;
-
-  // In our example data, "hex" and "utf-8" (with type "byte") default to byte mode.
-  if (chunk.encoding === "hex") return "byte";
-  if (
-    (chunk.encoding === "utf-8" || chunk.encoding === "utf8") &&
-    chunk.type === "byte"
-  )
-    return "byte";
-
-  // Fallback: assume byte mode.
-  return "byte";
-}
 
 /**
  * Compute the number of bits required to represent a data chunk in a QR segment,
@@ -264,7 +242,7 @@ function getModeForChunk(chunk) {
  * @returns {number} Bit length for this segment.
  */
 function getSegmentBitLength(chunk, version) {
-  const mode = getModeForChunk(chunk);
+  const { mode } = chunk;
   const modeIndicatorBits = 4; // All modes use 4 bits for the mode indicator.
   let ccBits; // Character count indicator bits
 

@@ -34,10 +34,13 @@ function App() {
       const data = text ? text : bytes ? bytes : assignmentNumber;
       getEncoder({ type, bitStream }).encode(data, encoding);
     }
+    
+    if (version === "auto"){
+      
+    }
 
     setSegments(bitStream.segments);
 
-    const ecNum = ErrorCorrectionLevel.indexOf(errorCorrectionLevel);
     blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
     for (const block of blocks) {
       block.generateErrorCorrection();
