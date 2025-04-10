@@ -7,6 +7,7 @@ import ErrorCorrectionSelector from "../ECSelector/ECSelector";
 import { getMinimumQRCodeVersion } from "../../encode/version.js";
 
 const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
+const ErrorCorrectionLevel = ["M", "L", "H", "Q"];
 const sampleInput = {
   p: "A",
   cc: 133,
@@ -143,8 +144,14 @@ function MerchForm({ inputs, setInputs, processQRCodeData }) {
   const handleInputSubmit = (event) => {
     event.preventDefault();
     const chunks = inputs.map((i) => parseInput(i));
+    let v;
+    if (version === "auto") {
+      v = getMinimumQRCodeVersion(chunks, errorCorrection);
+    } else {
+      v 
+    }
     const version = getMinimumQRCodeVersion(chunks, errorCorrection);
-    const formatInfo = { errorCorrectionLevel: errorCorrection, dataMask: mask };
+    const formatInfo = { errorCorrectionLevel: ErrorCorrectionLevel.indexOf(errorCorrection), dataMask: mask };
     processQRCodeData({ chunks, version, formatInfo });
   };
 
