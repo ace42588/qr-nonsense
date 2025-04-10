@@ -13,7 +13,7 @@ import { QRCodeMatrix } from "./QRCodeMatrix";
 import "./App.css";
 
 let versionDetails;
-let errorCorrectionLevels;
+//let errorCorrectionLevels;
 let errorCorrectionLevel;
 
 const segments = [];
@@ -32,7 +32,7 @@ function App() {
     console.log({ chunks, version, formatInfo });
     let codewords = [];
     versionDetails = VERSIONS[version - 1];
-    errorCorrectionLevels = versionDetails.errorCorrectionLevels;
+    //errorCorrectionLevels = versionDetails.errorCorrectionLevels;
     errorCorrectionLevel = formatInfo.errorCorrectionLevel;
 
     bitStream = new TaggedBitstream();
