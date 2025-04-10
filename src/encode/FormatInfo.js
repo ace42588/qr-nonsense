@@ -60,6 +60,7 @@ function getBitsFromFormatInfo(formatInfo) {
 
 export class FormatInfo {
   constructor({ errorCorrectionLevel, dataMask }) {
+    if (errorCorrectionLevel)
     const bits = getBitsFromFormatInfo({ errorCorrectionLevel, dataMask });
     const bitString = bits.toString(2);
     this.errorCorrectionLevel = errorCorrectionLevel;
