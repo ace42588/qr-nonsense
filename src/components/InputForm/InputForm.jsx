@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "./InputForm.css"; // Import your component-specific styles
 
+import getMinimumQRCodeVersion from "../../encode/version.js";
+
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 
 const parseInput = (input) => {
@@ -107,7 +109,7 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
   const handleInputSubmit = (event) => {
     event.preventDefault();
     const chunks = inputs.map((i) => parseInput(i));
-    const version = 1;
+    const version = getMinimumQRCodeVersion(chunks);
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
     processQRCodeData({ chunks, version, formatInfo });
   };

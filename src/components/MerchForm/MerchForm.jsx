@@ -5,20 +5,23 @@ import getMinimumQRCodeVersion from "../../encode/version.js";
 
 const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
 const sampleInput = {
-    "p": "A",
-	"cc": 133,
-	"txn": "99999",
-    "i": [{
-            "v": 5432,
-            "q": 1
-        }, {
-            "v": 6666,
-            "q": 3
-        }, {
-            "v": 1234,
-            "q": 2
-        }
-    ]
+  p: "A",
+  cc: 133,
+  txn: "99999",
+  i: [
+    {
+      v: 5432,
+      q: 1,
+    },
+    {
+      v: 6666,
+      q: 3,
+    },
+    {
+      v: 1234,
+      q: 2,
+    },
+  ],
 };
 
 // {"p":"A","cc":"133","txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}
@@ -137,15 +140,14 @@ function MerchForm({ inputs, setInputs, processQRCodeData }) {
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
     processQRCodeData({ chunks, version, formatInfo });
   };
-  
+
   const setInitialInput = (input) => {
     if (!input.value) {
       input.value = JSON.stringify(sampleInput, null, 2);
       setInputs[input];
     }
     return input.value;
-    
-  }
+  };
 
   return (
     <form onSubmit={handleInputSubmit} className="merch-form">

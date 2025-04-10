@@ -151,8 +151,8 @@ function App() {
       <div className="row">
         <SegmentDisplay
           segments={segments}
+          matrix={matrix}
           setMatrix={setMatrix}
-          onSegmentClick={handleSegmentClick}
         />
       </div>
     </div>
