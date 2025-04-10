@@ -12,25 +12,22 @@ import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
 import "./App.css";
 
-let versionDetails;
-let errorCorrectionLevel;
-
-const segments = [];
-let bitStream;
-let blocks;
-let qrMatrix;
-let totalCodewords;
 
 function App() {
   const [mode, setMode] = useState("merch"); // Default to merch mode
   const [segments, setSegments] = useState([]);
   const [matrix, setMatrix] = useState([]);
+  
+  let qrMatrix;
+  let bitStream;
+  let blocks;
+  let errorCorrectionLevel;
 
   const processQRCodeData = ({ chunks, version, formatInfo }) => {
     console.log({ chunks, version, formatInfo });
     let codewords = [];
-    versionDetails = VERSIONS[version - 1];
-    errorCorrectionLevel = formatInfo.errorCorrectionLevel;
+    const versionDetails = VERSIONS[version - 1];
+    const errorCorrectionLevel = formatInfo.errorCorrectionLevel;
 
     bitStream = new TaggedBitstream();
 
@@ -47,7 +44,7 @@ function App() {
       block.generateErrorCorrection();
     }
 
-    totalCodewords = blocks.reduce(
+    const totalCodewords = blocks.reduce(
       (total, block) => total + block.totalCodewords,
       0
     );
