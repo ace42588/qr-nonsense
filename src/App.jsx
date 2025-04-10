@@ -151,6 +151,7 @@ function App() {
       <div className="row">
         <SegmentDisplay
           segments={segments}
+          setMatrix={setMatrix}
           onSegmentClick={handleSegmentClick}
         />
       </div>
@@ -159,19 +160,3 @@ function App() {
 }
 
 export default App;
-
-function getCodewords(blocks) {
-  let cw = [];
-  let totalCodewords = blocks.reduce(
-    (total, block) => total + block.totalCodewords,
-    0
-  );
-  for (let i = 0; i < totalCodewords; i++) {
-    const blockIdx = i % blocks.length;
-    const cwIdx = Math.floor(i / blocks.length);
-    let block = blocks[blockIdx];
-    let codeword = block.codewords[cwIdx];
-    cw.push(codeword);
-  }
-  return cw;
-}
