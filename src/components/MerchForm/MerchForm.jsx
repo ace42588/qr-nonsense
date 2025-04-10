@@ -119,8 +119,8 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-function MerchForm({ processQRCodeData }) {
-  const [errorCorrection, setErrorCorrection] = useState("M");
+function MerchForm({ processQRCodeData, errorCorrectionLevel }) {
+
   const [version, setVersion] = useState("auto");
   const [mask, setMask] = useState("auto");
   const [inputs, setInputs] = useState([{ type: "JSON", value: "" }]);
@@ -147,8 +147,8 @@ function MerchForm({ processQRCodeData }) {
     let qrData = {}
     const chunks = inputs.map((i) => parseInput(i));
     qrData.chunks = chunks;
-    qrData.version = (version === "auto") ? getMinimumQRCodeVersion(chunks, errorCorrection) : version;
-    qrData.formatInfo = { errorCorrectionLevel: ErrorCorrectionLevel.indexOf(errorCorrection), dataMask: mask };
+    qrData.version = (version === "auto") ? getMinimumQRCodeVersion(chunks, errorCorrectionLevel) : version;
+    qrData.formatInfo = { errorCorrectionLevel: ErrorCorrectionLevel.indexOf(errorCorrectionLevel), dataMask: mask };
     processQRCodeData(qrData);
   };
 
@@ -162,12 +162,6 @@ function MerchForm({ processQRCodeData }) {
 
   return (
     <form onSubmit={handleInputSubmit} className="merch-form">
-      <div className="row">
-        <ErrorCorrectionSelector
-          value={errorCorrection}
-          onChange={setErrorCorrection}
-        />
-      </div>
       <div className="row">
         <VersionSelector value={version} onChange={setVersion} />
       </div>

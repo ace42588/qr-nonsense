@@ -5,6 +5,7 @@ import ModeSelector from "./components/ModeSelector/ModeSelector";
 import InputForm from "./components/InputForm/InputForm";
 import MerchForm from "./components/MerchForm/MerchForm";
 import VideoScanner from "./components/VideoScanner/VideoScanner";
+import ErrorCorrectionSelector from "./components/ECSelector/ECSelector";
 import { createBlocks } from "./encode/Block";
 import { getEncoder } from "./encode/Encoder";
 import { TaggedBitstream } from "./encode/TaggedBitstream";
@@ -17,7 +18,7 @@ function App() {
   const [segments, setSegments] = useState([]);
   const [matrix, setMatrix] = useState([]);
   const [bitStream, setBitStream] = useState(new TaggedBitstream());
-  const [errorCorrectionLevel, setErrorCorrectionLevel] = useState([]);
+  const [errorCorrectionLevel, setErrorCorrectionLevel] = useState("M");
 
   let qrMatrix;
   let blocks;
@@ -27,7 +28,6 @@ function App() {
     console.log({ chunks, version, formatInfo });
     setBitStream(new TaggedBitstream());
     versionDetails = VERSIONS[version - 1];
-    setErrorCorrectionLevel(formatInfo.errorCorrectionLevel);
 
     for (const chunk of chunks) {
       const { type, text, bytes, assignmentNumber, encoding } = chunk;
@@ -37,6 +37,7 @@ function App() {
 
     setSegments(bitStream.segments);
 
+    const ecNum = ErrorCorrectionLevel.indexOf(errorCorrectionLevel);
     blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
     for (const block of blocks) {
       block.generateErrorCorrection();
@@ -94,21 +95,20 @@ function App() {
     if (mode === "merch") {
       return (
         <MerchForm
-          setECLevel={setErrorCorrectionLevel}
+          errorCorrectionLevel={errorCorrectionLevel}
           onSubmit={processQRCodeData}
         />
       );
     } else if (mode === "scan") {
       return (
         <VideoScanner
-          setECLevel={setErrorCorrectionLevel}
           onQRCodeScanned={processQRCodeData}
         />
       );
     }
     return (
       <InputForm
-        setECLevel={setErrorCorrectionLevel}
+        errorCorrectionLevel={errorCorrectionLevel}
         onSubmit={processQRCodeData}
       />
     );
@@ -121,8 +121,16 @@ function App() {
       </div>
       <div className="row">
         <div className="column">
-          <ModeSelector mode={mode} setMode={setMode} />
-          {selectUI()}
+          <div className="row">
+            <ModeSelector mode={mode} setMode={setMode} />
+          </div>
+          <div className="row">
+            <ErrorCorrectionSelector
+              value={errorCorrectionLevel}
+              onChange={setErrorCorrectionLevel}
+            />
+          </div>
+          <div className="row">{selectUI()}</div>
         </div>
         <div className="column">
           <QRCodeCanvas matrix={matrix} onBitToggle={handleBitToggle} />
