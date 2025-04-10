@@ -1,3 +1,4 @@
+import { ErrorCorrectionLevel } from "./FormatInfo";
 /**
  * Given an array of data chunks and an error correction level,
  * returns the smallest QR code version (1 to 40) that can hold the data.
