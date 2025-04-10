@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import "./InputForm.css"; // Import your component-specific styles
 
-import getMinimumQRCodeVersion from "../../encode/version.js";
+import VersionSelector from "../VersionSelector/VersionSelector";
+import DataMaskSelector from "../DataMaskSelector/DataMaskSelector";
+import ErrorCorrectionSelector from "../ECSelector/ECSelector";
+import { getMinimumQRCodeVersion} from "../../encode/version.js";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 
@@ -110,7 +113,7 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
   const handleInputSubmit = (event) => {
     event.preventDefault();
     const chunks = inputs.map((i) => parseInput(i));
-    const version = getMinimumQRCodeVersion(chunks);
+    const version = getMinimumQRCodeVersion(chunks, errorCorrection);
     const formatInfo = { errorCorrectionLevel: 1, dataMask: 1 };
     processQRCodeData({ chunks, version, formatInfo });
   };
@@ -143,6 +146,12 @@ function InputForm({ inputs, setInputs, processQRCodeData }) {
     <form onSubmit={handleInputSubmit} className="input-form">
       <div className="row">
         <h3>Manual Inputs</h3>
+      </div>
+      <div className="row">
+        <ErrorCorrectionSelector
+          value={errorCorrection}
+          onChange={setErrorCorrection}
+        />
       </div>
       <div className="row">
         {inputs.map((input, index) => (
