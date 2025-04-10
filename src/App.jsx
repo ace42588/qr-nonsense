@@ -12,30 +12,61 @@ import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
 import "./App.css";
 
-
 function App() {
   const [mode, setMode] = useState("merch"); // Default to merch mode
   const [segments, setSegments] = useState([]);
   const [matrix, setMatrix] = useState([]);
-  
+  const [bitStream, setBitStream] = useState(new TaggedBitstream());
+
   let qrMatrix;
-  let bitStream;
   let blocks;
   let errorCorrectionLevel;
+  let versionDetails;
 
   const processQRCodeData = ({ chunks, version, formatInfo }) => {
     console.log({ chunks, version, formatInfo });
-    let codewords = [];
-    const versionDetails = VERSIONS[version - 1];
-    const errorCorrectionLevel = formatInfo.errorCorrectionLevel;
-
-    bitStream = new TaggedBitstream();
+    setBitStream(new TaggedBitstream());
+    versionDetails = VERSIONS[version - 1];
+    errorCorrectionLevel = formatInfo.errorCorrectionLevel;
 
     for (const chunk of chunks) {
       const { type, text, bytes, assignmentNumber, encoding } = chunk;
       const data = text ? text : bytes ? bytes : assignmentNumber;
       getEncoder({ type, bitStream }).encode(data, encoding);
     }
+
+    setSegments(bitStream.segments);
+
+    blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
+    for (const block of blocks) {
+      block.generateErrorCorrection();
+    }
+
+    const totalCodewords = blocks.reduce(
+      (total, block) => total + block.totalCodewords,
+      0
+    );
+
+    let codewords = [];
+    for (let i = 0; i < totalCodewords; i++) {
+      const blockIdx = i % blocks.length;
+      const cwIdx = Math.floor(i / blocks.length);
+      let block = blocks[blockIdx];
+      let codeword = block.codewords[cwIdx];
+      codewords.push(codeword);
+    }
+
+    qrMatrix = new QRCodeMatrix({ versionDetails, formatInfo });
+    //qrMatrix.placeFunctionPatterns();
+    //qrMatrix.placeCodewords(codewords);
+    qrMatrix.setData(codewords);
+    qrMatrix.placeCodewords();
+
+    setMatrix(qrMatrix); // Set the matrix state
+  };
+
+  const handleBitToggle = (module) => {
+    let codewords = [];
 
     setSegments(bitStream.segments);
 
@@ -57,36 +88,10 @@ function App() {
       codewords.push(codeword);
     }
 
-    qrMatrix = new QRCodeMatrix({ versionDetails, formatInfo });
-    //qrMatrix.placeFunctionPatterns();
-    //qrMatrix.placeCodewords(codewords);
-    qrMatrix.setData(codewords);
-    qrMatrix.placeCodewords();
-
-    setMatrix(qrMatrix.matrix); // Set the matrix state
-  };
-
-  const handleBitToggle = (module) => {
-    let codewords = [];
-
-    setSegments(bitStream.segments);
-
-    blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
-    for (const block of blocks) {
-      block.generateErrorCorrection();
-    }
-
-    for (let i = 0; i < totalCodewords; i++) {
-      const blockIdx = i % blocks.length;
-      const cwIdx = Math.floor(i / blocks.length);
-      let block = blocks[blockIdx];
-      let codeword = block.codewords[cwIdx];
-      codewords.push(codeword);
-    }
-
     qrMatrix.reset();
     qrMatrix.placeFunctionPatterns();
-    qrMatrix.placeCodewords(codewords);
+    qrMatrix.setData(codewords);
+    qrMatrix.placeCodewords();
 
     setMatrix(qrMatrix.matrix);
   };
