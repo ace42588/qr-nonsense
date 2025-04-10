@@ -23,7 +23,7 @@ function QRCodeCanvas({ matrix, onBitToggle }) {
         ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
 
         // Draw a border if highlighted
-        if (module.isHighlighted()) {
+        if (module && module.isHighlighted()) {
           ctx.strokeStyle = "red";
           ctx.lineWidth = 2;
           ctx.strokeRect(

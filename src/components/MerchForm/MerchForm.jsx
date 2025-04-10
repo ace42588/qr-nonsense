@@ -143,16 +143,12 @@ function MerchForm({ inputs, setInputs, processQRCodeData }) {
 
   const handleInputSubmit = (event) => {
     event.preventDefault();
+    let qrData = {}
     const chunks = inputs.map((i) => parseInput(i));
-    let v;
-    if (version === "auto") {
-      v = getMinimumQRCodeVersion(chunks, errorCorrection);
-    } else {
-      v 
-    }
-    const version = getMinimumQRCodeVersion(chunks, errorCorrection);
-    const formatInfo = { errorCorrectionLevel: ErrorCorrectionLevel.indexOf(errorCorrection), dataMask: mask };
-    processQRCodeData({ chunks, version, formatInfo });
+    qrData.chunks = chunks;
+    qrData.version = (version === "auto") ? getMinimumQRCodeVersion(chunks, errorCorrection) : version;
+    qrData.formatInfo = { errorCorrectionLevel: ErrorCorrectionLevel.indexOf(errorCorrection), dataMask: mask };
+    processQRCodeData(qrData);
   };
 
   const setInitialInput = (input) => {
