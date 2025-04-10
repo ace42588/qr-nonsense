@@ -153,7 +153,6 @@ function hasWhiteBorder(arr, start) {
 export class QRCodeMatrix {
   constructor({ versionDetails, formatInfo }) {
     console.log("QRCodeMatrix", { versionDetails, formatInfo });
-    //const { errorCorrectionLevel, dataMask } = formatInfo;
     this.versionInfo = new VersionInfo(versionDetails);
     this.alignmentPattern = new AlignmentPattern(versionDetails.versionNumber);
     this.formatInfo = new FormatInfo(formatInfo);
@@ -161,17 +160,22 @@ export class QRCodeMatrix {
     this.matrix = Array.from({ length: this.moduleCount }, () =>
       Array(this.moduleCount).fill(false)
     );
+    this.bits = [];
     this.placeFunctionPatterns();
     this.firstUse = true;
     this.history = [];
+  }
+  
+  setData(codewords) {
+    this.bits = codewords.flatMap((codeword) => codeword.bits);
   }
 
   placeCodewords(codewords) {
     this.reset();
     const dimension = this.matrix.length;
-    const mf = new ModuleFactory(this.formatInfo);
-    const bits = codewords.flatMap((codeword) => codeword.bits);
-    mf.setBitSource(bits);
+    const { dataMask } = this.formatInfo;
+    const mf = new ModuleFactory(dataMask, this.bits);
+    mf.setBitSource(this.bits);
 
     let up = true;
     // write columns in pairs, right to left
@@ -234,7 +238,10 @@ export class QRCodeMatrix {
  * @param {Function} maskFunc
  * @returns {Array<Array<number>>} masked matrix
  */
- applyMask(maskFunc) {
+ applyMask(mask) {
+   const { errorCorrectionLevel, dataMask } = this.formatInfo;
+   if (dataMask !== mask)
+     this.formatInfo = new FormatInfo({errorCorrectionLevel, mask});
     const size = matrix.length;
     const masked = matrix.map(row => [...row]);
     for (let r = 0; r < size; r++) {

@@ -41,10 +41,9 @@ export class QRModule {
 }
 
 export class ModuleFactory {
-  constructor(formatInfo) {
-    const { dataMask } = formatInfo;
+  constructor(dataMask, bits) {
     this.dataMask = dataMask;
-    this.bits = [];
+    this.bits = bits || [];
     this.bitIdx = 0;
   }
   
