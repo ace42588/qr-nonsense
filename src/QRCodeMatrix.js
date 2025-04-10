@@ -161,6 +161,7 @@ export class QRCodeMatrix {
     this.matrix = Array.from({ length: this.moduleCount }, () =>
       Array(this.moduleCount).fill(false)
     );
+    this.placeFunctionPatterns();
     this.firstUse = true;
     this.history = [];
   }
@@ -226,4 +227,24 @@ export class QRCodeMatrix {
     );
     this.placeFunctionPatterns();
   }
+  
+  /**
+ * Apply a mask function to a QR matrix.
+ * @param {Array<Array<number>>} matrix
+ * @param {Function} maskFunc
+ * @returns {Array<Array<number>>} masked matrix
+ */
+ applyMask(maskFunc) {
+    const size = matrix.length;
+    const masked = matrix.map(row => [...row]);
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            // Assume functional area like finder patterns are excluded
+            if (maskFunc(r, c)) {
+                masked[r][c] ^= 1;
+            }
+        }
+    }
+    return masked;
+}
 }
