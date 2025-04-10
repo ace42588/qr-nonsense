@@ -13,29 +13,10 @@ import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
 import "./App.css";
 
-/**
- * Given an array of data chunks and an error correction level,
- * returns the smallest QR code version (1 to 40) that can hold the data.
- *
- * Each chunk may be in a different mode and must supply data using a property such as:
- *
- *   - For numeric or alphanumeric modes: use a "text" property containing the characters.
- *   - For byte mode:
- *       • If using a hexadecimal string, include an "encoding" property set to "hex" and a "bytes" property.
- *       • If using UTF‑8 text, include an "encoding" property like "utf-8" (or "utf8") and a "text" property.
- *   - For kanji mode: provide the string (via "text") that is assumed to contain only double-byte Kanji.
- *
- * You may also explicitly specify the mode in each chunk by using a "mode" property.
- *
- * @param {Array<Object>} chunks - Array of data chunks.
- * @param {string} errorCorrectionLevel - One of "L", "M", "Q", or "H".
- * @returns {number} The smallest QR code version (1–40) that fits the data.
- * @throws {Error} if data is too large for a version 40 code.
- */
+
 function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
-  const ErrorCorrectionLevel = ["M", "L", "H", "Q"];
-  const qrCapacityBytes = {
-    L: {
+  const qrCapacityBytes = [
+    {
       1: 17,
       2: 32,
       3: 53,
@@ -77,7 +58,7 @@ function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
       39: 2809,
       40: 2953,
     },
-    M: {
+    {
       1: 14,
       2: 26,
       3: 42,
@@ -119,7 +100,7 @@ function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
       39: 2213,
       40: 2331,
     },
-    Q: {
+    {
       1: 11,
       2: 20,
       3: 32,
@@ -161,7 +142,7 @@ function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
       39: 1579,
       40: 1663,
     },
-    H: {
+    {
       1: 7,
       2: 14,
       3: 24,
@@ -203,7 +184,7 @@ function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
       39: 1219,
       40: 1273,
     },
-  };
+  ];
 
   // Ensure error correction level is in uppercase.
   errorCorrectionLevel = errorCorrectionLevel.toUpperCase();
@@ -238,7 +219,7 @@ function App() {
   const [segments, setSegments] = useState([]);
   const [matrix, setMatrix] = useState([]);
   const [bitStream, setBitStream] = useState(new TaggedBitstream());
-  const [errorCorrectionLevel, setErrorCorrectionLevel] = useState("M");
+  const [errorCorrectionLevel, setErrorCorrectionLevel] = useState("1");
   const [versionDetails, setVersionDetails] = useState();
 
   let qrMatrix;
@@ -254,8 +235,10 @@ function App() {
 
     if (version === "auto") {
       version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
+      console.log({version});
     }
     setVersionDetails(VERSIONS[version - 1]);
+    console.log({versionDetails});
 
     setSegments(bitStream.segments);
 
@@ -273,6 +256,7 @@ function App() {
       formatInfo.errorCorrectionLevel = errorCorrectionLevel;
 
     setMatrix(new QRCodeMatrix({ versionDetails, formatInfo }));
+    console.log({matrix});
     for (let i = 0; i < totalCodewords; i++) {
       const blockIdx = i % blocks.length;
       const cwIdx = Math.floor(i / blocks.length);

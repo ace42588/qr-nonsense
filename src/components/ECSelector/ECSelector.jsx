@@ -1,10 +1,10 @@
 import React from "react";
 
 const levels = [
-  { label: "Low (L) – 7% redundancy", value: "L" },
-  { label: "Medium (M) – 15% redundancy", value: "M" },
-  { label: "Quartile (Q) – 25% redundancy", value: "Q" },
-  { label: "High (H) – 30% redundancy", value: "H" },
+  { label: "Low (L) – 7% redundancy", value: "0" },
+  { label: "Medium (M) – 15% redundancy", value: "1" },
+  { label: "Quartile (Q) – 25% redundancy", value: "2" },
+  { label: "High (H) – 30% redundancy", value: "3" },
 ];
 
 export default function ErrorCorrectionSelector({ value, onChange }) {

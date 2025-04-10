@@ -1,5 +1,3 @@
-const ErrorCorrectionLevel = ["M", "L", "H", "Q"];
-
 export const qrCapacityBytes = {
     L: {
       1: 17,
