@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import "./QRCodeCanvas.css";
 
 import { FormatInfo } from "../../encode/FormatInfo";
@@ -314,14 +314,18 @@ function QRCodeCanvas({
     }
   const versionDetails = VERSIONS[version - 1];
   console.log({ versionDetails });
+  const alignmentPattern = new AlignmentPattern(versionDetails.versionNumber);
   const versionInfo = new VersionInfo(versionDetails);
   const { numModules } = versionInfo;
-  
+  const [matrix, setMatrix] = useState(Array.from({ length: numModules }, () =>
+      Array(numModules).fill(false)
+    ));
   
   if (dataMask === "auto") {
     // ignore for now
     dataMask = 1;
   }
+  const formatInfo = new FormatInfo({errorCorrectionLevel, dataMask});
 
   let blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
   blocks.forEach((block) => block.generateErrorCorrection());
@@ -329,36 +333,25 @@ function QRCodeCanvas({
       (total, block) => total + block.totalCodewords,
       0
     );
+  let codewords = [];
   for (let i = 0; i < totalCodewords; i++) {
       const blockIdx = i % blocks.length;
       const cwIdx = Math.floor(i / blocks.length);
       let block = blocks[blockIdx];
       let codeword = block.codewords[cwIdx];
-      matrix.push(codeword);
-    }
-  
-  const processQRCodeData = ({ version, formatInfo }) => {
-
-
-    const alignmentPattern = new AlignmentPattern(versionDetails.versionNumber);
-    formatInfo = new FormatInfo({errorCorrectionLevel, dataMask});
-    const moduleCount = versionInfo.numModules;
-    const matrix = Array.from({ length: moduleCount }, () =>
-      Array(moduleCount).fill(false)
-    );
-    for (let i = 0; i < totalCodewords; i++) {
-      const blockIdx = i % blocks.length;
-      const cwIdx = Math.floor(i / blocks.length);
-      let block = blocks[blockIdx];
-      let codeword = block.codewords[cwIdx];
-      matrix.push(codeword);
+      codewords.push(codeword);
     }
 
-    matrix.placeCodewords();
-  };
-  
   const placeCodewords = () => {
-    const dimension = this.matrix.length;
+    const matrix = Array.from({ length: numModules }, () =>
+      Array(numModules).fill(false)
+    );
+    const dimension = matrix.length;
+    FinderPattern.populate(matrix);
+    TimingPattern.populate(matrix);
+    alignmentPattern.populate(this.matrix);
+    formatInfo.populate(this.matrix);
+    versionInfo.populate(this.matrix);
 
     let up = true;
     // write columns in pairs, right to left
@@ -373,8 +366,8 @@ function QRCodeCanvas({
           let x = columnIdx - columnOffset;
 
           // check for pattern
-          if (!this.matrix[y][x]) {
-            this.matrix[y][x] = this.moduleFactory.getDataModule({ x, y });
+          if (!matrix[y][x]) {
+            matrix[y][x] = this.moduleFactory.getDataModule({ x, y });
           }
         }
       }
