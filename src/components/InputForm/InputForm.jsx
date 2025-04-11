@@ -85,6 +85,17 @@ function InputForm({ setBitStream, onSubmit }) {
   const [mask, setMask] = useState("auto");
   const [inputs, setInputs] = useState([{ type: "byte", value: "" }]);
   
+  const updateBitStream = () => {
+    const chunks = inputs.map((i) => parseInput(i));
+    const formatInfo = { dataMask: mask };
+    
+    const bitStream = new TaggedBitstream();
+    chunks.forEach(({ type, encoding, ...data }) =>
+      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
+    );
+    setBitStream(bitStream);
+  };
+  
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
     newInputs[index].value = event.target.value;
@@ -109,18 +120,12 @@ function InputForm({ setBitStream, onSubmit }) {
   const handleRemoveInput = (index) => {
     const newInputs = inputs.filter((_, i) => i !== index);
     setInputs(newInputs);
+    updateBitStream();
   };
 
   const handleInputSubmit = (event) => {
     event.preventDefault();
-    const chunks = inputs.map((i) => parseInput(i));
-    const formatInfo = { dataMask: mask };
-    
-    const bitStream = new TaggedBitstream();
-    chunks.forEach(({ type, encoding, ...data }) =>
-      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
-    );
-    setBitStream(bitStream);
+    updateBitStream();
   };
 
   const handleCheckboxChange = (input) => {

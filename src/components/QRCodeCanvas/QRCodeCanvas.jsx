@@ -110,11 +110,6 @@ function QRCodeCanvas({
   const processQRCodeData = ({ chunks, version, formatInfo }) => {
     console.log({ chunks, version, formatInfo });
 
-    chunks.forEach(({ type, encoding, ...data }) =>
-      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
-    );
-    console.log({ bitStream });
-
     if (version === "auto") {
       version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
       console.log({ version });

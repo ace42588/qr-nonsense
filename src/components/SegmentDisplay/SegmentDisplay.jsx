@@ -1,7 +1,8 @@
 import React from "react";
 import "./SegmentDisplay.css";
 
-function SegmentDisplay({ segments, matrix, setMatrix }) {
+function SegmentDisplay({ bitStream, matrix, setMatrix }) {
+  let { segments } = bitStream
   const handleSegmentClick = (segment) => {
     const newMatrix = matrix.map((row) =>
       row.map((module) => {
