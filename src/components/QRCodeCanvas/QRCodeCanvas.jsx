@@ -60,44 +60,6 @@ export class QRModule {
   }
 }
 
-export class ModuleFactory {
-  constructor(dataMask, bits) {
-    this.dataMask = dataMask || 0;
-    this.bits = bits || [];
-    this.bitIdx = 0;
-  }
-
-  setDataMask(mask) {
-    if (-1 < mask < 8) this.dataMask = mask;
-  }
-
-  setBitSource(bits) {
-    this.bitIdx = 0;
-    this.bits = bits;
-  }
-
-  getDataModule({ x, y }) {
-    let taggedBit;
-    if (this.bitIdx < this.bits.length) {
-      taggedBit = this.bits[this.bitIdx++];
-      if (taggedBit instanceof ECBit) {
-        this;
-      }
-    } else {
-      taggedBit = REMAINDER_BIT;
-    }
-    const module = new QRModule({
-      taggedBit,
-      x,
-      y,
-      masked: DATA_MASKS[this.dataMask]({ x, y }),
-    });
-    if (taggedBit.altered) module.highlight();
-
-    return module;
-  }
-}
-
 function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   const qrCapacityBytes = [
     {
@@ -308,6 +270,9 @@ function QRCodeCanvas({
 }) {
   const canvasRef = useRef(null);
   
+  const { dataBits } = bitStream;
+  let bitIdx = 0;
+  
   if (version === "auto") {
       version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
       console.log({ version });
@@ -336,6 +301,28 @@ function QRCodeCanvas({
       let codeword = block.codewords[(Math.floor(i / blocks.length))];
       codewords.push(codeword);
     }
+  
+  const getDataModule = ({ x, y }) => {
+    let taggedBit;
+    if (bitIdx < dataBits.length) {
+      taggedBit = dataBits[bitIdx++];
+      if (taggedBit instanceof ECBit) {
+        // no idea what this intends to do...
+        this;
+      }
+    } else {
+      taggedBit = REMAINDER_BIT;
+    }
+    const module = new QRModule({
+      taggedBit,
+      x,
+      y,
+      masked: DATA_MASKS[dataMask]({ x, y }),
+    });
+    if (taggedBit.altered) module.highlight();
+
+    return module;
+  }
 
   const placeCodewords = () => {
     const matrix = Array.from({ length: numModules }, () =>
