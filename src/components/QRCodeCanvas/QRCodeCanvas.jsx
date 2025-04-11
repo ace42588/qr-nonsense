@@ -316,7 +316,8 @@ function QRCodeCanvas({
   console.log({ versionDetails });
   
   if (dataMask === "auto") {
-    
+    // ignore for now
+    dataMask = 1;
   }
 
   let blocks;
