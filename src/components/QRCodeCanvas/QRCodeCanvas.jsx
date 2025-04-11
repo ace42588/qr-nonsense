@@ -269,6 +269,8 @@ function QRCodeCanvas({
   dataMask,
 }) {
   const canvasRef = useRef(null);
+  const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
   
   const { dataBits } = bitStream;
   let bitIdx = 0;
@@ -281,6 +283,11 @@ function QRCodeCanvas({
   const alignmentPattern = new AlignmentPattern(versionDetails.versionNumber);
   const versionInfo = new VersionInfo(versionDetails);
   const { numModules } = versionInfo;
+  const matrix = Array.from({ length: numModules }, () =>
+      Array(numModules).fill(false)
+    );
+  const dimension = matrix.length;
+  const moduleSize = canvas.width / dimension;
 
   if (dataMask === "auto") {
     // ignore for now
@@ -324,79 +331,9 @@ function QRCodeCanvas({
     return module;
   }
 
-  const placeCodewords = () => {
-    const matrix = Array.from({ length: numModules }, () =>
-      Array(numModules).fill(false)
-    );
-    const dimension = matrix.length;
-    FinderPattern.populate(matrix);
-    TimingPattern.populate(matrix);
-    alignmentPattern.populate(matrix);
-    formatInfo.populate(matrix);
-    versionInfo.populate(matrix);
-
-    let up = true;
-    // write columns in pairs, right to left
-    for (let columnIdx = dimension - 1; columnIdx > 0; columnIdx -= 2) {
-      // Skip the vertical timing pattern column
-      if (columnIdx === 6) columnIdx--;
-
-      for (let i = 0; i < dimension; i++) {
-        const y = up ? dimension - 1 - i : i;
-
-        for (let columnOffset = 0; columnOffset < 2; columnOffset++) {
-          let x = columnIdx - columnOffset;
-
-          // check for pattern
-          if (!matrix[y][x]) {
-            matrix[y][x] = this.moduleFactory.getDataModule({ x, y });
-          }
-        }
-      }
-      up = !up; // Change direction
-    }
-  }
-
-  const handleBitToggle = (module) => {
-    let codewords = [];
-
-    setSegments(bitStream.segments);
-
-    blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
-    for (const block of blocks) {
-      block.generateErrorCorrection();
-    }
-
-    const totalCodewords = blocks.reduce(
-      (total, block) => total + block.totalCodewords,
-      0
-    );
-
-    for (let i = 0; i < totalCodewords; i++) {
-      const blockIdx = i % blocks.length;
-      const cwIdx = Math.floor(i / blocks.length);
-      let block = blocks[blockIdx];
-      let codeword = block.codewords[cwIdx];
-      codewords.push(codeword);
-    }
-
-    qrMatrix.reset();
-    qrMatrix.placeFunctionPatterns();
-    qrMatrix.setData(codewords);
-    qrMatrix.placeCodewords();
-
-    setMatrix(qrMatrix.matrix);
-  };
-
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     
-        const matrix = Array.from({ length: numModules }, () =>
-      Array(numModules).fill(false)
-    );
-    const dimension = matrix.length;
     FinderPattern.populate(matrix);
     TimingPattern.populate(matrix);
     alignmentPattern.populate(matrix);
@@ -417,14 +354,12 @@ function QRCodeCanvas({
 
           // check for pattern
           if (!matrix[y][x]) {
-            matrix[y][x] = this.moduleFactory.getDataModule({ x, y });
+            matrix[y][x] = getDataModule({ x, y });
           }
         }
       }
       up = !up; // Change direction
     }
-    
-    const moduleSize = canvas.width / matrix.length;
 
     // Draw the QR code on the canvas
 
@@ -451,11 +386,9 @@ function QRCodeCanvas({
 
   const handleClick = (event) => {
     event.preventDefault();
-    const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const moduleSize = canvas.width / matrix.length;
     const xIndex = Math.floor(x / moduleSize);
     const yIndex = Math.floor(y / moduleSize);
 
