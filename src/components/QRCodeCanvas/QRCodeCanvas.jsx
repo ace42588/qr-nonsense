@@ -25,7 +25,6 @@ const DATA_MASKS = [
 
 const REMAINDER_BIT = new RemainderBit();
 
-
 function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   const qrCapacityBytes = [
     {
@@ -263,20 +262,21 @@ function QRCodeCanvas({
 
   let blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
   const totalCodewords = blocks.reduce((t, b) => t + b.totalCodewords, 0);
-  let codewords = [];
+
+  let orderedBits = [];
   for (let i = 0; i < totalCodewords; i++) {
     const blockIdx = i % blocks.length;
     const cwIdx = Math.floor(i / blocks.length);
     let block = blocks[i % blocks.length];
-    let codeword = block.codewords[Math.floor(i / blocks.length)];
-    codewords.push(codeword);
+    const { bits } = block.codewords[Math.floor(i / blocks.length)];
+    orderedBits.push(...bits);
   }
 
   const getDataModule = ({ x, y }) => {
     const maskFunction = DATA_MASKS[dataMask];
     let taggedBit;
-    if (bitIdx < dataBits.length) {
-      taggedBit = dataBits[bitIdx++];
+    if (bitIdx < orderedBits.length) {
+      taggedBit = orderedBits[bitIdx++];
       if (taggedBit instanceof ECBit) {
         // no idea what this intends to do...
         this;
@@ -299,46 +299,46 @@ function QRCodeCanvas({
     };
   };
 
-  useEffect(() => {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  FinderPattern.populate(matrix);
+  TimingPattern.populate(matrix);
+  alignmentPattern.populate(matrix);
+  formatInfo.populate(matrix);
+  versionInfo.populate(matrix);
 
-    FinderPattern.populate(matrix);
-    TimingPattern.populate(matrix);
-    alignmentPattern.populate(matrix);
-    formatInfo.populate(matrix);
-    versionInfo.populate(matrix);
+  let up = true;
+  // write columns in pairs, right to left
+  for (let columnIdx = dimension - 1; columnIdx > 0; columnIdx -= 2) {
+    // Skip the vertical timing pattern column
+    if (columnIdx === 6) columnIdx--;
 
-    let up = true;
-    // write columns in pairs, right to left
-    for (let columnIdx = dimension - 1; columnIdx > 0; columnIdx -= 2) {
-      // Skip the vertical timing pattern column
-      if (columnIdx === 6) columnIdx--;
+    for (let i = 0; i < dimension; i++) {
+      const y = up ? dimension - 1 - i : i;
 
-      for (let i = 0; i < dimension; i++) {
-        const y = up ? dimension - 1 - i : i;
+      for (let columnOffset = 0; columnOffset < 2; columnOffset++) {
+        let x = columnIdx - columnOffset;
 
-        for (let columnOffset = 0; columnOffset < 2; columnOffset++) {
-          let x = columnIdx - columnOffset;
-
-          // check for pattern
-          if (!matrix[y][x]) {
-            matrix[y][x] = getDataModule({ x, y });
-          }
+        // check for pattern
+        if (!matrix[y][x]) {
+          matrix[y][x] = getDataModule({ x, y });
         }
       }
-      up = !up; // Change direction
     }
+    up = !up; // Change direction
+  }
+
+  useEffect(() => {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     // Draw the QR code on the canvas
 
     for (let y = 0; y < matrix.length; y++) {
       for (let x = 0; x < matrix[y].length; x++) {
         const module = matrix[y][x];
-        ctx.fillStyle = module.isDark() ? "black" : "white";
+        ctx.fillStyle = module.isDark ? "black" : "white";
         ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
 
         // Draw a border if highlighted
-        if (module && module.isHighlighted()) {
+        if (module && module.isHighlighted) {
           ctx.strokeStyle = "red";
           ctx.lineWidth = 2;
           ctx.strokeRect(
