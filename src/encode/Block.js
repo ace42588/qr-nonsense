@@ -14,10 +14,10 @@ class Block {
 
   generateErrorCorrection() {
     const dataBytes = this.dataCodewords.map((c) => c.byte);
-    console.log(dataBytes);
+    //console.log(dataBytes);
     const ecBytes = this.rsEncoder.encode(dataBytes);
     const ecCodewords = Array.from(ecBytes).map((b, idx) => new ECCodeword(b, idx));
-    console.log("generateErrorCorrection", { ec: ecCodewords.map((c) => c.byte) });
+    //console.log("generateErrorCorrection", { ec: ecCodewords.map((c) => c.byte) });
     this.ecCodewords = ecCodewords;
   }
 
@@ -27,7 +27,7 @@ class Block {
 }
 
 export function createBlocks(bitStream, errorCorrectionLevel, version) {
-  console.log("createBlocks", { bitStream, errorCorrectionLevel, version });
+  //console.log("createBlocks", { bitStream, errorCorrectionLevel, version });
   const { errorCorrectionLevels } = version;
   const { ecCodewordsPerBlock, ecBlocks } =
     errorCorrectionLevels[errorCorrectionLevel];
