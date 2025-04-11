@@ -32,8 +32,9 @@ const populateMatrix = (matrix, orderedBits, dataMask, version, errorCorrectionL
   TimingPattern.populate(matrix);
   const alignmentPattern = new AlignmentPattern(version);
   alignmentPattern.populate(matrix);
-  formatInfo.populate(matrix);
   const formatInfo = new FormatInfo({ errorCorrectionLevel, dataMask });
+  formatInfo.populate(matrix);
+  const versionInfo = new VersionInfo(version);
   versionInfo.populate(matrix);
   
   let bitIdx = 0;
@@ -100,9 +101,7 @@ function QRCodeCanvas({
     console.log({ version });
   }
   const versionDetails = VERSIONS[version - 1];
-  const alignmentPattern = new AlignmentPattern(versionDetails.versionNumber);
-  const versionInfo = new VersionInfo(versionDetails);
-  const { numModules } = versionInfo;
+  const numModules = version * 4 + 17;
   const matrix = Array.from({ length: numModules }, () =>
     Array(numModules).fill(false)
   );
@@ -126,12 +125,6 @@ function QRCodeCanvas({
     const { bits } = block.codewords[Math.floor(i / blocks.length)];
     orderedBits.push(...bits);
   }
-
-  FinderPattern.populate(matrix);
-  TimingPattern.populate(matrix);
-  alignmentPattern.populate(matrix);
-  formatInfo.populate(matrix);
-  versionInfo.populate(matrix);
 
   // Draw the QR code on the canvas
 

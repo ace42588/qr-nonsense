@@ -3,9 +3,14 @@ import { VERSIONS } from "./version";
 
 export class VersionInfo {
   constructor(version) {
-    this.version = version;
-    this.versionNumber = version.versionNumber;
-    this.infoBits = version.infoBits;
+    if (typeof version === "object") {
+      this.version = version;
+    } else {
+      this.version = VERSIONS[version - 1];
+    }
+    const { versionNumber, infoBits } = this.version;
+    this.versionNumber = versionNumber;
+    this.infoBits = infoBits;
   }
 
   populate(matrix) {

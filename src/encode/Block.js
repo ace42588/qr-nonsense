@@ -1,5 +1,6 @@
 import { TaggedCodeword, ECCodeword } from "./TaggedCodeword"
 import { ReedSolomonEncoder } from "./reedsolomon/index.js";
+import { VERSIONS } from "./version";
 
 class Block {
   constructor(numDataCodewords, numECCodewords, id) {
@@ -28,6 +29,12 @@ class Block {
 
 export function createBlocks(bitStream, errorCorrectionLevel, version) {
   //console.log("createBlocks", { bitStream, errorCorrectionLevel, version });
+  let versionDetails;
+  if (typeof version === "object") {
+      versionDetails = version;
+    } else {
+      versionDetails = VERSIONS[version - 1];
+    }
   const { errorCorrectionLevels } = version;
   const { ecCodewordsPerBlock, ecBlocks } =
     errorCorrectionLevels[errorCorrectionLevel];
