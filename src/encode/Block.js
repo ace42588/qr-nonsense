@@ -56,6 +56,7 @@ export function createBlocks(bitStream, errorCorrectionLevel, version) {
       const codeword = new TaggedCodeword(taggedBits, dataCodewords.length);
       dataCodewords.push(codeword);
     }
+    block.generateErrorCorrection();
   }
 
   //console.log({ blocks });

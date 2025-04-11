@@ -324,7 +324,6 @@ function QRCodeCanvas({
   const formatInfo = new FormatInfo({errorCorrectionLevel,  dataMask});
 
   let blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
-  blocks.forEach((block) => block.generateErrorCorrection());
   const totalCodewords = blocks.reduce(
       (t, b) => t + b.totalCodewords,
       0
@@ -405,14 +404,42 @@ function QRCodeCanvas({
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    
+        const matrix = Array.from({ length: numModules }, () =>
+      Array(numModules).fill(false)
+    );
+    const dimension = matrix.length;
+    FinderPattern.populate(matrix);
+    TimingPattern.populate(matrix);
+    alignmentPattern.populate(matrix);
+    formatInfo.populate(matrix);
+    versionInfo.populate(matrix);
+
+    let up = true;
+    // write columns in pairs, right to left
+    for (let columnIdx = dimension - 1; columnIdx > 0; columnIdx -= 2) {
+      // Skip the vertical timing pattern column
+      if (columnIdx === 6) columnIdx--;
+
+      for (let i = 0; i < dimension; i++) {
+        const y = up ? dimension - 1 - i : i;
+
+        for (let columnOffset = 0; columnOffset < 2; columnOffset++) {
+          let x = columnIdx - columnOffset;
+
+          // check for pattern
+          if (!matrix[y][x]) {
+            matrix[y][x] = this.moduleFactory.getDataModule({ x, y });
+          }
+        }
+      }
+      up = !up; // Change direction
+    }
+    
     const moduleSize = canvas.width / matrix.length;
 
     // Draw the QR code on the canvas
-    drawQRCodeMatrix(ctx, matrix, moduleSize);
-  }, [matrix]);
-
-  const drawQRCodeMatrix = (ctx, matrix, moduleSize) => {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     for (let y = 0; y < matrix.length; y++) {
       for (let x = 0; x < matrix[y].length; x++) {
@@ -433,7 +460,7 @@ function QRCodeCanvas({
         }
       }
     }
-  };
+  }, [matrix]);
 
   const handleClick = (event) => {
     event.preventDefault();
