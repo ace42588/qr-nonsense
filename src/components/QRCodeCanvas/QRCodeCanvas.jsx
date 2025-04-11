@@ -1,8 +1,39 @@
 import React, { useRef, useEffect } from "react";
-import './QRCodeCanvas.css';
+import "./QRCodeCanvas.css";
 
 function QRCodeCanvas({ matrix, onBitToggle }) {
   const canvasRef = useRef(null);
+
+  const handleBitToggle = (module) => {
+    let codewords = [];
+
+    setSegments(bitStream.segments);
+
+    blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
+    for (const block of blocks) {
+      block.generateErrorCorrection();
+    }
+
+    const totalCodewords = blocks.reduce(
+      (total, block) => total + block.totalCodewords,
+      0
+    );
+
+    for (let i = 0; i < totalCodewords; i++) {
+      const blockIdx = i % blocks.length;
+      const cwIdx = Math.floor(i / blocks.length);
+      let block = blocks[blockIdx];
+      let codeword = block.codewords[cwIdx];
+      codewords.push(codeword);
+    }
+
+    qrMatrix.reset();
+    qrMatrix.placeFunctionPatterns();
+    qrMatrix.setData(codewords);
+    qrMatrix.placeCodewords();
+
+    setMatrix(qrMatrix.matrix);
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -46,7 +77,7 @@ function QRCodeCanvas({ matrix, onBitToggle }) {
     const moduleSize = canvas.width / matrix.length;
     const xIndex = Math.floor(x / moduleSize);
     const yIndex = Math.floor(y / moduleSize);
-    
+
     const module = matrix[yIndex][xIndex];
     if (module) {
       console.log(module);

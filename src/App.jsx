@@ -13,7 +13,6 @@ import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
 import "./App.css";
 
-
 function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   const qrCapacityBytes = [
     {
@@ -235,10 +234,10 @@ function App() {
 
     if (version === "auto") {
       version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
-      console.log({version});
+      console.log({ version });
     }
     setVersionDetails(VERSIONS[version - 1]);
-    console.log({versionDetails});
+    console.log({ versionDetails });
 
     setSegments(bitStream.segments);
 
@@ -256,7 +255,7 @@ function App() {
       formatInfo.errorCorrectionLevel = errorCorrectionLevel;
 
     setMatrix(new QRCodeMatrix({ versionDetails, formatInfo }));
-    console.log({matrix});
+    console.log({ matrix });
     for (let i = 0; i < totalCodewords; i++) {
       const blockIdx = i % blocks.length;
       const cwIdx = Math.floor(i / blocks.length);
@@ -266,37 +265,6 @@ function App() {
     }
 
     matrix.placeCodewords();
-  };
-
-  const handleBitToggle = (module) => {
-    let codewords = [];
-
-    setSegments(bitStream.segments);
-
-    blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
-    for (const block of blocks) {
-      block.generateErrorCorrection();
-    }
-
-    const totalCodewords = blocks.reduce(
-      (total, block) => total + block.totalCodewords,
-      0
-    );
-
-    for (let i = 0; i < totalCodewords; i++) {
-      const blockIdx = i % blocks.length;
-      const cwIdx = Math.floor(i / blocks.length);
-      let block = blocks[blockIdx];
-      let codeword = block.codewords[cwIdx];
-      codewords.push(codeword);
-    }
-
-    qrMatrix.reset();
-    qrMatrix.placeFunctionPatterns();
-    qrMatrix.setData(codewords);
-    qrMatrix.placeCodewords();
-
-    setMatrix(qrMatrix.matrix);
   };
 
   const selectUI = () => {
@@ -337,7 +305,11 @@ function App() {
           <div className="row">{selectUI()}</div>
         </div>
         <div className="column">
-          <QRCodeCanvas matrix={matrix} onBitToggle={handleBitToggle} />
+          <QRCodeCanvas
+            matrix={matrix}
+            bitstream={bitStream}
+            setBitStream={setBitStream}
+          />
         </div>
       </div>
       <div className="row">
