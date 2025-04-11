@@ -14,19 +14,25 @@ const DATA_MASKS = [
 const REMAINDER_BIT = new RemainderBit();
 
 export class QRModule {
-  constructor({ taggedBit, x, y, masked }) {
+  constructor({ taggedBit, x, y, maskNum }) {
     this.bit = taggedBit;
     this.segment = this.bit.source;
     this.x = x;
     this.y = y;
-    this.masked = masked;
+    this.setMask(maskNum);
     this.highlighted = false;
   }
   
-  setMask()
+  setMask(maskNum) {
+    this.maskFunction = DATA_MASKS[maskNum];
+  }
+  
+  isMasked() {
+    this.maskFunction({ x: this.x, y: this.y })
+  }
 
   isDark() {
-    return this.masked ? !this.bit.value : this.bit.value;
+    return this.isMasked ? !this.bit.value : this.bit.value;
   }
 
   isHighlighted() {
