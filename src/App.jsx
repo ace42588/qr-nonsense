@@ -306,7 +306,6 @@ function App() {
         </div>
         <div className="column">
           <QRCodeCanvas
-            matrix={matrix}
             bitstream={bitStream}
             setBitStream={setBitStream}
           />

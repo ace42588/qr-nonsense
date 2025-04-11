@@ -1,8 +1,61 @@
 import React, { useRef, useEffect } from "react";
 import "./QRCodeCanvas.css";
+import { VERSIONS } from "../../encode/version";
 
-function QRCodeCanvas({ matrix, onBitToggle }) {
+function QRCodeCanvas({
+  bitStream,
+  setBitStream,
+  setSegments,
+  errorCorrectionLevel,
+  version,
+}) {
   const canvasRef = useRef(null);
+
+  
+  let blocks;
+  const processQRCodeData = ({ chunks, version, formatInfo }) => {
+    console.log({ chunks, version, formatInfo });
+    setBitStream(new TaggedBitstream());
+
+    chunks.forEach(({ type, encoding, ...data }) =>
+      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
+    );
+    console.log({ bitStream });
+
+    if (version === "auto") {
+      version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
+      console.log({ version });
+    }
+    const versionDetails = VERSIONS[version - 1];
+    console.log({ versionDetails });
+
+    setSegments(bitStream.segments);
+
+    blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
+    for (const block of blocks) {
+      block.generateErrorCorrection();
+    }
+
+    const totalCodewords = blocks.reduce(
+      (total, block) => total + block.totalCodewords,
+      0
+    );
+
+    if (!formatInfo.errorCorrectionLevel)
+      formatInfo.errorCorrectionLevel = errorCorrectionLevel;
+
+    setMatrix(new QRCodeMatrix({ versionDetails, formatInfo }));
+    console.log({ matrix });
+    for (let i = 0; i < totalCodewords; i++) {
+      const blockIdx = i % blocks.length;
+      const cwIdx = Math.floor(i / blocks.length);
+      let block = blocks[blockIdx];
+      let codeword = block.codewords[cwIdx];
+      matrix.push(codeword);
+    }
+
+    matrix.placeCodewords();
+  };
 
   const handleBitToggle = (module) => {
     let codewords = [];
