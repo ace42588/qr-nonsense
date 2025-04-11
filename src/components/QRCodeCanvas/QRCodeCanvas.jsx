@@ -26,7 +26,22 @@ const DATA_MASKS = [
 
 const REMAINDER_BIT = new RemainderBit();
 
-const createMatrix = (dataMask, version, errorCorrectionLevel) => {
+const orderBits = (bitStream, errorCorrectionLevel, version) => {
+  let blocks = createBlocks(bitStream, errorCorrectionLevel, version);
+  const totalCodewords = blocks.reduce((t, b) => t + b.totalCodewords, 0);
+
+  let orderedBits = [];
+  for (let i = 0; i < totalCodewords; i++) {
+    const blockIdx = i % blocks.length;
+    const cwIdx = Math.floor(i / blocks.length);
+    let block = blocks[i % blocks.length];
+    const { bits } = block.codewords[Math.floor(i / blocks.length)];
+    orderedBits.push(...bits);
+  }
+  return orderedBits;
+}
+
+const createMatrix = (errorCorrectionLevel, version, dataMask) => {
   const numModules = version * 4 + 17;
   const matrix = Array.from({ length: numModules }, () =>
     Array(numModules).fill(false)
@@ -43,7 +58,9 @@ const createMatrix = (dataMask, version, errorCorrectionLevel) => {
   return matrix;
 }
 
-const populateMatrix = (matrix, orderedBits, dataMask) => {
+const generateMatrix = (bitStream, errorCorrectionLevel, version, dataMask) => {
+  const orderedBits = orderBits(bitStream, errorCorrectionLevel, version);
+  const matrix = createMatrix(errorCorrectionLevel, version, dataMask) 
   let bitIdx = 0;
   let up = true;
   const dimension = matrix.length;
@@ -87,21 +104,7 @@ const populateMatrix = (matrix, orderedBits, dataMask) => {
     }
     up = !up; // Change direction
   }
-}
-
-const orderBits = (bitStream, errorCorrectionLevel, version) => {
-  let blocks = createBlocks(bitStream, errorCorrectionLevel, version);
-  const totalCodewords = blocks.reduce((t, b) => t + b.totalCodewords, 0);
-
-  let orderedBits = [];
-  for (let i = 0; i < totalCodewords; i++) {
-    const blockIdx = i % blocks.length;
-    const cwIdx = Math.floor(i / blocks.length);
-    let block = blocks[i % blocks.length];
-    const { bits } = block.codewords[Math.floor(i / blocks.length)];
-    orderedBits.push(...bits);
-  }
-  return orderedBits;
+  return matrix;
 }
 
 function QRCodeCanvas({
@@ -121,56 +124,13 @@ function QRCodeCanvas({
     version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
     console.log({ version });
   }
+  
   if (dataMask === "auto") {
     // ignore for now
     dataMask = 1;
   }
-  const matrix = createMatrix(dataMask, version, errorCorrectionLevel);
-
   
-  let bitIdx = 0;
-  let up = true;
-  const dimension = matrix.length;
-  // write columns in pairs, right to left
-  for (let columnIdx = dimension - 1; columnIdx > 0; columnIdx -= 2) {
-    // Skip the vertical timing pattern column
-    if (columnIdx === 6) columnIdx--;
-
-    for (let i = 0; i < dimension; i++) {
-      const y = up ? dimension - 1 - i : i;
-
-      for (let columnOffset = 0; columnOffset < 2; columnOffset++) {
-        let x = columnIdx - columnOffset;
-
-        // check for pattern
-        if (!matrix[y][x]) {
-          let taggedBit;
-          if (bitIdx < orderedBits.length) {
-            taggedBit = orderedBits[bitIdx++];
-            if (taggedBit instanceof ECBit) {
-              // no idea what this intends to do...
-              this;
-            }
-          } else {
-            taggedBit = REMAINDER_BIT;
-          }
-
-          const { source, altered, value } = taggedBit;
-          const isMasked = DATA_MASKS[dataMask]({ x, y });
-          matrix[y][x] = {
-            bit: taggedBit,
-            segment: source,
-            x,
-            y,
-            isMasked,
-            isHighlighted: altered ? true : false,
-            isDark: isMasked ? !value : value,
-          };
-        }
-      }
-    }
-    up = !up; // Change direction
-  }
+  const matrix = generateMatrix(bitStream, errorCorrectionLevel, version, dataMask);
 
   // Draw the QR code on the canvas
   const moduleSize = canvas.width / matrix.length;
