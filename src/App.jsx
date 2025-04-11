@@ -22,7 +22,7 @@ function App() {
   const [dataMask, setDataMask] = useState("auto");
   const [errorCorrectionLevel, setErrorCorrectionLevel] = useState("1");
   
-  console.log({bitStream});
+  console.log("App", {bitStream});
 
   const selectUI = () => {
     if (mode === "merch") {
@@ -76,7 +76,7 @@ function App() {
         </div>
         <div className="column">
           <QRCodeCanvas
-            bitstream={bitStream}
+            bitStream={bitStream}
             setBitStream={setBitStream}
             errorCorrectionLevel={errorCorrectionLevel}
             version={version}
