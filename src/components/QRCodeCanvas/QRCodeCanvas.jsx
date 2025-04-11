@@ -304,19 +304,21 @@ function QRCodeCanvas({
   setSegments,
   errorCorrectionLevel,
   version,
+  dataMask,
 }) {
   const canvasRef = useRef(null);
-
-  let blocks;
-  const processQRCodeData = ({ version, formatInfo }) => {
-    console.log({ version, formatInfo });
-
-    if (version === "auto") {
+  
+  if (version === "auto") {
       version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
       console.log({ version });
     }
-    const versionDetails = VERSIONS[version - 1];
-    console.log({ versionDetails });
+  const versionDetails = VERSIONS[version - 1];
+  console.log({ versionDetails });
+  
+  if ()
+
+  let blocks;
+  const processQRCodeData = ({ version, formatInfo }) => {
 
     setSegments(bitStream.segments);
 
