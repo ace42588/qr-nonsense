@@ -314,33 +314,36 @@ function QRCodeCanvas({
     }
   const versionDetails = VERSIONS[version - 1];
   console.log({ versionDetails });
+  const versionInfo = new VersionInfo(versionDetails);
   
   if (dataMask === "auto") {
     // ignore for now
     dataMask = 1;
   }
 
-  let blocks;
-  const processQRCodeData = ({ version, formatInfo }) => {
-
-    setSegments(bitStream.segments);
-
-    blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
-    for (const block of blocks) {
-      block.generateErrorCorrection();
+  let blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
+  blocks.forEach((block) => block.generateErrorCorrection());
+  const totalCodewords = blocks.reduce(
+      (total, block) => total + block.totalCodewords,
+      0
+    );
+  for (let i = 0; i < totalCodewords; i++) {
+      const blockIdx = i % blocks.length;
+      const cwIdx = Math.floor(i / blocks.length);
+      let block = blocks[blockIdx];
+      let codeword = block.codewords[cwIdx];
+      matrix.push(codeword);
     }
+  
+  const processQRCodeData = ({ version, formatInfo }) => {
 
     const totalCodewords = blocks.reduce(
       (total, block) => total + block.totalCodewords,
       0
     );
 
-    if (!formatInfo.errorCorrectionLevel)
-      formatInfo.errorCorrectionLevel = errorCorrectionLevel;
-
-    const versionInfo = new VersionInfo(versionDetails);
     const alignmentPattern = new AlignmentPattern(versionDetails.versionNumber);
-    formatInfo = new FormatInfo(formatInfo);
+    formatInfo = new FormatInfo({errorCorrectionLevel, dataMask});
     const moduleCount = versionInfo.numModules;
     const matrix = Array.from({ length: moduleCount }, () =>
       Array(moduleCount).fill(false)
