@@ -313,32 +313,28 @@ function QRCodeCanvas({
       console.log({ version });
     }
   const versionDetails = VERSIONS[version - 1];
-  console.log({ versionDetails });
   const alignmentPattern = new AlignmentPattern(versionDetails.versionNumber);
   const versionInfo = new VersionInfo(versionDetails);
   const { numModules } = versionInfo;
-  const [codewords, setCodewords] = useState(Array.from({ length: numModules }, () =>
-      Array(numModules).fill(false)
-    ));
-  
+
   if (dataMask === "auto") {
     // ignore for now
     dataMask = 1;
   }
-  const formatInfo = new FormatInfo({errorCorrectionLevel, dataMask});
+  const formatInfo = new FormatInfo({errorCorrectionLevel,  dataMask});
 
   let blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
   blocks.forEach((block) => block.generateErrorCorrection());
   const totalCodewords = blocks.reduce(
-      (total, block) => total + block.totalCodewords,
+      (t, b) => t + b.totalCodewords,
       0
     );
   let codewords = [];
   for (let i = 0; i < totalCodewords; i++) {
       const blockIdx = i % blocks.length;
       const cwIdx = Math.floor(i / blocks.length);
-      let block = blocks[blockIdx];
-      let codeword = block.codewords[cwIdx];
+      let block = blocks[(i % blocks.length)];
+      let codeword = block.codewords[(Math.floor(i / blocks.length))];
       codewords.push(codeword);
     }
 
@@ -349,9 +345,9 @@ function QRCodeCanvas({
     const dimension = matrix.length;
     FinderPattern.populate(matrix);
     TimingPattern.populate(matrix);
-    alignmentPattern.populate(this.matrix);
-    formatInfo.populate(this.matrix);
-    versionInfo.populate(this.matrix);
+    alignmentPattern.populate(matrix);
+    formatInfo.populate(matrix);
+    versionInfo.populate(matrix);
 
     let up = true;
     // write columns in pairs, right to left
