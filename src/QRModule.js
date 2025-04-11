@@ -22,6 +22,8 @@ export class QRModule {
     this.masked = masked;
     this.highlighted = false;
   }
+  
+  setMask()
 
   isDark() {
     return this.masked ? !this.bit.value : this.bit.value;
