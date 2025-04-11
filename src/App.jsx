@@ -21,8 +21,6 @@ function App() {
   const [version, setVersion] = useState("auto");
   const [dataMask, setDataMask] = useState("auto");
   const [errorCorrectionLevel, setErrorCorrectionLevel] = useState("1");
-  
-  console.log("App", {bitStream});
 
   const selectUI = () => {
     if (mode === "merch") {
