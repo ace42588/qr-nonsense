@@ -20,7 +20,7 @@ function App() {
   const [bitStream, setBitStream] = useState(new TaggedBitstream());
   const [version, setVersion] = useState("auto");
   const [dataMask, setDataMask] = useState("auto");
-  const [errorCorrectionLevel, setErrorCorrectionLevel] = useState("1");
+  const [errorCorrectionLevel, setErrorCorrectionLevel] = useState(1);
 
   const selectUI = () => {
     if (mode === "merch") {

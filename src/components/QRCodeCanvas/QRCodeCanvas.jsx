@@ -31,6 +31,7 @@ const orderBits = (bitStream, errorCorrectionLevel, version) => {
   let blocks = createBlocks(bitStream, errorCorrectionLevel, version);
   console.log("orderBits",{blocks});
   const totalCodewords = blocks.reduce((t, b) => t + b.totalCodewords, 0);
+  console.log("orderBits", {totalCodewords})
 
   let orderedBits = [];
   for (let i = 0; i < totalCodewords; i++) {

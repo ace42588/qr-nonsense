@@ -170,8 +170,6 @@ export function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
     },
   ];
 
-  // Ensure error correction level is in uppercase.
-  errorCorrectionLevel = errorCorrectionLevel.toUpperCase();
   if (!qrCapacityBytes[errorCorrectionLevel]) {
     throw new Error("Invalid error correction level: " + errorCorrectionLevel);
   }
