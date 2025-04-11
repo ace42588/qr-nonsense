@@ -2,10 +2,23 @@ import React, { useRef, useEffect, useState } from "react";
 import jsQR from "jsqr";
 import "./VideoScanner.css";
 
-function VideoScanner({ onQRCodeScanned }) {
+import { getEncoder } from "../../encode/Encoder";
+import { TaggedBitstream } from "../../encode/TaggedBitstream";
+
+function VideoScanner({ setBitStream, setVersion, setDataMask, setErrorCorrectionLevel }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [scanning, setScanning] = useState(true);
+
+  const processQRCodeData = ({ chunks, version, formatInfo }) => {
+    console.log({ chunks, version, formatInfo });
+    const bitStream = new TaggedBitstream();
+
+    chunks.forEach(({ type, encoding, ...data }) =>
+      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
+    );
+    console.log({ bitStream });
+  };
 
   useEffect(() => {
     if (!scanning) return;
@@ -49,7 +62,7 @@ function VideoScanner({ onQRCodeScanned }) {
 
         if (code && code.data !== "") {
           setScanning(false); // Stop scanning when a QR code is found
-          onQRCodeScanned(code);
+          processQRCodeData(code);
         } else {
           requestAnimationFrame(scanQR);
         }
@@ -66,7 +79,7 @@ function VideoScanner({ onQRCodeScanned }) {
       }
       setScanning(false);
     };
-  }, [scanning, onQRCodeScanned]);
+  }, [scanning, processQRCodeData]);
 
   return (
     <div
@@ -83,7 +96,7 @@ function VideoScanner({ onQRCodeScanned }) {
       {scanning && (
         <>
           <video ref={videoRef} width="640" height="480" />
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
+          <canvas ref={canvasRef} style={{ display: "none" }} />
         </>
       )}
     </div>

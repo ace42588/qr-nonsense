@@ -110,7 +110,6 @@ const generateMatrix = (bitStream, errorCorrectionLevel, version, dataMask) => {
 function QRCodeCanvas({
   bitStream,
   setBitStream,
-  setSegments,
   errorCorrectionLevel,
   version,
   dataMask,
