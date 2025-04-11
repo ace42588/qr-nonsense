@@ -315,7 +315,9 @@ function QRCodeCanvas({
   const versionDetails = VERSIONS[version - 1];
   console.log({ versionDetails });
   
-  if ()
+  if (dataMask === "auto") {
+    
+  }
 
   let blocks;
   const processQRCodeData = ({ version, formatInfo }) => {
