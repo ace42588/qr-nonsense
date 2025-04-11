@@ -337,10 +337,6 @@ function QRCodeCanvas({
   
   const processQRCodeData = ({ version, formatInfo }) => {
 
-    const totalCodewords = blocks.reduce(
-      (total, block) => total + block.totalCodewords,
-      0
-    );
 
     const alignmentPattern = new AlignmentPattern(versionDetails.versionNumber);
     formatInfo = new FormatInfo({errorCorrectionLevel, dataMask});
