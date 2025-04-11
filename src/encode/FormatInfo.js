@@ -61,10 +61,13 @@ function getBitsFromFormatInfo(ecLevel, mask) {
 
 export class FormatInfo {
   constructor({ errorCorrectionLevel, dataMask }) {
+    //console.log("FormatInfo", { errorCorrectionLevel, dataMask });
     // Convert error correction level to its number equivalent
     if (/^[HMLQ]$/i.test(errorCorrectionLevel)) {
       let ecl = errorCorrectionLevel.toUpperCase();
       errorCorrectionLevel = ErrorCorrectionLevel.indexOf(ecl);
+    } else {
+      errorCorrectionLevel = parseInt(errorCorrectionLevel);
     }
     this.errorCorrectionLevel = errorCorrectionLevel;
     this.dataMask = dataMask;

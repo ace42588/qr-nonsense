@@ -116,12 +116,6 @@ function QRCodeCanvas({
   version,
   dataMask,
 }) {
-  console.log("QRCodeCanvas", {
-    bitStream,
-    errorCorrectionLevel,
-    version,
-    dataMask,
-  });
   const canvasRef = useRef(null);
   let matrix;
   let moduleSize;
@@ -129,7 +123,6 @@ function QRCodeCanvas({
   if (bitStream) {
     if (version === "auto") {
       version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
-      console.log({ version });
     }
 
     if (dataMask === "auto") {

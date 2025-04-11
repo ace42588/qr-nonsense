@@ -120,14 +120,6 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-/*
-setBitStream={setBitStream}
-          version={version}
-          setVersion={setVersion}
-          dataMask={dataMask}
-          setDataMask={setDataMask}
-          */
-
 function MerchForm({ setBitStream, version, setVersion, dataMask, setDataMask }) {
   const [inputs, setInputs] = useState([{ type: "JSON", value: "" }]);
 
