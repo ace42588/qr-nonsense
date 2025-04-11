@@ -317,7 +317,7 @@ function QRCodeCanvas({
   const alignmentPattern = new AlignmentPattern(versionDetails.versionNumber);
   const versionInfo = new VersionInfo(versionDetails);
   const { numModules } = versionInfo;
-  const [matrix, setMatrix] = useState(Array.from({ length: numModules }, () =>
+  const [codewords, setCodewords] = useState(Array.from({ length: numModules }, () =>
       Array(numModules).fill(false)
     ));
   
