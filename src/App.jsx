@@ -21,9 +21,8 @@ function App() {
   const [version, setVersion] = useState("auto");
   const [dataMask, setDataMask] = useState("auto");
   const [errorCorrectionLevel, setErrorCorrectionLevel] = useState("1");
-
-  let qrMatrix;
-  let blocks;
+  
+  console.log({bitStream});
 
   const selectUI = () => {
     if (mode === "merch") {

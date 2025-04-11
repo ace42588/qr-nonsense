@@ -114,6 +114,13 @@ function QRCodeCanvas({
   version,
   dataMask,
 }) {
+  console.log("QRCodeCanvas", {
+    bitStream,
+    setBitStream,
+    errorCorrectionLevel,
+    version,
+    dataMask,
+  });
   const canvasRef = useRef(null);
   let matrix;
   let moduleSize;
@@ -129,38 +136,35 @@ function QRCodeCanvas({
       dataMask = 1;
     }
 
-    matrix = generateMatrix(
-      bitStream,
-      errorCorrectionLevel,
-      version,
-      dataMask
-    );
+    matrix = generateMatrix(bitStream, errorCorrectionLevel, version, dataMask);
   }
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    moduleSize = canvas.width / matrix.length;
+    if (matrix) {
+      moduleSize = canvas.width / matrix.length;
 
-    // Draw the QR code on the canvas
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      // Draw the QR code on the canvas
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    for (let y = 0; y < matrix.length; y++) {
-      for (let x = 0; x < matrix[y].length; x++) {
-        const module = matrix[y][x];
-        ctx.fillStyle = module.isDark ? "black" : "white";
-        ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
+      for (let y = 0; y < matrix.length; y++) {
+        for (let x = 0; x < matrix[y].length; x++) {
+          const module = matrix[y][x];
+          ctx.fillStyle = module.isDark ? "black" : "white";
+          ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
 
-        // Draw a border if highlighted
-        if (module && module.isHighlighted) {
-          ctx.strokeStyle = "red";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(
-            x * moduleSize,
-            y * moduleSize,
-            moduleSize,
-            moduleSize
-          );
+          // Draw a border if highlighted
+          if (module && module.isHighlighted) {
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(
+              x * moduleSize,
+              y * moduleSize,
+              moduleSize,
+              moduleSize
+            );
+          }
         }
       }
     }
