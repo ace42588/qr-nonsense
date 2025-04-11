@@ -236,9 +236,7 @@ function QRCodeCanvas({
   const canvasRef = useRef(null);
   const canvas = canvasRef.current;
   const ctx = canvas.getContext("2d");
-
-  const { dataBits } = bitStream;
-  let bitIdx = 0;
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   if (version === "auto") {
     version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
@@ -272,39 +270,13 @@ function QRCodeCanvas({
     orderedBits.push(...bits);
   }
 
-  const getDataModule = ({ x, y }) => {
-    const maskFunction = DATA_MASKS[dataMask];
-    let taggedBit;
-    if (bitIdx < orderedBits.length) {
-      taggedBit = orderedBits[bitIdx++];
-      if (taggedBit instanceof ECBit) {
-        // no idea what this intends to do...
-        this;
-      }
-    } else {
-      taggedBit = REMAINDER_BIT;
-    }
-
-    const { source, altered, value } = taggedBit;
-    const isMasked = DATA_MASKS[dataMask]({ x, y });
-
-    return {
-      bit: taggedBit,
-      segment: source,
-      x,
-      y,
-      isMasked,
-      isHighlighted: altered ? true : false,
-      isDark: isMasked ? !value : value,
-    };
-  };
-
   FinderPattern.populate(matrix);
   TimingPattern.populate(matrix);
   alignmentPattern.populate(matrix);
   formatInfo.populate(matrix);
   versionInfo.populate(matrix);
 
+  let bitIdx = 0;
   let up = true;
   // write columns in pairs, right to left
   for (let columnIdx = dimension - 1; columnIdx > 0; columnIdx -= 2) {
@@ -319,38 +291,50 @@ function QRCodeCanvas({
 
         // check for pattern
         if (!matrix[y][x]) {
-          matrix[y][x] = getDataModule({ x, y });
+          let taggedBit;
+          if (bitIdx < orderedBits.length) {
+            taggedBit = orderedBits[bitIdx++];
+            if (taggedBit instanceof ECBit) {
+              // no idea what this intends to do...
+              this;
+            }
+          } else {
+            taggedBit = REMAINDER_BIT;
+          }
+
+          const { source, altered, value } = taggedBit;
+          const isMasked = DATA_MASKS[dataMask]({ x, y });
+          matrix[y][x] = {
+            bit: taggedBit,
+            segment: source,
+            x,
+            y,
+            isMasked,
+            isHighlighted: altered ? true : false,
+            isDark: isMasked ? !value : value,
+          };
         }
       }
     }
     up = !up; // Change direction
   }
 
-  useEffect(() => {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  // Draw the QR code on the canvas
 
-    // Draw the QR code on the canvas
+  for (let y = 0; y < matrix.length; y++) {
+    for (let x = 0; x < matrix[y].length; x++) {
+      const module = matrix[y][x];
+      ctx.fillStyle = module.isDark ? "black" : "white";
+      ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
 
-    for (let y = 0; y < matrix.length; y++) {
-      for (let x = 0; x < matrix[y].length; x++) {
-        const module = matrix[y][x];
-        ctx.fillStyle = module.isDark ? "black" : "white";
-        ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
-
-        // Draw a border if highlighted
-        if (module && module.isHighlighted) {
-          ctx.strokeStyle = "red";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(
-            x * moduleSize,
-            y * moduleSize,
-            moduleSize,
-            moduleSize
-          );
-        }
+      // Draw a border if highlighted
+      if (module && module.isHighlighted) {
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
       }
     }
-  }, [matrix]);
+  }
 
   const handleClick = (event) => {
     event.preventDefault();
