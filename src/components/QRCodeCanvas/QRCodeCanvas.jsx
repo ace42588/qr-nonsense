@@ -25,40 +25,6 @@ const DATA_MASKS = [
 
 const REMAINDER_BIT = new RemainderBit();
 
-export class QRModule {
-  constructor({ taggedBit, x, y, maskNum }) {
-    this.bit = taggedBit;
-    this.segment = this.bit.source;
-    this.x = x;
-    this.y = y;
-    this.setMask(maskNum);
-    this.highlighted = false;
-  }
-
-  setMask(maskNum) {
-    this.maskFunction = DATA_MASKS[maskNum];
-  }
-
-  isMasked() {
-    this.maskFunction({ x: this.x, y: this.y });
-  }
-
-  isDark() {
-    return this.isMasked ? !this.bit.value : this.bit.value;
-  }
-
-  isHighlighted() {
-    return this.highlighted;
-  }
-
-  highlight() {
-    this.highlighted = !this.highlighted;
-  }
-
-  toggleBit() {
-    this.bit.toggle();
-  }
-}
 
 function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   const qrCapacityBytes = [
@@ -270,22 +236,22 @@ function QRCodeCanvas({
 }) {
   const canvasRef = useRef(null);
   const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-  
+  const ctx = canvas.getContext("2d");
+
   const { dataBits } = bitStream;
   let bitIdx = 0;
-  
+
   if (version === "auto") {
-      version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
-      console.log({ version });
-    }
+    version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
+    console.log({ version });
+  }
   const versionDetails = VERSIONS[version - 1];
   const alignmentPattern = new AlignmentPattern(versionDetails.versionNumber);
   const versionInfo = new VersionInfo(versionDetails);
   const { numModules } = versionInfo;
   const matrix = Array.from({ length: numModules }, () =>
-      Array(numModules).fill(false)
-    );
+    Array(numModules).fill(false)
+  );
   const dimension = matrix.length;
   const moduleSize = canvas.width / dimension;
 
@@ -293,23 +259,21 @@ function QRCodeCanvas({
     // ignore for now
     dataMask = 1;
   }
-  const formatInfo = new FormatInfo({errorCorrectionLevel,  dataMask});
+  const formatInfo = new FormatInfo({ errorCorrectionLevel, dataMask });
 
   let blocks = createBlocks(bitStream, errorCorrectionLevel, versionDetails);
-  const totalCodewords = blocks.reduce(
-      (t, b) => t + b.totalCodewords,
-      0
-    );
+  const totalCodewords = blocks.reduce((t, b) => t + b.totalCodewords, 0);
   let codewords = [];
   for (let i = 0; i < totalCodewords; i++) {
-      const blockIdx = i % blocks.length;
-      const cwIdx = Math.floor(i / blocks.length);
-      let block = blocks[(i % blocks.length)];
-      let codeword = block.codewords[(Math.floor(i / blocks.length))];
-      codewords.push(codeword);
-    }
-  
+    const blockIdx = i % blocks.length;
+    const cwIdx = Math.floor(i / blocks.length);
+    let block = blocks[i % blocks.length];
+    let codeword = block.codewords[Math.floor(i / blocks.length)];
+    codewords.push(codeword);
+  }
+
   const getDataModule = ({ x, y }) => {
+    const maskFunction = DATA_MASKS[dataMask];
     let taggedBit;
     if (bitIdx < dataBits.length) {
       taggedBit = dataBits[bitIdx++];
@@ -320,20 +284,24 @@ function QRCodeCanvas({
     } else {
       taggedBit = REMAINDER_BIT;
     }
-    const module = new QRModule({
-      taggedBit,
+
+    const { source, altered, value } = taggedBit;
+    const isMasked = DATA_MASKS[dataMask]({ x, y });
+
+    return {
+      bit: taggedBit,
+      segment: source,
       x,
       y,
-      masked: DATA_MASKS[dataMask]({ x, y }),
-    });
-    if (taggedBit.altered) module.highlight();
-
-    return module;
-  }
+      isMasked,
+      isHighlighted: altered ? true : false,
+      isDark: isMasked ? !value : value,
+    };
+  };
 
   useEffect(() => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    
+
     FinderPattern.populate(matrix);
     TimingPattern.populate(matrix);
     alignmentPattern.populate(matrix);
