@@ -315,6 +315,8 @@ function QRCodeCanvas({
   const versionDetails = VERSIONS[version - 1];
   console.log({ versionDetails });
   const versionInfo = new VersionInfo(versionDetails);
+  const { numModules } = versionInfo;
+  
   
   if (dataMask === "auto") {
     // ignore for now
