@@ -219,7 +219,6 @@ function App() {
   const [matrix, setMatrix] = useState([]);
   const [bitStream, setBitStream] = useState(new TaggedBitstream());
   const [errorCorrectionLevel, setErrorCorrectionLevel] = useState("1");
-  const [versionDetails, setVersionDetails] = useState();
 
   let qrMatrix;
   let blocks;
@@ -231,12 +230,13 @@ function App() {
     chunks.forEach(({ type, encoding, ...data }) =>
       getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
     );
+    console.log({bitStream})
 
     if (version === "auto") {
       version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
       console.log({ version });
     }
-    setVersionDetails(VERSIONS[version - 1]);
+    const versionDetails = VERSIONS[version - 1];
     console.log({ versionDetails });
 
     setSegments(bitStream.segments);
