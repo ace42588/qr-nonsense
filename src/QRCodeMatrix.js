@@ -8,14 +8,6 @@ import { VersionInfo } from "./encode/VersionInfo";
 import { VERSIONS } from "./encode/version";
 import { ModuleFactory } from "./QRModule";
 
-function setRegion(matrix, left, top, width, height, v) {
-  for (let y = top; y < top + height; y++) {
-    for (let x = left; x < left + width; x++) {
-      matrix[y][x] = v;
-    }
-  }
-}
-
 /**
  * Apply all 8 masks, calculate penalties, and return the mask index with the lowest score.
  * @param {Array<Array<number>>} matrix - 2D array representing the QR code (1 = dark, 0 = light)

@@ -4,6 +4,9 @@ import "./InputForm.css"; // Import your component-specific styles
 import VersionSelector from "../VersionSelector/VersionSelector";
 import DataMaskSelector from "../DataMaskSelector/DataMaskSelector";
 
+import { getEncoder } from "../../encode/Encoder";
+import { TaggedBitstream } from "../../encode/TaggedBitstream";
+
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 
 const parseInput = (input) => {
@@ -77,7 +80,7 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-function InputForm({ onSubmit }) {
+function InputForm({ setBitStream, onSubmit }) {
   const [version, setVersion] = useState("auto");
   const [mask, setMask] = useState("auto");
   const [inputs, setInputs] = useState([{ type: "byte", value: "" }]);
@@ -112,7 +115,12 @@ function InputForm({ onSubmit }) {
     event.preventDefault();
     const chunks = inputs.map((i) => parseInput(i));
     const formatInfo = { dataMask: mask };
-    onSubmit({ chunks, version, formatInfo });
+    
+    const bitStream = new TaggedBitstream();
+    chunks.forEach(({ type, encoding, ...data }) =>
+      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
+    );
+    setBitStream(bitStream);
   };
 
   const handleCheckboxChange = (input) => {
