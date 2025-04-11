@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import "./QRCodeCanvas.css";
 
 import { FormatInfo } from "../../encode/FormatInfo";
-import {getMinimumQRCodeVersion} from "../../utility"
+import { getMinimumQRCodeVersion } from "../../utility";
 import {
   FinderPattern,
   TimingPattern,
@@ -39,7 +39,7 @@ const orderBits = (bitStream, errorCorrectionLevel, version) => {
     orderedBits.push(...bits);
   }
   return orderedBits;
-}
+};
 
 const createMatrix = (errorCorrectionLevel, version, dataMask) => {
   const numModules = version * 4 + 17;
@@ -54,13 +54,13 @@ const createMatrix = (errorCorrectionLevel, version, dataMask) => {
   formatInfo.populate(matrix);
   const versionInfo = new VersionInfo(version);
   versionInfo.populate(matrix);
-  
+
   return matrix;
-}
+};
 
 const generateMatrix = (bitStream, errorCorrectionLevel, version, dataMask) => {
   const orderedBits = orderBits(bitStream, errorCorrectionLevel, version);
-  const matrix = createMatrix(errorCorrectionLevel, version, dataMask) 
+  const matrix = createMatrix(errorCorrectionLevel, version, dataMask);
   let bitIdx = 0;
   let up = true;
   const dimension = matrix.length;
@@ -105,7 +105,7 @@ const generateMatrix = (bitStream, errorCorrectionLevel, version, dataMask) => {
     up = !up; // Change direction
   }
   return matrix;
-}
+};
 
 function QRCodeCanvas({
   bitStream,
@@ -115,41 +115,60 @@ function QRCodeCanvas({
   dataMask,
 }) {
   const canvasRef = useRef(null);
-  const canvas = canvasRef.current;
-  const ctx = canvas.getContext("2d");
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  let matrix;
+  let moduleSize;
 
-  if (version === "auto") {
-    version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
-    console.log({ version });
+  if (bitStream) {
+    if (version === "auto") {
+      version = getMinimumQRCodeVersion(bitStream.size(), errorCorrectionLevel);
+      console.log({ version });
+    }
+
+    if (dataMask === "auto") {
+      // ignore for now
+      dataMask = 1;
+    }
+
+    matrix = generateMatrix(
+      bitStream,
+      errorCorrectionLevel,
+      version,
+      dataMask
+    );
   }
-  
-  if (dataMask === "auto") {
-    // ignore for now
-    dataMask = 1;
-  }
-  
-  const matrix = generateMatrix(bitStream, errorCorrectionLevel, version, dataMask);
 
-  // Draw the QR code on the canvas
-  const moduleSize = canvas.width / matrix.length;
-  for (let y = 0; y < matrix.length; y++) {
-    for (let x = 0; x < matrix[y].length; x++) {
-      const module = matrix[y][x];
-      ctx.fillStyle = module.isDark ? "black" : "white";
-      ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    moduleSize = canvas.width / matrix.length;
 
-      // Draw a border if highlighted
-      if (module && module.isHighlighted) {
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
+    // Draw the QR code on the canvas
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    for (let y = 0; y < matrix.length; y++) {
+      for (let x = 0; x < matrix[y].length; x++) {
+        const module = matrix[y][x];
+        ctx.fillStyle = module.isDark ? "black" : "white";
+        ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
+
+        // Draw a border if highlighted
+        if (module && module.isHighlighted) {
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(
+            x * moduleSize,
+            y * moduleSize,
+            moduleSize,
+            moduleSize
+          );
+        }
       }
     }
-  }
+  }, [matrix]);
 
   const handleClick = (event) => {
     event.preventDefault();
+    const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;

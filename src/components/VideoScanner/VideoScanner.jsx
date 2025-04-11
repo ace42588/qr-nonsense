@@ -5,19 +5,29 @@ import "./VideoScanner.css";
 import { getEncoder } from "../../encode/Encoder";
 import { TaggedBitstream } from "../../encode/TaggedBitstream";
 
-function VideoScanner({ setBitStream, setVersion, setDataMask, setErrorCorrectionLevel }) {
+function VideoScanner({
+  setBitStream,
+  setVersion,
+  setDataMask,
+  setErrorCorrectionLevel,
+}) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [scanning, setScanning] = useState(true);
 
   const processQRCodeData = ({ chunks, version, formatInfo }) => {
     console.log({ chunks, version, formatInfo });
+    const { errorCorrectionLevel, dataMask } = formatInfo;
     const bitStream = new TaggedBitstream();
 
     chunks.forEach(({ type, encoding, ...data }) =>
       getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
     );
     console.log({ bitStream });
+    setBitStream(bitStream);
+    setVersion(version);
+    setDataMask(dataMask);
+    setErrorCorrectionLevel(errorCorrectionLevel);
   };
 
   useEffect(() => {

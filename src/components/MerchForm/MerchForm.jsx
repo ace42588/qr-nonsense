@@ -5,6 +5,9 @@ import VersionSelector from "../VersionSelector/VersionSelector";
 import DataMaskSelector from "../DataMaskSelector/DataMaskSelector";
 import ErrorCorrectionSelector from "../ECSelector/ECSelector";
 
+import { getEncoder } from "../../encode/Encoder";
+import { TaggedBitstream } from "../../encode/TaggedBitstream";
+
 const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
 const sampleInput = {
   p: "A",
@@ -117,10 +120,15 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-function MerchForm({ processQRCodeData }) {
+/*
+setBitStream={setBitStream}
+          version={version}
+          setVersion={setVersion}
+          dataMask={dataMask}
+          setDataMask={setDataMask}
+          */
 
-  const [version, setVersion] = useState("auto");
-  const [mask, setMask] = useState("auto");
+function MerchForm({ setBitStream, version, setVersion, dataMask, setDataMask }) {
   const [inputs, setInputs] = useState([{ type: "JSON", value: "" }]);
 
   const handleInputChange = (index, event) => {
@@ -144,10 +152,14 @@ function MerchForm({ processQRCodeData }) {
     event.preventDefault();
     let qrData = {}
     const chunks = inputs.map((i) => parseInput(i));
-    qrData.chunks = chunks;
-    qrData.version = version;
-    qrData.formatInfo = { dataMask: mask };
-    processQRCodeData(qrData);
+    const bitStream = new TaggedBitstream();
+    chunks.forEach(({ type, encoding, ...data }) =>
+      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
+    );
+    console.log({ bitStream });
+    setBitStream(bitStream);
+    setVersion(version);
+    setDataMask(dataMask);
   };
 
   const setInitialInput = (input) => {
@@ -164,7 +176,7 @@ function MerchForm({ processQRCodeData }) {
         <VersionSelector value={version} onChange={setVersion} />
       </div>
       <div className="row">
-        <DataMaskSelector value={mask} onChange={setMask} />
+        <DataMaskSelector value={dataMask} onChange={setDataMask} />
       </div>
       <div className="row">
         {inputs.map((input, index) => (
