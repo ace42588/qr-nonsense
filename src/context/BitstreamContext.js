@@ -2,6 +2,9 @@ import React, { createContext, useReducer } from "react";
 import BitstreamReducer from "./BitstreamReducer";
 
 const initialState = {
+  errorCorrectionLevel: 1,
+  version: "auto",
+  dataMask: "auto",
   segments: [],
   bits: [],
 };
@@ -35,8 +38,7 @@ export const BitstreamContextProvider = ({ children }) => {
   return (
     <BitstreamContext.Provider
       value={{
-        bits: state.bits,
-    segments: state.segments,
+        ...state,
         encodeData,
       }}
     >

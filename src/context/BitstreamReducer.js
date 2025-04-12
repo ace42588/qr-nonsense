@@ -5,7 +5,32 @@ import {
 } from "../encode/Segment";
 import { TaggedBit } from "../encode/TaggedBit";
 
-const Mode = {
+import { VERSIONS } from "./version";
+
+const PAD_BYTES = [
+  [
+    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 236, encoding: "none" }),
+  ],
+  [
+    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "1", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "1", type: "padding", source: 17, encoding: "none" }),
+  ],
+];
+
+const MODE = {
   Numeric: "numeric",
   Alphanumeric: "alphanumeric",
   Byte: "byte",
@@ -82,7 +107,7 @@ class Encoder {
 class NumericEncoder extends Encoder {
   constructor(bitStream) {
     super({ bitStream });
-    this.mode = Mode.Numeric;
+    this.mode = MODE.Numeric;
   }
 
   getCharCountIndicator(charCount) {
@@ -182,6 +207,58 @@ function getEncoder({ bitStream, type }) {
   }
 }
 
+function getFinalizedBits(versionNum, errorCorrectionLevel) {
+    //console.log("getFinalizedBits")
+    const { errorCorrectionLevels } = VERSIONS[versionNum - 1];
+    const { ecCodewordsPerBlock, ecBlocks } =
+      errorCorrectionLevels[errorCorrectionLevel];
+    let requiredDataCodewords = 0;
+
+    ecBlocks.forEach((group) => {
+      const { numBlocks, dataCodewordsPerBlock } = group;
+      requiredDataCodewords += numBlocks * dataCodewordsPerBlock;
+    });
+    const requiredBits = requiredDataCodewords * 8;
+    let finalBits = Array.from(this.dataBits);
+    //this.addTerminator(requiredBits);
+    const diff = requiredBits - finalBits.length;
+    let bits;
+    if (diff >= 4) {
+      bits = "0000";
+    } else if (diff > 0) {
+      bits = "".padStart(diff, "0");
+    }
+    const termBits = Array.from(bits).map((bit) => new TaggedBit({
+        bit,
+        type: "terminator",
+        source: "terminator",
+      })
+    );
+    finalBits = [...finalBits, ...termBits];
+    //this.fillLastByte();
+    const bitsNeeded = 8 - (finalBits.length % 8);
+    if (bitsNeeded > 0 && bitsNeeded < 8) {
+      bits = "".padStart(bitsNeeded, "0");
+      const fillBits = Array.from(bits).map((bit) => new TaggedBit({
+        bit,
+        type: "terminator",
+        source: "terminator",
+      }));
+      finalBits = [...finalBits, ...fillBits];
+    }
+    //this.addPadBytes(requiredDataCodewords);
+    const currentBytes = finalBits.length / 8;
+    //console.log("addPadBytes", { currentBytes });
+    const bytesNeeded = requiredDataCodewords - currentBytes;
+    //console.log("addPadBytes", { bytesNeeded });
+    for (let i = 0; i < bytesNeeded; i++) {
+      const taggedBits = PAD_BYTES[i % 2];
+      finalBits = [...finalBits, ...taggedBits];
+    }
+
+    return finalBits;
+  }
+
 export default function BitstreamReducer(state, action) {
   switch (action.type) {
     case "ENCODE_DATA": {
@@ -195,6 +272,8 @@ export default function BitstreamReducer(state, action) {
         bits: [...state.bits, ...newBits],
       };
     }
-      case "HIGHLIGHT_SEGMENT"
+    case "HIGHLIGHT_DATA": {
+      
+    }
   }
 }
