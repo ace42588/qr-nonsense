@@ -180,12 +180,11 @@ function QRCodeCanvas({
     const module = matrix[yIndex][xIndex];
     if (module) {
       console.log(module);
-      const newModule = {...module}
+      const newModule = {...module};
       if (event.type === "click") {
-        module.highlight();
+          newModule.highlight = !module.highlight;
       } else if (event.type === "contextmenu") {
         module.toggleBit();
-        onBitToggle(module);
       }
     }
     return false;

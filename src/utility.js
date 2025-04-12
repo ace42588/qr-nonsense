@@ -205,6 +205,6 @@ export function makeModule({ taggedBit, x, y, masked }) {
     y,
     isMasked: masked,
     isHighlighted: false,
-    isDark: taggedBit.value,
+    isDark: value,
   };
 };
