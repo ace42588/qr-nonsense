@@ -3,6 +3,7 @@ import {
   AlphanumericSegment,
   ByteSegment,
 } from "../encode/Segment";
+import { TaggedBit } from "../encode/TaggedBit";
 
 const Mode = {
   Numeric: "numeric",
@@ -28,8 +29,7 @@ const ModeByte = {
 const AlphaNumCharClass = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
 class Encoder {
-  constructor() {
-  }
+  constructor() {}
 
   getCharCountIndicator(charCount) {
     throw new Error(
@@ -43,47 +43,27 @@ class Encoder {
 
   addModeIndicator() {
     const modeBits = ModeByte[this.mode].toString(2).padStart(4, "0");
-    this.bitStream.addBits(null, modeBits, "mode", this.mode, "none");
-    addBits(numBits, bits, type, source, encoding) {
-      let bitStr;
-      let bitArr;
-
-      if (Array.isArray(bits)) {
-        bitArr = bits;
-      } else if (typeof bits === "number") {
-        bitStr = bits.toString(2);
-      } else if (typeof bits === "string") {
-        const regex = new RegExp("^[01]{1,}$");
-        if (regex.test(bits)) {
-          bitStr = bits;
-        }
-      }
-
-      numBits = numBits ? numBits : bitStr.length;
-
-      if (numBits > bitStr.length) {
-        bitStr.padStart(numBits, "0");
-      } else if (numBits < bitStr) {
-        bitStr = bitStr.substring(bitStr.length - numBits);
-      }
-
-      bitArr = bitStr ? Array.from(bitStr) : bitArr;
-
-      for (const bit of bitArr) {
-        const taggedBit = new TaggedBit({ bit, type, source, encoding });
-        this.dataBits.push(taggedBit);
-      }
-    }
+    return [...modeBits].map(
+      (bit) =>
+        new TaggedBit({
+          bit,
+          type: "mode",
+          source: this.mode,
+          encoding: "none",
+        })
+    );
   }
 
   addCharacterCountIndicator(charCount) {
     const charCountBits = this.getCharCountIndicator(charCount);
-    this.bitStream.addBits(
-      null,
-      charCountBits,
-      "characterCount",
-      charCount,
-      "none"
+    return [...charCountBits].map(
+      (bit) =>
+        new TaggedBit({
+          bit,
+          type: "characterCount",
+          source: charCount,
+          encoding: "none",
+        })
     );
   }
 
@@ -206,7 +186,7 @@ export default function BitstreamReducer(state, action) {
   switch (action.type) {
     case "ENCODE_DATA": {
       const { mode, encoding, data } = action.payload;
-      getEncoder(mode);
+      const {segments: newSegments, bits: newBits } = getEncoder(mode).encode(data, encoding);
     }
   }
 }
