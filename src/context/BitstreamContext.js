@@ -11,20 +11,20 @@ export const BitstreamContext = createContext(initialState);
 export const BitstreamContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(BitstreamReducer, initialState);
 
-  function addSegment(segment) {
+  function encodeData({ mode, encoding, ...data }) {
     dispatch({
-      type: "ADD_SEGMENT",
-      payload: segment
-    })
+      type: "ENCODE_DATA",
+      payload: { mode, encoding, data: Object.values(data)[0] },
+    });
   }
-  
+
   function addBit(bit) {
     dispatch({
       type: "ADD_BIT",
       payload: bit,
     });
   }
-  
+
   function addByte(byte) {
     dispatch({
       type: "ADD_BIT",
@@ -36,7 +36,8 @@ export const BitstreamContextProvider = ({ children }) => {
     <BitstreamContext.Provider
       value={{
         bits: state.bits,
-        addBit,
+    segments: state.segments,
+        encodeData,
       }}
     >
       {children}
