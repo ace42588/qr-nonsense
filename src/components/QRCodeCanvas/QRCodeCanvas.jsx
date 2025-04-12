@@ -128,7 +128,7 @@ function QRCodeCanvas({
 
     if (dataMask === "auto") {
       // ignore for now
-      dataMask = 1;
+      dataMask = 0;
     }
 
     matrix = generateMatrix(bitStream, errorCorrectionLevel, version, dataMask);
