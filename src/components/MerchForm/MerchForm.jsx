@@ -9,7 +9,7 @@ import { getEncoder } from "../../encode/Encoder";
 import { TaggedBitstream } from "../../encode/TaggedBitstream";
 
 const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
-const sampleInput = {
+const sampleInput = JSON.stringify({
   p: "A",
   cc: 133,
   txn: "99999",
@@ -27,7 +27,7 @@ const sampleInput = {
       q: 2,
     },
   ],
-};
+}, null, 2);
 
 // {"p":"A","cc":"133","txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}
 const buildHeader = (txn, confId, platform) => {
@@ -112,7 +112,6 @@ const parseInput = (input) => {
       } catch (e) {
         parsedInput.text = value;
       }
-      parsedInput.text = value;
     }
   }
 
@@ -128,7 +127,7 @@ function MerchForm({
   errorCorrectionLevel,
   setErrorCorrectionLevel,
 }) {
-  const [inputs, setInputs] = useState([{ type: "JSON", value: JSON.stringify(sampleInput, null, 2) }]);
+  const [inputs, setInputs] = useState([{ type: "JSON", value: sampleInput}]);
 
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
@@ -152,6 +151,7 @@ function MerchForm({
     setVersion(version);
     setDataMask(dataMask);
     const chunks = inputs.map((i) => parseInput(i));
+    console.log({chunks});
     const bitStream = new TaggedBitstream();
     chunks.forEach(({ type, encoding, ...data }) =>
       getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
