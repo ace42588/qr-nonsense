@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import QRCodeCanvas from "./components/QRCodeCanvas";
 import SegmentDisplay from "./components/SegmentDisplay";
-import { ModeSelector, ErrorCorrectionSelector } from "./components/Selectors";
+import {
+  ErrorCorrectionSelector,
+  VersionSelector,
+  DataMaskSelector,
+} from "./components/Selectors";
 import InputForm from "./components/InputForm";
 import MerchForm from "./components/MerchForm";
 import VideoScanner from "./components/VideoScanner";
@@ -13,28 +17,23 @@ import { QRCodeMatrix } from "./QRCodeMatrix";
 import "./App.css";
 
 function App() {
-  const [mode, setMode] = useState("merch"); // Default to merch mode
+  const [inputMode, setInputMode] = useState("merch"); // Default to merch mode
   const [segments, setSegments] = useState([]);
-  const [matrix, setMatrix] = useState([]);
   const [bitStream, setBitStream] = useState();
   const [version, setVersion] = useState("auto");
   const [dataMask, setDataMask] = useState("auto");
   const [errorCorrectionLevel, setErrorCorrectionLevel] = useState(1);
 
   const selectUI = () => {
-    if (mode === "merch") {
+    if (inputMode === "merch") {
       return (
         <MerchForm
           setBitStream={setBitStream}
           version={version}
-          setVersion={setVersion}
-          dataMask={dataMask}
-          setDataMask={setDataMask}
           errorCorrectionLevel={errorCorrectionLevel}
-          setErrorCorrectionLevel={setErrorCorrectionLevel}
         />
       );
-    } else if (mode === "scan") {
+    } else if (inputMode === "scan") {
       return (
         <VideoScanner
           setBitStream={setBitStream}
@@ -48,11 +47,7 @@ function App() {
       <InputForm
         setBitStream={setBitStream}
         version={version}
-        setVersion={setVersion}
-        dataMask={dataMask}
-        setDataMask={setDataMask}
         errorCorrectionLevel={errorCorrectionLevel}
-        setErrorCorrectionLevel={setErrorCorrectionLevel}
       />
     );
   };
@@ -62,23 +57,23 @@ function App() {
       <div className="row">
         <h1>QR Code Generator</h1>
         <div className="row">
-          <ModeSelector mode={mode} setMode={setMode} />
+          <ModeSelector mode={inputMode} setMode={setInputMode} />
         </div>
       </div>
       <div className="row">
         <div className="column">
           <div className="row">
-        <ErrorCorrectionSelector
-          value={errorCorrectionLevel}
-          onChange={setErrorCorrectionLevel}
-        />
-      </div>
-      <div className="row">
-        <VersionSelector value={version} onChange={setVersion} />
-      </div>
-      <div className="row">
-        <DataMaskSelector value={dataMask} onChange={setDataMask} />
-      </div>
+            <ErrorCorrectionSelector
+              value={errorCorrectionLevel}
+              onChange={setErrorCorrectionLevel}
+            />
+          </div>
+          <div className="row">
+            <VersionSelector value={version} onChange={setVersion} />
+          </div>
+          <div className="row">
+            <DataMaskSelector value={dataMask} onChange={setDataMask} />
+          </div>
           <div className="row">{selectUI()}</div>
         </div>
         <div className="column">
@@ -92,10 +87,7 @@ function App() {
         </div>
       </div>
       <div className="row">
-        <SegmentDisplay
-          bitStream={bitStream}
-          setBitStream={setBitStream}
-        />
+        <SegmentDisplay bitStream={bitStream} setBitStream={setBitStream} />
       </div>
     </div>
   );
