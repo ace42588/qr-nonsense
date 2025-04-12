@@ -216,57 +216,60 @@ function getEncoder({ bitStream, type }) {
   }
 }
 
-function getFinalizedBits(versionNum, errorCorrectionLevel) {
-    //console.log("getFinalizedBits")
-    const { errorCorrectionLevels } = VERSIONS[versionNum - 1];
-    const { ecCodewordsPerBlock, ecBlocks } =
-      errorCorrectionLevels[errorCorrectionLevel];
-    let requiredDataCodewords = 0;
+function finalize(bits, versionNum, errorCorrectionLevel) {
+  const { errorCorrectionLevels } = VERSIONS[versionNum - 1];
+  const { ecCodewordsPerBlock, ecBlocks } =
+    errorCorrectionLevels[errorCorrectionLevel];
 
-    ecBlocks.forEach((group) => {
-      const { numBlocks, dataCodewordsPerBlock } = group;
-      requiredDataCodewords += numBlocks * dataCodewordsPerBlock;
-    });
-    const requiredBits = requiredDataCodewords * 8;
-    let finalBits = Array.from(this.dataBits);
-    //this.addTerminator(requiredBits);
-    const diff = requiredBits - finalBits.length;
-    let bits;
-    if (diff >= 4) {
-      bits = "0000";
-    } else if (diff > 0) {
-      bits = "".padStart(diff, "0");
-    }
-    const termBits = Array.from(bits).map((bit) => new TaggedBit({
+  const requiredDataCodewords = ecBlocks.reduce(
+    (t, { numBlocks, dataCodewordsPerBlock }) =>
+      t + numBlocks * dataCodewordsPerBlock,
+    0
+  );
+  let finalBits = [...bits];
+  // bits needed to fill the block
+  let requiredBits = requiredDataCodewords * 8;
+  let diff = requiredBits - bits.length;
+  let bitStr;
+  if (diff >= 4) {
+    bitStr = "0000";
+  } else if (diff > 0) {
+    bitStr = "".padStart(diff, "0");
+  }
+  const termBits = [...bits].map(
+    (bit) =>
+      new TaggedBit({
         bit,
         type: "terminator",
         source: "terminator",
       })
+  );
+  finalBits = [...finalBits, ...termBits];
+  const bitsNeeded = 8 - (finalBits.length % 8);
+  if (bitsNeeded > 0 && bitsNeeded < 8) {
+    bits = "".padStart(bitsNeeded, "0");
+    const fillBits = Array.from(bits).map(
+      (bit) =>
+        new TaggedBit({
+          bit,
+          type: "terminator",
+          source: "terminator",
+        })
     );
-    finalBits = [...finalBits, ...termBits];
-    //this.fillLastByte();
-    const bitsNeeded = 8 - (finalBits.length % 8);
-    if (bitsNeeded > 0 && bitsNeeded < 8) {
-      bits = "".padStart(bitsNeeded, "0");
-      const fillBits = Array.from(bits).map((bit) => new TaggedBit({
-        bit,
-        type: "terminator",
-        source: "terminator",
-      }));
-      finalBits = [...finalBits, ...fillBits];
-    }
-    //this.addPadBytes(requiredDataCodewords);
-    const currentBytes = finalBits.length / 8;
-    //console.log("addPadBytes", { currentBytes });
-    const bytesNeeded = requiredDataCodewords - currentBytes;
-    //console.log("addPadBytes", { bytesNeeded });
-    for (let i = 0; i < bytesNeeded; i++) {
-      const taggedBits = PAD_BYTES[i % 2];
-      finalBits = [...finalBits, ...taggedBits];
-    }
-
-    return finalBits;
+    finalBits = [...finalBits, ...fillBits];
   }
+  //this.addPadBytes(requiredDataCodewords);
+  const currentBytes = finalBits.length / 8;
+  //console.log("addPadBytes", { currentBytes });
+  const bytesNeeded = requiredDataCodewords - currentBytes;
+  //console.log("addPadBytes", { bytesNeeded });
+  for (let i = 0; i < bytesNeeded; i++) {
+    const taggedBits = PAD_BYTES[i % 2];
+    finalBits = [...finalBits, ...taggedBits];
+  }
+
+  return finalBits;
+}
 
 export default function BitstreamReducer(state, action) {
   switch (action.type) {
@@ -277,12 +280,12 @@ export default function BitstreamReducer(state, action) {
         encoding
       );
       return {
+        ...state,
         segments: [...state.segments, ...newSegments],
         bits: [...state.bits, ...newBits],
       };
     }
     case "HIGHLIGHT_DATA": {
-      
     }
   }
 }
