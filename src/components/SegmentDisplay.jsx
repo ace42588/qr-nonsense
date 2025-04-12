@@ -1,5 +1,5 @@
 import React from "react";
-import "./SegmentDisplay.css";
+import "./styles.css";
 
 function SegmentDisplay({ bitStream }) {
   if (bitStream) {

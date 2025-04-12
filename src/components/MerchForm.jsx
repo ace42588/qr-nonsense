@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./MerchForm.css"; // Import your component-specific styles
+import "./style.css"; // Import your component-specific styles
 
 import VersionSelector from "../VersionSelector/VersionSelector";
 import DataMaskSelector from "../DataMaskSelector/DataMaskSelector";
@@ -162,7 +162,7 @@ function MerchForm({
   };
 
   return (
-    <form onSubmit={handleInputSubmit} className="merch-form">
+    <form onSubmit={handleInputSubmit} className="input-form">
       <div className="row">
         <ErrorCorrectionSelector
           value={errorCorrectionLevel}

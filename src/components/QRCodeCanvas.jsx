@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import "./QRCodeCanvas.css";
+import "./styles.css";
 
 import { FormatInfo } from "../../encode/FormatInfo";
 import { getMinimumQRCodeVersion } from "../../utility";

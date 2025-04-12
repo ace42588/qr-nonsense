@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import jsQR from "jsqr";
-import "./VideoScanner.css";
+import "./styles.css";
 
 import { getEncoder } from "../../encode/Encoder";
 import { TaggedBitstream } from "../../encode/TaggedBitstream";

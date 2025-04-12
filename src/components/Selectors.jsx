@@ -1,5 +1,39 @@
 import React from "react";
 
+export function ModeSelector({ mode, setMode }) {
+  return (
+    <div className="mode-selector">
+      <label>
+        <input
+          type="radio"
+          value="scan"
+          checked={mode === 'scan'}
+          onChange={() => setMode('scan')}
+        />
+        Scan QR Code
+      </label>
+      <label>
+        <input
+          type="radio"
+          value="manual"
+          checked={mode === 'manual'}
+          onChange={() => setMode('manual')}
+        />
+        Manual Input
+      </label>
+      <label>
+        <input
+          type="radio"
+          value="merch"
+          checked={mode === 'merch'}
+          onChange={() => setMode('merch')}
+        />
+        Merch Input
+      </label>
+    </div>
+  );
+}
+
 const levels = [
   { label: "Low (L) – 7% redundancy", value: 0 },
   { label: "Medium (M) – 15% redundancy", value: 1 },
@@ -26,6 +60,31 @@ export function ErrorCorrectionSelector({ value, onChange }) {
   );
 }
 
+const versions = [{ label: "Auto", value: "auto" }].concat(
+  Array.from({ length: 40 }, (_, i) => ({
+    label: `Version ${i + 1}`,
+    value: i + 1,
+  }))
+);
+
+export function VersionSelector({ value, onChange }) {
+  return (
+    <div className="version-selector">
+      <label htmlFor="qr-version">QR Code Version:</label>
+      <select
+        id="qr-version"
+        value={value}
+        onChange={(e) => onChange(e.target.value === "auto" ? "auto" : parseInt(e.target.value))}
+      >
+        {versions.map((ver) => (
+          <option key={ver.value} value={ver.value}>
+            {ver.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
 const masks = [
   { label: "Auto", value: "auto" },

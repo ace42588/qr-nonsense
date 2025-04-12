@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import QRCodeCanvas from "./components/QRCodeCanvas/QRCodeCanvas";
-import SegmentDisplay from "./components/SegmentDisplay/SegmentDisplay";
-import ModeSelector from "./components/ModeSelector/ModeSelector";
-import InputForm from "./components/InputForm/InputForm";
-import MerchForm from "./components/MerchForm/MerchForm";
-import VideoScanner from "./components/VideoScanner/VideoScanner";
-import ErrorCorrectionSelector from "./components/ECSelector/ECSelector";
+import QRCodeCanvas from "./components/QRCodeCanvas";
+import SegmentDisplay from "./components/SegmentDisplay";
+import { ModeSelector, ErrorCorrectionSelector } from "./components/Selectors";
+import InputForm from "./components/InputForm";
+import MerchForm from "./components/MerchForm";
+import VideoScanner from "./components/VideoScanner";
 import { createBlocks } from "./encode/Block";
 import { getEncoder } from "./encode/Encoder";
 import { TaggedBitstream } from "./encode/TaggedBitstream";
@@ -68,6 +67,18 @@ function App() {
       </div>
       <div className="row">
         <div className="column">
+          <div className="row">
+        <ErrorCorrectionSelector
+          value={errorCorrectionLevel}
+          onChange={setErrorCorrectionLevel}
+        />
+      </div>
+      <div className="row">
+        <VersionSelector value={version} onChange={setVersion} />
+      </div>
+      <div className="row">
+        <DataMaskSelector value={dataMask} onChange={setDataMask} />
+      </div>
           <div className="row">{selectUI()}</div>
         </div>
         <div className="column">

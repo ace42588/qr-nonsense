@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import "./InputForm.css"; // Import your component-specific styles
+import "./styles.css"; // Import your component-specific styles
 
-import VersionSelector from "../VersionSelector/VersionSelector";
-import DataMaskSelector from "../DataMaskSelector/DataMaskSelector";
-import ErrorCorrectionSelector from "../ECSelector/ECSelector";
+import {ErrorCorrectionSelector, VersionSelector, DataMaskSelector} from "./Selectors";
 
 import { getEncoder } from "../../encode/Encoder";
 import { TaggedBitstream } from "../../encode/TaggedBitstream";

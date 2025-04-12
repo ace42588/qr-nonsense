@@ -1,0 +1,104 @@
+/* InputForm Styles */
+.input-form {
+  gap: 10px;
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.input-form div {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-form input,
+.input-form select {
+  padding: 10px;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.input-form button {
+  align-self: flex-end;
+}
+
+@media (min-width: 768px) {
+  .input-form {
+    align-items: center;
+  }
+
+  .input-form input,
+  .input-form select {
+    flex: 1;
+    margin-right: 10px;
+  }
+
+  .input-form button {
+    width: auto;
+    flex-shrink: 0;
+  }
+}
+
+/* QRCodeCanvas Styles */
+canvas {
+  border: 1px solid #000000;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.qr-code-canvas-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* SegmentDisplay Styles */
+.segment-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0;
+  justify-content: center;
+}
+
+.segment-button {
+  padding: 10px 15px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.segment-button:hover {
+  background-color: #2980b9;
+  transform: scale(1.05);
+}
+
+@media (min-width: 768px) {
+  .segment-button {
+    padding: 15px 20px;
+  }
+}
+
+/* VideoScanner Styles */
+.video-scanner {
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+#video {
+  width: 100%;
+  max-width: 640px;
+  border-radius: 8px;
+}
