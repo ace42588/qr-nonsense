@@ -138,35 +138,31 @@ export class TaggedBitstream {
     let finalBits = new Array(this.dataBits);
     //this.addTerminator(requiredBits);
     const diff = requiredBits - finalBits.length;
+    let bits;
     if (diff >= 4) {
-      //this.addBits(4, "0000", "terminator", "terminator");
-      const bitArr = Array.from("0000");
-
-      for (const bit of bitArr) {
-        const taggedBit = new TaggedBit({
-          bit,
-          type: "terminator",
-          source: "terminator",
-        });
-        finalBits.push(taggedBit);
-      }
+      bits = "0000";
     } else if (diff > 0) {
-      const termBits = "".padStart(diff, "0");
-      this.addBits(termBits.length, termBits, "terminator", "terminator");
-      for (const bit of bitArr) {
-        const taggedBit = new TaggedBit({
-          bit,
-          type: "terminator",
-          source: "terminator",
-        });
-        finalBits.push(taggedBit);
-      }
+      bits = "".padStart(diff, "0");
     }
+    const termBits = Array.from(bits).map((bit) => new TaggedBit({
+        bit,
+        type: "terminator",
+        source: "terminator",
+      })
+    );
+    finalBits = [...finalBits, ...termBits];
     //this.fillLastByte();
     const bitsNeeded = 8 - (finalBits.length % 8);
     if (bitsNeeded > 0 && bitsNeeded < 8) {
-      const bits = "".padStart(bitsNeeded, "0");
-      this.addBits(bits.length, bits, "none", "none");
+      bits = "".padStart(bitsNeeded, "0");
+      Array.from(bits).forEach((bit) => {
+      const taggedBit = new TaggedBit({
+        bit,
+        type: "terminator",
+        source: "terminator",
+      });
+      finalBits.push(taggedBit);
+    })
     }
     //this.addPadBytes(requiredDataCodewords);
     const currentBytes = finalBits.length / 8;
