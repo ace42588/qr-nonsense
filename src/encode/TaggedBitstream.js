@@ -114,7 +114,7 @@ export class TaggedBitstream {
   }
 
   finalize(requiredBytes) {
-    console.log("finalize", this.segments);
+    //console.log("finalize", this.segments);
     if (this.finalized) return;
     const requiredBits = requiredBytes * 8;
     this.addTerminator(requiredBits);
@@ -122,6 +122,8 @@ export class TaggedBitstream {
     this.addPadBytes(requiredBytes);
     this.finalized = true;
   }
+  
+  get finalizedStream()
 
   readTaggedByte() {
     if (!this.finalized) {
