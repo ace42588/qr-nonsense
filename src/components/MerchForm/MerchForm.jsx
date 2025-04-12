@@ -9,25 +9,29 @@ import { getEncoder } from "../../encode/Encoder";
 import { TaggedBitstream } from "../../encode/TaggedBitstream";
 
 const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
-const sampleInput = JSON.stringify({
-  p: "A",
-  cc: 133,
-  txn: "99999",
-  i: [
-    {
-      v: 5432,
-      q: 1,
-    },
-    {
-      v: 6666,
-      q: 3,
-    },
-    {
-      v: 1234,
-      q: 2,
-    },
-  ],
-}, null, 2);
+const sampleInput = JSON.stringify(
+  {
+    p: "A",
+    cc: 133,
+    txn: "99999",
+    i: [
+      {
+        v: 5432,
+        q: 1,
+      },
+      {
+        v: 6666,
+        q: 3,
+      },
+      {
+        v: 1234,
+        q: 2,
+      },
+    ],
+  },
+  null,
+  2
+);
 
 // {"p":"A","cc":"133","txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}
 const buildHeader = (txn, confId, platform) => {
@@ -127,7 +131,7 @@ function MerchForm({
   errorCorrectionLevel,
   setErrorCorrectionLevel,
 }) {
-  const [inputs, setInputs] = useState([{ type: "JSON", value: sampleInput}]);
+  const [inputs, setInputs] = useState([{ type: "JSON", value: sampleInput }]);
 
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
@@ -148,17 +152,13 @@ function MerchForm({
 
   const handleInputSubmit = (event) => {
     event.preventDefault();
-    setVersion(version);
-    setDataMask(dataMask);
     const chunks = inputs.map((i) => parseInput(i));
-    console.log({chunks});
     const bitStream = new TaggedBitstream();
     chunks.forEach(({ type, encoding, ...data }) =>
       getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
     );
 
     setBitStream(bitStream);
-    console.log("MerchForm", { bitStream });
   };
 
   return (
