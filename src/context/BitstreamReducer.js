@@ -1,4 +1,8 @@
-import { NumericSegment, AlphanumericSegment, ByteSegment } from "../encode/Segment";
+import {
+  NumericSegment,
+  AlphanumericSegment,
+  ByteSegment,
+} from "../encode/Segment";
 
 const Mode = {
   Numeric: "numeric",
@@ -24,8 +28,7 @@ const ModeByte = {
 const AlphaNumCharClass = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
 class Encoder {
-  constructor({ bitStream }) {
-    this.bitStream = bitStream;
+  constructor() {
   }
 
   getCharCountIndicator(charCount) {
@@ -41,6 +44,36 @@ class Encoder {
   addModeIndicator() {
     const modeBits = ModeByte[this.mode].toString(2).padStart(4, "0");
     this.bitStream.addBits(null, modeBits, "mode", this.mode, "none");
+    addBits(numBits, bits, type, source, encoding) {
+      let bitStr;
+      let bitArr;
+
+      if (Array.isArray(bits)) {
+        bitArr = bits;
+      } else if (typeof bits === "number") {
+        bitStr = bits.toString(2);
+      } else if (typeof bits === "string") {
+        const regex = new RegExp("^[01]{1,}$");
+        if (regex.test(bits)) {
+          bitStr = bits;
+        }
+      }
+
+      numBits = numBits ? numBits : bitStr.length;
+
+      if (numBits > bitStr.length) {
+        bitStr.padStart(numBits, "0");
+      } else if (numBits < bitStr) {
+        bitStr = bitStr.substring(bitStr.length - numBits);
+      }
+
+      bitArr = bitStr ? Array.from(bitStr) : bitArr;
+
+      for (const bit of bitArr) {
+        const taggedBit = new TaggedBit({ bit, type, source, encoding });
+        this.dataBits.push(taggedBit);
+      }
+    }
   }
 
   addCharacterCountIndicator(charCount) {
@@ -58,16 +91,11 @@ class Encoder {
     let bits = [];
     bits = [...this.addModeIndicator()];
     bits = [...bits, ...this.addCharacterCountIndicator(data.length)];
-    
-    let segments = [...this.encodeData(data, encoding)];
 
-    for (const encoded of this.encodeData(data, encoding)) {
-      segments = [...segments, encoded];
-      for (const bit of encoded) {
-        this.dataBits.push(bit);
-      }
-      this.bitStream.addSegment(encoded);
-    }
+    let segments = [...this.encodeData(data, encoding)];
+    bits = [...bits, segments.flatMap((s) => [...s])];
+
+    return { segments, bits };
   }
 }
 
@@ -126,8 +154,8 @@ class ByteEncoder extends Encoder {
     // TODO: optionally convert to UTF-8
     if (encoding === "hex") {
       for (let i = 0; i < input.length; i += 2) {
-        const byte = parseInt(input.substring(i, i+2), 16);
-        yield new ByteSegment(byte, i/2, encoding);
+        const byte = parseInt(input.substring(i, i + 2), 16);
+        yield new ByteSegment(byte, i / 2, encoding);
       }
     } else {
       const chars = [...input];
@@ -156,7 +184,6 @@ class EciEncoder extends Encoder {
   }
 }
 
-
 function getEncoder({ bitStream, type }) {
   //console.log("getEncoder", { bitStream, type });
   switch (type) {
@@ -179,7 +206,7 @@ export default function BitstreamReducer(state, action) {
   switch (action.type) {
     case "ENCODE_DATA": {
       const { mode, encoding, data } = action.payload;
-      getEncoder(mode)
+      getEncoder(mode);
     }
   }
 }
