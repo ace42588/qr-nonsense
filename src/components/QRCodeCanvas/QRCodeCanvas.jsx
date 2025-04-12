@@ -120,7 +120,7 @@ function QRCodeCanvas({
 }) {
   const canvasRef = useRef(null);
   let matrix;
-  let moduleSize;
+  let moduleSize = 0;
 
   if (bitStream) {
     if (version === "auto") {

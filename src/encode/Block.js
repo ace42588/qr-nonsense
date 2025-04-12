@@ -49,6 +49,7 @@ export function createBlocks(bitStream, errorCorrectionLevel, version) {
   bitStream.finalize(requiredDataCodewords);
   // If we are recalculating, we need to reset the read index
   bitStream.resetReadPosition();
+  const bits = bitStream.getFinalizedBits(version, errorCorrectionLevel)
   // fill blocks with codewords
   for (const block of blocks) {
     const { dataCodewords, numDataCodewords } = block;

@@ -157,8 +157,8 @@ function MerchForm({
     chunks.forEach(({ type, encoding, ...data }) =>
       getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
     );
-    // Complete bytes and add padding
-    setBitStream(bitStream.getFinalizedBits(version, errorCorrectionLevel));
+
+    setBitStream(bitStream);
     console.log("MerchForm", { bitStream });
   };
 
