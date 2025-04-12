@@ -1,4 +1,4 @@
-import { TaggedCodeword, ECCodeword } from "./TaggedCodeword"
+import { TaggedCodeword, ECCodeword } from "./TaggedCodeword";
 import { ReedSolomonEncoder } from "./reedsolomon/index.js";
 import { VERSIONS } from "./version";
 
@@ -17,7 +17,9 @@ class Block {
     const dataBytes = this.dataCodewords.map((c) => c.byte);
     //console.log(dataBytes);
     const ecBytes = this.rsEncoder.encode(dataBytes);
-    const ecCodewords = Array.from(ecBytes).map((b, idx) => new ECCodeword(b, idx));
+    const ecCodewords = Array.from(ecBytes).map(
+      (b, idx) => new ECCodeword(b, idx)
+    );
     //console.log("generateErrorCorrection", { ec: ecCodewords.map((c) => c.byte) });
     this.ecCodewords = ecCodewords;
   }
@@ -29,11 +31,14 @@ class Block {
 
 export function createBlocks(bitStream, errorCorrectionLevel, version) {
   //console.log("createBlocks", { bitStream, errorCorrectionLevel, version });
-  const { errorCorrectionLevels } = (typeof version === "object") ? version : VERSIONS[version - 1];
+  const { errorCorrectionLevels } =
+    typeof version === "object" ? version : VERSIONS[version - 1];
   const { ecCodewordsPerBlock, ecBlocks } =
     errorCorrectionLevels[errorCorrectionLevel];
 
   let blocks = [];
+
+  /*
   let requiredDataCodewords = 0;
 
   ecBlocks.forEach((group) => {
@@ -44,12 +49,10 @@ export function createBlocks(bitStream, errorCorrectionLevel, version) {
       blocks.push(block);
     }
   });
-
   // Complete bytes and add padding
   bitStream.finalize(requiredDataCodewords);
   // If we are recalculating, we need to reset the read index
   bitStream.resetReadPosition();
-  const bits = bitStream.getFinalizedBits(version, errorCorrectionLevel)
   // fill blocks with codewords
   for (const block of blocks) {
     const { dataCodewords, numDataCodewords } = block;
@@ -60,6 +63,26 @@ export function createBlocks(bitStream, errorCorrectionLevel, version) {
     }
     //block.generateErrorCorrection();
   }
+  */
+  ecBlocks.forEach(({ numBlocks, dataCodewordsPerBlock }) => {
+    for (let i = 0; i < numBlocks; i++) {
+      const block = new Block(dataCodewordsPerBlock, ecCodewordsPerBlock, i);
+      blocks.push(block);
+    }
+  });
+
+  const dataBits = bitStream.getFinalizedBits(version, errorCorrectionLevel);
+  let readIdx = 0;
+  blocks.forEach((block, idx) => {
+    const { dataCodewords, numDataCodewords } = block;
+    const start = readIdx;
+    readIdx += 8;
+
+    const taggedBits = dataBits.slice(start, readIdx);
+    const codeword = new TaggedCodeword(taggedBits, dataCodewords.length);
+    dataCodewords.push(codeword);
+    block.generateErrorCorrection();
+  });
 
   //console.log({ blocks });
   return blocks;
