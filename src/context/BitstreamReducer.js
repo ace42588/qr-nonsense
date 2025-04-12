@@ -23,12 +23,27 @@ const ModeByte = {
 
 const AlphaNumCharClass = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
-function addModeIndicator() {
+class Encoder {
+  constructor({ bitStream }) {
+    this.bitStream = bitStream;
+  }
+
+  getCharCountIndicator(charCount) {
+    throw new Error(
+      "getCharCountIndicator() must be implemented in subclasses"
+    );
+  }
+
+  encodeData(input, encoding) {
+    throw new Error("encodeData() must be implemented in subclasses");
+  }
+
+  addModeIndicator() {
     const modeBits = ModeByte[this.mode].toString(2).padStart(4, "0");
     this.bitStream.addBits(null, modeBits, "mode", this.mode, "none");
   }
 
-function addCharacterCountIndicator(charCount) {
+  addCharacterCountIndicator(charCount) {
     const charCountBits = this.getCharCountIndicator(charCount);
     this.bitStream.addBits(
       null,
@@ -39,14 +54,22 @@ function addCharacterCountIndicator(charCount) {
     );
   }
 
-function encode(data, encoding) {
-    this.addModeIndicator();
-    this.addCharacterCountIndicator(data.length);
+  encode(data, encoding) {
+    let bits = [];
+    bits = [...this.addModeIndicator()];
+    bits = [...bits, ...this.addCharacterCountIndicator(data.length)];
+    
+    let segments = [...this.encodeData(data, encoding)];
 
     for (const encoded of this.encodeData(data, encoding)) {
+      segments = [...segments, encoded];
+      for (const bit of encoded) {
+        this.dataBits.push(bit);
+      }
       this.bitStream.addSegment(encoded);
     }
   }
+}
 
 class NumericEncoder extends Encoder {
   constructor(bitStream) {
