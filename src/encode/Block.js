@@ -64,24 +64,23 @@ export function createBlocks(bitStream, errorCorrectionLevel, version) {
     //block.generateErrorCorrection();
   }
   */
+  const dataBits = bitStream.getFinalizedBits(version, errorCorrectionLevel);
+  let readIdx = 0;
+
   ecBlocks.forEach(({ numBlocks, dataCodewordsPerBlock }) => {
     for (let i = 0; i < numBlocks; i++) {
       const block = new Block(dataCodewordsPerBlock, ecCodewordsPerBlock, i);
+      const { dataCodewords, numDataCodewords } = block;
+      while (dataCodewords.length < numDataCodewords) {
+        const start = readIdx;
+        readIdx += 8;
+        const taggedBits = dataBits.slice(start, readIdx);
+        const codeword = new TaggedCodeword(taggedBits, dataCodewords.length);
+        dataCodewords.push(codeword);
+      }
+      block.generateErrorCorrection();
       blocks.push(block);
     }
-  });
-
-  const dataBits = bitStream.getFinalizedBits(version, errorCorrectionLevel);
-  let readIdx = 0;
-  blocks.forEach((block, idx) => {
-    const { dataCodewords, numDataCodewords } = block;
-    const start = readIdx;
-    readIdx += 8;
-
-    const taggedBits = dataBits.slice(start, readIdx);
-    const codeword = new TaggedCodeword(taggedBits, dataCodewords.length);
-    dataCodewords.push(codeword);
-    block.generateErrorCorrection();
   });
 
   //console.log({ blocks });
