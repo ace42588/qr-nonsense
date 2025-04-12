@@ -257,13 +257,10 @@ function finalize(bits, versionNum, errorCorrectionLevel) {
       })
   );
   finalBits = [...finalBits, ...fillBits];
-  const currentBytes = finalBits.length / 8;
-  //console.log("addPadBytes", { currentBytes });
-  const bytesNeeded = requiredDataCodewords - currentBytes;
-  //console.log("addPadBytes", { bytesNeeded });
-  for (let i = 0; i < bytesNeeded; i++) {
-    const taggedBits = PAD_BYTES[i % 2];
-    finalBits = [...finalBits, ...taggedBits];
+  const currentCodewords = finalBits.length / 8;
+  const codewordsNeeded = requiredDataCodewords - currentCodewords;
+  for (let i = 0; i < codewordsNeeded; i++) {
+    finalBits = [...finalBits, ...PAD_BYTES[i % 2]];
   }
 
   return finalBits;
@@ -277,6 +274,7 @@ export default function BitstreamReducer(state, action) {
         data,
         encoding
       );
+      const finalBits = finalize()
       return {
         ...state,
         segments: [...state.segments, ...newSegments],
