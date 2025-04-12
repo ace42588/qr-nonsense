@@ -27,9 +27,10 @@ const DATA_MASKS = [
 const REMAINDER_BIT = new RemainderBit();
 
 const orderBits = (bitStream, errorCorrectionLevel, version) => {
-  console.log("orderBits",{bitStream, errorCorrectionLevel, version});
+  console.log("orderBits", {bitStream, errorCorrectionLevel, version});
   let blocks = createBlocks(bitStream, errorCorrectionLevel, version);
-  console.log("orderBits",{blocks});
+  blocks.forEach((block) => block.generateErrorCorrection());
+  console.log("orderBits", {blocks});
   const totalCodewords = blocks.reduce((t, b) => t + b.totalCodewords, 0);
   console.log("orderBits", {totalCodewords})
 

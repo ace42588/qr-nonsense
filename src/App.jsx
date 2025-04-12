@@ -17,7 +17,7 @@ function App() {
   const [mode, setMode] = useState("merch"); // Default to merch mode
   const [segments, setSegments] = useState([]);
   const [matrix, setMatrix] = useState([]);
-  const [bitStream, setBitStream] = useState(new TaggedBitstream());
+  const [bitStream, setBitStream] = useState();
   const [version, setVersion] = useState("auto");
   const [dataMask, setDataMask] = useState("auto");
   const [errorCorrectionLevel, setErrorCorrectionLevel] = useState(1);
@@ -31,6 +31,8 @@ function App() {
           setVersion={setVersion}
           dataMask={dataMask}
           setDataMask={setDataMask}
+          errorCorrectionLevel={errorCorrectionLevel}
+          setErrorCorrectionLevel={setErrorCorrectionLevel}
         />
       );
     } else if (mode === "scan") {
@@ -50,6 +52,8 @@ function App() {
         setVersion={setVersion}
         dataMask={dataMask}
         setDataMask={setDataMask}
+        errorCorrectionLevel={errorCorrectionLevel}
+        setErrorCorrectionLevel={setErrorCorrectionLevel}
       />
     );
   };
@@ -58,18 +62,12 @@ function App() {
     <div className="App">
       <div className="row">
         <h1>QR Code Generator</h1>
+        <div className="row">
+          <ModeSelector mode={mode} setMode={setMode} />
+        </div>
       </div>
       <div className="row">
         <div className="column">
-          <div className="row">
-            <ModeSelector mode={mode} setMode={setMode} />
-          </div>
-          <div className="row">
-            <ErrorCorrectionSelector
-              value={errorCorrectionLevel}
-              onChange={setErrorCorrectionLevel}
-            />
-          </div>
           <div className="row">{selectUI()}</div>
         </div>
         <div className="column">
@@ -85,8 +83,8 @@ function App() {
       <div className="row">
         <SegmentDisplay
           segments={segments}
-          matrix={matrix}
-          setMatrix={setMatrix}
+          bitStream={bitStream}
+          setBitStream={setBitStream}
         />
       </div>
     </div>

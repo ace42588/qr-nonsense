@@ -3,6 +3,7 @@ import "./InputForm.css"; // Import your component-specific styles
 
 import VersionSelector from "../VersionSelector/VersionSelector";
 import DataMaskSelector from "../DataMaskSelector/DataMaskSelector";
+import ErrorCorrectionSelector from "../ECSelector/ECSelector";
 
 import { getEncoder } from "../../encode/Encoder";
 import { TaggedBitstream } from "../../encode/TaggedBitstream";
@@ -80,14 +81,19 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-function InputForm({ setBitStream, onSubmit }) {
-  const [version, setVersion] = useState("auto");
-  const [mask, setMask] = useState("auto");
+function InputForm({ setBitStream,
+  version,
+  setVersion,
+  dataMask,
+  setDataMask,
+  errorCorrectionLevel,
+  setErrorCorrectionLevel }) {
+
   const [inputs, setInputs] = useState([{ type: "byte", value: "" }]);
   
   const updateBitStream = () => {
     const chunks = inputs.map((i) => parseInput(i));
-    const formatInfo = { dataMask: mask };
+    const formatInfo = { dataMask };
     
     const bitStream = new TaggedBitstream();
     chunks.forEach(({ type, encoding, ...data }) =>
@@ -159,6 +165,12 @@ function InputForm({ setBitStream, onSubmit }) {
       </div>
       <div className="row">
       </div>
+      <div className="row">
+            <ErrorCorrectionSelector
+              value={errorCorrectionLevel}
+              onChange={setErrorCorrectionLevel}
+            />
+          </div>
       <div className="row">
         {inputs.map((input, index) => (
           <div key={index} className="input-group">

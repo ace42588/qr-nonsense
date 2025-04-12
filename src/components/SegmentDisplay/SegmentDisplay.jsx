@@ -1,7 +1,7 @@
 import React from "react";
 import "./SegmentDisplay.css";
 
-function SegmentDisplay({ bitStream, matrix, setMatrix }) {
+function SegmentDisplay({ bitStream }) {
   if (bitStream) {
     let { segments } = bitStream;
 

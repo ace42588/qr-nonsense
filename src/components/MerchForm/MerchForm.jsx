@@ -120,7 +120,15 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-function MerchForm({ setBitStream, version, setVersion, dataMask, setDataMask }) {
+function MerchForm({
+  setBitStream,
+  version,
+  setVersion,
+  dataMask,
+  setDataMask,
+  errorCorrectionLevel,
+  setErrorCorrectionLevel,
+}) {
   const [inputs, setInputs] = useState([{ type: "JSON", value: "" }]);
 
   const handleInputChange = (index, event) => {
@@ -142,7 +150,7 @@ function MerchForm({ setBitStream, version, setVersion, dataMask, setDataMask })
 
   const handleInputSubmit = (event) => {
     event.preventDefault();
-    let qrData = {}
+    let qrData = {};
     const chunks = inputs.map((i) => parseInput(i));
     const bitStream = new TaggedBitstream();
     chunks.forEach(({ type, encoding, ...data }) =>
@@ -164,6 +172,12 @@ function MerchForm({ setBitStream, version, setVersion, dataMask, setDataMask })
 
   return (
     <form onSubmit={handleInputSubmit} className="merch-form">
+      <div className="row">
+        <ErrorCorrectionSelector
+          value={errorCorrectionLevel}
+          onChange={setErrorCorrectionLevel}
+        />
+      </div>
       <div className="row">
         <VersionSelector value={version} onChange={setVersion} />
       </div>
