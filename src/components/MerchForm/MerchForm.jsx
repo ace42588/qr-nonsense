@@ -107,12 +107,8 @@ const parseInput = (input) => {
       //parsedInput.encoding = "utf-8";
       parsedInput.type = "byte";
       try {
-        console.log("MerchForm",{value});
         const obj = JSON.parse(value);
-        console.log("MerchForm",{obj});
-        console.log("stringifying object...");
-        parsedInput.text = JSON.stringify(obj, null, 0);
-        console.log("MerchForm",JSON.stringify(obj, null, 0));
+        parsedInput.text = `${JSON.stringify(obj, null, 0)}`;
       } catch (e) {
         parsedInput.text = value;
       }
