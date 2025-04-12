@@ -1,6 +1,6 @@
 import { VERSIONS } from "./version";
 import { PatternBit } from "./TaggedBit";
-import { QRModule } from "../QRModule";
+import { makeModule } from "../utility";
 
 const FINDER_BITS = [
   new PatternBit({ bit: 0, patternType: "format", x: null, y: null }),
@@ -20,19 +20,6 @@ const ALIGNMENT_BITS = [
 ];
 
 const masked = false;
-
-const makeModule = ({ taggedBit, x, y, masked }) => {
-  const { value, source } = taggedBit;
-  return {
-    bit: taggedBit,
-    segment: source,
-    x,
-    y,
-    isMasked: masked,
-    isHighlighted: false,
-    isDark: taggedBit.value,
-  };
-};
 
 export class FinderPattern {
   static populate(matrix) {

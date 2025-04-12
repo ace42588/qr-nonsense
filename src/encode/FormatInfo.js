@@ -1,5 +1,5 @@
 import { FormatBit } from "./TaggedBit";
-import { QRModule } from "../QRModule";
+import { makeModule } from "../utility";
 
 export const ErrorCorrectionLevel = ["M", "L", "H", "Q"];
 
@@ -114,10 +114,10 @@ export class FormatInfo {
     // Tile the format bits
     for (let i = 0; i < values.length; i++) {
       const { x, y } = positions[i];
-      matrix[y][x] = new QRModule({ taggedBit: FORMAT_BITS[values[i]], x, y, masked });
+      matrix[y][x] = makeModule({ taggedBit: FORMAT_BITS[values[i]], x, y, masked });
     }
 
     // Add the dark module
-    matrix[size - 8][8] = new QRModule({ taggedBit: FORMAT_BITS[1], x: 8, y: size - 8, masked });
+    matrix[size - 8][8] = makeModule({ taggedBit: FORMAT_BITS[1], x: 8, y: size - 8, masked });
   }
 }
