@@ -100,6 +100,7 @@ const generateMatrix = (bitStream, errorCorrectionLevel, version, dataMask) => {
             x,
             y,
             isMasked,
+            isHighlighted: false
           };
         }
       }
@@ -145,7 +146,9 @@ function QRCodeCanvas({
       for (let y = 0; y < matrix.length; y++) {
         for (let x = 0; x < matrix[y].length; x++) {
           const module = matrix[y][x];
-          ctx.fillStyle = module.isDark ? "black" : "white";
+          const { value, isMasked } = matrix[y][x];
+          const isDark = isMasked ? !value : value;
+          ctx.fillStyle = isDark ? "black" : "white";
           ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
 
           // Draw a border if highlighted

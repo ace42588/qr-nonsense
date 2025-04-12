@@ -199,12 +199,10 @@ export function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
 export function makeModule({ taggedBit, x, y, masked }) {
   const { value, source } = taggedBit;
   return {
-    bit: taggedBit,
-    segment: source,
+    ...taggedBit,
     x,
     y,
     isMasked: masked,
     isHighlighted: false,
-    isDark: value,
   };
 };
