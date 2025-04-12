@@ -94,16 +94,12 @@ const generateMatrix = (bitStream, errorCorrectionLevel, version, dataMask) => {
             taggedBit = REMAINDER_BIT;
           }
 
-          const { source, altered, value } = taggedBit;
           const isMasked = DATA_MASKS[dataMask]({ x, y });
           matrix[y][x] = {
-            bit: taggedBit,
-            segment: source,
+            ...taggedBit,
             x,
             y,
             isMasked,
-            isHighlighted: altered ? true : false,
-            isDark: isMasked ? !value : value,
           };
         }
       }
@@ -180,12 +176,12 @@ function QRCodeCanvas({
     const module = matrix[yIndex][xIndex];
     if (module) {
       console.log(module);
-      const newModule = {...module};
-      if (event.type === "click") {
-          newModule.highlight = !module.highlight;
-      } else if (event.type === "contextmenu") {
-        module.toggleBit();
-      }
+      //const newModule = {...module};
+      //if (event.type === "click") {
+      //  newModule.highlight = !module.highlight;
+      //} else if (event.type === "contextmenu") {
+      //  module.toggleBit();
+      //}
     }
     return false;
   };
