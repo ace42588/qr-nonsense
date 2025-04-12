@@ -64,9 +64,9 @@ export class TaggedBitstream {
 
   addPadBytes(requiredBytes) {
     const currentBytes = this.dataBits.length / 8;
-    //console.log("addPadBytes", { currentBytes });
+    console.log("addPadBytes", { currentBytes });
     const bytesNeeded = requiredBytes - currentBytes;
-    //console.log("addPadBytes", { bytesNeeded });
+    console.log("addPadBytes", { bytesNeeded });
     for (let i = 0; i < bytesNeeded; i++) {
       const taggedBits = PAD_BYTES[i % 2];
       //console.log("addPadBytes", { taggedBits });
@@ -114,7 +114,8 @@ export class TaggedBitstream {
   }
 
   finalize(requiredBytes) {
-    //console.log(this.segments);
+    console.log("finalize", this.segments);
+    if (this.finalized) return;
     const requiredBits = requiredBytes * 8;
     this.addTerminator(requiredBits);
     this.fillLastByte();
@@ -139,6 +140,7 @@ export class TaggedBitstream {
   }
   
   resetReadPosition() {
+    console.log("resetReadPosition");
     this.readIdx = 0;
   }
 }
