@@ -227,16 +227,14 @@ function finalize(bits, versionNum, errorCorrectionLevel) {
     0
   );
   let finalBits = [...bits];
-  // bits needed to fill the block
-  let requiredBits = requiredDataCodewords * 8;
-  let diff = requiredBits - bits.length;
   let bitStr;
-  if (diff >= 4) {
-    bitStr = "0000";
-  } else if (diff > 0) {
-    bitStr = "".padStart(diff, "0");
+  let requiredBits = requiredDataCodewords * 8;
+  let remaining = requiredBits - bits.length;
+  // add terminator if there is space
+  if (0 < remaining <= 4) {
+    bitStr = "".padStart(remaining, "0");
   }
-  const termBits = [...bits].map(
+  const termBits = [...bitStr].map(
     (bit) =>
       new TaggedBit({
         bit,
@@ -245,20 +243,20 @@ function finalize(bits, versionNum, errorCorrectionLevel) {
       })
   );
   finalBits = [...finalBits, ...termBits];
-  const bitsNeeded = 8 - (finalBits.length % 8);
-  if (bitsNeeded > 0 && bitsNeeded < 8) {
-    bits = "".padStart(bitsNeeded, "0");
-    const fillBits = Array.from(bits).map(
-      (bit) =>
-        new TaggedBit({
-          bit,
-          type: "terminator",
-          source: "terminator",
-        })
-    );
-    finalBits = [...finalBits, ...fillBits];
+  // bits needed to fill the codeword
+  remaining = 8 - (finalBits.length % 8);
+  if (0 < remaining < 8) {
+    bitStr = "".padStart(remaining, "0");
   }
-  //this.addPadBytes(requiredDataCodewords);
+  const fillBits = [...bitStr].map(
+    (bit) =>
+      new TaggedBit({
+        bit,
+        type: "terminator",
+        source: "fill",
+      })
+  );
+  finalBits = [...finalBits, ...fillBits];
   const currentBytes = finalBits.length / 8;
   //console.log("addPadBytes", { currentBytes });
   const bytesNeeded = requiredDataCodewords - currentBytes;
