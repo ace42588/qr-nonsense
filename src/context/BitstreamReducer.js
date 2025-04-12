@@ -1,5 +1,8 @@
 export default function BitstreamReducer(state, action) {
   switch (action.type) {
-      case ""
+    case "ENCODE_DATA": {
+      const { mode, encoding, data } = action.payload;
+      
+    }
   }
 }
