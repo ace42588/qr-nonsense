@@ -29,7 +29,7 @@ const REMAINDER_BIT = new RemainderBit();
 const orderBits = (bitStream, errorCorrectionLevel, version) => {
   console.log("orderBits", {bitStream, errorCorrectionLevel, version});
   let blocks = createBlocks(bitStream, errorCorrectionLevel, version);
-  blocks.forEach((block) => block.generateErrorCorrection());
+  //blocks.forEach((block) => block.generateErrorCorrection());
   console.log("orderBits", {blocks});
   const totalCodewords = blocks.reduce((t, b) => t + b.totalCodewords, 0);
   console.log("orderBits", {totalCodewords})
