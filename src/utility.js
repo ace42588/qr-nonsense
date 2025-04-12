@@ -195,3 +195,16 @@ export function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   }
   throw new Error("Data too large to fit in a QR code version 40.");
 }
+
+export function makeModule({ taggedBit, x, y, masked }) {
+  const { value, source } = taggedBit;
+  return {
+    bit: taggedBit,
+    segment: source,
+    x,
+    y,
+    isMasked: masked,
+    isHighlighted: false,
+    isDark: taggedBit.value,
+  };
+};

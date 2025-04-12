@@ -4,32 +4,35 @@ import { QRModule } from "../QRModule";
 
 const FINDER_BITS = [
   new PatternBit({ bit: 0, patternType: "format", x: null, y: null }),
-  new PatternBit({ bit: 1, patternType: "format", x: null, y: null })
+  new PatternBit({ bit: 1, patternType: "format", x: null, y: null }),
 ];
 
 const SEPARATOR_BIT = new PatternBit({ bit: false, patternType: "separator" });
 
 const TIMING_BITS = [
   new PatternBit({ bit: 0, patternType: "timing", x: null, y: null }),
-  new PatternBit({ bit: 1, patternType: "timing", x: null, y: null })
+  new PatternBit({ bit: 1, patternType: "timing", x: null, y: null }),
 ];
 
 const ALIGNMENT_BITS = [
   new PatternBit({ bit: 0, patternType: "alignment", x: null, y: null }),
-  new PatternBit({ bit: 1, patternType: "alignment", x: null, y: null })
+  new PatternBit({ bit: 1, patternType: "alignment", x: null, y: null }),
 ];
 
 const masked = false;
 
-const module = ({ taggedBit, x, y, masked }) => ({
-            bit: taggedBit,
-            segment: source,
-            x,
-            y,
-            isMasked,
-            isHighlighted: false,
-            isDark: value,
-          })
+const makeModule = ({ taggedBit, x, y, masked }) => {
+  const { value, source } = taggedBit;
+  return {
+    bit: taggedBit,
+    segment: source,
+    x,
+    y,
+    isMasked: masked,
+    isHighlighted: false,
+    isDark: taggedBit.value,
+  };
+};
 
 export class FinderPattern {
   static populate(matrix) {
@@ -52,8 +55,21 @@ export class FinderPattern {
 
     for (let y = 0; y < 7; y++) {
       for (let x = 0; x < 7; x++) {
-        const value = pattern[y][x] 
-        matrix[startY + y][startX + x] = new QRModule({ taggedBit: FINDER_BITS[value], x, y, masked });
+        const value = pattern[y][x];
+        matrix[startY + y][startX + x] = makeModule({
+          taggedBit: FINDER_BITS[value],
+          x,
+          y,
+          masked,
+        });
+        /*
+          new QRModule({
+          taggedBit: FINDER_BITS[value],
+          x,
+          y,
+          masked,
+        });
+        */
       }
     }
   }
@@ -64,20 +80,50 @@ export class FinderPattern {
 
     // Top-left separator
     for (let i = 0; i < 8; i++) {
-      matrix[i][7] = new QRModule({ taggedBit: SEPARATOR_BIT, x: 7, y: i, masked });
-      matrix[7][i] = new QRModule({ taggedBit: SEPARATOR_BIT, x: i, y: 7, masked });
+      matrix[i][7] = makeModule({
+        taggedBit: SEPARATOR_BIT,
+        x: 7,
+        y: i,
+        masked,
+      });
+      matrix[7][i] = makeModule({
+        taggedBit: SEPARATOR_BIT,
+        x: i,
+        y: 7,
+        masked,
+      });
     }
 
     // Top-right separator
     for (let i = 0; i < 8; i++) {
-      matrix[i][size - 8] = new QRModule({ taggedBit: SEPARATOR_BIT, x: size - 8 , y: i, masked });
-      matrix[7][size - 1 - i] = new QRModule({ taggedBit: SEPARATOR_BIT, x: size - 1 - i, y: 7, masked });
+      matrix[i][size - 8] = makeModule({
+        taggedBit: SEPARATOR_BIT,
+        x: size - 8,
+        y: i,
+        masked,
+      });
+      matrix[7][size - 1 - i] = makeModule({
+        taggedBit: SEPARATOR_BIT,
+        x: size - 1 - i,
+        y: 7,
+        masked,
+      });
     }
 
     // Bottom-left separator
     for (let i = 0; i < 8; i++) {
-      matrix[size - 1 - i][7] = new QRModule({ taggedBit: SEPARATOR_BIT, x: 7, y: size - 1 - i, masked });
-      matrix[size - 8][i] = new QRModule({ taggedBit: SEPARATOR_BIT, x: i, y: size - 8, masked });
+      matrix[size - 1 - i][7] = makeModule({
+        taggedBit: SEPARATOR_BIT,
+        x: 7,
+        y: size - 1 - i,
+        masked,
+      });
+      matrix[size - 8][i] = makeModule({
+        taggedBit: SEPARATOR_BIT,
+        x: i,
+        y: size - 8,
+        masked,
+      });
     }
   }
 }
@@ -89,11 +135,31 @@ export class TimingPattern {
     const size = matrix.length;
     for (let i = 8; i < size - 8; i++) {
       if (i % 2 === 0) {
-        matrix[6][i] = new QRModule({ taggedBit: TIMING_BITS[1], x: i, y: 6, masked });
-        matrix[i][6] = new QRModule({ taggedBit: TIMING_BITS[1], x: 6, y: i, masked });
+        matrix[6][i] = makeModule({
+          taggedBit: TIMING_BITS[1],
+          x: i,
+          y: 6,
+          masked,
+        });
+        matrix[i][6] = makeModule({
+          taggedBit: TIMING_BITS[1],
+          x: 6,
+          y: i,
+          masked,
+        });
       } else {
-        matrix[6][i] = new QRModule({ taggedBit: TIMING_BITS[0], x: i, y: 6, masked });
-        matrix[i][6] = new QRModule({ taggedBit: TIMING_BITS[0], x: 6, y: i, masked });
+        matrix[6][i] = makeModule({
+          taggedBit: TIMING_BITS[0],
+          x: i,
+          y: 6,
+          masked,
+        });
+        matrix[i][6] = makeModule({
+          taggedBit: TIMING_BITS[0],
+          x: 6,
+          y: i,
+          masked,
+        });
       }
     }
   }
@@ -142,7 +208,10 @@ export class AlignmentPattern {
 
   static drawAlignmentPattern(matrix, centerX, centerY) {
     const darkModule = new PatternBit({ bit: true, patternType: "alignment" });
-    const lightModule = new PatternBit({ bit: false, patternType: "alignment" });
+    const lightModule = new PatternBit({
+      bit: false,
+      patternType: "alignment",
+    });
     const pattern = [
       [1, 1, 1, 1, 1],
       [1, 0, 0, 0, 1],
@@ -153,8 +222,13 @@ export class AlignmentPattern {
 
     for (let y = 0; y < 5; y++) {
       for (let x = 0; x < 5; x++) {
-        const value = pattern[y][x]
-        matrix[centerY - 2 + y][centerX - 2 + x] = new QRModule({ taggedBit: FINDER_BITS[value], x: centerX - 2 + x, y: centerY - 2 + y, masked });;
+        const value = pattern[y][x];
+        matrix[centerY - 2 + y][centerX - 2 + x] = makeModule({
+          taggedBit: FINDER_BITS[value],
+          x: centerX - 2 + x,
+          y: centerY - 2 + y,
+          masked,
+        });
       }
     }
   }
