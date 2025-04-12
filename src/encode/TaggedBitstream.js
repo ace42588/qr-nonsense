@@ -125,7 +125,6 @@ export class TaggedBitstream {
   }
 
   getFinalizedBits(versionNum, errorCorrectionLevel) {
-    console.log("getFinalizedBits", { versionNum, errorCorrectionLevel });
     const { errorCorrectionLevels } = VERSIONS[versionNum - 1];
     const { ecCodewordsPerBlock, ecBlocks } =
       errorCorrectionLevels[errorCorrectionLevel];
@@ -136,12 +135,50 @@ export class TaggedBitstream {
       requiredDataCodewords += numBlocks * dataCodewordsPerBlock;
     });
     const requiredBits = requiredDataCodewords * 8;
-    this.addTerminator(requiredBits);
-    this.fillLastByte();
-    this.addPadBytes(requiredDataCodewords);
-    this.finalized = true;
+    let finalBits = new Array(this.dataBits);
+    //this.addTerminator(requiredBits);
+    const diff = requiredBits - finalBits.length;
+    if (diff >= 4) {
+      //this.addBits(4, "0000", "terminator", "terminator");
+      const bitArr = Array.from("0000");
 
-    return this.dataBits;
+      for (const bit of bitArr) {
+        const taggedBit = new TaggedBit({
+          bit,
+          type: "terminator",
+          source: "terminator",
+        });
+        finalBits.push(taggedBit);
+      }
+    } else if (diff > 0) {
+      const termBits = "".padStart(diff, "0");
+      this.addBits(termBits.length, termBits, "terminator", "terminator");
+      for (const bit of bitArr) {
+        const taggedBit = new TaggedBit({
+          bit,
+          type: "terminator",
+          source: "terminator",
+        });
+        finalBits.push(taggedBit);
+      }
+    }
+    //this.fillLastByte();
+    const bitsNeeded = 8 - (finalBits.length % 8);
+    if (bitsNeeded > 0 && bitsNeeded < 8) {
+      const bits = "".padStart(bitsNeeded, "0");
+      this.addBits(bits.length, bits, "none", "none");
+    }
+    //this.addPadBytes(requiredDataCodewords);
+    const currentBytes = finalBits.length / 8;
+    console.log("addPadBytes", { currentBytes });
+    const bytesNeeded = requiredDataCodewords - currentBytes;
+    console.log("addPadBytes", { bytesNeeded });
+    for (let i = 0; i < bytesNeeded; i++) {
+      const taggedBits = PAD_BYTES[i % 2];
+      finalBits = [...finalBits, ...taggedBits];
+    }
+
+    return finalBits;
   }
 
   readTaggedByte() {
