@@ -11,6 +11,7 @@ class Block {
     this.dataCodewords = [];
     this.ecCodewords = [];
     this.id = id;
+    this.codewords = [];
   }
 
   generateErrorCorrection() {
