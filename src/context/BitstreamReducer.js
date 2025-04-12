@@ -186,7 +186,10 @@ export default function BitstreamReducer(state, action) {
   switch (action.type) {
     case "ENCODE_DATA": {
       const { mode, encoding, data } = action.payload;
-      const {segments: newSegments, bits: newBits } = getEncoder(mode).encode(data, encoding);
+      const { segments: newSegments, bits: newBits } = getEncoder(mode).encode(
+        data,
+        encoding
+      );
     }
   }
 }
