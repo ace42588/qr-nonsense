@@ -126,7 +126,7 @@ class NumericEncoder extends Encoder {
 class AlphanumericEncoder extends Encoder {
   constructor(bitStream) {
     super({ bitStream });
-    this.mode = Mode.Alphanumeric;
+    this.mode = MODE.Alphanumeric;
   }
 
   getCharCountIndicator(charCount) {
@@ -145,9 +145,9 @@ class AlphanumericEncoder extends Encoder {
 }
 
 class ByteEncoder extends Encoder {
-  constructor(bitStream) {
-    super({ bitStream });
-    this.mode = Mode.Byte;
+  constructor() {
+    super();
+    this.mode = MODE.Byte;
   }
 
   getCharCountIndicator(charCount) {
@@ -176,16 +176,25 @@ class ByteEncoder extends Encoder {
 }
 
 class EciEncoder extends Encoder {
-  constructor(bitStream) {
-    super({ bitStream });
-    this.mode = Mode.ECI;
+  constructor() {
+    super();
+    this.mode = MODE.ECI;
   }
 
   encode(input) {
-    const bits = input.toString(2).padStart(input < 256 ? 8 : 16, "0");
-    this.addModeIndicator();
-    //addBits(numBits, bits, type, source, encoding)
-    this.bitStream.addBits(null, bits, "assignmentNumber", input, "none");
+    let bits = [];
+    bits = [...this.addModeIndicator()];
+    const str = input.toString(2).padStart(input < 256 ? 8 : 16, "0");
+    const taggedBits = [...str].map(
+      (bit) =>
+        new TaggedBit({
+          bit,
+          type: "assignmentNumber",
+          source: input,
+          encoding: "none",
+        })
+    );
+    return [...bits, ...taggedBits];
   }
 }
 
