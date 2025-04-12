@@ -125,7 +125,7 @@ export class TaggedBitstream {
   }
 
   getFinalizedBits(versionNum, errorCorrectionLevel) {
-    console.log("getFinalizedBits")
+    //console.log("getFinalizedBits")
     const { errorCorrectionLevels } = VERSIONS[versionNum - 1];
     const { ecCodewordsPerBlock, ecBlocks } =
       errorCorrectionLevels[errorCorrectionLevel];
@@ -165,9 +165,9 @@ export class TaggedBitstream {
     }
     //this.addPadBytes(requiredDataCodewords);
     const currentBytes = finalBits.length / 8;
-    console.log("addPadBytes", { currentBytes });
+    //console.log("addPadBytes", { currentBytes });
     const bytesNeeded = requiredDataCodewords - currentBytes;
-    console.log("addPadBytes", { bytesNeeded });
+    //console.log("addPadBytes", { bytesNeeded });
     for (let i = 0; i < bytesNeeded; i++) {
       const taggedBits = PAD_BYTES[i % 2];
       finalBits = [...finalBits, ...taggedBits];

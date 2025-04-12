@@ -27,21 +27,22 @@ const DATA_MASKS = [
 const REMAINDER_BIT = new RemainderBit();
 
 const orderBits = (bitStream, errorCorrectionLevel, version) => {
-  console.log("orderBits", { bitStream, errorCorrectionLevel, version });
+  //console.log("orderBits", { bitStream, errorCorrectionLevel, version });
   let blocks = createBlocks(bitStream, errorCorrectionLevel, version);
   //blocks.forEach((block) => block.generateErrorCorrection());
-  console.log("orderBits", { blocks });
+  //console.log("orderBits", { blocks });
   const totalCodewords = blocks.reduce((t, b) => t + b.totalCodewords, 0);
-  console.log("orderBits", { totalCodewords });
+  //console.log("orderBits", { totalCodewords });
 
   let orderedBits = [];
   for (let i = 0; i < totalCodewords; i++) {
     const blockIdx = i % blocks.length;
     const cwIdx = Math.floor(i / blocks.length);
-    console.log("orderBits", { i, blockIdx, cwIdx });
     let block = blocks[blockIdx];
-    const { bits } = block.codewords[cwIdx];
-    orderedBits.push(...bits);
+    if (cwIdx < block.codewords.length) {
+      const { bits } = block.codewords[cwIdx];
+      orderedBits.push(...bits);
+    }
   }
   return orderedBits;
 };

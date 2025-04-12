@@ -110,6 +110,7 @@ const parseInput = (input) => {
         const obj = JSON.parse(value);
         console.log("stringifying object...");
         parsedInput.text = JSON.stringify(obj);
+        console.log("stringifying object...");
       } catch (e) {
         parsedInput.text = value;
       }
