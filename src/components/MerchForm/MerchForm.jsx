@@ -129,7 +129,7 @@ function MerchForm({
   errorCorrectionLevel,
   setErrorCorrectionLevel,
 }) {
-  const [inputs, setInputs] = useState([{ type: "JSON", value: "" }]);
+  const [inputs, setInputs] = useState([{ type: "JSON", value: JSON.stringify(sampleInput, null, 2) }]);
 
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
@@ -156,18 +156,10 @@ function MerchForm({
     chunks.forEach(({ type, encoding, ...data }) =>
       getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
     );
-    console.log({ bitStream });
+    console.log("MerchForm", { bitStream });
     setBitStream(bitStream);
     setVersion(version);
     setDataMask(dataMask);
-  };
-
-  const setInitialInput = (input) => {
-    if (!input.value) {
-      input.value = JSON.stringify(sampleInput, null, 2);
-      setInputs[input];
-    }
-    return input.value;
   };
 
   return (
@@ -203,7 +195,7 @@ function MerchForm({
             <textarea
               type="text"
               rows={16}
-              value={setInitialInput(input)}
+              value={input.value}
               onChange={(e) => handleInputChange(index, e)}
             />
           </div>

@@ -82,7 +82,6 @@ function App() {
       </div>
       <div className="row">
         <SegmentDisplay
-          segments={segments}
           bitStream={bitStream}
           setBitStream={setBitStream}
         />
