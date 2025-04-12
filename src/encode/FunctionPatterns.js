@@ -21,6 +21,16 @@ const ALIGNMENT_BITS = [
 
 const masked = false;
 
+const module = ({ taggedBit, x, y, masked }) => ({
+            bit: taggedBit,
+            segment: source,
+            x,
+            y,
+            isMasked,
+            isHighlighted: false,
+            isDark: value,
+          })
+
 export class FinderPattern {
   static populate(matrix) {
     this.drawPattern(matrix, 0, 0);
