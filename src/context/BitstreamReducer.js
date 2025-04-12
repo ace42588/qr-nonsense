@@ -190,6 +190,11 @@ export default function BitstreamReducer(state, action) {
         data,
         encoding
       );
+      return {
+        segments: [...state.segments, ...newSegments],
+        bits: [...state.bits, ...newBits],
+      };
     }
+      case "HIGHLIGHT_SEGMENT"
   }
 }
