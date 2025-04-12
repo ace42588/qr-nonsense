@@ -2,6 +2,7 @@ import React, { createContext, useReducer } from "react";
 import BitstreamReducer from "./BitstreamReducer";
 
 const initialState = {
+  segments: [],
   bits: [],
 };
 
@@ -10,6 +11,13 @@ export const BitstreamContext = createContext(initialState);
 export const BitstreamContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(BitstreamReducer, initialState);
 
+  function addSegment(segment) {
+    dispatch({
+      type: "ADD_SEGMENT",
+      payload: segment
+    })
+  }
+  
   function addBit(bit) {
     dispatch({
       type: "ADD_BIT",

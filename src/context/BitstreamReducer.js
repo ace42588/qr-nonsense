@@ -1,1 +1,5 @@
-export default function BitstreamReducer(state, action)
+export default function BitstreamReducer(state, action) {
+  switch (action.type) {
+      case ""
+  }
+}
