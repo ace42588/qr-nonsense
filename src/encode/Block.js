@@ -29,8 +29,7 @@ class Block {
 
 export function createBlocks(bitStream, errorCorrectionLevel, version) {
   //console.log("createBlocks", { bitStream, errorCorrectionLevel, version });
-  let versionDetails = (typeof version === "object") ? version : VERSIONS[version - 1];
-  const { errorCorrectionLevels } = versionDetails;
+  const { errorCorrectionLevels } = (typeof version === "object") ? version : VERSIONS[version - 1];
   const { ecCodewordsPerBlock, ecBlocks } =
     errorCorrectionLevels[errorCorrectionLevel];
 

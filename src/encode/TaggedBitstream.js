@@ -1,4 +1,5 @@
 import { TaggedBit } from "./TaggedBit";
+import { VERSIONS } from "./version";
 
 const PAD_BYTES = [
   [
@@ -99,7 +100,7 @@ export class TaggedBitstream {
   available() {
     return this.dataBits.length - this.readIdx;
   }
-  
+
   size() {
     return this.dataBits.length;
   }
@@ -122,8 +123,25 @@ export class TaggedBitstream {
     this.addPadBytes(requiredBytes);
     this.finalized = true;
   }
-  
-  get finalizedStream()
+
+  getFinalizedBits(versionNum, errorCorrectionLevel) {
+    const { errorCorrectionLevels } = VERSIONS[versionNum - 1];
+    const { ecCodewordsPerBlock, ecBlocks } =
+      errorCorrectionLevels[errorCorrectionLevel];
+    let requiredDataCodewords = 0;
+
+    ecBlocks.forEach((group) => {
+      const { numBlocks, dataCodewordsPerBlock } = group;
+      requiredDataCodewords += numBlocks * dataCodewordsPerBlock;
+    });
+    const requiredBits = requiredDataCodewords * 8;
+    this.addTerminator(requiredBits);
+    this.fillLastByte();
+    this.addPadBytes(requiredDataCodewords);
+    this.finalized = true;
+    
+    return this.dataBits;
+  }
 
   readTaggedByte() {
     if (!this.finalized) {
@@ -140,7 +158,7 @@ export class TaggedBitstream {
 
     return this.dataBits.slice(start, this.readIdx);
   }
-  
+
   resetReadPosition() {
     console.log("resetReadPosition");
     this.readIdx = 0;

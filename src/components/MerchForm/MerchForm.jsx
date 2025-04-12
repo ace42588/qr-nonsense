@@ -150,16 +150,16 @@ function MerchForm({
 
   const handleInputSubmit = (event) => {
     event.preventDefault();
-    let qrData = {};
+    setVersion(version);
+    setDataMask(dataMask);
     const chunks = inputs.map((i) => parseInput(i));
     const bitStream = new TaggedBitstream();
     chunks.forEach(({ type, encoding, ...data }) =>
       getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
     );
+    // Complete bytes and add padding
+    setBitStream(bitStream.getFinalizedBits(version, errorCorrectionLevel));
     console.log("MerchForm", { bitStream });
-    setBitStream(bitStream);
-    setVersion(version);
-    setDataMask(dataMask);
   };
 
   return (
