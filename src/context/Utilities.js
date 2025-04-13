@@ -2,7 +2,13 @@ import { VERSIONS, PAD_BYTES } from "./Constants";
 import { TaggedBit } from "../encode/TaggedBit";
 
 export const QRUtils = {
-  compute
+  computeTerminatorLength(capacityBytes, totalDataBits){
+    const capacityBits = capacityBytes * 8;
+    return Math.min(
+      4,
+      Math.max(0, capacityBits - totalDataBits)
+    );
+  },
   computeRequiredDataCodewords(version, errorCorrectionLevel) {
     const { errorCorrectionLevels } = VERSIONS[version - 1];
     const { ecCodewordsPerBlock, ecBlocks } =
@@ -14,14 +20,10 @@ export const QRUtils = {
       0
     );
   },
-  addTerminatorBits(bits, requiredDataCodewords) {
-    let bitStr;
-    let requiredBits = requiredDataCodewords * 8;
-    let remaining = requiredBits - bits.length;
+  computeTerminatorBits(bits, requiredDataCodewords) {
+    let length = QRUtils.computeTerminatorLength(requiredDataCodewords, bits);
     // add terminator if there is space
-    if (0 < remaining <= 4) {
-      bitStr = "".padStart(remaining, "0");
-    }
+    const bitStr = "".padStart(length, "0");
     const termBits = BitUtils.createTaggedBits(
       bitStr,
       "terminator",
@@ -83,14 +85,10 @@ export const QRUtils = {
   // Try each version until one is found that fits the data.
   for (let version = 1; version <= 40; version++) {
     let capacityBytes = qrCapacityBytes[errorCorrectionLevel][version];
-    let capacityBits = capacityBytes * 8;
 
     // A terminator of up to 4 bits can be added.
-    const terminatorBits = Math.min(
-      4,
-      Math.max(0, capacityBits - totalDataBits)
-    );
-    const totalBitsWithTerminator = totalDataBits + terminatorBits;
+    const terminatorLength = QRUtils.computeTerminatorLength(capacityBytes, totalDataBits);
+    const totalBitsWithTerminator = totalDataBits + terminatorLength;
 
     // The total bits must be rounded up to the next whole 8-bit codeword.
     const requiredBytes = Math.ceil(totalBitsWithTerminator / 8);
