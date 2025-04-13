@@ -23,7 +23,8 @@ export default function MerchForm({
   errorCorrectionLevel,
   setErrorCorrectionLevel,
 }) {
-  const [input, setInput] = useState({ type: "JSON", value: sampleInput });
+  const [input, setInput] = useState({ value: sampleInput });
+  const [encoding, setEncoding] = useState("JSON");
   const dispatch = useContext(QRDataDispatchContext);
 
   const handleChangeInput = (e) => {
@@ -41,22 +42,12 @@ export default function MerchForm({
   const handleChangeEncoding = (e) => {
     const newEncoding = e.target.value;
     const newInput = { ...input, type: newEncoding };
-    
-    switch (newEncoding) {
-        case 
-    }
 
-    if (newEncoding === "byte") {
-      newInput.encoding = "utf-8";
-    } else {
-      delete newInput.encoding;
-    }
     setInput(newInput);
+    const parsedInput = parseInput(newInput);
     dispatch({
           type: Actions.ChangeInput,
-          payload: {
-            
-          }
+          payload: { ...parseInput(newInput) }
 
         });
   };
