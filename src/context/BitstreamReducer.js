@@ -39,37 +39,24 @@ const MODE = {
   Terminator: "terminator",
 };
 
-const MODE_BYTE = {
-  terminator: 0x0,
-  numeric: 0x1,
-  alphanumeric: 0x2,
-  byte: 0x4,
-  kanji: 0x8,
-  eci: 0x7,
-  //StructuredAppend: 0x3,
-  //FNC1FirstPosition: 0x5,
-  //FNC1SecondPosition: 0x9,
-};
-
-const AlphaNumCharClass = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
-
 class Encoder {
-  getCharCountIndicator(charCount) {
-    throw new Error(
-      "getCharCountIndicator() must be implemented in subclasses"
-    );
-  }
-
-  encodeData(input, encoding) {
-    throw new Error("encodeData() must be implemented in subclasses");
-  }
-
-  addModeIndicator(mode) {
-    const byte = MODE_BYTE[mode];
-    if (!byte) {
+  static addModeIndicator(mode) {
+    const MODE_BITS = {
+      terminator: 0x0,
+      numeric: 0x1,
+      alphanumeric: 0x2,
+      byte: 0x4,
+      kanji: 0x8,
+      eci: 0x7,
+      //StructuredAppend: 0x3,
+      //FNC1FirstPosition: 0x5,
+      //FNC1SecondPosition: 0x9,
+    };
+    const value = MODE_BITS[mode];
+    if (!value) {
       throw new Error("Invalid mode indicator", mode);
     }
-    const modeBits = MODE_BYTE[mode].toString(2).padStart(4, "0");
+    const modeBits = value.toString(2).padStart(4, "0");
     return [...modeBits].map(
       (bit) =>
         new TaggedBit({
@@ -150,12 +137,12 @@ class ByteEncoder extends Encoder {
     this.mode = MODE.Byte;
   }
 
-  getCharCountIndicator(charCount) {
+  static getCharCountIndicator(charCount) {
     let indicatorLength = charCount < 256 ? 8 : 16;
     return charCount.toString(2).padStart(indicatorLength, "0");
   }
 
-  *encodeData(input, encoding) {
+  static *encodeData(input, encoding) {
     // TODO: optionally convert to UTF-8
     if (encoding === "hex") {
       for (let i = 0; i < input.length; i += 2) {
@@ -183,7 +170,7 @@ class EciEncoder extends Encoder {
 
   encode(input) {
     let bits = [];
-    bits = [...this.addModeIndicator()];
+    bits = [...Encoder.addModeIndicator(this.mode)];
     const str = input.toString(2).padStart(input < 256 ? 8 : 16, "0");
     const taggedBits = [...str].map(
       (bit) =>
@@ -279,58 +266,6 @@ export default function BitstreamReducer(state, action) {
         ...state,
         segments: [...state.segments, ...newSegments],
         bits: [...state.bits, ...newBits],
-      };
-    }
-    case "FINALIZE": {
-      const { errorCorrectionLevels } = VERSIONS[state.version - 1];
-      const { ecCodewordsPerBlock, ecBlocks } =
-        errorCorrectionLevels[state.errorCorrectionLevel];
-
-      const requiredDataCodewords = ecBlocks.reduce(
-        (t, { numBlocks, dataCodewordsPerBlock }) =>
-          t + numBlocks * dataCodewordsPerBlock,
-        0
-      );
-      let finalBits = [...state.bits];
-      let bitStr;
-      let requiredBits = requiredDataCodewords * 8;
-      let remaining = requiredBits - finalBits.length;
-      // add terminator if there is space
-      if (0 < remaining <= 4) {
-        bitStr = "".padStart(remaining, "0");
-      }
-      const termBits = [...bitStr].map(
-        (bit) =>
-          new TaggedBit({
-            bit,
-            type: "terminator",
-            source: "terminator",
-          })
-      );
-      finalBits = [...finalBits, ...termBits];
-      // bits needed to fill the codeword
-      remaining = 8 - (finalBits.length % 8);
-      if (0 < remaining < 8) {
-        bitStr = "".padStart(remaining, "0");
-      }
-      const fillBits = [...bitStr].map(
-        (bit) =>
-          new TaggedBit({
-            bit,
-            type: "terminator",
-            source: "fill",
-          })
-      );
-      finalBits = [...finalBits, ...fillBits];
-      const currentCodewords = finalBits.length / 8;
-      const codewordsNeeded = requiredDataCodewords - currentCodewords;
-      for (let i = 0; i < codewordsNeeded; i++) {
-        finalBits = [...finalBits, ...PAD_BYTES[i % 2]];
-      }
-
-      return {
-        ...state,
-        bits: finalBits,
       };
     }
     case "HIGHLIGHT_DATA": {
