@@ -183,25 +183,25 @@ export const QRUtils = {
     let blocks = [];
 
     ecBlocks.forEach(({ numBlocks, dataCodewordsPerBlock }) => {
+      Array.from({ length: numBlocks }, (_, i) => {});
       for (let i = 0; i < numBlocks; i++) {
-        const block = {
-          numDataCodewords: dataCodewordsPerBlock,
-          numECCodewords: ecCodewordsPerBlock,
-          totalCodewords: dataCodewordsPerBlock + ecCodewordsPerBlock,
-          dataCodewords: [],
-          ecCodewords: [],
-          id: i,
-        };
-        const { dataCodewords, numDataCodewords } = block;
-        while (dataCodewords.length < numDataCodewords) {
+        let dataCodewords = [];
+        while (dataCodewords.length < dataCodewordsPerBlock) {
           const start = readIdx;
           readIdx += 8;
           const taggedBits = dataBits.slice(start, readIdx);
-          const codeword = new TaggedCodeword(taggedBits, dataCodewords.length);
-          dataCodewords.push(codeword);
+          dataCodewords = [...dataCodewords, new TaggedCodeword(taggedBits, dataCodewords.length)];
         }
-        block.generateErrorCorrection();
-        blocks.push(block);
+        const ecCodewords = getErrorCorrectionCodewords(dataCodewordsPerBlock, ecCodewordsPerBlock, dataCodewords)
+        const block = {
+          dataCodewordsPerBlock,
+          ecCodewordsPerBlock,
+          totalCodewords: dataCodewordsPerBlock + ecCodewordsPerBlock,
+          dataCodewords,
+          ecCodewords,
+          id: i,
+        }
+        blocks = [...blocks, block];
       }
     });
   },
