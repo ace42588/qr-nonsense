@@ -75,13 +75,32 @@ const MODE = {
 };
 
 class Encoder {
+  /**
+   * Computes the bit-length indicator based on thresholds.
+   * @param {number} charCount - The character count.
+   * @param {object} mode - The mode object.
+   * @returns {number} The indicator length.
+   */
   static computeIndicatorLength(charCount, mode) {
+    if (!mode.thresholds) {
+      throw new Error(
+        `Mode ${mode.toString()} does not support a character count indicator.`
+      );
+    }
     const { thresholds } = mode;
     for (const { max, length } of thresholds) {
       if (charCount < max) return length;
     }
     return thresholds[thresholds.length - 1].length;
   }
+
+  /**
+   * Creates an array of TaggedBit instances from a string of bits.
+   * @param {string} bits - The binary string.
+   * @param {string} type - Type of the bit.
+   * @param {*} source - Source identifier.
+   * @returns {TaggedBit[]} Array of TaggedBit instances.
+   */
   static createTaggedBits(bits, type, source) {
     return [...bits].map(
       (bit) =>
@@ -108,6 +127,12 @@ class Encoder {
     return Encoder.createTaggedBits(charCountBits, "characterCount", charCount);
   }
 
+  /**
+   * Encodes the data.
+   * @param {string} data - Data to encode.
+   * @param {string} encoding - Encoding type (e.g., "hex", "utf-8").
+   * @returns {object} An object with header and segments.
+   */
   encode(data, encoding) {
     return {
       header: [
@@ -127,6 +152,9 @@ class NumericEncoder extends Encoder {
 
   *encodeData(input) {
     const groupsOfThree = input.match(/\d{1,3}/g);
+    if (!groupsOfThree) {
+      throw new Error(`Invalid input for Numeric encoder: ${input.toString()}`);
+    }
     for (let i = 0; i < groupsOfThree.length; i++) {
       yield new NumericSegment(groupsOfThree[i], i);
     }
@@ -141,6 +169,11 @@ class AlphanumericEncoder extends Encoder {
 
   *encodeData(input) {
     const pairs = input.match(/[0-9A-Z \$\%\*\+\-\.\/\:]{1,2}/g);
+    if (!pairs) {
+      throw new Error(
+        `Invalid input for Alphanumeric encoder: ${input.toString()}`
+      );
+    }
 
     for (let i = 0; i < pairs.length; i++) {
       yield new AlphanumericSegment(pairs[i], i);
@@ -161,8 +194,9 @@ class ByteEncoder extends Encoder {
         yield new ByteSegment(byte, i / 2, encoding);
       }
     } else {
-      const chars = [...input];
+      // default for QR Codes
       const encoder = new TextEncoder("latin1");
+      const chars = [...input];
 
       for (let i = 0; i < chars.length; i++) {
         const char = chars[i];
@@ -174,6 +208,11 @@ class ByteEncoder extends Encoder {
 }
 
 class EciEncoder extends Encoder {
+  /**
+   * Encodes the ECI assignment number.
+   * @param {number} input - The assignment number.
+   * @returns {TaggedBit[]} Array of TaggedBit instances.
+   */
   static encode(input) {
     const bits = input.toString(2).padStart(input < 256 ? 8 : 16, "0");
     return [
@@ -189,7 +228,7 @@ const encoders = {
   alphanumeric: new AlphanumericEncoder(),
   byte: new ByteEncoder(),
   kanji: () => {
-    throw new Error("Type not implemented");
+    throw new Error("Kanji mode not implemented");
   },
 };
 
