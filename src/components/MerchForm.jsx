@@ -39,16 +39,13 @@ export default function MerchForm() {
   return (
     <form className="input-form">
       <div className="row">
-        <ErrorCorrectionSelector
-          value={errorCorrectionLevel}
-          onChange={setErrorCorrectionLevel}
-        />
+        <ErrorCorrectionSelector />
       </div>
       <div className="row">
-        <VersionSelector value={version} onChange={setVersion} />
+        <VersionSelector />
       </div>
       <div className="row">
-        <DataMaskSelector value={dataMask} onChange={setDataMask} />
+        <DataMaskSelector />
       </div>
       <div className="row">
         <div key={0} className="input-group">
