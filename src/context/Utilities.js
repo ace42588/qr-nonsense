@@ -2,6 +2,7 @@ import { VERSIONS, PAD_BYTES } from "./Constants";
 import { TaggedBit } from "../encode/TaggedBit";
 
 export const QRUtils = {
+  compute
   computeRequiredDataCodewords(version, errorCorrectionLevel) {
     const { errorCorrectionLevels } = VERSIONS[version - 1];
     const { ecCodewordsPerBlock, ecBlocks } =
