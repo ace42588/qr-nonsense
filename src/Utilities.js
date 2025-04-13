@@ -1,7 +1,7 @@
 import { PAD_BYTES, EC_INFO } from "./Constants";
 import { ReedSolomonEncoder } from "./reedsolomon/index.js";
-import { TaggedCodeword, ECCodeword } from "./TaggedCodeword";
-import { TaggedBit } from "../encode/TaggedBit";
+import { TaggedCodeword, ECCodeword } from "./encode/TaggedCodeword";
+import { TaggedBit } from "./encode/TaggedBit";
 
 class Block {
   constructor(numDataCodewords, numECCodewords, id) {
@@ -29,6 +29,37 @@ class Block {
     return [...this.dataCodewords, ...this.ecCodewords];
   }
 }
+
+function block(dataCodewordsPerBlock, ecCodewordsPerBlock, i) {
+  return {
+          numDataCodewords: dataCodewordsPerBlock,
+          numECCodewords: ecCodewordsPerBlock,
+          totalCodewords: dataCodewordsPerBlock + ecCodewordsPerBlock,
+          rsEncoder: new ReedSolomonEncoder(ecCodewordsPerBlock),
+          dataCodewords: [],
+          ecCodewords: [],
+          id: i,
+          generateErrorCorrection() {
+            const dataBytes = this.dataCodewords.map((c) => c.byte);
+            const ecBytes = this.rsEncoder.encode(dataBytes);
+            const ecCodewords = Array.from(ecBytes).map(
+              (b, idx) => new ECCodeword(b, idx)
+            );
+            this.ecCodewords = ecCodewords;
+          },
+        };
+}
+
+function generateErrorCorrection(block) {
+  const {numDataCodewords, numECCodewords} = block;
+  const rsEncoder =  new ReedSolomonEncoder(numECCodewords);
+            const dataBytes = this.dataCodewords.map((c) => c.byte);
+            const ecBytes = this.rsEncoder.encode(dataBytes);
+            const ecCodewords = Array.from(ecBytes).map(
+              (b, idx) => new ECCodeword(b, idx)
+            );
+            this.ecCodewords = ecCodewords;
+          }
 
 const versions = [{ label: "Auto", value: "auto" }].concat(
   Array.from({ length: 40 }, (_, i) => ({
@@ -113,7 +144,10 @@ export const QRUtils = {
       errorCorrectionLevel
     );
     // Add terminator bits, based on version capacity
-    let bits = [...dataBits, ...QRUtils.getTerminatorBits(bits, requiredDataCodewords)];
+    let bits = [
+      ...dataBits,
+      ...QRUtils.getTerminatorBits(bits, requiredDataCodewords),
+    ];
     // Pad the last codeword with 0s until its 8 bits
     bits = [
       ...bits,
@@ -127,7 +161,10 @@ export const QRUtils = {
   getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
     // Try each version until one is found that fits the data.
     for (let version = 1; version <= 40; version++) {
-      const { capacity } = QRUtils.gerVersionInfo(errorCorrectionLevel, version);
+      const { capacity } = QRUtils.gerVersionInfo(
+        errorCorrectionLevel,
+        version
+      );
 
       // A terminator of up to 4 bits can be added.
       // ...but is calculated based on the capacity. This is unneeded.
@@ -152,23 +189,46 @@ export const QRUtils = {
       return [...header, ...segmentBits];
     });
     console.debug({ chunkBits });
-    
+
     if (version === "auto") {
       version = QRUtils.getMinimumQRCodeVersion(
         chunkBits.length,
         errorCorrectionLevel
       );
     }
-    
-    const { ecCodewordsPerBlock, ecBlocks } = QRUtils.gerVersionInfo(errorCorrectionLevel, version);
 
-    const dataBits = QRUtils.getFinalizedBits(chunkBits, version, errorCorrectionLevel);
-  let readIdx = 0;
+    const { ecCodewordsPerBlock, ecBlocks } = QRUtils.gerVersionInfo(
+      errorCorrectionLevel,
+      version
+    );
 
+    const dataBits = QRUtils.getFinalizedBits(
+      chunkBits,
+      version,
+      errorCorrectionLevel
+    );
+    let readIdx = 0;
+    let blocks = [];
 
     ecBlocks.forEach(({ numBlocks, dataCodewordsPerBlock }) => {
       for (let i = 0; i < numBlocks; i++) {
-        const block = new Block(dataCodewordsPerBlock, ecCodewordsPerBlock, i);
+        const block = {
+          numDataCodewords: dataCodewordsPerBlock,
+          numECCodewords: ecCodewordsPerBlock,
+          totalCodewords: dataCodewordsPerBlock + ecCodewordsPerBlock,
+          rsEncoder: new ReedSolomonEncoder(ecCodewordsPerBlock),
+          dataCodewords: [],
+          ecCodewords: [],
+          id: i,
+          generateErrorCorrection() {
+            const dataBytes = this.dataCodewords.map((c) => c.byte);
+            const ecBytes = this.rsEncoder.encode(dataBytes);
+            const ecCodewords = Array.from(ecBytes).map(
+              (b, idx) => new ECCodeword(b, idx)
+            );
+            this.ecCodewords = ecCodewords;
+          },
+        };
         const { dataCodewords, numDataCodewords } = block;
         while (dataCodewords.length < numDataCodewords) {
           const start = readIdx;
