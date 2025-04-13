@@ -32,7 +32,7 @@ function getPaddingBits(bits, requiredDataCodewords) {
 }
 
 function getRequiredDataCodewords(version, errorCorrectionLevel) {
-  const { ecBlocks } = QRUtils.gerVersionInfo(errorCorrectionLevel, version);
+  const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
   let requiredDataCodewords = 0;
 
   return ecBlocks.reduce(
@@ -53,16 +53,11 @@ function getTerminatorLength(capacityBytes, totalDataBits) {
   return Math.min(4, Math.max(0, capacityBits - totalDataBits));
 }
 
-function getVersionsByECLevel(errorCorrectionLevel) {
+function gerVersionInfo(errorCorrectionLevel, version) {
   const versions = EC_INFO[errorCorrectionLevel];
   if (!EC_INFO[errorCorrectionLevel]) {
     throw new Error("Invalid error correction level: " + errorCorrectionLevel);
   }
-  return versions;
-}
-
-function gerVersionInfo(errorCorrectionLevel, version) {
-  const versions = getVersionsByECLevel(errorCorrectionLevel);
   const versionInfo = versions[version];
   if (!versionInfo) {
     throw new Error("Invalid QR version: " + version);
@@ -70,7 +65,10 @@ function gerVersionInfo(errorCorrectionLevel, version) {
   return versionInfo;
 }
 
-function getVersionCapacity(errorCorrectionLevel, version)
+function getVersionCapacity(errorCorrectionLevel, version) {
+  const { capacity } = gerVersionInfo(errorCorrectionLevel, version);
+  return capacity;
+}
 
 export const QRUtils = {
   /**
@@ -97,17 +95,15 @@ export const QRUtils = {
   getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
     // Try each version until one is found that fits the data.
     for (let version = 1; version <= 40; version++) {
-      const { capacity } = gerVersionInfo(errorCorrectionLevel, version);
-
       // A terminator of up to 4 bits can be added.
       // ...but is calculated based on the capacity. This is unneeded.
-      const terminatorLength = getTerminatorLength(capacity, totalDataBits);
-      const totalBitsWithTerminator = totalDataBits + terminatorLength;
+      //const terminatorLength = getTerminatorLength(capacity, totalDataBits);
+      //const totalBitsWithTerminator = totalDataBits + terminatorLength;
 
       // The total bits must be rounded up to the next whole 8-bit codeword.
-      const requiredBytes = Math.ceil(totalBitsWithTerminator / codewordLength);
+      const requiredBytes = Math.ceil(totalDataBits / codewordLength);
 
-      if (requiredBytes <= capacity) {
+      if (requiredBytes <= getVersionCapacity(errorCorrectionLevel, version)) {
         return version;
       }
     }
