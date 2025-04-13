@@ -2,6 +2,7 @@ import { useState, useReducer } from "react";
 import QRCodeCanvas from "./components/QRCodeCanvas";
 import SegmentDisplay from "./components/SegmentDisplay";
 import {
+  ModeSelector,
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
@@ -9,10 +10,8 @@ import {
 import InputForm from "./components/InputForm";
 import MerchForm from "./components/MerchForm";
 import VideoScanner from "./components/VideoScanner";
-import { createBlocks } from "./encode/Block";
-import { getEncoder } from "./encode/Encoder";
-import { TaggedBitstream } from "./encode/TaggedBitstream";
-import { VERSIONS } from "./encode/version";
+import { QRUtils } from "./context/Utilities";
+import Encoders from "./context/Encoders";
 import { QRCodeMatrix } from "./QRCodeMatrix";
 import { QRDataContext, QRDataDispatchContext } from './context/QRDataContext';
 
@@ -20,9 +19,9 @@ import QRDataReducer from "./context/QRDataReducer"
 
 import "./App.css";
 
-function App() {
+export default function App() {
   const [inputMode, setInputMode] = useState("merch"); // Default to merch mode
-  const [state, dispatch] = useReducer(QRDataReducer, "test");
+  const [state, dispatch] = useReducer(stateReducer, null);
 
   function handleChangeErrorCorrectionLevel(errorCorrectionLevel) {
     dispatch({
@@ -94,4 +93,24 @@ function App() {
   );
 }
 
-export default App;
+function stateReducer(state, action) {
+  switch (action.type) {
+    case "ENCODE_DATA": {
+      const { mode, encoding, data } = action.payload;
+      const section = Encoders(mode).encode(data, encoding);
+      const newSections = [...state.sections, section];
+      const finalBits = QRUtils.finalizeBitStream(
+        newSections,
+        state.version,
+        state.errorCorrectionLevel
+      );
+      return {
+        ...state,
+        sections: newSections,
+        bits: [...finalBits],
+      };
+    }
+    case "HIGHLIGHT_DATA": {
+    }
+  }
+}
