@@ -13,15 +13,27 @@ export const BitstreamContext = createContext(initialState);
 
 export const BitstreamContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(BitstreamReducer, initialState);
-  
-  function handleErrorCorrectionLevelChange({errorCorrectionLevel}) {
+
+  function handleChangeErrorCorrectionLevel(errorCorrectionLevel) {
     dispatch({
       type: "MODIFY_ERROR",
-      payload: { errorCorrectionLevel }
-    })
+      payload: { errorCorrectionLevel },
+    });
+  }
+  function handleChangeVersion(version) {
+    dispatch({
+      type: "MODIFY_VERSION",
+      payload: { version },
+    });
+  }
+  function handleChangeDataMask(dataMask) {
+    dispatch({
+      type: "MODIFY_DATA_MASK",
+      payload: { dataMask },
+    });
   }
 
-  function handleInputChange({ mode, encoding, ...data }) {
+  function handleChangeInput({ mode, encoding, ...data }) {
     dispatch({
       type: "ENCODE_DATA",
       payload: { mode, encoding, data: Object.values(data)[0] },
@@ -32,7 +44,10 @@ export const BitstreamContextProvider = ({ children }) => {
     <BitstreamContext.Provider
       value={{
         ...state,
-        handleInputChange,
+        handleChangeErrorCorrectionLevel,
+        handleChangeVersion,
+        handleChangeDataMask,
+        handleChangeInput,
       }}
     >
       {children}

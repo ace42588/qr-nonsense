@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import "./style.css"; // Import your component-specific styles
+import React, { useState, useContext } from "react";
+import { BitstreamContext } from "../context/BitstreamContext"
+import "./styles.css"; // Import your component-specific styles
 
 import VersionSelector from "../VersionSelector/VersionSelector";
 import DataMaskSelector from "../DataMaskSelector/DataMaskSelector";
@@ -132,6 +133,7 @@ function MerchForm({
   setErrorCorrectionLevel,
 }) {
   const [inputs, setInputs] = useState([{ type: "JSON", value: sampleInput }]);
+  const context = useContext(BitstreamContext);
 
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
