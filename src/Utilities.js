@@ -172,11 +172,16 @@ export const QRUtils = {
     return blocks;
   },
   getOrderedBits(chunks, errorCorrectionLevel, version) {
-    const blocks = QRUtils.getBlocks(chunks, errorCorrectionLevel, version);
-    const totalCodewords = blocks.reduce((total, {codewords}) => total + codewords.length, 0);
-    let orderedBits = Array.from({length: totalCodewords}, (blocks, idx) => {
-      const blockIdx = idx % blocks.length;
-      const cwIdx = Math.floor(idx / blocks.length);
+    const qrBlocks = QRUtils.getBlocks(chunks, errorCorrectionLevel, version);
+    const totalCodewords = qrBlocks.reduce((total, {codewords}) => total + codewords.length, 0);
+    const orderedBits = Array.from({length: totalCodewords}, (qrBlocks, idx) => {
+      const blockIdx = idx % qrBlocks.length;
+      const cwIdx = Math.floor(idx / qrBlocks.length);
+      const { codewords } = qrBlocks[blockIdx];
+      if (cwIdx < codewords.length) {
+        const { bits } = codewords[cwIdx];
+        return [...bits];
+      }
     })
     for (let i = 0; i < totalCodewords; i++) {
       const blockIdx = i % blocks.length;
