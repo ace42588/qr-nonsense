@@ -1,19 +1,19 @@
 import { MODE, AlphaNumCharMap } from "./Constants";
 import { BitUtils } from "./Utilities";
 
-class Segment {
-  constructor(data, index) {
-    this.data = data;
-    this.index = index;
-    this._bitsCache = null;
-  }
-
-  static validateLength(data, min, max, type) {
+function validateLength(data, min, max, type) {
     if (data.length < min || data.length > max) {
       throw new Error(
         `${type} segment must have between ${min} and ${max} characters.`
       );
     }
+  }
+
+class Segment {
+  constructor(data, index) {
+    this.data = data;
+    this.index = index;
+    this._bitsCache = null;
   }
 
   get bits() {
@@ -30,9 +30,7 @@ class Segment {
   }
 
   get value() {
-    return this.bits.reduce((val, bit) => {
-      return (val << 1) | bit.value;
-    });
+    return this._value;
   }
 
   *[Symbol.iterator]() {
@@ -45,6 +43,7 @@ class Segment {
 export class NumericSegment extends Segment {
   constructor(data, index) {
     this.mode = MODE.Numeric;
+    validateLength(data, 1, 3,)
     if (data.length > 3 || data.length < 1) {
       throw new Error("NumericSegment must have 1-3 numeric characters!");
     }

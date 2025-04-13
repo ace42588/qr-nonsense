@@ -47,7 +47,7 @@ export const QRUtils = {
     }
     return padded;
   },
-  
+
   /**
    * Creates an array of bits that represent the modules of a QR code.
    * @param {Object[]} data - The encoded sections of data.

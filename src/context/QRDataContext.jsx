@@ -9,6 +9,7 @@ export const QRDataDispatchContext = createContext(null);
 export function QRDataProvider({ children }) {
   const [state, dispatch] = useReducer(dataReducer, initialData);
 
+  /*
   function handleChangeErrorCorrectionLevel(errorCorrectionLevel) {
     dispatch({
       type: "MODIFY_ERROR",
@@ -33,6 +34,7 @@ export function QRDataProvider({ children }) {
       payload: { mode, encoding, data: Object.values(data)[0] },
     });
   }
+  */
 
   return (
     <QRDataContext.Provider value={state}>
