@@ -39,7 +39,7 @@ const MODE = {
   Terminator: "terminator",
 };
 
-const ModeByte = {
+const MODE_BYTE = {
   terminator: 0x0,
   numeric: 0x1,
   alphanumeric: 0x2,
@@ -54,8 +54,6 @@ const ModeByte = {
 const AlphaNumCharClass = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
 class Encoder {
-  constructor() {}
-
   getCharCountIndicator(charCount) {
     throw new Error(
       "getCharCountIndicator() must be implemented in subclasses"
@@ -66,14 +64,18 @@ class Encoder {
     throw new Error("encodeData() must be implemented in subclasses");
   }
 
-  addModeIndicator() {
-    const modeBits = ModeByte[this.mode].toString(2).padStart(4, "0");
+  addModeIndicator(mode) {
+    const byte = MODE_BYTE[mode];
+    if (!byte) {
+      throw new Error("Invalid mode indicator", mode);
+    }
+    const modeBits = MODE_BYTE[mode].toString(2).padStart(4, "0");
     return [...modeBits].map(
       (bit) =>
         new TaggedBit({
           bit,
           type: "mode",
-          source: this.mode,
+          source: mode,
           encoding: "none",
         })
     );
@@ -93,23 +95,12 @@ class Encoder {
   }
 
   encode(data, encoding) {
-    let segments = [...this.encodeData(data, encoding)];
-
-    let header = [
-      ...this.addModeIndicator(),
-      ...this.addCharacterCountIndicator(data.length),
-    ];
-
     return {
       header: [
-        ...this.addModeIndicator(),
+        ...this.addModeIndicator(this.mode),
         ...this.addCharacterCountIndicator(data.length),
       ],
-      segments: [
-        ...this.addModeIndicator(),
-        ...this.addCharacterCountIndicator(data.length),
-      ],
-      bits: [...header, segments.flatMap((s) => [...s])],
+      segments: [...this.encodeData(data, encoding)],
     };
   }
 }
@@ -134,8 +125,8 @@ class NumericEncoder extends Encoder {
 }
 
 class AlphanumericEncoder extends Encoder {
-  constructor(bitStream) {
-    super({ bitStream });
+  constructor() {
+    super();
     this.mode = MODE.Alphanumeric;
   }
 
@@ -145,7 +136,6 @@ class AlphanumericEncoder extends Encoder {
   }
 
   static *encodeData(input) {
-    //const matchRegEx = new RegExp(`[${AlphaNumCharClass}]{1,2}`, "g");
     const pairs = input.match(/[0-9A-Z \$\%\*\+\-\.\/\:]{1,2}/g);
 
     for (let i = 0; i < pairs.length; i++) {
