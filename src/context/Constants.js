@@ -59,6 +59,29 @@ export const MODE = {
   },
 };
 
+export const PAD_BYTES = [
+  [
+    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 236, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 236, encoding: "none" }),
+  ],
+  [
+    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "1", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
+    new TaggedBit({ bit: "1", type: "padding", source: 17, encoding: "none" }),
+  ],
+];
+
 export const VERSION_BYTE_CAPS = [
     {
       1: 17,
@@ -229,30 +252,6 @@ export const VERSION_BYTE_CAPS = [
       40: 1273,
     },
   ];
-
-
-export const PAD_BYTES = [
-  [
-    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 236, encoding: "none" }),
-  ],
-  [
-    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "1", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "1", type: "padding", source: 17, encoding: "none" }),
-  ],
-];
 
 export const VERSIONS = [
   {
