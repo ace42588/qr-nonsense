@@ -28,11 +28,11 @@ const BitUtils = {
 
 const MODE = {
   Terminator: {
-    toString: () => "terminator",
+    name: "terminator",
     bits: 0x0,
   },
   Numeric: {
-    toString: () => "numeric",
+    name: "numeric",
     bits: 0x1,
     thresholds: [
       { max: 10, length: 10 },
@@ -41,7 +41,7 @@ const MODE = {
     ],
   },
   Alphanumeric: {
-    toString: () => "alphanumeric",
+    name: "alphanumeric",
     bits: 0x2,
     thresholds: [
       { max: 45, length: 9 },
@@ -50,11 +50,11 @@ const MODE = {
     ],
   },
   StructuredAppend: {
-    toString: () => "StructuredAppend",
+    name: "StructuredAppend",
     bits: 0x3,
   },
   Byte: {
-    toString: () => "byte",
+    name: "byte",
     bits: 0x4,
     thresholds: [
       { max: 256, length: 8 },
@@ -62,19 +62,19 @@ const MODE = {
     ],
   },
   FNC1FirstPosition: {
-    toString: () => "FNC1FirstPosition",
+    name: "FNC1FirstPosition",
     bits: 0x5,
   },
   ECI: {
-    toString: () => "eci",
+    name: "eci",
     bits: 0x7,
   },
   Kanji: {
-    toString: () => "kanji",
+    name: "kanji",
     bits: 0x8,
   },
   FNC1SecondPosition: {
-    toString: () => "FNC1SecondPosition",
+    name: "FNC1SecondPosition",
     bits: 0x9,
   },
 };
@@ -148,7 +148,7 @@ class AlphanumericSegment extends Segment {
       );
     }
     super(data, index);
-    this.encoding = "alphaNumeric";
+    this.encoding = this.mode.name;
     if (data.length === 1) {
       this._value = AlphaNumCharMap.indexOf(data[0]);
       this.length = 6;
@@ -219,7 +219,7 @@ class Encoder {
     return thresholds[thresholds.length - 1].length;
   }
 
-  static get ModeIndicator(mode) {
+  static computeModeIndicator(mode) {
     const { bits } = mode;
     if (!bits) {
       throw new Error(`Invalid mode ${mode}`);
@@ -228,7 +228,7 @@ class Encoder {
     return BitUtils.createTaggedBits(modeBits, "mode", mode, null);
   }
 
-  static get CharacterCountIndicator(charCount, mode) {
+  static computeCharacterCountIndicator(charCount, mode) {
     const length = Encoder.computeIndicatorLength(charCount, mode);
     const charCountBits = BitUtils.toPaddedBinary(charCount, length);
     return BitUtils.createTaggedBits(
@@ -248,8 +248,8 @@ class Encoder {
   encode(data, encoding) {
     return {
       header: [
-        ...Encoder.getModeIndicator(this.mode),
-        ...Encoder.getCharacterCountIndicator(data.length, this.mode),
+        ...Encoder.computeModeIndicator(this.mode),
+        ...Encoder.computeCharacterCountIndicator(data.length, this.mode),
       ],
       segments: [...this.encodeData(data, encoding)],
     };
@@ -324,7 +324,7 @@ class EciEncoder extends Encoder {
     const length = input < 256 ? 8 : 16;
     const bits = BitUtils.toPaddedBinary(input, length);
     return [
-      ...Encoder.addModeIndicator(MODE.ECI),
+      ...Encoder.computeModeIndicator(MODE.ECI),
       ...BitUtils.createTaggedBits(bits, "assignmentNumber", input, null),
     ];
   }
