@@ -72,7 +72,8 @@ export default function MerchForm() {
       </div>
       <div className="row">
         <button
-          onClick={() => {
+          onClick={(e) => {
+            e.preventDefault();
             dispatch({
               type: Actions.ChangeInput,
               payload: {
@@ -177,26 +178,24 @@ const parseInput = (input, encoding) => {
   return parsedInput;
 };
 
-const sampleInput = JSON.stringify(
-  {
-    p: "A",
-    cc: 133,
-    txn: "99999",
-    i: [
-      {
-        v: 5432,
-        q: 1,
-      },
-      {
-        v: 6666,
-        q: 3,
-      },
-      {
-        v: 1234,
-        q: 2,
-      },
-    ],
-  },
-  null,
-  2
-);
+const sampleOrder = {
+  p: "A",
+  cc: 133,
+  txn: "99999",
+  i: [
+    {
+      v: 5432,
+      q: 1,
+    },
+    {
+      v: 6666,
+      q: 3,
+    },
+    {
+      v: 1234,
+      q: 2,
+    },
+  ],
+};
+
+const sampleInput = JSON.stringify(sampleOrder, null, 2);

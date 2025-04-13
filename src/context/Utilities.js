@@ -13,12 +13,29 @@ const paddingBytes = PAD_BYTES.map((byte) => {
 });
 
 export const QRUtils = {
+  getErrorCorrectionInfo(errorCorrectionLevel) {
+    const info = EC_INFO[errorCorrectionLevel];
+    if (!EC_INFO[errorCorrectionLevel]) {
+      throw new Error(
+        "Invalid error correction level: " + errorCorrectionLevel
+      );
+    }
+    return info;
+  },
+  gerVersionInfo(errorCorrectionLevel, version) {
+    const ecInfo = QRUtils.getErrorCorrectionInfo(errorCorrectionLevel);
+    const versionInfo = ecInfo[version];
+    if (!version) {
+      throw new Error("Invalid QR version: " + version);
+    }
+    return versionInfo;
+  },
   getTerminatorLength(capacityBytes, totalDataBits) {
     const capacityBits = capacityBytes * 8;
     return Math.min(4, Math.max(0, capacityBits - totalDataBits));
   },
   getRequiredDataCodewords(version, errorCorrectionLevel) {
-    const { ecBlocks } = EC_INFO[errorCorrectionLevel][version];
+    const { ecBlocks } = QRUtils.gerVersionInfo(errorCorrectionLevel, version);
     let requiredDataCodewords = 0;
 
     return ecBlocks.reduce(
@@ -66,28 +83,26 @@ export const QRUtils = {
       const segmentBits = segments.flatMap((s) => [...s]);
       return [...header, ...segmentBits];
     });
-    console.de
-    
+    console.debug({ bits });
+
     if (version === "auto") {
-      version = QRUtils.getMinimumQRCodeVersion(bits, errorCorrectionLevel)
+      version = QRUtils.getMinimumQRCodeVersion(
+        bits.length,
+        errorCorrectionLevel
+      );
     }
+
     const requiredDataCodewords = QRUtils.getRequiredDataCodewords(
       version,
       errorCorrectionLevel
     );
 
-    bits = [
-      ...bits,
-      ...QRUtils.getTerminatorBits(bits, requiredDataCodewords),
-    ];
+    bits = [...bits, ...QRUtils.getTerminatorBits(bits, requiredDataCodewords)];
     bits = [
       ...bits,
       ...QRUtils.getCodewordFillBits(bits, requiredDataCodewords),
     ];
-    bits = [
-      ...bits,
-      ...QRUtils.getPaddingBits(bits, requiredDataCodewords),
-    ];
+    bits = [...bits, ...QRUtils.getPaddingBits(bits, requiredDataCodewords)];
 
     return bits;
   },
@@ -97,7 +112,6 @@ export const QRUtils = {
         "Invalid error correction level: " + errorCorrectionLevel
       );
     }
-
     // Try each version until one is found that fits the data.
     for (let version = 1; version <= 40; version++) {
       const { capacity } = EC_INFO[errorCorrectionLevel][version];
@@ -117,6 +131,31 @@ export const QRUtils = {
       }
     }
     throw new Error("Data too large to fit in a QR code version 40.");
+  },
+  getBlocks() {
+    const { errorCorrectionLevels } =
+      typeof version === "object" ? version : VERSIONS[version - 1];
+    const { ecCodewordsPerBlock, ecBlocks } =
+      errorCorrectionLevels[errorCorrectionLevel];
+
+    let blocks = [];
+    let readIdx = 0;
+
+    ecBlocks.forEach(({ numBlocks, dataCodewordsPerBlock }) => {
+      for (let i = 0; i < numBlocks; i++) {
+        const block = new Block(dataCodewordsPerBlock, ecCodewordsPerBlock, i);
+        const { dataCodewords, numDataCodewords } = block;
+        while (dataCodewords.length < numDataCodewords) {
+          const start = readIdx;
+          readIdx += 8;
+          const taggedBits = dataBits.slice(start, readIdx);
+          const codeword = new TaggedCodeword(taggedBits, dataCodewords.length);
+          dataCodewords.push(codeword);
+        }
+        block.generateErrorCorrection();
+        blocks.push(block);
+      }
+    });
   },
 };
 
