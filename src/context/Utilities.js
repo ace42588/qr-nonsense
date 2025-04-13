@@ -13,10 +13,10 @@ const QRUtils = {
       0
     );
   },
-  createTerminatorBits(){
+  addTerminatorBits(bits, requiredDataCodewords) {
     let bitStr;
     let requiredBits = requiredDataCodewords * 8;
-    let remaining = requiredBits - finalBits.length;
+    let remaining = requiredBits - bits.length;
     // add terminator if there is space
     if (0 < remaining <= 4) {
       bitStr = "".padStart(remaining, "0");
@@ -27,8 +27,26 @@ const QRUtils = {
       null,
       null
     );
-    finalBits = [...finalBits, ...termBits];
-  }
+    return [...bits, ...termBits];
+  },
+  fillCodeword(bits, requiredDataCodewords) {
+    let bitStr;
+    let remaining = 8 - (bits.length % 8);
+    if (0 < remaining < 8) {
+      bitStr = "".padStart(remaining, "0");
+    }
+    const fillBits = BitUtils.createTaggedBits(bitStr, "fill", null, null);
+    return [...bits, ...fillBits];
+  },
+  addPadding(bits, requiredDataCodewords) {
+    const currentCodewords = bits.length / 8;
+    const codewordsNeeded = requiredDataCodewords - currentCodewords;
+    let padded = [...bits];
+    for (let i = 0; i < codewordsNeeded; i++) {
+      padded = [...padded, ...PAD_BYTES[i % 2]];
+    }
+    return padded;
+  },
 };
 
 export const BitUtils = {
@@ -79,34 +97,13 @@ export const BitUtils = {
       version,
       errorCorrectionLevel
     );
-    let finalBits = [...sectionBits.flat()];
-    let bitStr;
-    let requiredBits = requiredDataCodewords * 8;
-    let remaining = requiredBits - finalBits.length;
-    // add terminator if there is space
-    if (0 < remaining <= 4) {
-      bitStr = "".padStart(remaining, "0");
-    }
-    const termBits = BitUtils.createTaggedBits(
-      bitStr,
-      "terminator",
-      null,
-      null
+    const terminated = QRUtils.addTerminatorBits(
+      [...sectionBits.flat()],
+      requiredDataCodewords
     );
-    finalBits = [...finalBits, ...termBits];
-    // bits needed to fill the codeword
-    remaining = 8 - (finalBits.length % 8);
-    if (0 < remaining < 8) {
-      bitStr = "".padStart(remaining, "0");
-    }
-    const fillBits = BitUtils.createTaggedBits(bitStr, "fill", null, null);
-    finalBits = [...finalBits, ...fillBits];
-    const currentCodewords = finalBits.length / 8;
-    const codewordsNeeded = requiredDataCodewords - currentCodewords;
-    for (let i = 0; i < codewordsNeeded; i++) {
-      finalBits = [...finalBits, ...PAD_BYTES[i % 2]];
-    }
+    const filled = QRUtils.fillCodeword(terminated, requiredDataCodewords);
+    const padded = QRUtils.addPadding(filled, requiredDataCodewords);
 
-    return finalBits;
+    return padded;
   },
 };
