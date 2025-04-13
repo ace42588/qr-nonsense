@@ -1,13 +1,13 @@
-import { useState, useContext } from "react";
+import React, { useState, useContext } from "react";
 import "./styles.css"; // Import your component-specific styles
 
 import {ErrorCorrectionSelector, VersionSelector, DataMaskSelector} from "./Selectors";
-
-import { QRDataDispatchContext } from './context/QRDataDispatchContext';
-
+import {QRDataDispatchContext} from "./context/QRDataContext"
 
 import { getEncoder } from "../encode/Encoder";
 import { TaggedBitstream } from "../encode/TaggedBitstream";
+
+const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
 
 export default function MerchForm({
   setBitStream,
@@ -27,19 +27,20 @@ export default function MerchForm({
   };
 
   const handleChangeEncoding = (index, newEncoding) => {
+    const 
     const newInput = {...input, type: newEncoding};
 
     if (newEncoding === "byte") {
-      newInputs[index].encoding = "utf-8";
+      newInput.encoding = "utf-8";
     } else {
-      delete newInputs[index].encoding;
+      delete newInput.encoding;
     }
-    setInput(newInputs);
+    setInput(newInput);
   };
 
   const handleInputSubmit = (event) => {
     event.preventDefault();
-    const chunks = inputs.map((i) => parseInput(i));
+    const chunks = parseInput(input);
     const bitStream = new TaggedBitstream();
     chunks.forEach(({ type, encoding, ...data }) =>
       getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
@@ -63,13 +64,12 @@ export default function MerchForm({
         <DataMaskSelector value={dataMask} onChange={setDataMask} />
       </div>
       <div className="row">
-        {inputs.map((input, index) => (
-          <div key={index} className="input-group">
+          <div key={0} className="input-group">
             <label htmlFor="encoding">Encoding:</label>
             <select
               id="encoding"
               value={input.type}
-              onChange={(e) => handleModeChange(index, e.target.value)}
+              onChange={(e) => handleChangeEncoding(e.target.value)}
             >
               {modes.map((mode) => (
                 <option key={mode} value={mode}>
@@ -82,10 +82,9 @@ export default function MerchForm({
               type="text"
               rows={16}
               value={input.value}
-              onChange={(e) => handleInputChange(index, e)}
+              onChange={(e) => handleChangeInput(e)}
             />
           </div>
-        ))}
       </div>
       <div className="row">
         <button type="submit">Generate QR Code</button>
@@ -93,30 +92,6 @@ export default function MerchForm({
     </form>
   );
 }
-
-const sampleInput = JSON.stringify(
-  {
-    p: "A",
-    cc: 133,
-    txn: "99999",
-    i: [
-      {
-        v: 5432,
-        q: 1,
-      },
-      {
-        v: 6666,
-        q: 3,
-      },
-      {
-        v: 1234,
-        q: 2,
-      },
-    ],
-  },
-  null,
-  2
-);
 
 // {"p":"A","cc":"133","txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}
 const buildHeader = (txn, confId, platform) => {
@@ -206,3 +181,27 @@ const parseInput = (input) => {
 
   return parsedInput;
 };
+
+const sampleInput = JSON.stringify(
+  {
+    p: "A",
+    cc: 133,
+    txn: "99999",
+    i: [
+      {
+        v: 5432,
+        q: 1,
+      },
+      {
+        v: 6666,
+        q: 3,
+      },
+      {
+        v: 1234,
+        q: 2,
+      },
+    ],
+  },
+  null,
+  2
+);
