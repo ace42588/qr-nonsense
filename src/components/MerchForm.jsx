@@ -7,6 +7,7 @@ import {
   DataMaskSelector,
 } from "./Selectors";
 import { QRDataDispatchContext } from "../context/QRDataContext";
+import {Actions} from "../contex/Constants"
 
 import { getEncoder } from "../encode/Encoder";
 import { TaggedBitstream } from "../encode/TaggedBitstream";
@@ -86,7 +87,15 @@ export default function MerchForm({
             type="text"
             rows={16}
             value={input.value}
-            onChange={(e) => handleChangeInput(e)}
+            onChange={() => {
+        dispatch({
+          type: Actions.ChangeInput,
+          payload: {
+            
+          }
+
+        }); 
+      }}
           />
         </div>
       </div>
