@@ -1,5 +1,20 @@
 import { TaggedBit } from "./TaggedBit";
 
+const BitUtils = {
+  toPaddedBinary(value, length) {
+    return value.toString(2).padStart(length, "0");
+  },
+
+  createTaggedBits(bitStr, options) {
+    return [...bitStr].map((bit, idx) => new TaggedBit({ 
+      ...options, 
+      bit, 
+      idx 
+    }));
+  }
+};
+
+
 const MODE = {
   Terminator: {
     toString: () => "terminator",
@@ -62,7 +77,7 @@ class Segment {
   }
 
   get bits() {
-    const bitStr = this._value.toString(2).padStart(this.length, "0");
+    const bitStr = BitUtils.toPaddedBinary(this._value, this.length);
     return [...bitStr].map(
       (bit, idx) =>
         new TaggedBit({
@@ -196,6 +211,7 @@ class Encoder {
     if (!bits) {
       throw new Error(`Invalid mode ${mode}`);
     }
+    BitUtils.toPaddedBinary(bits)
     const modeBits = bits.toString(2).padStart(4, "0");
     return Encoder.createTaggedBits(modeBits, "mode", mode);
   }
