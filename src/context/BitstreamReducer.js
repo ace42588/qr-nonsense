@@ -105,8 +105,8 @@ class Encoder {
 }
 
 class NumericEncoder extends Encoder {
-  constructor(bitStream) {
-    super({ bitStream });
+  constructor() {
+    super();
     this.mode = MODE.Numeric;
   }
 
@@ -124,6 +124,7 @@ class NumericEncoder extends Encoder {
 }
 
 class AlphanumericEncoder extends Encoder {
+  static AlphaNumCharClass = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
   constructor(bitStream) {
     super({ bitStream });
     this.mode = MODE.Alphanumeric;
@@ -198,7 +199,7 @@ class EciEncoder extends Encoder {
   }
 }
 
-function getEncoder({ bitStream, type }) {
+function getEncoder({ type }) {
   //console.log("getEncoder", { bitStream, type });
   switch (type) {
     case "eci":
