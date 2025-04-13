@@ -24,13 +24,12 @@ export const QRUtils = {
     let length = QRUtils.computeTerminatorLength(requiredDataCodewords, bits);
     // add terminator if there is space
     const bitStr = "".padStart(length, "0");
-    const termBits = BitUtils.createTaggedBits(
+    return BitUtils.createTaggedBits(
       bitStr,
       "terminator",
       null,
       null
     );
-    return [...bits, ...termBits];
   },
   fillCodeword(bits, requiredDataCodewords) {
     let bitStr;
@@ -59,7 +58,7 @@ export const QRUtils = {
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
   finalizeBitStream(data, version, errorCorrectionLevel) {
-    const sectionBits = data.map(({ header, segments }, dIdx) => {
+    const chunkBits = data.map(({ header, segments }, dIdx) => {
       const segmentBits = segments.flatMap((s, sIdx) => [...s]);
       return [...header, ...segmentBits];
     });
