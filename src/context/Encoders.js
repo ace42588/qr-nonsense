@@ -1,4 +1,5 @@
-import { BitUtils, MODE } from "./utilities.js";
+import { MODE } from "./Constants"
+import { BitUtils } from "./Utilities.js";
 import { NumericSegment, AlphanumericSegment, ByteSegment } from "./Segments";
 
 function* createSegments(input, regex, SegmentClass, errorMsg) {
@@ -75,6 +76,7 @@ class NumericEncoder extends Encoder {
   }
 
   *encodeData(input) {
+    
     yield* createSegments(
       input,
       /\d{1,3}/g,

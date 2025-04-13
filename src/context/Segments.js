@@ -1,6 +1,5 @@
-import { BitUtils, MODE } from './utilities';
-
-const AlphaNumCharMap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+import { MODE, AlphaNumCharMap } from "./Constants";
+import { BitUtils } from "./Utilities";
 
 class Segment {
   constructor(data, index) {
@@ -98,7 +97,7 @@ export class ByteSegment extends Segment {
   constructor(data, index, encoding) {
     super(data & 0xff, index);
     this.mode = MODE.Byte;
-    this.encoding = `byte-${encoding || "latin-1"}`;
+    this.encoding = encoding || "latin-1";
     this._value = this.data;
     this.length = 8;
   }
