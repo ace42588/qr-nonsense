@@ -1,7 +1,6 @@
 import { PAD_BYTES, EC_INFO } from "./Constants";
 import { ReedSolomonEncoder } from "./reedsolomon/index.js";
-import { TaggedCodeword, ECCodeword } from "./encode/TaggedCodeword";
-import { TaggedBit } from "./encode/TaggedBit";
+import { TaggedBit, TaggedCodeword, ECCodeword } from "./Tagged";
 
 const codewordLength = 8;
 
@@ -199,11 +198,9 @@ export const QRUtils = {
             );
           }
         );
-        const ecBytes = rsEncoder.encode(Uint8Array.from(dataCodewords));
+        const ecBytes = rsEncoder.encode(Uint8Array.from(dataCodewords, (c) => c.byte));
 
-        const ecCodewords = Array.from(ecBytes).map(
-          (b, idx) => new ECCodeword(b, idx)
-        );
+        const ecCodewords = Array.from(ecBytes, (b, idx) => new ECCodeword(b, idx));
         const block = {
           dataCodewordsPerBlock,
           ecCodewordsPerBlock,
