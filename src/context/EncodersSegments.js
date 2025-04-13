@@ -142,7 +142,7 @@ class NumericSegment extends Segment {
 class AlphanumericSegment extends Segment {
   constructor(data, index) {
     this.mode = MODE.Alphanumeric;
-    if (data.length > 3 || data.length < 1) {
+    if (data.length > 2 || data.length < 1) {
       throw new Error(
         `AlphanumericSegment must have 1-2 characters from the class [${AlphaNumCharMap}]!`
       );
@@ -189,6 +189,16 @@ class ByteSegment extends Segment {
   }
 }
 
+function* createSegments(input, regex, SegmentClass, errorMsg) {
+  const groups = input.match(regex);
+  if (!groups) {
+    throw new Error(errorMsg);
+  }
+  for (let i = 0; i < groups.length; i++) {
+    yield new SegmentClass(groups[i], i);
+  }
+}
+
 class Encoder {
   /**
    * Computes the bit-length indicator based on thresholds.
@@ -209,7 +219,7 @@ class Encoder {
     return thresholds[thresholds.length - 1].length;
   }
 
-  static getModeIndicator(mode) {
+  static get ModeIndicator(mode) {
     const { bits } = mode;
     if (!bits) {
       throw new Error(`Invalid mode ${mode}`);
@@ -218,7 +228,7 @@ class Encoder {
     return BitUtils.createTaggedBits(modeBits, "mode", mode, null);
   }
 
-  static getCharacterCountIndicator(charCount, mode) {
+  static get CharacterCountIndicator(charCount, mode) {
     const length = Encoder.computeIndicatorLength(charCount, mode);
     const charCountBits = BitUtils.toPaddedBinary(charCount, length);
     return BitUtils.createTaggedBits(
@@ -253,13 +263,12 @@ class NumericEncoder extends Encoder {
   }
 
   *encodeData(input) {
-    const groupsOfThree = input.match(/\d{1,3}/g);
-    if (!groupsOfThree) {
-      throw new Error(`Invalid input for Numeric encoder: ${input.toString()}`);
-    }
-    for (let i = 0; i < groupsOfThree.length; i++) {
-      yield new NumericSegment(groupsOfThree[i], i);
-    }
+    yield* createSegments(
+      input,
+      /\d{1,3}/g,
+      NumericSegment,
+      `Invalid input for Numeric encoder: ${input}`
+    );
   }
 }
 
@@ -270,16 +279,12 @@ class AlphanumericEncoder extends Encoder {
   }
 
   *encodeData(input) {
-    const pairs = input.match(/[0-9A-Z \$\%\*\+\-\.\/\:]{1,2}/g);
-    if (!pairs) {
-      throw new Error(
-        `Invalid input for Alphanumeric encoder: ${input.toString()}`
-      );
-    }
-
-    for (let i = 0; i < pairs.length; i++) {
-      yield new AlphanumericSegment(pairs[i], i);
-    }
+    yield* createSegments(
+      input,
+      /[0-9A-Z \$\%\*\+\-\.\/\:]{1,2}/g,
+      AlphanumericSegment,
+      `Invalid input for Alphanumeric encoder: ${input}`
+    );
   }
 }
 
