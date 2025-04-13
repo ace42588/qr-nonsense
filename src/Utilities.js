@@ -4,43 +4,6 @@ import { TaggedBit, TaggedCodeword, ECCodeword } from "./Tagged";
 
 const codewordLength = 8;
 
-class Block {
-  constructor(numDataCodewords, numECCodewords, id) {
-    this.numDataCodewords = numDataCodewords;
-    this.numECCodewords = numECCodewords;
-    this.totalCodewords = numDataCodewords + numECCodewords;
-    this.rsEncoder = new ReedSolomonEncoder(numECCodewords);
-    this.dataCodewords = [];
-    this.ecCodewords = [];
-    this.id = id;
-  }
-
-  generateErrorCorrection() {
-    const dataBytes = this.dataCodewords.map((c) => c.byte);
-    //console.log(dataBytes);
-    const ecBytes = this.rsEncoder.encode(dataBytes);
-    const ecCodewords = Array.from(ecBytes).map(
-      (b, idx) => new ECCodeword(b, idx)
-    );
-    //console.log("generateErrorCorrection", { ec: ecCodewords.map((c) => c.byte) });
-    this.ecCodewords = ecCodewords;
-  }
-
-  get codewords() {
-    return [...this.dataCodewords, ...this.ecCodewords];
-  }
-}
-
-function getErrorCorrectionCodewords(
-  numDataCodewords,
-  numECCodewords,
-  dataCodewords
-) {
-  const rsEncoder = new ReedSolomonEncoder(numECCodewords);
-  const ecBytes = rsEncoder.encode(dataCodewords.map((c) => c.byte));
-  return Array.from(ecBytes).map((b, idx) => new ECCodeword(b, idx));
-}
-
 const paddingBytes = PAD_BYTES.map((byte) => {
   return byte.map((bit) => new TaggedBit(bit));
 });
@@ -198,45 +161,21 @@ export const QRUtils = {
             );
           }
         );
-        const ecBytes = rsEncoder.encode(Uint8Array.from(dataCodewords, (c) => c.byte));
-
-        const ecCodewords = Array.from(ecBytes, (b, idx) => new ECCodeword(b, idx));
-        const block = {
-          dataCodewordsPerBlock,
-          ecCodewordsPerBlock,
-          totalCodewords: dataCodewordsPerBlock + ecCodewordsPerBlock,
-          dataCodewords,
-          ecCodewords,
-          id: i,
-        };
-        blocks = [...blocks, block];
-      });
-      for (let i = 0; i < numBlocks; i++) {
-        let dataCodewords = [];
-        while (dataCodewords.length < dataCodewordsPerBlock) {
-          const start = readIdx;
-          readIdx += 8;
-          const taggedBits = dataBits.slice(start, readIdx);
-          dataCodewords = [
-            ...dataCodewords,
-            new TaggedCodeword(taggedBits, dataCodewords.length),
-          ];
-        }
-        const ecCodewords = getErrorCorrectionCodewords(
-          dataCodewordsPerBlock,
-          ecCodewordsPerBlock,
-          dataCodewords
+        const ecCodewords = Array.from(
+          rsEncoder.encode(
+            Uint8Array.from(dataCodewords, (c) => c.byte),
+            (b, idx) => new ECCodeword(b, idx)
+          )
         );
-        const block = {
-          dataCodewordsPerBlock,
-          ecCodewordsPerBlock,
-          totalCodewords: dataCodewordsPerBlock + ecCodewordsPerBlock,
-          dataCodewords,
-          ecCodewords,
-          id: i,
-        };
-        blocks = [...blocks, block];
-      }
+
+        blocks = [
+          ...blocks,
+          {
+            codewords: [...dataCodewords, ...ecCodewords],
+            id: i,
+          },
+        ];
+      });
     });
   },
 };
