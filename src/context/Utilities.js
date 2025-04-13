@@ -1,4 +1,4 @@
-import { PAD_BYTES, VERSION_INFO, EC_INFO } from "./Constants";
+import { PAD_BYTES, EC_INFO } from "./Constants";
 import { TaggedBit } from "../encode/TaggedBit";
 
 const versions = [{ label: "Auto", value: "auto" }].concat(
@@ -9,37 +9,28 @@ const versions = [{ label: "Auto", value: "auto" }].concat(
 );
 
 const paddingBytes = PAD_BYTES.map((byte) => {
-  return byte.map((bit) => new TaggedBit(bit))
+  return byte.map((bit) => new TaggedBit(bit));
 });
 
 export const QRUtils = {
-  computeTerminatorLength(capacityBytes, totalDataBits){
+  computeTerminatorLength(capacityBytes, totalDataBits) {
     const capacityBits = capacityBytes * 8;
-    return Math.min(
-      4,
-      Math.max(0, capacityBits - totalDataBits)
-    );
+    return Math.min(4, Math.max(0, capacityBits - totalDataBits));
   },
   computeRequiredDataCodewords(version, errorCorrectionLevel) {
-    const { errorCorrectionLevels } = VERSIONS[version - 1];
-    const { ecCodewordsPerBlock, ecBlocks } =
-      errorCorrectionLevels[errorCorrectionLevel];
+    const { ecBlocks } = EC_INFO[errorCorrectionLevel][version];
+    let requiredDataCodewords = 0;
 
     return ecBlocks.reduce(
-      (t, { numBlocks, dataCodewordsPerBlock }) =>
-        t + numBlocks * dataCodewordsPerBlock,
-      0
+      (total, { numBlocks, dataCodewordsPerBlock }) =>
+        total + numBlocks * dataCodewordsPerBlock,
+      requiredDataCodewords
     );
   },
   computeTerminatorBits(bits, requiredDataCodewords) {
     let length = QRUtils.computeTerminatorLength(requiredDataCodewords, bits);
     const bitStr = "".padStart(length, "0");
-    return BitUtils.createTaggedBits(
-      bitStr,
-      "terminator",
-      null,
-      null
-    );
+    return BitUtils.createTaggedBits(bitStr, "terminator", null, null);
   },
   computeCodewordFillBits(bits, requiredDataCodewords) {
     let bitStr;
@@ -51,7 +42,8 @@ export const QRUtils = {
   },
   computePaddingBits(bits, requiredDataCodewords) {
     const length = bits.length;
-    if ((length % 8) !== 0) throw new Error(`Bits (length: ${length}) aren't codeword/byte aligned!`);
+    if (length % 8 !== 0)
+      throw new Error(`Bits (length: ${length}) aren't codeword/byte aligned!`);
     const currentCodewords = length / 8;
     const codewordsNeeded = requiredDataCodewords - currentCodewords;
     let padding = [];
@@ -70,7 +62,7 @@ export const QRUtils = {
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
   finalizeBitStream(data, version, errorCorrectionLevel) {
-        const requiredDataCodewords = QRUtils.computeRequiredDataCodewords(
+    const requiredDataCodewords = QRUtils.computeRequiredDataCodewords(
       version,
       errorCorrectionLevel
     );
@@ -78,37 +70,48 @@ export const QRUtils = {
       const segmentBits = segments.flatMap((s) => [...s]);
       return [...header, ...segmentBits];
     });
-    bits = [...bits, ...QRUtils.computeTerminatorBits(
-      bits,
-      requiredDataCodewords
-    )];
-    bits = [...bits, ...QRUtils.computeCodewordFillBits(bits, requiredDataCodewords)];
-    bits = [...bits, ...QRUtils.computePaddingBits(bits, requiredDataCodewords)];
+    bits = [
+      ...bits,
+      ...QRUtils.computeTerminatorBits(bits, requiredDataCodewords),
+    ];
+    bits = [
+      ...bits,
+      ...QRUtils.computeCodewordFillBits(bits, requiredDataCodewords),
+    ];
+    bits = [
+      ...bits,
+      ...QRUtils.computePaddingBits(bits, requiredDataCodewords),
+    ];
 
     return bits;
   },
   getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
-  if (!qrCapacityBytes[errorCorrectionLevel]) {
-    throw new Error("Invalid error correction level: " + errorCorrectionLevel);
-  }
-
-  // Try each version until one is found that fits the data.
-  for (let version = 1; version <= 40; version++) {
-    let capacityBytes = qrCapacityBytes[errorCorrectionLevel][version];
-
-    // A terminator of up to 4 bits can be added.
-    const terminatorLength = QRUtils.computeTerminatorLength(capacityBytes, totalDataBits);
-    const totalBitsWithTerminator = totalDataBits + terminatorLength;
-
-    // The total bits must be rounded up to the next whole 8-bit codeword.
-    const requiredBytes = Math.ceil(totalBitsWithTerminator / 8);
-
-    if (requiredBytes <= capacityBytes) {
-      return version;
+    if (!EC_INFO[errorCorrectionLevel]) {
+      throw new Error(
+        "Invalid error correction level: " + errorCorrectionLevel
+      );
     }
-  }
-  throw new Error("Data too large to fit in a QR code version 40.");
-}
+
+    // Try each version until one is found that fits the data.
+    for (let version = 1; version <= 40; version++) {
+      const { capacity } = EC_INFO[errorCorrectionLevel][version];
+
+      // A terminator of up to 4 bits can be added.
+      const terminatorLength = QRUtils.computeTerminatorLength(
+        capacityBytes,
+        totalDataBits
+      );
+      const totalBitsWithTerminator = totalDataBits + terminatorLength;
+
+      // The total bits must be rounded up to the next whole 8-bit codeword.
+      const requiredBytes = Math.ceil(totalBitsWithTerminator / 8);
+
+      if (requiredBytes <= capacityBytes) {
+        return version;
+      }
+    }
+    throw new Error("Data too large to fit in a QR code version 40.");
+  },
 };
 
 export const BitUtils = {
