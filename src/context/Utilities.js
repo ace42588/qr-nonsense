@@ -13,19 +13,19 @@ const paddingBytes = PAD_BYTES.map((byte) => {
 });
 
 export const QRUtils = {
-  getErrorCorrectionInfo(errorCorrectionLevel) {
-    const info = EC_INFO[errorCorrectionLevel];
+  getVersionsByECLevel(errorCorrectionLevel) {
+    const versions = EC_INFO[errorCorrectionLevel];
     if (!EC_INFO[errorCorrectionLevel]) {
       throw new Error(
         "Invalid error correction level: " + errorCorrectionLevel
       );
     }
-    return info;
+    return versions;
   },
   gerVersionInfo(errorCorrectionLevel, version) {
-    const ecInfo = QRUtils.getErrorCorrectionInfo(errorCorrectionLevel);
-    const versionInfo = ecInfo[version];
-    if (!version) {
+    const versions = QRUtils.getVersionsByECLevel(errorCorrectionLevel);
+    const versionInfo = versions[version];
+    if (!versionInfo) {
       throw new Error("Invalid QR version: " + version);
     }
     return versionInfo;
@@ -107,14 +107,9 @@ export const QRUtils = {
     return bits;
   },
   getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
-    if (!EC_INFO[errorCorrectionLevel]) {
-      throw new Error(
-        "Invalid error correction level: " + errorCorrectionLevel
-      );
-    }
     // Try each version until one is found that fits the data.
     for (let version = 1; version <= 40; version++) {
-      const { capacity } = EC_INFO[errorCorrectionLevel][version];
+      const { capacity } = QRUtils.gerVersionInfo(errorCorrectionLevel, version);
 
       // A terminator of up to 4 bits can be added.
       const terminatorLength = QRUtils.getTerminatorLength(
