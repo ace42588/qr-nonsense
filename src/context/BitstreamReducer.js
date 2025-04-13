@@ -88,7 +88,7 @@ const MODE = {
 
 class Encoder {
   static computeIndicatorLength(charCount, mode) {
-    const { thresholds } = MODE[mode];
+    const { thresholds } = mode;
     for (const { max, length } of thresholds) {
       if (charCount < max) return length;
     }
@@ -106,16 +106,17 @@ class Encoder {
     );
   }
   static addModeIndicator(mode) {
-    const { bits } = MODE[mode];
+    const { bits } = mode;
     if (!bits) {
-      throw new Error(`Invalid mode indicator ${mode}`);
+      throw new Error(`Invalid mode ${mode}`);
     }
     const modeBits = bits.toString(2).padStart(4, "0");
     return Encoder.createTaggedBits(modeBits, "mode", mode);
   }
 
   addCharacterCountIndicator(charCount) {
-    const charCountBits = this.getCharCountIndicator(charCount);
+    const length = Encoder.computeIndicatorLength(charCount, this.mode);
+    const charCountBits = charCount.toString(2).padStart(length, "0");
     return Encoder.createTaggedBits(charCountBits, "characterCount", charCount);
   }
 
@@ -136,11 +137,6 @@ class NumericEncoder extends Encoder {
     this.mode = MODE.Numeric;
   }
 
-  getCharCountIndicator(charCount) {
-    let indicatorLength = charCount < 10 ? 10 : charCount < 1000 ? 12 : 14;
-    return charCount.toString(2).padStart(indicatorLength, "0");
-  }
-
   *encodeData(input) {
     const groupsOfThree = input.match(/\d{1,3}/g);
     for (let i = 0; i < groupsOfThree.length; i++) {
@@ -153,11 +149,6 @@ class AlphanumericEncoder extends Encoder {
   constructor() {
     super();
     this.mode = MODE.Alphanumeric;
-  }
-
-  getCharCountIndicator(charCount) {
-    let indicatorLength = charCount < 45 ? 9 : charCount < 1225 ? 11 : 13;
-    return charCount.toString(2).padStart(indicatorLength, "0");
   }
 
   *encodeData(input) {
@@ -175,13 +166,7 @@ class ByteEncoder extends Encoder {
     this.mode = MODE.Byte;
   }
 
-  getCharCountIndicator(charCount) {
-    let indicatorLength = charCount < 256 ? 8 : 16;
-    return charCount.toString(2).padStart(indicatorLength, "0");
-  }
-
   *encodeData(input, encoding) {
-    // TODO: optionally convert to UTF-8
     if (encoding === "hex") {
       for (let i = 0; i < input.length; i += 2) {
         const byte = parseInt(input.substring(i, i + 2), 16);
@@ -202,19 +187,11 @@ class ByteEncoder extends Encoder {
 
 class EciEncoder extends Encoder {
   static encode(input) {
-    let bits = [];
-    bits = [...Encoder.addModeIndicator(MODE.ECI)];
-    const str = input.toString(2).padStart(input < 256 ? 8 : 16, "0");
-    const taggedBits = [...str].map(
-      (bit) =>
-        new TaggedBit({
-          bit,
-          type: "assignmentNumber",
-          source: input,
-          encoding: "none",
-        })
-    );
-    return [...bits, ...taggedBits];
+    const bits = input.toString(2).padStart(input < 256 ? 8 : 16, "0");
+    return [
+      ...Encoder.addModeIndicator(MODE.ECI),
+      ...Encoder.createTaggedBits(bits, "assignmentNumber", input),
+    ];
   }
 }
 
