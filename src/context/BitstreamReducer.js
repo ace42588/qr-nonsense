@@ -42,12 +42,22 @@ const MODE = {
       "numeric";
     },
     bits: 0x1,
+    thresholds: [
+      { max: 10, length: 10 },
+      { max: 1000, length: 12 },
+      { max: Infinity, length: 14 },
+    ],
   },
   Alphanumeric: {
     toString: () => {
       "alphanumeric";
     },
     bits: 0x2,
+    thresholds: [
+      { max: 45, length: 9 },
+      { max: 1225, length: 11 },
+      { max: Infinity, length: 13 },
+    ],
   },
   //StructuredAppend: 0x3,
   Byte: {
@@ -55,6 +65,10 @@ const MODE = {
       "byte";
     },
     bits: 0x4,
+    thresholds: [
+      { max: 256, length: 8 },
+      { max: Infinity, length: 16 },
+    ],
   },
   //FNC1FirstPosition: 0x5,
   ECI: {
@@ -73,6 +87,13 @@ const MODE = {
 };
 
 class Encoder {
+  static computeIndicatorLength(charCount, mode) {
+    const { thresholds } = MODE[mode];
+    for (const { max, length } of thresholds) {
+      if (charCount < max) return length;
+    }
+    return thresholds[thresholds.length - 1].length;
+  }
   static createTaggedBits(bits, type, source) {
     return [...bits].map(
       (bit) =>
@@ -95,16 +116,7 @@ class Encoder {
 
   addCharacterCountIndicator(charCount) {
     const charCountBits = this.getCharCountIndicator(charCount);
-    Encoder.createTaggedBits(modeBits, "mode", mode);
-    return [...charCountBits].map(
-      (bit) =>
-        new TaggedBit({
-          bit,
-          type: "characterCount",
-          source: charCount,
-          encoding: "none",
-        })
-    );
+    return Encoder.createTaggedBits(charCountBits, "characterCount", charCount);
   }
 
   encode(data, encoding) {
