@@ -7,22 +7,11 @@ import {
   DataMaskSelector,
 } from "./Selectors";
 import { QRDataDispatchContext } from "../context/QRDataContext";
-import {Actions} from "../contex/Constants"
-
-import { getEncoder } from "../encode/Encoder";
-import { TaggedBitstream } from "../encode/TaggedBitstream";
+import { Actions } from "../context/Constants";
 
 const Encodings = ["JSON", "Alphanumeric", "PER"];
 
-export default function MerchForm({
-  setBitStream,
-  version,
-  setVersion,
-  dataMask,
-  setDataMask,
-  errorCorrectionLevel,
-  setErrorCorrectionLevel,
-}) {
+export default function MerchForm() {
   const [input, setInput] = useState({ value: sampleInput });
   const [encoding, setEncoding] = useState("JSON");
   const dispatch = useContext(QRDataDispatchContext);
@@ -31,25 +20,20 @@ export default function MerchForm({
     const newInput = { ...input, value: e.target.value };
     setInput(newInput);
     dispatch({
-          type: Actions.ChangeInput,
-          payload: {
-            
-          }
-
-        });
+      type: Actions.ChangeInput,
+      payload: {
+        ...parseInput(newInput, encoding),
+      },
+    });
   };
 
   const handleChangeEncoding = (e) => {
     const newEncoding = e.target.value;
-    const newInput = { ...input, type: newEncoding };
-
-    setInput(newInput);
-    const parsedInput = parseInput(newInput);
+    setEncoding(newEncoding);
     dispatch({
-          type: Actions.ChangeInput,
-          payload: { ...parseInput(newInput) }
-
-        });
+      type: Actions.ChangeInput,
+      payload: { ...parseInput(input, newEncoding) },
+    });
   };
 
   return (
@@ -90,7 +74,18 @@ export default function MerchForm({
         </div>
       </div>
       <div className="row">
-        <button type="submit">Generate QR Code</button>
+        <button
+          onClick={() => {
+            dispatch({
+              type: Actions.ChangeInput,
+              payload: {
+                ...parseInput(input, encoding),
+              },
+            });
+          }}
+        >
+          Generate QR Code
+        </button>
       </div>
     </form>
   );
@@ -128,20 +123,20 @@ const buildHeader = (txn, confId, platform) => {
   return bytes;
 };
 
-const parseInput = (input) => {
-  const { type, value } = input;
+const parseInput = (input, encoding) => {
+  const { value } = input;
   let { txn, cc, p, i } = JSON.parse(value);
   let parsedInput = {};
 
-  switch (type) {
+  switch (encoding) {
     case "alphanumeric": {
       // ENCAPSULATOR = "$";
       // FIELD_SEPARATOR = "%";
       // QTY_SEPARATOR = ":";
       // TERMINATOR = "/";
       const items = i.reduce((str, { v, q }) => `${str}${v}:${q}/`, "");
-      parsedInput.type = "alphanumeric";
-      parsedInput.text = `$1${p ? "%" + p : ""}${
+      parsedInput.mode = "alphanumeric";
+      parsedInput.data = `$1${p ? "%" + p : ""}${
         cc ? "%" + cc : ""
       }%${txn}%${items}$`;
       break;
@@ -166,18 +161,18 @@ const parseInput = (input) => {
       }, hex);
 
       parsedInput.encoding = "hex";
-      parsedInput.type = "byte";
-      parsedInput.bytes = hex;
+      parsedInput.mode = "byte";
+      parsedInput.data = hex;
       break;
     }
     default: {
-      //parsedInput.encoding = "utf-8";
-      parsedInput.type = "byte";
+      parsedInput.encoding = "utf-8";
+      parsedInput.mode = "byte";
       try {
         const obj = JSON.parse(value);
-        parsedInput.text = `${JSON.stringify(obj, null, 0)}`;
+        parsedInput.data = `${JSON.stringify(obj, null, 0)}`;
       } catch (e) {
-        parsedInput.text = value;
+        parsedInput.data = value;
       }
     }
   }
