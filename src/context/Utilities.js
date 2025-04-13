@@ -1,6 +1,36 @@
 import { VERSIONS, PAD_BYTES } from "./Constants";
 import { TaggedBit } from "./TaggedBit";
 
+const QRUtils = {
+  computeRequiredDataCodewords(version, errorCorrectionLevel) {
+    const { errorCorrectionLevels } = VERSIONS[version - 1];
+    const { ecCodewordsPerBlock, ecBlocks } =
+      errorCorrectionLevels[errorCorrectionLevel];
+
+    return ecBlocks.reduce(
+      (t, { numBlocks, dataCodewordsPerBlock }) =>
+        t + numBlocks * dataCodewordsPerBlock,
+      0
+    );
+  },
+  createTerminatorBits(){
+    let bitStr;
+    let requiredBits = requiredDataCodewords * 8;
+    let remaining = requiredBits - finalBits.length;
+    // add terminator if there is space
+    if (0 < remaining <= 4) {
+      bitStr = "".padStart(remaining, "0");
+    }
+    const termBits = BitUtils.createTaggedBits(
+      bitStr,
+      "terminator",
+      null,
+      null
+    );
+    finalBits = [...finalBits, ...termBits];
+  }
+};
+
 export const BitUtils = {
   /**
    * Creates string of bits given a value and length
@@ -36,38 +66,32 @@ export const BitUtils = {
    * Creates an array of bits that represent the modules of a QR code.
    * @param {Object[]} data - The encoded sections of data.
    * @param {number} version - The QR code version.
-   * @param {number} errorCorrectionLevel - Source identifier.
+   * @param {number} errorCorrectionLevel - Error Correction Level.
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
   finalizeBitStream(data, version, errorCorrectionLevel) {
-    const bits = data.flatMap(({ header, segments }, dIdx) => {
+    const sectionBits = data.map(({ header, segments }, dIdx) => {
       const segmentBits = segments.flatMap((s, sIdx) => [...s]);
       return [...header, ...segmentBits];
     });
-    const { errorCorrectionLevels } = VERSIONS[version - 1];
-    const { ecCodewordsPerBlock, ecBlocks } =
-      errorCorrectionLevels[errorCorrectionLevel];
 
-    const requiredDataCodewords = ecBlocks.reduce(
-      (t, { numBlocks, dataCodewordsPerBlock }) =>
-        t + numBlocks * dataCodewordsPerBlock,
-      0
+    const requiredDataCodewords = QRUtils.computeRequiredDataCodewords(
+      version,
+      errorCorrectionLevel
     );
-    let finalBits = [...bits];
+    let finalBits = [...sectionBits.flat()];
     let bitStr;
     let requiredBits = requiredDataCodewords * 8;
-    let remaining = requiredBits - bits.length;
+    let remaining = requiredBits - finalBits.length;
     // add terminator if there is space
     if (0 < remaining <= 4) {
       bitStr = "".padStart(remaining, "0");
     }
-    const termBits = [...bitStr].map(
-      (bit) =>
-        new TaggedBit({
-          bit,
-          type: "terminator",
-          source: "terminator",
-        })
+    const termBits = BitUtils.createTaggedBits(
+      bitStr,
+      "terminator",
+      null,
+      null
     );
     finalBits = [...finalBits, ...termBits];
     // bits needed to fill the codeword
@@ -75,14 +99,7 @@ export const BitUtils = {
     if (0 < remaining < 8) {
       bitStr = "".padStart(remaining, "0");
     }
-    const fillBits = [...bitStr].map(
-      (bit) =>
-        new TaggedBit({
-          bit,
-          type: "terminator",
-          source: "fill",
-        })
-    );
+    const fillBits = BitUtils.createTaggedBits(bitStr, "fill", null, null);
     finalBits = [...finalBits, ...fillBits];
     const currentCodewords = finalBits.length / 8;
     const codewordsNeeded = requiredDataCodewords - currentCodewords;
