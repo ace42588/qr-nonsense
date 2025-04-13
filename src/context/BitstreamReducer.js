@@ -274,11 +274,63 @@ export default function BitstreamReducer(state, action) {
         data,
         encoding
       );
-      const finalBits = finalize()
+      const finalBits = finalize();
       return {
         ...state,
         segments: [...state.segments, ...newSegments],
         bits: [...state.bits, ...newBits],
+      };
+    }
+    case "FINALIZE": {
+      const { errorCorrectionLevels } = VERSIONS[state.version - 1];
+      const { ecCodewordsPerBlock, ecBlocks } =
+        errorCorrectionLevels[state.errorCorrectionLevel];
+
+      const requiredDataCodewords = ecBlocks.reduce(
+        (t, { numBlocks, dataCodewordsPerBlock }) =>
+          t + numBlocks * dataCodewordsPerBlock,
+        0
+      );
+      let finalBits = [...state.bits];
+      let bitStr;
+      let requiredBits = requiredDataCodewords * 8;
+      let remaining = requiredBits - finalBits.length;
+      // add terminator if there is space
+      if (0 < remaining <= 4) {
+        bitStr = "".padStart(remaining, "0");
+      }
+      const termBits = [...bitStr].map(
+        (bit) =>
+          new TaggedBit({
+            bit,
+            type: "terminator",
+            source: "terminator",
+          })
+      );
+      finalBits = [...finalBits, ...termBits];
+      // bits needed to fill the codeword
+      remaining = 8 - (finalBits.length % 8);
+      if (0 < remaining < 8) {
+        bitStr = "".padStart(remaining, "0");
+      }
+      const fillBits = [...bitStr].map(
+        (bit) =>
+          new TaggedBit({
+            bit,
+            type: "terminator",
+            source: "fill",
+          })
+      );
+      finalBits = [...finalBits, ...fillBits];
+      const currentCodewords = finalBits.length / 8;
+      const codewordsNeeded = requiredDataCodewords - currentCodewords;
+      for (let i = 0; i < codewordsNeeded; i++) {
+        finalBits = [...finalBits, ...PAD_BYTES[i % 2]];
+      }
+
+      return {
+        ...state,
+        bits: finalBits,
       };
     }
     case "HIGHLIGHT_DATA": {
