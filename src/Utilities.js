@@ -32,14 +32,14 @@ class Block {
   }
 }
 
-function getErrorCorrectionCodewords(block) {
-  const { numDataCodewords, numECCodewords, dataCodewords } = block;
+function getErrorCorrectionCodewords(
+  numDataCodewords,
+  numECCodewords,
+  dataCodewords
+) {
   const rsEncoder = new ReedSolomonEncoder(numECCodewords);
   const ecBytes = rsEncoder.encode(dataCodewords.map((c) => c.byte));
-  const ecCodewords = Array.from(ecBytes).map(
-    (b, idx) => new ECCodeword(b, idx)
-  );
-  block.ecCodewords = ecCodewords;
+  return Array.from(ecBytes).map((b, idx) => new ECCodeword(b, idx));
 }
 
 const paddingBytes = PAD_BYTES.map((byte) => {
@@ -175,6 +175,7 @@ export const QRUtils = {
       errorCorrectionLevel,
       version
     );
+    const rsEncoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
 
     const dataBits = QRUtils.getFinalizedBits(
       chunkBits,
@@ -186,10 +187,23 @@ export const QRUtils = {
 
     ecBlocks.forEach(({ numBlocks, dataCodewordsPerBlock }) => {
       Array.from({ length: numBlocks }, (_, i) => {
-        const dataCodewords = Array.from({length: dataCodewordsPerBlock}, (_, j) => {
-          new TaggedCodeword(dataBits.slice(j * codewordLength, j * codewordLength + codewordLength), j);
-        });
-        const ecCodewords = getErrorCorrectionCodewords(dataCodewordsPerBlock, ecCodewordsPerBlock, dataCodewords)
+        const dataCodewords = Array.from(
+          { length: dataCodewordsPerBlock },
+          (_, j) => {
+            new TaggedCodeword(
+              dataBits.slice(
+                j * codewordLength,
+                j * codewordLength + codewordLength
+              ),
+              j
+            );
+          }
+        );
+        const ecBytes = rsEncoder.encode(dataCodewords.map((c) => c.byte));
+
+        const ecCodewords = Array.from(ecBytes).map(
+          (b, idx) => new ECCodeword(b, idx)
+        );
         const block = {
           dataCodewordsPerBlock,
           ecCodewordsPerBlock,
@@ -197,7 +211,7 @@ export const QRUtils = {
           dataCodewords,
           ecCodewords,
           id: i,
-        }
+        };
         blocks = [...blocks, block];
       });
       for (let i = 0; i < numBlocks; i++) {
@@ -206,9 +220,16 @@ export const QRUtils = {
           const start = readIdx;
           readIdx += 8;
           const taggedBits = dataBits.slice(start, readIdx);
-          dataCodewords = [...dataCodewords, new TaggedCodeword(taggedBits, dataCodewords.length)];
+          dataCodewords = [
+            ...dataCodewords,
+            new TaggedCodeword(taggedBits, dataCodewords.length),
+          ];
         }
-        const ecCodewords = getErrorCorrectionCodewords(dataCodewordsPerBlock, ecCodewordsPerBlock, dataCodewords)
+        const ecCodewords = getErrorCorrectionCodewords(
+          dataCodewordsPerBlock,
+          ecCodewordsPerBlock,
+          dataCodewords
+        );
         const block = {
           dataCodewordsPerBlock,
           ecCodewordsPerBlock,
@@ -216,7 +237,7 @@ export const QRUtils = {
           dataCodewords,
           ecCodewords,
           id: i,
-        }
+        };
         blocks = [...blocks, block];
       }
     });
