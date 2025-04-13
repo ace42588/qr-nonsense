@@ -1,5 +1,5 @@
 import { VERSIONS, PAD_BYTES } from "./Constants";
-import { TaggedBit } from "./TaggedBit";
+import { TaggedBit } from "../encode/TaggedBit";
 
 export const QRUtils = {
   computeRequiredDataCodewords(version, errorCorrectionLevel) {

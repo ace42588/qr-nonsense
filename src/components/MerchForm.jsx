@@ -1,5 +1,4 @@
 import React, { useState, useContext } from "react";
-import { BitstreamContext } from "../context/BitstreamContext"
 import "./styles.css"; // Import your component-specific styles
 
 import {ErrorCorrectionSelector, VersionSelector, DataMaskSelector} from "./Selectors";

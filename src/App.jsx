@@ -14,12 +14,40 @@ import { getEncoder } from "./encode/Encoder";
 import { TaggedBitstream } from "./encode/TaggedBitstream";
 import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
-import { QRDataContext, QRDataDispatchContext } from "./context/QRDataContext";
+import { QRDataContext, QRDataDispatchContext } from './context/QRDataContext';
+
+import { QRDataReducer } from "./context/QRDataReducer"
+
 import "./App.css";
 
 function App() {
   const [inputMode, setInputMode] = useState("merch"); // Default to merch mode
-  const [tasks, dispatch] = useReducer(QRDataReducer, initialTasks);
+  const [state, dispatch] = useReducer(QRDataReducer, "test");
+
+  function handleChangeErrorCorrectionLevel(errorCorrectionLevel) {
+    dispatch({
+      type: "MODIFY_ERROR",
+      payload: { errorCorrectionLevel },
+    });
+  }
+  function handleChangeVersion(version) {
+    dispatch({
+      type: "MODIFY_VERSION",
+      payload: { version },
+    });
+  }
+  function handleChangeDataMask(dataMask) {
+    dispatch({
+      type: "MODIFY_DATA_MASK",
+      payload: { dataMask },
+    });
+  }
+  function handleChangeInput({ mode, encoding, ...data }) {
+    dispatch({
+      type: "ENCODE_DATA",
+      payload: { mode, encoding, data: Object.values(data)[0] },
+    });
+  }
 
   const selectUI = () => {
     if (inputMode === "merch") {
@@ -38,7 +66,7 @@ function App() {
           <ModeSelector mode={inputMode} setMode={setInputMode} />
         </div>
       </div>
-      <BitstreamContextProvider>
+      <TasksContext.Provider value={tasks}>
         <div className="row">
           <div className="column">
             <div className="row">
@@ -59,7 +87,7 @@ function App() {
         <div className="row">
           <SegmentDisplay />
         </div>
-      </BitstreamContextProvider>
+      </TasksContext.Provider>
     </div>
   );
 }

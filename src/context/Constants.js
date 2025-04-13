@@ -1,4 +1,4 @@
-import { TaggedBit } from "./TaggedBit";
+import { TaggedBit } from "../encode/TaggedBit";
 
 export const AlphaNumCharMap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
