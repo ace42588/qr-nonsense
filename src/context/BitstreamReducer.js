@@ -31,45 +31,71 @@ const PAD_BYTES = [
 ];
 
 const MODE = {
-  Numeric: "numeric",
-  Alphanumeric: "alphanumeric",
-  Byte: "byte",
-  Kanji: "kanji",
-  ECI: "eci",
-  Terminator: "terminator",
+  Terminator: {
+    toString: () => {
+      "terminator";
+    },
+    bits: 0x0,
+  },
+  Numeric: {
+    toString: () => {
+      "numeric";
+    },
+    bits: 0x1,
+  },
+  Alphanumeric: {
+    toString: () => {
+      "alphanumeric";
+    },
+    bits: 0x2,
+  },
+  //StructuredAppend: 0x3,
+  Byte: {
+    toString: () => {
+      "byte";
+    },
+    bits: 0x4,
+  },
+  //FNC1FirstPosition: 0x5,
+  ECI: {
+    toString: () => {
+      "eci";
+    },
+    bits: 0x7,
+  },
+  Kanji: {
+    toString: () => {
+      "kanji";
+    },
+    bits: 0x8,
+  },
+  //FNC1SecondPosition: 0x9,
 };
 
 class Encoder {
-  static addModeIndicator(mode) {
-    const MODE_BITS = {
-      terminator: 0x0,
-      numeric: 0x1,
-      alphanumeric: 0x2,
-      byte: 0x4,
-      kanji: 0x8,
-      eci: 0x7,
-      //StructuredAppend: 0x3,
-      //FNC1FirstPosition: 0x5,
-      //FNC1SecondPosition: 0x9,
-    };
-    const value = MODE_BITS[mode];
-    if (!value) {
-      throw new Error("Invalid mode indicator", mode);
-    }
-    const modeBits = value.toString(2).padStart(4, "0");
-    return [...modeBits].map(
+  static createTaggedBits(bits, type, source) {
+    return [...bits].map(
       (bit) =>
         new TaggedBit({
           bit,
-          type: "mode",
-          source: mode,
+          type,
+          source,
           encoding: "none",
         })
     );
   }
+  static addModeIndicator(mode) {
+    const { bits } = MODE[mode];
+    if (!bits) {
+      throw new Error(`Invalid mode indicator ${mode}`);
+    }
+    const modeBits = bits.toString(2).padStart(4, "0");
+    return Encoder.createTaggedBits(modeBits, "mode", mode);
+  }
 
   addCharacterCountIndicator(charCount) {
     const charCountBits = this.getCharCountIndicator(charCount);
+    Encoder.createTaggedBits(modeBits, "mode", mode);
     return [...charCountBits].map(
       (bit) =>
         new TaggedBit({
