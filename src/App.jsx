@@ -15,7 +15,7 @@ import Encoders from "./context/Encoders";
 import { QRCodeMatrix } from "./QRCodeMatrix";
 import { QRDataProvider } from "./context/QRDataContext";
 
-import "./App.css";
+import "./styles/App.css";
 
 export default function App() {
   const [inputMode, setInputMode] = useState("merch"); // Default to merch mode

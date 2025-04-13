@@ -1,5 +1,34 @@
 import { PAD_BYTES, EC_INFO } from "./Constants";
+import { ReedSolomonEncoder } from "./reedsolomon/index.js";
+import { TaggedCodeword, ECCodeword } from "./TaggedCodeword";
 import { TaggedBit } from "../encode/TaggedBit";
+
+class Block {
+  constructor(numDataCodewords, numECCodewords, id) {
+    this.numDataCodewords = numDataCodewords;
+    this.numECCodewords = numECCodewords;
+    this.totalCodewords = numDataCodewords + numECCodewords;
+    this.rsEncoder = new ReedSolomonEncoder(numECCodewords);
+    this.dataCodewords = [];
+    this.ecCodewords = [];
+    this.id = id;
+  }
+
+  generateErrorCorrection() {
+    const dataBytes = this.dataCodewords.map((c) => c.byte);
+    //console.log(dataBytes);
+    const ecBytes = this.rsEncoder.encode(dataBytes);
+    const ecCodewords = Array.from(ecBytes).map(
+      (b, idx) => new ECCodeword(b, idx)
+    );
+    //console.log("generateErrorCorrection", { ec: ecCodewords.map((c) => c.byte) });
+    this.ecCodewords = ecCodewords;
+  }
+
+  get codewords() {
+    return [...this.dataCodewords, ...this.ecCodewords];
+  }
+}
 
 const versions = [{ label: "Auto", value: "auto" }].concat(
   Array.from({ length: 40 }, (_, i) => ({
@@ -78,30 +107,19 @@ export const QRUtils = {
    * @param {number} errorCorrectionLevel - Error Correction Level.
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
-  getFinalizedBits(data, version, errorCorrectionLevel) {
-    let bits = data.flatMap(({ header, segments }) => {
-      const segmentBits = segments.flatMap((s) => [...s]);
-      return [...header, ...segmentBits];
-    });
-    console.debug({ bits });
-
-    if (version === "auto") {
-      version = QRUtils.getMinimumQRCodeVersion(
-        bits.length,
-        errorCorrectionLevel
-      );
-    }
-
+  getFinalizedBits(dataBits, version, errorCorrectionLevel) {
     const requiredDataCodewords = QRUtils.getRequiredDataCodewords(
       version,
       errorCorrectionLevel
     );
-
-    bits = [...bits, ...QRUtils.getTerminatorBits(bits, requiredDataCodewords)];
+    // Add terminator bits, based on version capacity
+    let bits = [...dataBits, ...QRUtils.getTerminatorBits(bits, requiredDataCodewords)];
+    // Pad the last codeword with 0s until its 8 bits
     bits = [
       ...bits,
       ...QRUtils.getCodewordFillBits(bits, requiredDataCodewords),
     ];
+    // Add padding bytes, until the version capacity is full
     bits = [...bits, ...QRUtils.getPaddingBits(bits, requiredDataCodewords)];
 
     return bits;
@@ -128,10 +146,23 @@ export const QRUtils = {
     }
     throw new Error("Data too large to fit in a QR code version 40.");
   },
-  getBlocks(data, errorCorrectionLevel, version) {
+  getBlocks(chunks, errorCorrectionLevel, version) {
+    let chunkBits = chunks.flatMap(({ header, segments }) => {
+      const segmentBits = segments.flatMap((s) => [...s]);
+      return [...header, ...segmentBits];
+    });
+    console.debug({ chunkBits });
+    
+    if (version === "auto") {
+      version = QRUtils.getMinimumQRCodeVersion(
+        chunkBits.length,
+        errorCorrectionLevel
+      );
+    }
+    
     const { ecCodewordsPerBlock, ecBlocks } = QRUtils.gerVersionInfo(errorCorrectionLevel, version);
 
-    const dataBits = QRUtils.getFinalizedBits(version, errorCorrectionLevel);
+    const dataBits = QRUtils.getFinalizedBits(chunkBits, version, errorCorrectionLevel);
   let readIdx = 0;
 
 
