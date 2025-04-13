@@ -12,7 +12,7 @@ import {Actions} from "../contex/Constants"
 import { getEncoder } from "../encode/Encoder";
 import { TaggedBitstream } from "../encode/TaggedBitstream";
 
-const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
+const Encodings = ["JSON", "Alphanumeric", "PER"];
 
 export default function MerchForm({
   setBitStream,
@@ -29,11 +29,22 @@ export default function MerchForm({
   const handleChangeInput = (e) => {
     const newInput = { ...input, value: e.target.value };
     setInput(newInput);
+    dispatch({
+          type: Actions.ChangeInput,
+          payload: {
+            
+          }
+
+        });
   };
 
   const handleChangeEncoding = (e) => {
     const newEncoding = e.target.value;
     const newInput = { ...input, type: newEncoding };
+    
+    switch (newEncoding) {
+        case 
+    }
 
     if (newEncoding === "byte") {
       newInput.encoding = "utf-8";
@@ -41,21 +52,17 @@ export default function MerchForm({
       delete newInput.encoding;
     }
     setInput(newInput);
-  };
+    dispatch({
+          type: Actions.ChangeInput,
+          payload: {
+            
+          }
 
-  const handleInputSubmit = (event) => {
-    event.preventDefault();
-    const chunks = parseInput(input);
-    const bitStream = new TaggedBitstream();
-    chunks.forEach(({ type, encoding, ...data }) =>
-      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
-    );
-
-    setBitStream(bitStream);
+        });
   };
 
   return (
-    <form onSubmit={handleInputSubmit} className="input-form">
+    <form className="input-form">
       <div className="row">
         <ErrorCorrectionSelector
           value={errorCorrectionLevel}
@@ -74,11 +81,11 @@ export default function MerchForm({
           <select
             id="encoding"
             value={input.type}
-            onChange={(e) => handleChangeEncoding(e.target.value)}
+            onChange={handleChangeEncoding}
           >
-            {modes.map((mode) => (
-              <option key={mode} value={mode}>
-                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+            {Encodings.map((encoding, idx) => (
+              <option key={encoding} value={idx}>
+                {encoding}
               </option>
             ))}
           </select>
@@ -87,15 +94,7 @@ export default function MerchForm({
             type="text"
             rows={16}
             value={input.value}
-            onChange={() => {
-        dispatch({
-          type: Actions.ChangeInput,
-          payload: {
-            
-          }
-
-        }); 
-      }}
+            onChange={handleChangeInput}
           />
         </div>
       </div>
