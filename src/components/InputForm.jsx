@@ -3,8 +3,8 @@ import "./styles.css"; // Import your component-specific styles
 
 import {ErrorCorrectionSelector, VersionSelector, DataMaskSelector} from "./Selectors";
 
-import { getEncoder } from "../../encode/Encoder";
-import { TaggedBitstream } from "../../encode/TaggedBitstream";
+import { getEncoder } from "../encode/Encoder";
+import { TaggedBitstream } from "../encode/TaggedBitstream";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 

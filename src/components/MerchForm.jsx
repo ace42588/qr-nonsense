@@ -2,12 +2,10 @@ import React, { useState, useContext } from "react";
 import { BitstreamContext } from "../context/BitstreamContext"
 import "./styles.css"; // Import your component-specific styles
 
-import VersionSelector from "../VersionSelector/VersionSelector";
-import DataMaskSelector from "../DataMaskSelector/DataMaskSelector";
-import ErrorCorrectionSelector from "../ECSelector/ECSelector";
+import {ErrorCorrectionSelector, VersionSelector, DataMaskSelector} from "./Selectors";
 
-import { getEncoder } from "../../encode/Encoder";
-import { TaggedBitstream } from "../../encode/TaggedBitstream";
+import { getEncoder } from "../encode/Encoder";
+import { TaggedBitstream } from "../encode/TaggedBitstream";
 
 const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
 const sampleInput = JSON.stringify(

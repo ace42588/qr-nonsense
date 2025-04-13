@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import jsQR from "jsqr";
 import "./styles.css";
 
-import { getEncoder } from ".../encode/Encoder";
+import { getEncoder } from "../encode/Encoder";
 import { TaggedBitstream } from "../encode/TaggedBitstream";
 
 function VideoScanner({

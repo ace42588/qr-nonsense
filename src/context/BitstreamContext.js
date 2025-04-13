@@ -32,23 +32,21 @@ export const BitstreamContextProvider = ({ children }) => {
       payload: { dataMask },
     });
   }
-
   function handleChangeInput({ mode, encoding, ...data }) {
     dispatch({
       type: "ENCODE_DATA",
       payload: { mode, encoding, data: Object.values(data)[0] },
     });
   }
-
   return (
     <BitstreamContext.Provider
-      value={{
+      value={
         ...state,
         handleChangeErrorCorrectionLevel,
         handleChangeVersion,
         handleChangeDataMask,
         handleChangeInput,
-      }}
+      }
     >
       {children}
     </BitstreamContext.Provider>

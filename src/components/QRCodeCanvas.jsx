@@ -1,17 +1,17 @@
 import React, { useRef, useEffect, useState } from "react";
 import "./styles.css";
 
-import { FormatInfo } from "../../encode/FormatInfo";
-import { getMinimumQRCodeVersion } from "../../utility";
+import { FormatInfo } from "../encode/FormatInfo";
+import { getMinimumQRCodeVersion } from "../utility";
 import {
   FinderPattern,
   TimingPattern,
   AlignmentPattern,
-} from "../../encode/FunctionPatterns";
-import { VersionInfo } from "../../encode/VersionInfo";
-import { VERSIONS } from "../../encode/version";
-import { RemainderBit, ECBit } from "../../encode/TaggedBit";
-import { createBlocks } from "../../encode/Block";
+} from "../encode/FunctionPatterns";
+import { VersionInfo } from "../encode/VersionInfo";
+import { VERSIONS } from "../encode/version";
+import { RemainderBit, ECBit } from "../encode/TaggedBit";
+import { createBlocks } from "../encode/Block";
 
 const DATA_MASKS = [
   (p) => (p.y + p.x) % 2 === 0,
