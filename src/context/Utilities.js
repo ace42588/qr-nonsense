@@ -78,7 +78,7 @@ export const QRUtils = {
    * @param {number} errorCorrectionLevel - Error Correction Level.
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
-  finalizeBitStream(data, version, errorCorrectionLevel) {
+  getFinalizedBits(data, version, errorCorrectionLevel) {
     let bits = data.flatMap(({ header, segments }) => {
       const segmentBits = segments.flatMap((s) => [...s]);
       return [...header, ...segmentBits];
@@ -112,6 +112,7 @@ export const QRUtils = {
       const { capacity } = QRUtils.gerVersionInfo(errorCorrectionLevel, version);
 
       // A terminator of up to 4 bits can be added.
+      // ...but is calculated based on the capacity. This is unneeded.
       const terminatorLength = QRUtils.getTerminatorLength(
         capacity,
         totalDataBits
@@ -127,14 +128,12 @@ export const QRUtils = {
     }
     throw new Error("Data too large to fit in a QR code version 40.");
   },
-  getBlocks() {
-    const { errorCorrectionLevels } =
-      typeof version === "object" ? version : VERSIONS[version - 1];
-    const { ecCodewordsPerBlock, ecBlocks } =
-      errorCorrectionLevels[errorCorrectionLevel];
+  getBlocks(data, errorCorrectionLevel, version) {
+    const { ecCodewordsPerBlock, ecBlocks } = QRUtils.gerVersionInfo(errorCorrectionLevel, version);
 
-    let blocks = [];
-    let readIdx = 0;
+    const dataBits = QRUtils.getFinalizedBits(version, errorCorrectionLevel);
+  let readIdx = 0;
+
 
     ecBlocks.forEach(({ numBlocks, dataCodewordsPerBlock }) => {
       for (let i = 0; i < numBlocks; i++) {
