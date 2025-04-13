@@ -1,6 +1,17 @@
 import { VERSIONS, PAD_BYTES } from "./Constants";
 import { TaggedBit } from "../encode/TaggedBit";
 
+const versions = [{ label: "Auto", value: "auto" }].concat(
+  Array.from({ length: 40 }, (_, i) => ({
+    label: `Version ${i + 1}`,
+    value: i + 1,
+  }))
+);
+
+const paddingBytes = PAD_BYTES.map((byte) => {
+  return byte.map((bit) => new TaggedBit(bit))
+});
+
 export const QRUtils = {
   computeTerminatorLength(capacityBytes, totalDataBits){
     const capacityBits = capacityBytes * 8;
@@ -30,7 +41,7 @@ export const QRUtils = {
       null
     );
   },
-  computeCodewordFill(bits, requiredDataCodewords) {
+  computeCodewordFillBits(bits, requiredDataCodewords) {
     let bitStr;
     let remaining = 8 - (bits.length % 8);
     if (0 < remaining < 8) {
@@ -38,17 +49,17 @@ export const QRUtils = {
     }
     return BitUtils.createTaggedBits(bitStr, "fill", null, null);
   },
-  computePadding(bits, requiredDataCodewords) {
+  computePaddingBits(bits, requiredDataCodewords) {
     const length = bits.length;
     if ((length % 8) !== 0) throw new Error(`Bits (length: ${length}) aren't codeword/byte aligned!`);
     const currentCodewords = length / 8;
     const codewordsNeeded = requiredDataCodewords - currentCodewords;
-    let padded = [];
+    let padding = [];
     for (let i = 0; i < codewordsNeeded; i++) {
-      const paddingByte = 
-      padded = [...padded, new TaggedBit(PAD_BYTES[i % 2])];
+      const paddingByte = paddingBytes[i % 2];
+      padding = [...padding, ...paddingBytes[i % 2]];
     }
-    return padded;
+    return padding;
   },
 
   /**
@@ -59,23 +70,22 @@ export const QRUtils = {
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
   finalizeBitStream(data, version, errorCorrectionLevel) {
-    const bits = data.flatMap(({ header, segments }) => {
-      const segmentBits = segments.flatMap((s) => [...s]);
-      return [...header, ...segmentBits];
-    });
-
-    const requiredDataCodewords = QRUtils.computeRequiredDataCodewords(
+        const requiredDataCodewords = QRUtils.computeRequiredDataCodewords(
       version,
       errorCorrectionLevel
     );
-    const terminated = [...bits, ...QRUtils.computeTerminatorBits(
+    let bits = data.flatMap(({ header, segments }) => {
+      const segmentBits = segments.flatMap((s) => [...s]);
+      return [...header, ...segmentBits];
+    });
+    bits = [...bits, ...QRUtils.computeTerminatorBits(
       bits,
       requiredDataCodewords
     )];
-    const filled = [...terminated, ...QRUtils.computeCodewordFill(terminated, requiredDataCodewords)];
-    const padded = QRUtils.addPadding(filled, requiredDataCodewords);
+    bits = [...bits, ...QRUtils.computeCodewordFillBits(bits, requiredDataCodewords)];
+    bits = [...bits, ...QRUtils.computePaddingBits(bits, requiredDataCodewords)];
 
-    return padded;
+    return bits;
   },
   getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   if (!qrCapacityBytes[errorCorrectionLevel]) {
