@@ -30,43 +30,15 @@ class Block {
   }
 }
 
-function block(dataCodewordsPerBlock, ecCodewordsPerBlock, i) {
-  return {
-          numDataCodewords: dataCodewordsPerBlock,
-          numECCodewords: ecCodewordsPerBlock,
-          totalCodewords: dataCodewordsPerBlock + ecCodewordsPerBlock,
-          rsEncoder: new ReedSolomonEncoder(ecCodewordsPerBlock),
-          dataCodewords: [],
-          ecCodewords: [],
-          id: i,
-          generateErrorCorrection() {
-            const dataBytes = this.dataCodewords.map((c) => c.byte);
-            const ecBytes = this.rsEncoder.encode(dataBytes);
-            const ecCodewords = Array.from(ecBytes).map(
-              (b, idx) => new ECCodeword(b, idx)
-            );
-            this.ecCodewords = ecCodewords;
-          },
-        };
+function getErrorCorrectionCodewords(block) {
+  const { numDataCodewords, numECCodewords, dataCodewords } = block;
+  const rsEncoder = new ReedSolomonEncoder(numECCodewords);
+  const ecBytes = rsEncoder.encode(dataCodewords.map((c) => c.byte));
+  const ecCodewords = Array.from(ecBytes).map(
+    (b, idx) => new ECCodeword(b, idx)
+  );
+  block.ecCodewords = ecCodewords;
 }
-
-function generateErrorCorrection(block) {
-  const {numDataCodewords, numECCodewords} = block;
-  const rsEncoder =  new ReedSolomonEncoder(numECCodewords);
-            const dataBytes = this.dataCodewords.map((c) => c.byte);
-            const ecBytes = this.rsEncoder.encode(dataBytes);
-            const ecCodewords = Array.from(ecBytes).map(
-              (b, idx) => new ECCodeword(b, idx)
-            );
-            this.ecCodewords = ecCodewords;
-          }
-
-const versions = [{ label: "Auto", value: "auto" }].concat(
-  Array.from({ length: 40 }, (_, i) => ({
-    label: `Version ${i + 1}`,
-    value: i + 1,
-  }))
-);
 
 const paddingBytes = PAD_BYTES.map((byte) => {
   return byte.map((bit) => new TaggedBit(bit));
@@ -216,18 +188,9 @@ export const QRUtils = {
           numDataCodewords: dataCodewordsPerBlock,
           numECCodewords: ecCodewordsPerBlock,
           totalCodewords: dataCodewordsPerBlock + ecCodewordsPerBlock,
-          rsEncoder: new ReedSolomonEncoder(ecCodewordsPerBlock),
           dataCodewords: [],
           ecCodewords: [],
           id: i,
-          generateErrorCorrection() {
-            const dataBytes = this.dataCodewords.map((c) => c.byte);
-            const ecBytes = this.rsEncoder.encode(dataBytes);
-            const ecCodewords = Array.from(ecBytes).map(
-              (b, idx) => new ECCodeword(b, idx)
-            );
-            this.ecCodewords = ecCodewords;
-          },
         };
         const { dataCodewords, numDataCodewords } = block;
         while (dataCodewords.length < numDataCodewords) {
