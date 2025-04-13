@@ -1,8 +1,12 @@
 import React, { useState, useContext } from "react";
 import "./styles.css"; // Import your component-specific styles
 
-import {ErrorCorrectionSelector, VersionSelector, DataMaskSelector} from "./Selectors";
-import {QRDataDispatchContext} from "./context/QRDataContext"
+import {
+  ErrorCorrectionSelector,
+  VersionSelector,
+  DataMaskSelector,
+} from "./Selectors";
+import { QRDataDispatchContext } from "../context/QRDataContext";
 
 import { getEncoder } from "../encode/Encoder";
 import { TaggedBitstream } from "../encode/TaggedBitstream";
@@ -21,14 +25,14 @@ export default function MerchForm({
   const [input, setInput] = useState({ type: "JSON", value: sampleInput });
   const dispatch = useContext(QRDataDispatchContext);
 
-  const handleChangeInput = (event) => {
-    const newInput = {...input, value: event.target.value}
+  const handleChangeInput = (e) => {
+    const newInput = { ...input, value: e.target.value };
     setInput(newInput);
   };
 
-  const handleChangeEncoding = (index, newEncoding) => {
-    const 
-    const newInput = {...input, type: newEncoding};
+  const handleChangeEncoding = (e) => {
+    const newEncoding = e.target.value;
+    const newInput = { ...input, type: newEncoding };
 
     if (newEncoding === "byte") {
       newInput.encoding = "utf-8";
@@ -64,27 +68,27 @@ export default function MerchForm({
         <DataMaskSelector value={dataMask} onChange={setDataMask} />
       </div>
       <div className="row">
-          <div key={0} className="input-group">
-            <label htmlFor="encoding">Encoding:</label>
-            <select
-              id="encoding"
-              value={input.type}
-              onChange={(e) => handleChangeEncoding(e.target.value)}
-            >
-              {modes.map((mode) => (
-                <option key={mode} value={mode}>
-                  {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                </option>
-              ))}
-            </select>
-            {}
-            <textarea
-              type="text"
-              rows={16}
-              value={input.value}
-              onChange={(e) => handleChangeInput(e)}
-            />
-          </div>
+        <div key={0} className="input-group">
+          <label htmlFor="encoding">Encoding:</label>
+          <select
+            id="encoding"
+            value={input.type}
+            onChange={(e) => handleChangeEncoding(e.target.value)}
+          >
+            {modes.map((mode) => (
+              <option key={mode} value={mode}>
+                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+              </option>
+            ))}
+          </select>
+          {}
+          <textarea
+            type="text"
+            rows={16}
+            value={input.value}
+            onChange={(e) => handleChangeInput(e)}
+          />
+        </div>
       </div>
       <div className="row">
         <button type="submit">Generate QR Code</button>
