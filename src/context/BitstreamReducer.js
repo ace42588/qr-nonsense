@@ -1,31 +1,6 @@
 import { TaggedBit } from "../encode/TaggedBit";
 import Encoders from "./Encoders";
 
-import { VERSIONS } from "./version";
-
-const PAD_BYTES = [
-  [
-    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "1", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 236, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 236, encoding: "none" }),
-  ],
-  [
-    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "1", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "0", type: "padding", source: 17, encoding: "none" }),
-    new TaggedBit({ bit: "1", type: "padding", source: 17, encoding: "none" }),
-  ],
-];
-
 function finalize(data, versionNum, errorCorrectionLevel) {
   const bits = data.flatMap(({ header, segments }, dIdx) => {
     const segmentBits = segments.flatMap((s, sIdx) => [...s]);
