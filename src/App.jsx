@@ -16,7 +16,7 @@ import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
 import { QRDataContext, QRDataDispatchContext } from './context/QRDataContext';
 
-import { QRDataReducer } from "./context/QRDataReducer"
+import QRDataReducer from "./context/QRDataReducer"
 
 import "./App.css";
 
@@ -66,7 +66,8 @@ function App() {
           <ModeSelector mode={inputMode} setMode={setInputMode} />
         </div>
       </div>
-      <TasksContext.Provider value={tasks}>
+      <QRDataContext.Provider value={state}>
+        <QRDataDispatchContext.Provider value={dispatch}>
         <div className="row">
           <div className="column">
             <div className="row">
@@ -87,7 +88,8 @@ function App() {
         <div className="row">
           <SegmentDisplay />
         </div>
-      </TasksContext.Provider>
+        </QRDataDispatchContext.Provider>
+      </QRDataContext.Provider>
     </div>
   );
 }
