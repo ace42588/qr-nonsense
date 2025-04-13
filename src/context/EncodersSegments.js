@@ -12,13 +12,15 @@ const BitUtils = {
    * @param {*} source - Source identifier.
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
-  createTaggedBits(bitStr, options) {
+  createTaggedBits(bitStr, type, source, mode) {
     return [...bitStr].map(
       (bit, idx) =>
         new TaggedBit({
-          ...options,
           bit,
+          type,
+          source,
           idx,
+          mode,
         })
     );
   },
@@ -86,10 +88,23 @@ class Segment {
     this._bitsCache = null;
   }
 
+  static validateLength(data, min, max, type) {
+    if (data.length < min || data.length > max) {
+      throw new Error(
+        `${type} segment must have between ${min} and ${max} characters.`
+      );
+    }
+  }
+
   get bits() {
     if (!this._bitsCache) {
       const bitStr = BitUtils.toPaddedBinary(this._value, this.length);
-      this._bitsCache = BitUtils.createTaggedBits(bitStr, "data", this);
+      this._bitsCache = BitUtils.createTaggedBits(
+        bitStr,
+        "data",
+        this.value,
+        this.mode.toString()
+      );
     }
     return this._bitsCache;
   }
@@ -126,6 +141,7 @@ class NumericSegment extends Segment {
 
 class AlphanumericSegment extends Segment {
   constructor(data, index) {
+    this.mode = MODE.Alphanumeric;
     if (data.length > 3 || data.length < 1) {
       throw new Error(
         `AlphanumericSegment must have 1-2 characters from the class [${AlphaNumCharMap}]!`
@@ -160,6 +176,7 @@ class AlphanumericSegment extends Segment {
 class ByteSegment extends Segment {
   constructor(data, index, encoding) {
     super(data & 0xff, index);
+    this.mode = MODE.Alphanumeric;
     this.encoding = encoding ? encoding : "latin-1";
     this._value = this.data;
     this.length = 8;
@@ -198,7 +215,7 @@ class Encoder {
       throw new Error(`Invalid mode ${mode}`);
     }
     const modeBits = BitUtils.toPaddedBinary(bits, 4);
-    return BitUtils.createTaggedBits(modeBits, "mode", mode);
+    return BitUtils.createTaggedBits(modeBits, "mode", mode, null);
   }
 
   static getCharacterCountIndicator(charCount, mode) {
@@ -207,7 +224,8 @@ class Encoder {
     return BitUtils.createTaggedBits(
       charCountBits,
       "characterCount",
-      charCount
+      charCount,
+      null
     );
   }
 
@@ -302,7 +320,7 @@ class EciEncoder extends Encoder {
     const bits = BitUtils.toPaddedBinary(input, length);
     return [
       ...Encoder.addModeIndicator(MODE.ECI),
-      ...BitUtils.createTaggedBits(bits, "assignmentNumber", input),
+      ...BitUtils.createTaggedBits(bits, "assignmentNumber", input, null),
     ];
   }
 }
