@@ -78,9 +78,9 @@ function finalize(bits, versionNum, errorCorrectionLevel) {
 
 export default function BitstreamReducer(state, action) {
   switch (action.type) {
-    case "ENCODE_DATA": {
+    case "ADD_DATA": {
       const { mode, encoding, data } = action.payload;
-      const { segments: newSegments, bits: newBits } = Encoders[mode].encode(
+      const { header, segments: newSegments } = Encoders(mode).encode(
         data,
         encoding
       );
@@ -88,7 +88,7 @@ export default function BitstreamReducer(state, action) {
       return {
         ...state,
         segments: [...state.segments, ...newSegments],
-        bits: [...state.bits, ...newBits],
+        bits: [...state.bits, ...header, ],
       };
     }
     case "HIGHLIGHT_DATA": {

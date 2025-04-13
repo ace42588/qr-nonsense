@@ -28,7 +28,10 @@ const MODE = {
       { max: Infinity, length: 13 },
     ],
   },
-  //StructuredAppend: 0x3,
+  StructuredAppend: {
+    toString: () => "StructuredAppend",
+    bits: 0x3,
+  },
   Byte: {
     toString: () => "byte",
     bits: 0x4,
@@ -37,7 +40,10 @@ const MODE = {
       { max: Infinity, length: 16 },
     ],
   },
-  //FNC1FirstPosition: 0x5,
+  FNC1FirstPosition: {
+    toString: () => "FNC1FirstPosition",
+    bits: 0x5,
+  },
   ECI: {
     toString: () => "eci",
     bits: 0x7,
@@ -46,7 +52,10 @@ const MODE = {
     toString: () => "kanji",
     bits: 0x8,
   },
-  //FNC1SecondPosition: 0x9,
+  FNC1SecondPosition: {
+    toString: () => "FNC1SecondPosition",
+    bits: 0x9,
+  },
 };
 
 class Encoder {
@@ -87,7 +96,8 @@ class Encoder {
         })
     );
   }
-  static addModeIndicator(mode) {
+
+  static getModeIndicator(mode) {
     const { bits } = mode;
     if (!bits) {
       throw new Error(`Invalid mode ${mode}`);
@@ -96,7 +106,7 @@ class Encoder {
     return Encoder.createTaggedBits(modeBits, "mode", mode);
   }
 
-  static addCharacterCountIndicator(charCount, mode) {
+  static getCharacterCountIndicator(charCount, mode) {
     const length = Encoder.computeIndicatorLength(charCount, mode);
     const charCountBits = charCount.toString(2).padStart(length, "0");
     return Encoder.createTaggedBits(charCountBits, "characterCount", charCount);
@@ -111,8 +121,8 @@ class Encoder {
   encode(data, encoding) {
     return {
       header: [
-        ...Encoder.addModeIndicator(this.mode),
-        ...Encoder.addCharacterCountIndicator(data.length, this.mode),
+        ...Encoder.getModeIndicator(this.mode),
+        ...Encoder.getCharacterCountIndicator(data.length, this.mode),
       ],
       segments: [...this.encodeData(data, encoding)],
     };
@@ -209,8 +219,10 @@ const encoders = {
 
 export default function GetEncoder(mode) {
   if (!mode) throw new Error("Mode is required.");
+
   const selected = encoders[mode.toLowerCase()];
+
   if (!selected) throw new Error(`No encoder for ${mode.toString()}`);
-  
-  return
+
+  return selected;
 }
