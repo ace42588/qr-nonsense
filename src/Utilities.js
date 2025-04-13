@@ -110,7 +110,7 @@ export const QRUtils = {
     throw new Error("Data too large to fit in a QR code version 40.");
   },
   getBlocks(chunks, errorCorrectionLevel, version) {
-    let chunkBits = chunks.flatMap(({ header, segments }) => {
+    const chunkBits = chunks.flatMap(({ header, segments }) => {
       const segmentBits = segments.flatMap((s) => [...s]);
       return [...header, ...segmentBits];
     });
@@ -135,9 +135,8 @@ export const QRUtils = {
       version,
       errorCorrectionLevel
     );
-    let blocks = [];
-
-    ecBlocks.forEach(({ numBlocks, dataCodewordsPerBlock }) => {
+    
+    return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }) =>
       Array.from({ length: numBlocks }, (_, i) => {
         const dataCodewords = Array.from(
           { length: dataCodewordsPerBlock },
@@ -158,16 +157,12 @@ export const QRUtils = {
           )
         );
 
-        blocks = [
-          ...blocks,
-          {
-            codewords: [...dataCodewords, ...ecCodewords],
-            id: i,
-          },
-        ];
-      });
-    });
-    return blocks;
+        return {
+          codewords: [...dataCodewords, ...ecCodewords],
+          blockId: i,
+        };
+      })
+    );
   },
   getOrderedBits(chunks, errorCorrectionLevel, version) {
     const qrBlocks = QRUtils.getBlocks(chunks, errorCorrectionLevel, version);
@@ -175,18 +170,15 @@ export const QRUtils = {
       (total, { codewords }) => total + codewords.length,
       0
     );
-    const orderedBits = Array.from(
-      { length: totalCodewords },
-      (_, idx) => {
-        const blockIdx = idx % qrBlocks.length;
-        const cwIdx = Math.floor(idx / qrBlocks.length);
-        const { codewords } = qrBlocks[blockIdx];
-        if (cwIdx < codewords.length) {
-          const { bits } = codewords[cwIdx];
-          return [...bits];
-        }
+    const orderedBits = Array.from({ length: totalCodewords }, (_, idx) => {
+      const blockIdx = idx % qrBlocks.length;
+      const cwIdx = Math.floor(idx / qrBlocks.length);
+      const { codewords } = qrBlocks[blockIdx];
+      if (cwIdx < codewords.length) {
+        const { bits } = codewords[cwIdx];
+        return [...bits];
       }
-    );
+    });
     return orderedBits;
   },
 };
