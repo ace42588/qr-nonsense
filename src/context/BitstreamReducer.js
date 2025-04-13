@@ -1,5 +1,5 @@
 import { TaggedBit } from "../encode/TaggedBit";
-import Encoders from "./Encoders"
+import Encoders from "./Encoders";
 
 import { VERSIONS } from "./version";
 
@@ -26,7 +26,11 @@ const PAD_BYTES = [
   ],
 ];
 
-function finalize(bits, versionNum, errorCorrectionLevel) {
+function finalize(data, versionNum, errorCorrectionLevel) {
+  const bits = data.flatMap(({ header, segments }, dIdx) => {
+    const segmentBits = segments.flatMap((s, sIdx) => [...s]);
+    return [...header, ...segmentBits];
+  });
   const { errorCorrectionLevels } = VERSIONS[versionNum - 1];
   const { ecCodewordsPerBlock, ecBlocks } =
     errorCorrectionLevels[errorCorrectionLevel];
@@ -80,15 +84,12 @@ export default function BitstreamReducer(state, action) {
   switch (action.type) {
     case "ADD_DATA": {
       const { mode, encoding, data } = action.payload;
-      const { header, segments: newSegments } = Encoders(mode).encode(
-        data,
-        encoding
-      );
+      const section = Encoders(mode).encode(data, encoding);
       const finalBits = finalize();
       return {
         ...state,
         segments: [...state.segments, ...newSegments],
-        bits: [...state.bits, ...header, ],
+        bits: [...state.bits, ...header],
       };
     }
     case "HIGHLIGHT_DATA": {
