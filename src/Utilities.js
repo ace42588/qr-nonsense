@@ -70,6 +70,8 @@ function gerVersionInfo(errorCorrectionLevel, version) {
   return versionInfo;
 }
 
+function getVersionCapacity(errorCorrectionLevel, version)
+
 export const QRUtils = {
   /**
    * Creates an array of bits that represent the modules of a QR code.
@@ -173,25 +175,22 @@ export const QRUtils = {
   },
   getOrderedBits(chunks, errorCorrectionLevel, version) {
     const qrBlocks = QRUtils.getBlocks(chunks, errorCorrectionLevel, version);
-    const totalCodewords = qrBlocks.reduce((total, {codewords}) => total + codewords.length, 0);
-    const orderedBits = Array.from({length: totalCodewords}, (qrBlocks, idx) => {
-      const blockIdx = idx % qrBlocks.length;
-      const cwIdx = Math.floor(idx / qrBlocks.length);
-      const { codewords } = qrBlocks[blockIdx];
-      if (cwIdx < codewords.length) {
-        const { bits } = codewords[cwIdx];
-        return [...bits];
+    const totalCodewords = qrBlocks.reduce(
+      (total, { codewords }) => total + codewords.length,
+      0
+    );
+    const orderedBits = Array.from(
+      { length: totalCodewords },
+      (_, idx) => {
+        const blockIdx = idx % qrBlocks.length;
+        const cwIdx = Math.floor(idx / qrBlocks.length);
+        const { codewords } = qrBlocks[blockIdx];
+        if (cwIdx < codewords.length) {
+          const { bits } = codewords[cwIdx];
+          return [...bits];
+        }
       }
-    })
-    for (let i = 0; i < totalCodewords; i++) {
-      const blockIdx = i % blocks.length;
-      const cwIdx = Math.floor(i / blocks.length);
-      let block = blocks[blockIdx];
-      if (cwIdx < block.codewords.length) {
-        const { bits } = block.codewords[cwIdx];
-        orderedBits.push(...bits);
-      }
-    }
+    );
     return orderedBits;
   },
 };
