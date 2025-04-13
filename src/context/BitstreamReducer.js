@@ -3,7 +3,7 @@ import Encoders from "./Encoders";
 
 export default function BitstreamReducer(state, action) {
   switch (action.type) {
-    case "ADD_DATA": {
+    case "ENCODE_DATA": {
       const { mode, encoding, data } = action.payload;
       const section = Encoders(mode).encode(data, encoding);
       const newSections = [...state.sections, section];

@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import { useState, useReducer } from "react";
 import QRCodeCanvas from "./components/QRCodeCanvas";
 import SegmentDisplay from "./components/SegmentDisplay";
 import {
@@ -14,84 +14,51 @@ import { getEncoder } from "./encode/Encoder";
 import { TaggedBitstream } from "./encode/TaggedBitstream";
 import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
-import {BitstreamContextProvider} from "./context/BitstreamContext"
+import { BitstreamContextProvider } from "./context/BitstreamContext";
 import "./App.css";
 
 function App() {
-
   const [inputMode, setInputMode] = useState("merch"); // Default to merch mode
-  const [segments, setSegments] = useState([]);
-  const [bitStream, setBitStream] = useState();
-  const [version, setVersion] = useState("auto");
-  const [dataMask, setDataMask] = useState("auto");
-  const [errorCorrectionLevel, setErrorCorrectionLevel] = useState(1);
 
   const selectUI = () => {
     if (inputMode === "merch") {
-      return (
-        <MerchForm
-          setBitStream={setBitStream}
-          version={version}
-          errorCorrectionLevel={errorCorrectionLevel}
-        />
-      );
+      return <MerchForm />;
     } else if (inputMode === "scan") {
-      return (
-        <VideoScanner
-          setBitStream={setBitStream}
-          setErrorCorrectionLevel={setErrorCorrectionLevel}
-          setVersion={setVersion}
-          setDataMask={setDataMask}
-        />
-      );
+      return <VideoScanner />;
     }
-    return (
-      <InputForm
-        setBitStream={setBitStream}
-        version={version}
-        errorCorrectionLevel={errorCorrectionLevel}
-      />
-    );
+    return <InputForm />;
   };
 
   return (
     <div className="App">
-      <>
       <div className="row">
         <h1>QR Code Generator</h1>
         <div className="row">
           <ModeSelector mode={inputMode} setMode={setInputMode} />
         </div>
       </div>
-      <div className="row">
-        <div className="column">
-          <div className="row">
-            <ErrorCorrectionSelector
-              value={errorCorrectionLevel}
-              onChange={setErrorCorrectionLevel}
-            />
+      <BitstreamContextProvider>
+        <div className="row">
+          <div className="column">
+            <div className="row">
+              <ErrorCorrectionSelector />
+            </div>
+            <div className="row">
+              <VersionSelector />
+            </div>
+            <div className="row">
+              <DataMaskSelector />
+            </div>
+            <div className="row">{selectUI()}</div>
           </div>
-          <div className="row">
-            <VersionSelector value={version} onChange={setVersion} />
+          <div className="column">
+            <QRCodeCanvas />
           </div>
-          <div className="row">
-            <DataMaskSelector value={dataMask} onChange={setDataMask} />
-          </div>
-          <div className="row">{selectUI()}</div>
         </div>
-        <div className="column">
-          <QRCodeCanvas
-            bitStream={bitStream}
-            setBitStream={setBitStream}
-            errorCorrectionLevel={errorCorrectionLevel}
-            version={version}
-            dataMask={dataMask}
-          />
+        <div className="row">
+          <SegmentDisplay />
         </div>
-      </div>
-      <div className="row">
-        <SegmentDisplay bitStream={bitStream} setBitStream={setBitStream} />
-      </div>
+      </BitstreamContextProvider>
     </div>
   );
 }
