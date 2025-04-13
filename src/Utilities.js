@@ -199,7 +199,7 @@ export const QRUtils = {
             );
           }
         );
-        const ecBytes = rsEncoder.encode(dataCodewords.map((c) => c.byte));
+        const ecBytes = rsEncoder.encode(Uint8Array.from(dataCodewords));
 
         const ecCodewords = Array.from(ecBytes).map(
           (b, idx) => new ECCodeword(b, idx)
