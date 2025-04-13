@@ -93,14 +93,24 @@ class Encoder {
   }
 
   encode(data, encoding) {
-    let bits = [];
-    bits = [...this.addModeIndicator()];
-    bits = [...bits, ...this.addCharacterCountIndicator(data.length)];
-
     let segments = [...this.encodeData(data, encoding)];
-    bits = [...bits, segments.flatMap((s) => [...s])];
 
-    return { segments, bits };
+    let header = [
+      ...this.addModeIndicator(),
+      ...this.addCharacterCountIndicator(data.length),
+    ];
+
+    return {
+      header: [
+        ...this.addModeIndicator(),
+        ...this.addCharacterCountIndicator(data.length),
+      ],
+      segments: [
+        ...this.addModeIndicator(),
+        ...this.addCharacterCountIndicator(data.length),
+      ],
+      bits: [...header, segments.flatMap((s) => [...s])],
+    };
   }
 }
 
@@ -110,12 +120,12 @@ class NumericEncoder extends Encoder {
     this.mode = MODE.Numeric;
   }
 
-  getCharCountIndicator(charCount) {
+  static getCharCountIndicator(charCount) {
     let indicatorLength = charCount < 10 ? 10 : charCount < 1000 ? 12 : 14;
     return charCount.toString(2).padStart(indicatorLength, "0");
   }
 
-  *encodeData(input) {
+  static *encodeData(input) {
     const groupsOfThree = input.match(/\d{1,3}/g);
     for (let i = 0; i < groupsOfThree.length; i++) {
       yield new NumericSegment(groupsOfThree[i], i);
@@ -124,20 +134,19 @@ class NumericEncoder extends Encoder {
 }
 
 class AlphanumericEncoder extends Encoder {
-  static AlphaNumCharClass = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
   constructor(bitStream) {
     super({ bitStream });
     this.mode = MODE.Alphanumeric;
   }
 
-  getCharCountIndicator(charCount) {
+  static getCharCountIndicator(charCount) {
     let indicatorLength = charCount < 45 ? 9 : charCount < 1225 ? 11 : 13;
     return charCount.toString(2).padStart(indicatorLength, "0");
   }
 
-  *encodeData(input) {
-    const matchRegEx = new RegExp(`[${AlphaNumCharClass}]{1,2}`, "g");
-    const pairs = input.match(matchRegEx);
+  static *encodeData(input) {
+    //const matchRegEx = new RegExp(`[${AlphaNumCharClass}]{1,2}`, "g");
+    const pairs = input.match(/[0-9A-Z \$\%\*\+\-\.\/\:]{1,2}/g);
 
     for (let i = 0; i < pairs.length; i++) {
       yield new AlphanumericSegment(pairs[i], i);
