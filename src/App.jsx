@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useReducer } from 'react';
 import QRCodeCanvas from "./components/QRCodeCanvas";
 import SegmentDisplay from "./components/SegmentDisplay";
 import {
@@ -14,9 +14,11 @@ import { getEncoder } from "./encode/Encoder";
 import { TaggedBitstream } from "./encode/TaggedBitstream";
 import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
+import {BitstreamContextProvider} from "./context/BitstreamContext"
 import "./App.css";
 
 function App() {
+
   const [inputMode, setInputMode] = useState("merch"); // Default to merch mode
   const [segments, setSegments] = useState([]);
   const [bitStream, setBitStream] = useState();
@@ -54,6 +56,7 @@ function App() {
 
   return (
     <div className="App">
+      <>
       <div className="row">
         <h1>QR Code Generator</h1>
         <div className="row">

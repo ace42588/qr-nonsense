@@ -5,7 +5,7 @@ const initialState = {
   errorCorrectionLevel: 1,
   version: "auto",
   dataMask: "auto",
-  segments: [],
+  sections: [],
   bits: [],
 };
 

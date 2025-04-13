@@ -1,7 +1,7 @@
 import { VERSIONS, PAD_BYTES } from "./Constants";
 import { TaggedBit } from "./TaggedBit";
 
-const QRUtils = {
+export const QRUtils = {
   computeRequiredDataCodewords(version, errorCorrectionLevel) {
     const { errorCorrectionLevels } = VERSIONS[version - 1];
     const { ecCodewordsPerBlock, ecBlocks } =
@@ -47,6 +47,33 @@ const QRUtils = {
     }
     return padded;
   },
+  
+  /**
+   * Creates an array of bits that represent the modules of a QR code.
+   * @param {Object[]} data - The encoded sections of data.
+   * @param {number} version - The QR code version.
+   * @param {number} errorCorrectionLevel - Error Correction Level.
+   * @returns {TaggedBit[]} Array of TaggedBit instances.
+   */
+  finalizeBitStream(data, version, errorCorrectionLevel) {
+    const sectionBits = data.map(({ header, segments }, dIdx) => {
+      const segmentBits = segments.flatMap((s, sIdx) => [...s]);
+      return [...header, ...segmentBits];
+    });
+
+    const requiredDataCodewords = QRUtils.computeRequiredDataCodewords(
+      version,
+      errorCorrectionLevel
+    );
+    const terminated = QRUtils.addTerminatorBits(
+      [...sectionBits.flat()],
+      requiredDataCodewords
+    );
+    const filled = QRUtils.fillCodeword(terminated, requiredDataCodewords);
+    const padded = QRUtils.addPadding(filled, requiredDataCodewords);
+
+    return padded;
+  },
 };
 
 export const BitUtils = {
@@ -78,32 +105,5 @@ export const BitUtils = {
           mode,
         })
     );
-  },
-
-  /**
-   * Creates an array of bits that represent the modules of a QR code.
-   * @param {Object[]} data - The encoded sections of data.
-   * @param {number} version - The QR code version.
-   * @param {number} errorCorrectionLevel - Error Correction Level.
-   * @returns {TaggedBit[]} Array of TaggedBit instances.
-   */
-  finalizeBitStream(data, version, errorCorrectionLevel) {
-    const sectionBits = data.map(({ header, segments }, dIdx) => {
-      const segmentBits = segments.flatMap((s, sIdx) => [...s]);
-      return [...header, ...segmentBits];
-    });
-
-    const requiredDataCodewords = QRUtils.computeRequiredDataCodewords(
-      version,
-      errorCorrectionLevel
-    );
-    const terminated = QRUtils.addTerminatorBits(
-      [...sectionBits.flat()],
-      requiredDataCodewords
-    );
-    const filled = QRUtils.fillCodeword(terminated, requiredDataCodewords);
-    const padded = QRUtils.addPadding(filled, requiredDataCodewords);
-
-    return padded;
   },
 };
