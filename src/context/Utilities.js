@@ -74,6 +74,32 @@ export const QRUtils = {
 
     return padded;
   },
+  getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
+  if (!qrCapacityBytes[errorCorrectionLevel]) {
+    throw new Error("Invalid error correction level: " + errorCorrectionLevel);
+  }
+
+  // Try each version until one is found that fits the data.
+  for (let version = 1; version <= 40; version++) {
+    let capacityBytes = qrCapacityBytes[errorCorrectionLevel][version];
+    let capacityBits = capacityBytes * 8;
+
+    // A terminator of up to 4 bits can be added.
+    const terminatorBits = Math.min(
+      4,
+      Math.max(0, capacityBits - totalDataBits)
+    );
+    const totalBitsWithTerminator = totalDataBits + terminatorBits;
+
+    // The total bits must be rounded up to the next whole 8-bit codeword.
+    const requiredBytes = Math.ceil(totalBitsWithTerminator / 8);
+
+    if (requiredBytes <= capacityBytes) {
+      return version;
+    }
+  }
+  throw new Error("Data too large to fit in a QR code version 40.");
+}
 };
 
 export const BitUtils = {

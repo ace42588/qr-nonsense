@@ -10,7 +10,7 @@ function validateLength(data, min, max, type) {
   }
 
 class Segment {
-  constructor(data, index) {
+  constructor(data, index, parent) {
     this.data = data;
     this.index = index;
     this._bitsCache = null;
@@ -43,10 +43,7 @@ class Segment {
 export class NumericSegment extends Segment {
   constructor(data, index) {
     this.mode = MODE.Numeric;
-    validateLength(data, 1, 3,)
-    if (data.length > 3 || data.length < 1) {
-      throw new Error("NumericSegment must have 1-3 numeric characters!");
-    }
+    validateLength(data, 1, 3, this.mode.name);
     super(data, index);
     this.encoding = this.mode;
     this._value = parseInt(this.data, 10);
@@ -61,13 +58,8 @@ export class NumericSegment extends Segment {
 export class AlphanumericSegment extends Segment {
   constructor(data, index) {
     this.mode = MODE.Alphanumeric;
-    if (data.length > 2 || data.length < 1) {
-      throw new Error(
-        `AlphanumericSegment must have 1-2 characters from the class [${AlphaNumCharMap}]!`
-      );
-    }
+    validateLength(data, 1, 2, this.mode.name);
     super(data, index);
-    this.encoding = this.mode.name;
     if (data.length === 1) {
       this._value = AlphaNumCharMap.indexOf(data[0]);
       this.length = 6;
