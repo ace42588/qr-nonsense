@@ -1,12 +1,99 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import "./styles.css"; // Import your component-specific styles
 
 import {ErrorCorrectionSelector, VersionSelector, DataMaskSelector} from "./Selectors";
 
+import { QRDataDispatchContext } from './context/QRDataDispatchContext';
+
+
 import { getEncoder } from "../encode/Encoder";
 import { TaggedBitstream } from "../encode/TaggedBitstream";
 
-const modes = ["JSON", "alphanumeric", "PER"]; // Available modes
+export default function MerchForm({
+  setBitStream,
+  version,
+  setVersion,
+  dataMask,
+  setDataMask,
+  errorCorrectionLevel,
+  setErrorCorrectionLevel,
+}) {
+  const [input, setInput] = useState({ type: "JSON", value: sampleInput });
+  const dispatch = useContext(QRDataDispatchContext);
+
+  const handleChangeInput = (event) => {
+    const newInput = {...input, value: event.target.value}
+    setInput(newInput);
+  };
+
+  const handleChangeEncoding = (index, newEncoding) => {
+    const newInput = {...input, type: newEncoding};
+
+    if (newEncoding === "byte") {
+      newInputs[index].encoding = "utf-8";
+    } else {
+      delete newInputs[index].encoding;
+    }
+    setInput(newInputs);
+  };
+
+  const handleInputSubmit = (event) => {
+    event.preventDefault();
+    const chunks = inputs.map((i) => parseInput(i));
+    const bitStream = new TaggedBitstream();
+    chunks.forEach(({ type, encoding, ...data }) =>
+      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
+    );
+
+    setBitStream(bitStream);
+  };
+
+  return (
+    <form onSubmit={handleInputSubmit} className="input-form">
+      <div className="row">
+        <ErrorCorrectionSelector
+          value={errorCorrectionLevel}
+          onChange={setErrorCorrectionLevel}
+        />
+      </div>
+      <div className="row">
+        <VersionSelector value={version} onChange={setVersion} />
+      </div>
+      <div className="row">
+        <DataMaskSelector value={dataMask} onChange={setDataMask} />
+      </div>
+      <div className="row">
+        {inputs.map((input, index) => (
+          <div key={index} className="input-group">
+            <label htmlFor="encoding">Encoding:</label>
+            <select
+              id="encoding"
+              value={input.type}
+              onChange={(e) => handleModeChange(index, e.target.value)}
+            >
+              {modes.map((mode) => (
+                <option key={mode} value={mode}>
+                  {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                </option>
+              ))}
+            </select>
+            {}
+            <textarea
+              type="text"
+              rows={16}
+              value={input.value}
+              onChange={(e) => handleInputChange(index, e)}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="row">
+        <button type="submit">Generate QR Code</button>
+      </div>
+    </form>
+  );
+}
+
 const sampleInput = JSON.stringify(
   {
     p: "A",
@@ -119,91 +206,3 @@ const parseInput = (input) => {
 
   return parsedInput;
 };
-
-function MerchForm({
-  setBitStream,
-  version,
-  setVersion,
-  dataMask,
-  setDataMask,
-  errorCorrectionLevel,
-  setErrorCorrectionLevel,
-}) {
-  const [inputs, setInputs] = useState([{ type: "JSON", value: sampleInput }]);
-  const context = useContext(BitstreamContext);
-
-  const handleInputChange = (index, event) => {
-    const newInputs = [...inputs];
-    newInputs[index].value = event.target.value;
-    setInputs(newInputs);
-  };
-
-  const handleModeChange = (index, newMode) => {
-    const newInputs = [...inputs];
-    newInputs[index].type = newMode;
-    if (newMode === "byte") {
-      newInputs[index].encoding = "";
-    } else {
-      delete newInputs[index].encoding;
-    }
-    setInputs(newInputs);
-  };
-
-  const handleInputSubmit = (event) => {
-    event.preventDefault();
-    const chunks = inputs.map((i) => parseInput(i));
-    const bitStream = new TaggedBitstream();
-    chunks.forEach(({ type, encoding, ...data }) =>
-      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
-    );
-
-    setBitStream(bitStream);
-  };
-
-  return (
-    <form onSubmit={handleInputSubmit} className="input-form">
-      <div className="row">
-        <ErrorCorrectionSelector
-          value={errorCorrectionLevel}
-          onChange={setErrorCorrectionLevel}
-        />
-      </div>
-      <div className="row">
-        <VersionSelector value={version} onChange={setVersion} />
-      </div>
-      <div className="row">
-        <DataMaskSelector value={dataMask} onChange={setDataMask} />
-      </div>
-      <div className="row">
-        {inputs.map((input, index) => (
-          <div key={index} className="input-group">
-            <label htmlFor="encoding">Encoding:</label>
-            <select
-              id="encoding"
-              value={input.type}
-              onChange={(e) => handleModeChange(index, e.target.value)}
-            >
-              {modes.map((mode) => (
-                <option key={mode} value={mode}>
-                  {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                </option>
-              ))}
-            </select>
-            {}
-            <textarea
-              type="text"
-              rows={16}
-              value={input.value}
-              onChange={(e) => handleInputChange(index, e)}
-            />
-          </div>
-        ))}
-      </div>
-      <div className="row">
-        <button type="submit">Generate QR Code</button>
-      </div>
-    </form>
-  );
-}
-
-export default MerchForm;

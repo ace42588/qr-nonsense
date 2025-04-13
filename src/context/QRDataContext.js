@@ -1,5 +1,4 @@
 import React, { createContext, useReducer } from "react";
-import QRDataReducer from "./QRDataReducer";
 
 const initialState = {
   errorCorrectionLevel: 1,
