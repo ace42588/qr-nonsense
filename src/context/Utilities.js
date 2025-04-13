@@ -22,7 +22,6 @@ export const QRUtils = {
   },
   computeTerminatorBits(bits, requiredDataCodewords) {
     let length = QRUtils.computeTerminatorLength(requiredDataCodewords, bits);
-    // add terminator if there is space
     const bitStr = "".padStart(length, "0");
     return BitUtils.createTaggedBits(
       bitStr,
@@ -31,21 +30,23 @@ export const QRUtils = {
       null
     );
   },
-  fillCodeword(bits, requiredDataCodewords) {
+  computeCodewordFill(bits, requiredDataCodewords) {
     let bitStr;
     let remaining = 8 - (bits.length % 8);
     if (0 < remaining < 8) {
       bitStr = "".padStart(remaining, "0");
     }
-    const fillBits = BitUtils.createTaggedBits(bitStr, "fill", null, null);
-    return [...bits, ...fillBits];
+    return BitUtils.createTaggedBits(bitStr, "fill", null, null);
   },
-  addPadding(bits, requiredDataCodewords) {
-    const currentCodewords = bits.length / 8;
+  computePadding(bits, requiredDataCodewords) {
+    const length = bits.length;
+    if ((length % 8) !== 0) throw new Error(`Bits (length: ${length}) aren't codeword/byte aligned!`);
+    const currentCodewords = length / 8;
     const codewordsNeeded = requiredDataCodewords - currentCodewords;
-    let padded = [...bits];
+    let padded = [];
     for (let i = 0; i < codewordsNeeded; i++) {
-      padded = [...padded, ...PAD_BYTES[i % 2]];
+      const paddingByte = 
+      padded = [...padded, new TaggedBit(PAD_BYTES[i % 2])];
     }
     return padded;
   },
@@ -58,8 +59,8 @@ export const QRUtils = {
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
   finalizeBitStream(data, version, errorCorrectionLevel) {
-    const chunkBits = data.map(({ header, segments }, dIdx) => {
-      const segmentBits = segments.flatMap((s, sIdx) => [...s]);
+    const bits = data.flatMap(({ header, segments }) => {
+      const segmentBits = segments.flatMap((s) => [...s]);
       return [...header, ...segmentBits];
     });
 
@@ -67,11 +68,11 @@ export const QRUtils = {
       version,
       errorCorrectionLevel
     );
-    const terminated = QRUtils.addTerminatorBits(
-      [...sectionBits.flat()],
+    const terminated = [...bits, ...QRUtils.computeTerminatorBits(
+      bits,
       requiredDataCodewords
-    );
-    const filled = QRUtils.fillCodeword(terminated, requiredDataCodewords);
+    )];
+    const filled = [...terminated, ...QRUtils.computeCodewordFill(terminated, requiredDataCodewords)];
     const padded = QRUtils.addPadding(filled, requiredDataCodewords);
 
     return padded;
