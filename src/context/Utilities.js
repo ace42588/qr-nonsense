@@ -1,4 +1,4 @@
-import { VERSIONS, PAD_BYTES } from "./Constants";
+import { PAD_BYTES, VERSION_INFO, EC_INFO } from "./Constants";
 import { TaggedBit } from "../encode/TaggedBit";
 
 const versions = [{ label: "Auto", value: "auto" }].concat(
