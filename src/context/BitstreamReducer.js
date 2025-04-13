@@ -32,15 +32,11 @@ const PAD_BYTES = [
 
 const MODE = {
   Terminator: {
-    toString: () => {
-      "terminator";
-    },
+    toString: () => "terminator",
     bits: 0x0,
   },
   Numeric: {
-    toString: () => {
-      "numeric";
-    },
+    toString: () => "numeric",
     bits: 0x1,
     thresholds: [
       { max: 10, length: 10 },
@@ -49,9 +45,7 @@ const MODE = {
     ],
   },
   Alphanumeric: {
-    toString: () => {
-      "alphanumeric";
-    },
+    toString: () => "alphanumeric",
     bits: 0x2,
     thresholds: [
       { max: 45, length: 9 },
@@ -61,9 +55,7 @@ const MODE = {
   },
   //StructuredAppend: 0x3,
   Byte: {
-    toString: () => {
-      "byte";
-    },
+    toString: () => "byte",
     bits: 0x4,
     thresholds: [
       { max: 256, length: 8 },
@@ -72,15 +64,11 @@ const MODE = {
   },
   //FNC1FirstPosition: 0x5,
   ECI: {
-    toString: () => {
-      "eci";
-    },
+    toString: () => "eci",
     bits: 0x7,
   },
   Kanji: {
-    toString: () => {
-      "kanji";
-    },
+    toString: () => "kanji",
     bits: 0x8,
   },
   //FNC1SecondPosition: 0x9,
@@ -114,8 +102,8 @@ class Encoder {
     return Encoder.createTaggedBits(modeBits, "mode", mode);
   }
 
-  addCharacterCountIndicator(charCount) {
-    const length = Encoder.computeIndicatorLength(charCount, this.mode);
+  static addCharacterCountIndicator(charCount, mode) {
+    const length = Encoder.computeIndicatorLength(charCount, mode);
     const charCountBits = charCount.toString(2).padStart(length, "0");
     return Encoder.createTaggedBits(charCountBits, "characterCount", charCount);
   }
@@ -124,7 +112,7 @@ class Encoder {
     return {
       header: [
         ...Encoder.addModeIndicator(this.mode),
-        ...this.addCharacterCountIndicator(data.length),
+        ...Encoder.addCharacterCountIndicator(data.length, this.mode),
       ],
       segments: [...this.encodeData(data, encoding)],
     };
@@ -195,23 +183,15 @@ class EciEncoder extends Encoder {
   }
 }
 
-function getEncoder({ type }) {
-  //console.log("getEncoder", { bitStream, type });
-  switch (type) {
-    case "eci":
-      return new EciEncoder();
-    case "numeric":
-      return new NumericEncoder();
-    case "alphanumeric":
-      return new AlphanumericEncoder();
-    case "byte":
-      return new ByteEncoder();
-    case "kanji":
-      throw new Error("Type not implemented");
-    default:
-      throw new Error("Invalid chunk type");
-  }
-}
+const encoders = {
+  eci: new EciEncoder(),
+  numeric: new NumericEncoder(),
+  alphanumeric: new AlphanumericEncoder(),
+  byte: new ByteEncoder(),
+  kanji: () => {
+    throw new Error("Type not implemented");
+  },
+};
 
 function finalize(bits, versionNum, errorCorrectionLevel) {
   const { errorCorrectionLevels } = VERSIONS[versionNum - 1];
@@ -267,7 +247,7 @@ export default function BitstreamReducer(state, action) {
   switch (action.type) {
     case "ENCODE_DATA": {
       const { mode, encoding, data } = action.payload;
-      const { segments: newSegments, bits: newBits } = getEncoder(mode).encode(
+      const { segments: newSegments, bits: newBits } = encoders[mode].encode(
         data,
         encoding
       );
