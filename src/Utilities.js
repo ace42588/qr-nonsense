@@ -9,68 +9,66 @@ const paddingBytes = PAD_BYTES.map((byte) => {
 });
 
 function getCodewordFillBits(bits, requiredDataCodewords) {
-    let bitStr;
-    let remaining = codewordLength - (bits.length % codewordLength);
-    if (0 < remaining < codewordLength) {
-      bitStr = "".padStart(remaining, "0");
-    }
-    return BitUtils.createTaggedBits(bitStr, "fill", null, null);
+  let bitStr;
+  let remaining = codewordLength - (bits.length % codewordLength);
+  if (0 < remaining < codewordLength) {
+    bitStr = "".padStart(remaining, "0");
   }
+  return BitUtils.createTaggedBits(bitStr, "fill", null, null);
+}
 
 function getPaddingBits(bits, requiredDataCodewords) {
-    const length = bits.length;
-    if (length % codewordLength !== 0)
-      throw new Error(`Bits (length: ${length}) aren't codeword/byte aligned!`);
-    const currentCodewords = length / codewordLength;
-    const codewordsNeeded = requiredDataCodewords - currentCodewords;
-    let padding = [];
-    for (let i = 0; i < codewordsNeeded; i++) {
-      const paddingByte = paddingBytes[i % 2];
-      padding = [...padding, ...paddingBytes[i % 2]];
-    }
-    return padding;
+  const length = bits.length;
+  if (length % codewordLength !== 0)
+    throw new Error(`Bits (length: ${length}) aren't codeword/byte aligned!`);
+  const currentCodewords = length / codewordLength;
+  const codewordsNeeded = requiredDataCodewords - currentCodewords;
+  let padding = [];
+  for (let i = 0; i < codewordsNeeded; i++) {
+    const paddingByte = paddingBytes[i % 2];
+    padding = [...padding, ...paddingBytes[i % 2]];
   }
+  return padding;
+}
 
 function getRequiredDataCodewords(version, errorCorrectionLevel) {
-    const { ecBlocks } = QRUtils.gerVersionInfo(errorCorrectionLevel, version);
-    let requiredDataCodewords = 0;
+  const { ecBlocks } = QRUtils.gerVersionInfo(errorCorrectionLevel, version);
+  let requiredDataCodewords = 0;
 
-    return ecBlocks.reduce(
-      (total, { numBlocks, dataCodewordsPerBlock }) =>
-        total + numBlocks * dataCodewordsPerBlock,
-      requiredDataCodewords
-    );
-  }
+  return ecBlocks.reduce(
+    (total, { numBlocks, dataCodewordsPerBlock }) =>
+      total + numBlocks * dataCodewordsPerBlock,
+    requiredDataCodewords
+  );
+}
 
 function getTerminatorBits(bits, requiredDataCodewords) {
-    let length = getTerminatorLength(requiredDataCodewords, bits);
-    const bitStr = "".padStart(length, "0");
-    return BitUtils.createTaggedBits(bitStr, "terminator", null, null);
-  }
+  let length = getTerminatorLength(requiredDataCodewords, bits);
+  const bitStr = "".padStart(length, "0");
+  return BitUtils.createTaggedBits(bitStr, "terminator", null, null);
+}
 
 function getTerminatorLength(capacityBytes, totalDataBits) {
-    const capacityBits = capacityBytes * codewordLength;
-    return Math.min(4, Math.max(0, capacityBits - totalDataBits));
-  }
+  const capacityBits = capacityBytes * codewordLength;
+  return Math.min(4, Math.max(0, capacityBits - totalDataBits));
+}
 
 function getVersionsByECLevel(errorCorrectionLevel) {
-    const versions = EC_INFO[errorCorrectionLevel];
-    if (!EC_INFO[errorCorrectionLevel]) {
-      throw new Error(
-        "Invalid error correction level: " + errorCorrectionLevel
-      );
-    }
-    return versions;
+  const versions = EC_INFO[errorCorrectionLevel];
+  if (!EC_INFO[errorCorrectionLevel]) {
+    throw new Error("Invalid error correction level: " + errorCorrectionLevel);
   }
+  return versions;
+}
 
 function gerVersionInfo(errorCorrectionLevel, version) {
-    const versions = getVersionsByECLevel(errorCorrectionLevel);
-    const versionInfo = versions[version];
-    if (!versionInfo) {
-      throw new Error("Invalid QR version: " + version);
-    }
-    return versionInfo;
+  const versions = getVersionsByECLevel(errorCorrectionLevel);
+  const versionInfo = versions[version];
+  if (!versionInfo) {
+    throw new Error("Invalid QR version: " + version);
   }
+  return versionInfo;
+}
 
 export const QRUtils = {
   /**
@@ -86,15 +84,9 @@ export const QRUtils = {
       errorCorrectionLevel
     );
     // Add terminator bits, based on version capacity
-    let bits = [
-      ...dataBits,
-      ...getTerminatorBits(bits, requiredDataCodewords),
-    ];
+    let bits = [...dataBits, ...getTerminatorBits(bits, requiredDataCodewords)];
     // Pad the last codeword with 0s until its 8 bits
-    bits = [
-      ...bits,
-      ...getCodewordFillBits(bits, requiredDataCodewords),
-    ];
+    bits = [...bits, ...getCodewordFillBits(bits, requiredDataCodewords)];
     // Add padding bytes, until the version capacity is full
     bits = [...bits, ...getPaddingBits(bits, requiredDataCodewords)];
 
@@ -103,17 +95,11 @@ export const QRUtils = {
   getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
     // Try each version until one is found that fits the data.
     for (let version = 1; version <= 40; version++) {
-      const { capacity } = gerVersionInfo(
-        errorCorrectionLevel,
-        version
-      );
+      const { capacity } = gerVersionInfo(errorCorrectionLevel, version);
 
       // A terminator of up to 4 bits can be added.
       // ...but is calculated based on the capacity. This is unneeded.
-      const terminatorLength = getTerminatorLength(
-        capacity,
-        totalDataBits
-      );
+      const terminatorLength = getTerminatorLength(capacity, totalDataBits);
       const totalBitsWithTerminator = totalDataBits + terminatorLength;
 
       // The total bits must be rounded up to the next whole 8-bit codeword.
@@ -143,7 +129,7 @@ export const QRUtils = {
       errorCorrectionLevel,
       version
     );
-    
+
     const rsEncoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
 
     const dataBits = QRUtils.getFinalizedBits(
@@ -183,6 +169,25 @@ export const QRUtils = {
         ];
       });
     });
+    return blocks;
+  },
+  getOrderedBits(chunks, errorCorrectionLevel, version) {
+    const blocks = QRUtils.getBlocks(chunks, errorCorrectionLevel, version);
+    const totalCodewords = blocks.reduce((total, {codewords}) => total + codewords.length, 0);
+    let orderedBits = Array.from({length: totalCodewords}, (blocks, idx) => {
+      const blockIdx = idx % blocks.length;
+      const cwIdx = Math.floor(idx / blocks.length);
+    })
+    for (let i = 0; i < totalCodewords; i++) {
+      const blockIdx = i % blocks.length;
+      const cwIdx = Math.floor(i / blocks.length);
+      let block = blocks[blockIdx];
+      if (cwIdx < block.codewords.length) {
+        const { bits } = block.codewords[cwIdx];
+        orderedBits.push(...bits);
+      }
+    }
+    return orderedBits;
   },
 };
 
