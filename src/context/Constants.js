@@ -1,5 +1,9 @@
 export const AlphaNumCharMap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
+export const Actions = {
+  ChangeInput: "ENCODE_DATA"
+}
+
 export const MODE = {
   Terminator: {
     name: "terminator",
