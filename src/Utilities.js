@@ -3,6 +3,8 @@ import { ReedSolomonEncoder } from "./reedsolomon/index.js";
 import { TaggedCodeword, ECCodeword } from "./encode/TaggedCodeword";
 import { TaggedBit } from "./encode/TaggedBit";
 
+const codewordLength = 8;
+
 class Block {
   constructor(numDataCodewords, numECCodewords, id) {
     this.numDataCodewords = numDataCodewords;
@@ -63,7 +65,7 @@ export const QRUtils = {
     return versionInfo;
   },
   getTerminatorLength(capacityBytes, totalDataBits) {
-    const capacityBits = capacityBytes * 8;
+    const capacityBits = capacityBytes * codewordLength;
     return Math.min(4, Math.max(0, capacityBits - totalDataBits));
   },
   getRequiredDataCodewords(version, errorCorrectionLevel) {
@@ -83,17 +85,17 @@ export const QRUtils = {
   },
   getCodewordFillBits(bits, requiredDataCodewords) {
     let bitStr;
-    let remaining = 8 - (bits.length % 8);
-    if (0 < remaining < 8) {
+    let remaining = codewordLength - (bits.length % codewordLength);
+    if (0 < remaining < codewordLength) {
       bitStr = "".padStart(remaining, "0");
     }
     return BitUtils.createTaggedBits(bitStr, "fill", null, null);
   },
   getPaddingBits(bits, requiredDataCodewords) {
     const length = bits.length;
-    if (length % 8 !== 0)
+    if (length % codewordLength !== 0)
       throw new Error(`Bits (length: ${length}) aren't codeword/byte aligned!`);
-    const currentCodewords = length / 8;
+    const currentCodewords = length / codewordLength;
     const codewordsNeeded = requiredDataCodewords - currentCodewords;
     let padding = [];
     for (let i = 0; i < codewordsNeeded; i++) {
@@ -147,7 +149,7 @@ export const QRUtils = {
       const totalBitsWithTerminator = totalDataBits + terminatorLength;
 
       // The total bits must be rounded up to the next whole 8-bit codeword.
-      const requiredBytes = Math.ceil(totalBitsWithTerminator / 8);
+      const requiredBytes = Math.ceil(totalBitsWithTerminator / codewordLength);
 
       if (requiredBytes <= capacity) {
         return version;
@@ -183,7 +185,21 @@ export const QRUtils = {
     let blocks = [];
 
     ecBlocks.forEach(({ numBlocks, dataCodewordsPerBlock }) => {
-      Array.from({ length: numBlocks }, (_, i) => {});
+      Array.from({ length: numBlocks }, (_, i) => {
+        const dataCodewords = Array.from({length: dataCodewordsPerBlock}, (_, j) => {
+          new TaggedCodeword(dataBits.slice(j * codewordLength, j * codewordLength + codewordLength), j);
+        });
+        const ecCodewords = getErrorCorrectionCodewords(dataCodewordsPerBlock, ecCodewordsPerBlock, dataCodewords)
+        const block = {
+          dataCodewordsPerBlock,
+          ecCodewordsPerBlock,
+          totalCodewords: dataCodewordsPerBlock + ecCodewordsPerBlock,
+          dataCodewords,
+          ecCodewords,
+          id: i,
+        }
+        blocks = [...blocks, block];
+      });
       for (let i = 0; i < numBlocks; i++) {
         let dataCodewords = [];
         while (dataCodewords.length < dataCodewordsPerBlock) {

@@ -1,8 +1,8 @@
 import { ECBit } from "./TaggedBit";
 
 export class TaggedCodeword {
-  constructor(taggedBits, id) {
-    this.id = id;
+  constructor(taggedBits, codewordId, blockId) {
+    this.id = `${blockId}-${codewordId}`;
     this.bits = [];
     for (let i = 0; i < 8; i++) {
       const bit = taggedBits.pop();
