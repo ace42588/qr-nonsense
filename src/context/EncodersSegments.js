@@ -5,15 +5,24 @@ const BitUtils = {
     return value.toString(2).padStart(length, "0");
   },
 
+  /**
+   * Creates an array of TaggedBit instances from a string of bits.
+   * @param {string} bits - The binary string.
+   * @param {string} type - Type of the bit.
+   * @param {*} source - Source identifier.
+   * @returns {TaggedBit[]} Array of TaggedBit instances.
+   */
   createTaggedBits(bitStr, options) {
-    return [...bitStr].map((bit, idx) => new TaggedBit({ 
-      ...options, 
-      bit, 
-      idx 
-    }));
-  }
+    return [...bitStr].map(
+      (bit, idx) =>
+        new TaggedBit({
+          ...options,
+          bit,
+          idx,
+        })
+    );
+  },
 };
-
 
 const MODE = {
   Terminator: {
@@ -74,19 +83,15 @@ class Segment {
   constructor(data, index) {
     this.data = data;
     this.index = index;
+    this._bitsCache = null;
   }
 
   get bits() {
-    const bitStr = BitUtils.toPaddedBinary(this._value, this.length);
-    return [...bitStr].map(
-      (bit, idx) =>
-        new TaggedBit({
-          bit,
-          type: "data",
-          source: this,
-          idx,
-        })
-    );
+    if (!this._bitsCache) {
+      const bitStr = BitUtils.toPaddedBinary(this._value, this.length);
+      this._bitsCache = BitUtils.createTaggedBits(bitStr, "data", this);
+    }
+    return this._bitsCache;
   }
 
   get value() {
@@ -187,39 +192,23 @@ class Encoder {
     return thresholds[thresholds.length - 1].length;
   }
 
-  /**
-   * Creates an array of TaggedBit instances from a string of bits.
-   * @param {string} bits - The binary string.
-   * @param {string} type - Type of the bit.
-   * @param {*} source - Source identifier.
-   * @returns {TaggedBit[]} Array of TaggedBit instances.
-   */
-  static createTaggedBits(bits, type, source) {
-    return [...bits].map(
-      (bit) =>
-        new TaggedBit({
-          bit,
-          type,
-          source,
-          encoding: "none",
-        })
-    );
-  }
-
   static getModeIndicator(mode) {
     const { bits } = mode;
     if (!bits) {
       throw new Error(`Invalid mode ${mode}`);
     }
-    BitUtils.toPaddedBinary(bits)
-    const modeBits = bits.toString(2).padStart(4, "0");
-    return Encoder.createTaggedBits(modeBits, "mode", mode);
+    const modeBits = BitUtils.toPaddedBinary(bits, 4);
+    return BitUtils.createTaggedBits(modeBits, "mode", mode);
   }
 
   static getCharacterCountIndicator(charCount, mode) {
     const length = Encoder.computeIndicatorLength(charCount, mode);
-    const charCountBits = charCount.toString(2).padStart(length, "0");
-    return Encoder.createTaggedBits(charCountBits, "characterCount", charCount);
+    const charCountBits = BitUtils.toPaddedBinary(charCount, length);
+    return BitUtils.createTaggedBits(
+      charCountBits,
+      "characterCount",
+      charCount
+    );
   }
 
   /**
@@ -309,10 +298,11 @@ class EciEncoder extends Encoder {
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
   static encode(input) {
-    const bits = input.toString(2).padStart(input < 256 ? 8 : 16, "0");
+    const length = input < 256 ? 8 : 16;
+    const bits = BitUtils.toPaddedBinary(input, length);
     return [
       ...Encoder.addModeIndicator(MODE.ECI),
-      ...Encoder.createTaggedBits(bits, "assignmentNumber", input),
+      ...BitUtils.createTaggedBits(bits, "assignmentNumber", input),
     ];
   }
 }
