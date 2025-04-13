@@ -1,110 +1,5 @@
 import { TaggedBit } from "./TaggedBit";
 
-const AlphaNumCharMap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
-
-class Segment {
-  constructor(data, index) {
-    this.data = data;
-    this.index = index;
-  }
-
-  getEncodedBits() {
-    return Array.from(this.bitString).map(
-      (bit, idx) =>
-        new TaggedBit({
-          bit,
-          type: "data",
-          source: this,
-          idx,
-        })
-    );
-  }
-
-  get bitString() {
-    return this._value.toString(2).padStart(this.length, "0");
-  }
-
-  get value() {
-    return this.bits.reduce((val, bit) => {
-      return (val << 1) | bit.value;
-    });
-  }
-
-  *[Symbol.iterator]() {
-    for (let i = 0; i < this.bits.length; i++) {
-      yield this.bits[i];
-    }
-  }
-}
-
-class NumericSegment extends Segment {
-  constructor(data, index) {
-    if (data.length > 3 || data.length < 1) {
-      throw new Error("NumericSegment must have 1-3 numeric characters!");
-    }
-    super(data, index);
-    this.encoding = "numeric";
-    this._value = parseInt(this.data, 10);
-    this.length = this._value.toString().length * 3 + 1;
-    this.bits = this.getEncodedBits();
-  }
-
-  toString() {
-    return this.value.toString().padStart(this.data.length, "0");
-  }
-}
-
-class AlphanumericSegment extends Segment {
-  constructor(data, index) {
-    if (data.length > 3 || data.length < 1) {
-      throw new Error(
-        `AlphanumericSegment must have 1-2 characters from the class [${AlphaNumCharMap}]!`
-      );
-    }
-    super(data, index);
-    this.encoding = "alphaNumeric";
-    if (data.length === 1) {
-      this._value = AlphaNumCharMap.indexOf(data[0]);
-      this.length = 6;
-    } else if (data.length === 2) {
-      this._value =
-        AlphaNumCharMap.indexOf(data[0]) * 45 +
-        AlphaNumCharMap.indexOf(data[1]);
-      this.length = 11;
-    }
-    this.bits = this.getEncodedBits();
-  }
-
-  toString() {
-    let text;
-    if (this.length === 11) {
-      const a = Math.floor(this.value / 45);
-      const b = this.value % 45;
-      text = AlphaNumCharMap[a] + AlphaNumCharMap[b];
-    } else {
-      text = AlphaNumCharMap[this.value];
-    }
-    return text;
-  }
-}
-
-class ByteSegment extends Segment {
-  constructor(data, index, encoding) {
-    super(data & 0xff, index);
-    this.encoding = encoding ? encoding : "latin-1";
-    this._value = this.data;
-    this.length = 8;
-    this.bits = this.getEncodedBits();
-    //console.log(this);
-  }
-
-  toString() {
-    if (this.encoding === "hex") return `0x${this.value.toString(16)}`;
-
-    return String.fromCharCode(this.value);
-  }
-}
-
 const MODE = {
   Terminator: {
     toString: () => "terminator",
@@ -157,6 +52,108 @@ const MODE = {
     bits: 0x9,
   },
 };
+
+const AlphaNumCharMap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+
+class Segment {
+  constructor(data, index) {
+    this.data = data;
+    this.index = index;
+  }
+
+  get bits() {
+    const bitStr = this._value.toString(2).padStart(this.length, "0");
+    return [...bitStr].map(
+      (bit, idx) =>
+        new TaggedBit({
+          bit,
+          type: "data",
+          source: this,
+          idx,
+        })
+    );
+  }
+  
+  get encoding() {
+    return this.mode.toString();
+  }
+
+  get value() {
+    return this.bits.reduce((val, bit) => {
+      return (val << 1) | bit.value;
+    });
+  }
+
+  *[Symbol.iterator]() {
+    for (let i = 0; i < this.bits.length; i++) {
+      yield this.bits[i];
+    }
+  }
+}
+
+class NumericSegment extends Segment {
+  constructor(data, index) {
+    super(data, index);
+    this.mode = MODE.Numeric;
+    if (data.length > 3 || data.length < 1) {
+      throw new Error("NumericSegment must have 1-3 numeric characters!");
+    }
+    this._value = parseInt(this.data, 10);
+    this.length = this._value.toString().length * 3 + 1;
+  }
+
+  toString() {
+    return this.value.toString().padStart(this.data.length, "0");
+  }
+}
+
+class AlphanumericSegment extends Segment {
+  constructor(data, index) {
+    super(data, index);
+    this.mode = MODE.AlphanumericSegment;
+    if (data.length > 3 || data.length < 1) {
+      throw new Error(
+        `AlphanumericSegment must have 1-2 characters from the class [${AlphaNumCharMap}]!`
+      );
+    }
+    if (data.length === 1) {
+      this._value = AlphaNumCharMap.indexOf(data[0]);
+      this.length = 6;
+    } else if (data.length === 2) {
+      this._value =
+        AlphaNumCharMap.indexOf(data[0]) * 45 +
+        AlphaNumCharMap.indexOf(data[1]);
+      this.length = 11;
+    }
+  }
+
+  toString() {
+    let text;
+    if (this.length === 11) {
+      const a = Math.floor(this.value / 45);
+      const b = this.value % 45;
+      text = AlphaNumCharMap[a] + AlphaNumCharMap[b];
+    } else {
+      text = AlphaNumCharMap[this.value];
+    }
+    return text;
+  }
+}
+
+class ByteSegment extends Segment {
+  constructor(data, index, encoding) {
+    super(data & 0xff, index);
+    this.encoding = encoding ? encoding : "latin-1";
+    this._value = this.data;
+    this.length = 8;
+  }
+
+  toString() {
+    if (this.encoding === "hex") return `0x${this.value.toString(16)}`;
+
+    return String.fromCharCode(this.value);
+  }
+}
 
 class Encoder {
   /**
