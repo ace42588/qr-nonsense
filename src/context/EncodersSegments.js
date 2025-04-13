@@ -73,10 +73,6 @@ class Segment {
         })
     );
   }
-  
-  get encoding() {
-    return this.mode.toString();
-  }
 
   get value() {
     return this.bits.reduce((val, bit) => {
@@ -93,11 +89,12 @@ class Segment {
 
 class NumericSegment extends Segment {
   constructor(data, index) {
-    super(data, index);
     this.mode = MODE.Numeric;
     if (data.length > 3 || data.length < 1) {
       throw new Error("NumericSegment must have 1-3 numeric characters!");
     }
+    super(data, index);
+    this.encoding = this.mode.toString();
     this._value = parseInt(this.data, 10);
     this.length = this._value.toString().length * 3 + 1;
   }
@@ -109,13 +106,13 @@ class NumericSegment extends Segment {
 
 class AlphanumericSegment extends Segment {
   constructor(data, index) {
-    super(data, index);
-    this.mode = MODE.AlphanumericSegment;
     if (data.length > 3 || data.length < 1) {
       throw new Error(
         `AlphanumericSegment must have 1-2 characters from the class [${AlphaNumCharMap}]!`
       );
     }
+    super(data, index);
+    this.encoding = "alphaNumeric";
     if (data.length === 1) {
       this._value = AlphaNumCharMap.indexOf(data[0]);
       this.length = 6;
