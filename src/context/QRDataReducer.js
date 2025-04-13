@@ -1,7 +1,7 @@
 import { QRUtils } from "./Utilities";
 import Encoders from "./Encoders";
 
-export default function BitstreamReducer(state, action) {
+export default function QRDataReducer(state, action) {
   switch (action.type) {
     case "ENCODE_DATA": {
       const { mode, encoding, data } = action.payload;

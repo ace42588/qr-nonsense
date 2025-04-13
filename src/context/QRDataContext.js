@@ -1,5 +1,5 @@
 import React, { createContext, useReducer } from "react";
-import BitstreamReducer from "./BitstreamReducer";
+import QRDataReducer from "./QRDataReducer";
 
 const initialState = {
   errorCorrectionLevel: 1,
@@ -9,10 +9,11 @@ const initialState = {
   bits: [],
 };
 
-export const BitstreamContext = createContext(initialState);
+export const QRDataContext = createContext(initialState);
+export const QRDataDispatchContext = createContext(null);
 
 export const BitstreamContextProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(BitstreamReducer, initialState);
+  const [state, dispatch] = useReducer(QRDataReducer, initialState);
 
   function handleChangeErrorCorrectionLevel(errorCorrectionLevel) {
     dispatch({

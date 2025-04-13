@@ -14,11 +14,12 @@ import { getEncoder } from "./encode/Encoder";
 import { TaggedBitstream } from "./encode/TaggedBitstream";
 import { VERSIONS } from "./encode/version";
 import { QRCodeMatrix } from "./QRCodeMatrix";
-import { BitstreamContextProvider } from "./context/BitstreamContext";
+import { QRDataContext, QRDataDispatchContext } from "./context/QRDataContext";
 import "./App.css";
 
 function App() {
   const [inputMode, setInputMode] = useState("merch"); // Default to merch mode
+  const [tasks, dispatch] = useReducer(QRDataReducer, initialTasks);
 
   const selectUI = () => {
     if (inputMode === "merch") {
