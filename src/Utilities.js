@@ -154,7 +154,7 @@ export const QRUtils = {
 };
 
 function getDataCodewordsForBlock(codewordsPerBlock, dataBits, blockId) {
-  console.debug({ codewordsPerBlock, dataBits, blockId });
+  //console.debug({ codewordsPerBlock, dataBits, blockId });
   return Array.from({ length: codewordsPerBlock }, (_, i) => {
     const codwordBits = dataBits.slice(
       i * codewordLength,
@@ -165,7 +165,7 @@ function getDataCodewordsForBlock(codewordsPerBlock, dataBits, blockId) {
 }
 
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId) {
-  console.debug({ ecCodewordsPerBlock, dataCodewords, blockId });
+  //console.debug({ ecCodewordsPerBlock, dataCodewords, blockId });
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
   const ecBytes = Uint8Array.from(dataCodewords, (c, i) => c.byte);
   return Array.from(ecBytes, (b, idx) => new ECCodeword(b, idx, blockId));
@@ -195,7 +195,7 @@ function getCodewordsForBlock(
 const BlockUtils = {
   getBlocks(chunks, errorCorrectionLevel, version) {
     const chunkBits = QRUtils.getBitsFromChunks(chunks);
-    console.debug({ chunkBits });
+    //console.debug({ chunkBits });
 
     version = QRUtils.getVersion(chunkBits, version, errorCorrectionLevel);
 
