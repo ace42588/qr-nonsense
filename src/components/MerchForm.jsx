@@ -19,22 +19,21 @@ export default function MerchForm() {
   function handleChangeInput(e) {
     const newInput = { value: e.target.value };
     setInput(newInput);
-    const order = parseInput(input);
+    const order = parseInput(newInput);
     const output = encodeOrder(order, encoding);
     handleChangeOutput(output);
   }
 
   function handleChangeEncoding(e) {
+    console.debug("handleChangeEncoding");
     const newEncoding = e.target.value;
     setEncoding(newEncoding);
     const order = parseInput(input);
-    const output = encodeOrder(order, encoding);
+    const output = encodeOrder(order, newEncoding);
     handleChangeOutput(output);
   }
 
-  function handleChangeOutput(order) {
-    console.debug("handleChangeOutput",{order, encoding});
-    const output = encodeOrder(order, encoding);
+  function handleChangeOutput(output) {
     dispatch({
       type: Actions.ChangeInput,
       payload: { inputs: [output] },
