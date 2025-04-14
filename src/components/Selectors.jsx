@@ -1,5 +1,6 @@
-import React from "react";
+import { useState } from "react";
 import { useQRDataDispatch } from "../context/QRDataContext";
+import { Actions } from "../Constants";
 
 export function ModeSelector({ mode, setMode }) {
   return (
@@ -69,6 +70,7 @@ const versions = [{ label: "Auto", value: -1 }].concat(
 );
 
 export function VersionSelector({ value, onChange }) {
+  const
   return (
     <div className="version-selector">
       <label htmlFor="qr-version">QR Code Version:</label>
@@ -99,15 +101,23 @@ const masks = [
   { label: "Mask 7", value: 7 },
 ];
 
-export function DataMaskSelector({ value, onChange }) {
+export function DataMaskSelector() {
+  const [dataMask, setDataMask] = useState(-1);
   const dispatch = useQRDataDispatch();
   return (
     <div className="data-mask-selector">
       <label htmlFor="data-mask">Data Mask:</label>
       <select
         id="data-mask"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={dataMask}
+        onChange={(e) => {
+          const newDataMask = parseInt(e.target.value);
+          setDataMask(newDataMask);
+          dispatch({
+            type: Actions.ChangeDataMask,
+            dataMask: newDataMask,
+          });
+        }}
       >
         {masks.map((mask) => (
           <option key={mask.value} value={mask.value}>

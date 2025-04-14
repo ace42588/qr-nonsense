@@ -26,22 +26,6 @@ const DATA_MASKS = [
 
 const REMAINDER_BIT = new RemainderBit();
 
-const createEmptyMatrix = (errorCorrectionLevel, version, dataMask) => {
-  const numModules = version * 4 + 17;
-  const matrix = Array.from({ length: numModules }, () =>
-    Array(numModules).fill(false)
-  );
-  FinderPattern.populate(matrix);
-  TimingPattern.populate(matrix);
-  const alignmentPattern = new AlignmentPattern(version);
-  alignmentPattern.populate(matrix);
-  const formatInfo = new FormatInfo({ errorCorrectionLevel, dataMask });
-  formatInfo.populate(matrix);
-  const versionInfo = new VersionInfo(version);
-  versionInfo.populate(matrix);
-  return matrix;
-};
-
 export default function QRCodeCanvas() {
   const canvasRef = useRef(null);
   const {
@@ -51,6 +35,13 @@ export default function QRCodeCanvas() {
     bits,
   } = useQRData();
   let moduleSize = 0;
+
+  console.debug("QRCodeCanvas", { errorCorrectionLevel, version, dataMask });
+
+  if (dataMask === -1) {
+    // ignore for now
+    dataMask = 0;
+  }
 
   function createEmptyMatrix() {
     const numModules = version * 4 + 17;

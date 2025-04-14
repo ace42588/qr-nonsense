@@ -29,7 +29,7 @@ export function useQRDataDispatch() {
 function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
-      const { inputs } = action.payload;
+      const { inputs } = action;
       //console.debug({inputs});
       // ({id, header, segments})[]
       const chunks = inputs.map(({ data, mode, encoding }, idx) =>
@@ -59,7 +59,7 @@ function dataReducer(state, action) {
       return newState;
     }
     case Actions.ChangeDataMask: {
-      const { dataMask } = action.payload;
+      const { dataMask } = action;
       const newState = { ...state, dataMask };
       return newState;
     }

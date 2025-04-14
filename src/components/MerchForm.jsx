@@ -36,7 +36,7 @@ export default function MerchForm() {
   function handleChangeOutput(output) {
     dispatch({
       type: Actions.ChangeInput,
-      payload: { inputs: [output] },
+      inputs: [output],
     });
   }
 
