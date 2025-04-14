@@ -228,16 +228,11 @@ function getDataCodewordsForBlock(codewordsPerBlock, dataBits, blockId) {
 }
 
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId) {
-  console.debug("getEcCodewords", {
-    ecCodewordsPerBlock,
-    dataCodewords,
-    blockId,
-  });
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
-  const dataBytes = Array.from(dataCodewords, (c) => c.byte);
-  console.debug("getEcCodewords", { dataBytes });
-  const ecBytes = encoder.encode(Array.from(dataCodewords, (c) => c.byte));
-  console.debug("getEcCodewords", { ecBytes });
+  const dataBytes = Array.from(dataCodewords, (c) => c.byteValue);
+  //console.debug("getEcCodewords", { dataBytes });
+  const ecBytes = encoder.encode(dataBytes);
+  //console.debug("getEcCodewords", { ecBytes });
   return Array.from(ecBytes, (b, idx) => new ECCodeword(b, idx, blockId));
 }
 
@@ -253,13 +248,10 @@ function getCodewordsForBlock(
     blockId
   );
 
-  return {
-    codewords: [
-      ...dataCodewords,
-      ...getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId),
-    ],
-    blockId,
-  };
+  return [
+    ...dataCodewords,
+    ...getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId),
+  ];
 }
 
 const BlockUtils = {
@@ -276,16 +268,18 @@ const BlockUtils = {
       version
     );
 
-    return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }) =>
-      Array.from({ length: numBlocks }, (_, i) =>
-        getCodewordsForBlock(
-          dataCodewordsPerBlock,
-          ecCodewordsPerBlock,
-          dataBits,
-          i
-        )
-      )
-    );
+    return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }) => {
+      return Array.from({ length: numBlocks }, (_, i) => {
+        return {
+          codewords: getCodewordsForBlock(
+            dataCodewordsPerBlock,
+            ecCodewordsPerBlock,
+            dataBits
+          ),
+          id: i,
+        };
+      });
+    });
   },
 };
 

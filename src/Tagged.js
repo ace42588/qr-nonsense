@@ -112,9 +112,9 @@ export class RemainderBit extends TaggedBit {
 }
 
 export class TaggedCodeword {
-  constructor(taggedBits, codewordId, blockId) {
+  constructor(taggedBits, id, blockId) {
     this.blockId = blockId;
-    this.id = codewordId;
+    this.id = id;
     this.bits = taggedBits.map((taggedBit) => {
       taggedBit.codewordId = this.id;
       return taggedBit;
@@ -126,13 +126,14 @@ export class TaggedCodeword {
 }
 
 export class ECCodeword extends TaggedCodeword {
-  constructor(byte, codewordId, blockId) {
+  constructor(byte, id, blockId) {
     super(
       Array.from({ length: 8 }).map(
         (_, idx) => new ECBit({ bit: (byte >> (7 - idx)) & 1, id: idx, blockId })
       ),
-      codewordId,
+      id,
       blockId
     );
+    this.type = "ErrorCorrection"
   }
 }
