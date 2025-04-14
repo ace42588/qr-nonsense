@@ -27,7 +27,7 @@ const DATA_MASKS = [
 
 const REMAINDER_BIT = new RemainderBit();
 
-const createMatrix = (errorCorrectionLevel, version, dataMask) => {
+function createMatrix(errorCorrectionLevel, version, dataMask) {
   const numModules = version * 4 + 17;
   const matrix = Array.from({ length: numModules }, () =>
     Array(numModules).fill(false)
@@ -42,70 +42,56 @@ const createMatrix = (errorCorrectionLevel, version, dataMask) => {
   versionInfo.populate(matrix);
 
   return matrix;
-};
+}
 
-const generateMatrix = (qrData, errorCorrectionLevel, version, dataMask) => {
-  console.debug({ qrData });
-  const matrix = createMatrix(errorCorrectionLevel, version, dataMask);
-  let bitIdx = 0;
-  let up = true;
-  const dimension = matrix.length;
-  // write columns in pairs, right to left
-  for (let columnIdx = dimension - 1; columnIdx > 0; columnIdx -= 2) {
-    // Skip the vertical timing pattern column
-    if (columnIdx === 6) columnIdx--;
-
-    for (let i = 0; i < dimension; i++) {
-      const y = up ? dimension - 1 - i : i;
-
-      for (let columnOffset = 0; columnOffset < 2; columnOffset++) {
-        let x = columnIdx - columnOffset;
-
-        // check for pattern
-        if (!matrix[y][x]) {
-          let taggedBit;
-          if (bitIdx < qrData.length) {
-            taggedBit = qrData[bitIdx++];
-          } else {
-            taggedBit = REMAINDER_BIT;
-          }
-
-          const isMasked = DATA_MASKS[dataMask]({ x, y });
-          matrix[y][x] = {
-            ...taggedBit,
-            x,
-            y,
-            isMasked,
-            isHighlighted: false,
-          };
-        }
-      }
-    }
-    up = !up; // Change direction
-  }
-  return matrix;
-};
-
-function QRCodeCanvas({
-  bitStream,
-  setBitStream,
-  errorCorrectionLevel,
-  version,
-  dataMask,
-}) {
+export default function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const qrData = useQRData();
+  const { errorCorrectionLevel, version, dataMask, bits } = useQRData();
   let matrix;
   let moduleSize = 0;
 
-  if (qrData) {
-    if (dataMask === "auto") {
-      // ignore for now
-      dataMask = 0;
-    }
+  function generateMatrix() {
+    const matrix = createMatrix(errorCorrectionLevel, version, dataMask);
+    let bitIdx = 0;
+    let up = true;
+    const dimension = matrix.length;
+    // write columns in pairs, right to left
+    for (let columnIdx = dimension - 1; columnIdx > 0; columnIdx -= 2) {
+      // Skip the vertical timing pattern column
+      if (columnIdx === 6) columnIdx--;
 
-    matrix = generateMatrix(qrData, errorCorrectionLevel, version, dataMask);
+      for (let i = 0; i < dimension; i++) {
+        const y = up ? dimension - 1 - i : i;
+
+        for (let columnOffset = 0; columnOffset < 2; columnOffset++) {
+          let x = columnIdx - columnOffset;
+
+          // check for pattern
+          if (!matrix[y][x]) {
+            let taggedBit;
+            if (bitIdx < bits.length) {
+              taggedBit = bits[bitIdx++];
+            } else {
+              taggedBit = REMAINDER_BIT;
+            }
+
+            const isMasked = DATA_MASKS[dataMask]({ x, y });
+            matrix[y][x] = {
+              ...taggedBit,
+              x,
+              y,
+              isMasked,
+              isHighlighted: false,
+            };
+          }
+        }
+      }
+      up = !up; // Change direction
+    }
+    return matrix;
   }
+
+  matrix = generateMatrix();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -173,5 +159,3 @@ function QRCodeCanvas({
     ></canvas>
   );
 }
-
-export default QRCodeCanvas;

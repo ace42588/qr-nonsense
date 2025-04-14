@@ -86,7 +86,7 @@ const initialData = {
   errorCorrectionLevel: 1,
   version: -1,
   calculatedVersion: 1,
-  dataMask: -1,
+  dataMask: 0,
   chunks: [],
   bits: [],
 };
