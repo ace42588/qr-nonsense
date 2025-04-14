@@ -38,22 +38,22 @@ function dataReducer(state, action) {
       //console.debug({ chunks });
       const segments = chunks.flatMap(({ segments }) => segments);
       const dataBits = QRUtils.getBitsFromChunks(chunks);
-      const version = QRUtils.getVersion(
+      const calculatedVersion = QRUtils.getVersion(
         dataBits,
         state.version,
         state.errorCorrectionLevel
       );
-      const finalBits = QRUtils.getOrderedBits(
+      const orderedBits = QRUtils.getOrderedBits(
         chunks,
-        version,
+        calculatedVersion,
         state.errorCorrectionLevel
       );
       const newState = {
         ...state,
-        calculatedVersion: version,
+        calculatedVersion,
         chunks,
         segments,
-        bits: [...finalBits],
+        bits: [...orderedBits],
       };
       console.log({ newState });
       return newState;

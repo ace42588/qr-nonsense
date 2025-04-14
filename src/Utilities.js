@@ -139,6 +139,27 @@ export const QRUtils = {
     });
     return codewords.flat();
   },
+  getCodewords(chunks, version, errorCorrectionLevel){
+    const qrBlocks = BlockUtils.getBlocks(
+      chunks,
+      errorCorrectionLevel,
+      version
+    );
+    const totalCodewords = qrBlocks.reduce(
+      (total, { codewords }) => total + codewords.length,
+      0
+    );
+    const codewords = Array.from({ length: totalCodewords }, (_, idx) => {
+      const blockIdx = idx % qrBlocks.length;
+      const cwIdx = Math.floor(idx / qrBlocks.length);
+      const { codewords } = qrBlocks[blockIdx];
+      if (cwIdx < codewords.length) {
+        const { bits } = codewords[cwIdx];
+        return [...bits];
+      }
+    });
+    return codewords
+  },
   getVersion(data, inputVersion, errorCorrectionLevel) {
     let version = parseInt(inputVersion) || -1;
     if (1 <= version && version <= 40) {

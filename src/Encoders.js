@@ -58,14 +58,14 @@ class Encoder {
    * @param {string} encoding - Encoding type (e.g., "hex", "utf-8").
    * @returns {object} An object with header and segments.
    */
-  encode(data, id, encoding) {
+  encode(data, chunkId, encoding) {
     return {
-      id,
+      chunkId,
       header: [
         ...Encoder.computeModeIndicator(this.mode),
         ...Encoder.computeCharacterCountIndicator(data.length, this.mode),
       ],
-      segments: [...this.encodeData(data, id, encoding)],
+      segments: [...this.encodeData(data, chunkId, encoding)],
     };
   }
 }

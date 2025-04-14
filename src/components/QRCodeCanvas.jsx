@@ -32,7 +32,7 @@ export default function QRCodeCanvas() {
     errorCorrectionLevel,
     calculatedVersion: version,
     dataMask,
-    bits,
+    orderedBits,
   } = useQRData();
   let moduleSize = 0;
 
@@ -80,8 +80,8 @@ export default function QRCodeCanvas() {
           if (!newMatrix[y][x]) {
             //console.debug({bits, bitIdx});
             let taggedBit;
-            if (bitIdx < bits.length) {
-              taggedBit = bits[bitIdx++];
+            if (bitIdx < orderedBits.length) {
+              taggedBit = orderedBits[bitIdx++];
             } else {
               taggedBit = REMAINDER_BIT;
             }

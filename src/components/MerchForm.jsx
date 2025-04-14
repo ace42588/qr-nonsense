@@ -68,7 +68,7 @@ export default function MerchForm() {
             rows={16}
             value={input}
             onChange={(e) => {
-              const newInput = { value: e.target.value };
+              const newInput = e.target.value;
               setInput(newInput);
               updateQRData(newInput, encoding);
             }}
@@ -185,14 +185,15 @@ const buildHeader = (txn, confId, platform) => {
   return bytes;
 };
 
-const parseInput = (input) => {
-  console.debug("parseInput", { input });
+const parseInput = (raw) => {
+  let safe = raw.replace(/(?<!\\)\\?(\n|\r\n)/g, '');
+  console.debug("parseInput", { raw, safe });
   let {
     txn: transactionId,
     cc: conferenceCode,
     p: platform,
     i: items,
-  } = JSON.parse(input);
+  } = JSON.parse(safe);
   let parsedInput = { transactionId, conferenceCode, platform, items };
 
   return parsedInput;
