@@ -23,26 +23,27 @@ export const BitUtils = {
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
   createTaggedBits(bitStr, sourceType, sourceValue, mode) {
-    if (mode && typeof mode === "object") {
-      mode = mode.name;
-    }
-    return [...bitStr].map(
-      (bit, idx) =>
-        new TaggedBit({
-          bit,
-          type: sourceType,
-          source: sourceValue,
-          idx,
-          mode,
-        })
-    );
+    console.debug("createTaggedBits", { bitStr, sourceType, sourceValue, mode });
+    return [...bitStr].map((bit, idx) => {
+      const taggedBit = new TaggedBit({
+        bit,
+        type: sourceType,
+        source: sourceValue,
+        id: idx,
+        mode,
+      });
+      if (mode && typeof mode === "object") {
+        taggedBit.mode = mode.name;
+      }
+      return taggedBit;
+    });
   },
 };
 
 const paddingBytes = PAD_BYTES.map((byte) => {
-  return byte.map((bit) =>
-    BitUtils.createTaggedBits(bit, "padding", null, null)
-  );
+  //console.debug("paddingBytes", { byte });
+  const bits = byte.toString(2);
+  return BitUtils.createTaggedBits(bits, "padding", byte, null)
 });
 
 function getCodewordFillBits(bits, requiredDataCodewords) {

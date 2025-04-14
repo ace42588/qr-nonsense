@@ -5,7 +5,7 @@ export const Actions = {
   ChangeDataMask: "UPDATE_DATAMASK",
   ChangeVersion: "UPDATE_VERSION",
   ChangeErrorCorretionLevel: "UPDATE_ECL",
-}
+};
 
 export const MODE = {
   Terminator: {
@@ -61,28 +61,7 @@ export const MODE = {
 };
 
 // { bit, type, source, id }
-export const PAD_BYTES = [
-  [
-    { bit: "1", type: "padding", source: 236, encoding: "none" },
-    { bit: "1", type: "padding", source: 236, encoding: "none" },
-    { bit: "1", type: "padding", source: 236, encoding: "none" },
-    { bit: "0", type: "padding", source: 236, encoding: "none" },
-    { bit: "1", type: "padding", source: 236, encoding: "none" },
-    { bit: "1", type: "padding", source: 236, encoding: "none" },
-    { bit: "0", type: "padding", source: 236, encoding: "none" },
-    { bit: "0", type: "padding", source: 236, encoding: "none" },
-  ],
-  [
-    { bit: "0", type: "padding", source: 17, encoding: "none" },
-    { bit: "0", type: "padding", source: 17, encoding: "none" },
-    { bit: "0", type: "padding", source: 17, encoding: "none" },
-    { bit: "1", type: "padding", source: 17, encoding: "none" },
-    { bit: "0", type: "padding", source: 17, encoding: "none" },
-    { bit: "0", type: "padding", source: 17, encoding: "none" },
-    { bit: "0", type: "padding", source: 17, encoding: "none" },
-    { bit: "1", type: "padding", source: 17, encoding: "none" },
-  ],
-];
+export const PAD_BYTES = [236, 17];
 
 export const VERSION_INFO = {
   1: {

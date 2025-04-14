@@ -1,6 +1,7 @@
 export class TaggedBit {
   constructor({ bit, type, source, id }) {
-    if (!id) throw new Error("TaggedBits must have an `id` value!");
+    console.debug("TaggedBit", { bit, type, source, id });
+    if ((typeof id === "undefined") || id === null) throw new Error("TaggedBits must have an `id` value!");
     this.value = !!(bit == "1");
     this.orginalValue = this.value;
     this.sourceType = type; // (e.g., 'mode', 'character indicator')
