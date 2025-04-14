@@ -156,29 +156,34 @@ function getDataCodewordsForBlock(codewordsPerBlock, dataBits, blockId) {
   });
 }
 
-function getErrorCorrectionCodewords(encoder, codewords) {
+function getErrorCorrectionCodewords(encoder, codewords, blockId) {
   return Array.from(
     encoder.encode(
       Uint8Array.from(codewords, (c) => c.byte),
-      (b, idx) => new ECCodeword(b, idx)
+      (b, idx) => new ECCodeword(b, idx, blockId)
     )
   );
 }
 
-function getCodewordsForBlock(dataCodewordsPerBlock) {
+function getCodewordsForBlock(
+  dataCodewordsPerBlock,
+  dataBits,
+  encoder,
+  blockId
+) {
   const dataCodewords = getDataCodewordsForBlock(
-          dataCodewordsPerBlock,
-          dataBits,
-          i
-        );
+    dataCodewordsPerBlock,
+    dataBits,
+    blockId
+  );
 
-        return {
-          codewords: [
-            ...dataCodewords,
-            ...getErrorCorrectionCodewords(rsEncoder, dataCodewords),
-          ],
-          blockId: i,
-        };
+  return {
+    codewords: [
+      ...dataCodewords,
+      ...getErrorCorrectionCodewords(encoder, dataCodewords, blockId),
+    ],
+    blockId,
+  };
 }
 
 const BlockUtils = {
@@ -199,24 +204,12 @@ const BlockUtils = {
       version
     );
 
-    const rsEncoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
+    const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
 
     return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }) =>
-      Array.from({ length: numBlocks }, (_, i) => {
-        const dataCodewords = getDataCodewordsForBlock(
-          dataCodewordsPerBlock,
-          dataBits,
-          i
-        );
-
-        return {
-          codewords: [
-            ...dataCodewords,
-            ...getErrorCorrectionCodewords(rsEncoder, dataCodewords),
-          ],
-          blockId: i,
-        };
-      })
+      Array.from({ length: numBlocks }, (_, i) =>
+        getCodewordsForBlock(dataCodewordsPerBlock, dataBits, encoder, i)
+      )
     );
   },
 };
