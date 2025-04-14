@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQRDataDispatch } from "../context/QRDataContext";
 import { Actions } from "../Constants";
 
+const dispatch = useQRDataDispatch();
+
 export function ModeSelector({ mode, setMode }) {
   return (
     <div className="mode-selector">
@@ -43,7 +45,8 @@ const levels = [
   { label: "High (H) – 30% redundancy", value: 3 },
 ];
 
-export function ErrorCorrectionSelector({ value, onChange }) {
+export function ErrorCorrectionSelector() {
+  const [ecLevel, setEcLevel] = useState(1);
   return (
     <div className="error-correction-selector">
       <label htmlFor="ec-level">Error Correction Level:</label>
@@ -69,15 +72,22 @@ const versions = [{ label: "Auto", value: -1 }].concat(
   }))
 );
 
-export function VersionSelector({ value, onChange }) {
-  const
+export function VersionSelector() {
+  const [version, setVersion] = useState(-1);
   return (
     <div className="version-selector">
       <label htmlFor="qr-version">QR Code Version:</label>
       <select
         id="qr-version"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={version}
+        onChange={(e) => {
+          const newVersion = parseInt(e.target.value);
+          setVersion(newVersion);
+          dispatch({
+            type: Actions.ChangeVersion,
+            version: newVersion,
+          });
+        }}
       >
         {versions.map((ver) => (
           <option key={ver.value} value={ver.value}>
@@ -103,7 +113,6 @@ const masks = [
 
 export function DataMaskSelector() {
   const [dataMask, setDataMask] = useState(-1);
-  const dispatch = useQRDataDispatch();
   return (
     <div className="data-mask-selector">
       <label htmlFor="data-mask">Data Mask:</label>

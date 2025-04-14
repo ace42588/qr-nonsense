@@ -60,8 +60,11 @@ function dataReducer(state, action) {
     }
     case Actions.ChangeDataMask: {
       const { dataMask } = action;
-      const newState = { ...state, dataMask };
-      return newState;
+      return { ...state, dataMask };
+    }
+      case Actions.ChangeVersion: {
+      const { version } = action;
+      return { ...state, version };
     }
   }
 }
