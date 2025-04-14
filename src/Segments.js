@@ -43,7 +43,7 @@ class Segment {
 
 export class NumericSegment extends Segment {
   constructor(data, index, parentId) {
-    super(data, index);
+    super(data, index, parentId);
     this.mode = MODE.Numeric;
     validateLength(data, 1, 3, this.mode.name);
     this.encoding = this.mode;
@@ -58,7 +58,7 @@ export class NumericSegment extends Segment {
 
 export class AlphanumericSegment extends Segment {
   constructor(data, index, parentId) {
-    super(data, index);
+    super(data, index, parentId);
     this.mode = MODE.Alphanumeric;
     validateLength(data, 1, 2, this.mode.name);
     if (data.length === 1) {
@@ -87,7 +87,7 @@ export class AlphanumericSegment extends Segment {
 
 export class ByteSegment extends Segment {
   constructor(data, index, parentId, encoding) {
-    super(data & 0xff, index);
+    super(data & 0xff, index, parentId);
     this.mode = MODE.Byte;
     this.encoding = encoding || "latin-1";
     this._value = this.data;

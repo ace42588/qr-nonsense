@@ -30,12 +30,12 @@ function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
       const { inputs } = action.payload;
-      console.debug({inputs})
+      //console.debug({inputs});
       // ({id, header, segments})[]
-      const chunks = inputs.map(({ data, mode, encoding }, idx) => {
-        Encoders(mode).encode(data, encoding, idx);
-      });
-      console.debug({chunks});
+      const chunks = inputs.map(({ data, mode, encoding }, idx) =>
+        Encoders(mode).encode(data, idx, encoding)
+      );
+      console.debug({ chunks });
       const segments = chunks.flatMap(({ segments }) => segments);
       const dataBits = QRUtils.getBitsFromChunks(chunks);
       const version = QRUtils.getVersion(
@@ -54,8 +54,8 @@ function dataReducer(state, action) {
         chunks,
         segments,
         bits: [...finalBits],
-      }
-      console.log({newState});
+      };
+      console.log({ newState });
       return newState;
     }
   }
