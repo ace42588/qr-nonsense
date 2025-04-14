@@ -46,7 +46,9 @@ export default function QRCodeCanvas() {
     dataMask,
     bits,
   } = useQRData();
-  const { matrix, setMatrix } = useState(() => createEmptyMatrix(version));
+  const { matrix, setMatrix } = useState(() => {
+    createEmptyMatrix(version);
+  });
   const { moduleSize, setModuleSize } = useState(0);
 
   function generateMatrix() {
@@ -103,7 +105,7 @@ export default function QRCodeCanvas() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
-      console.debug({matrix});
+      console.debug({ matrix });
       const ctx = canvas.getContext("2d");
       const newModuleSize = getModuleSize(canvas.width, matrix.length);
       setModuleSize(newModuleSize);
