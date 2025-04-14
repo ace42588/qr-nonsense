@@ -55,7 +55,7 @@ export default function MerchForm() {
           <label htmlFor="encoding">Encoding:</label>
           <select
             id="encoding"
-            value={input.type}
+            value={encoding}
             onChange={handleChangeEncoding}
           >
             {Encodings.map((encoding, idx) => (
@@ -92,7 +92,9 @@ export default function MerchForm() {
   );
 }
 
-const encodeOrder = (order, )
+const encodeOrder = (order, encoding) => {
+  
+}
 
 // {"p":"A","cc":"133","txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}
 const buildHeader = (txn, confId, platform) => {
