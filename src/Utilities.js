@@ -219,7 +219,7 @@ export const QRUtils = {
   },
 };
 
-function getDataCodewordsForBlock(codewordsPerBlock, dataBits, blockId) {
+function getDataCodewordsForBlock(codewordsPerBlock, ecCodewordsPerBlock, dataBits, blockId) {
   //console.debug({ codewordsPerBlock, dataBits, blockId });
   const dataCodewords = Array.from({ length: codewordsPerBlock }, (_, i) => {
     const codewordBits = dataBits.slice(
@@ -239,7 +239,7 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId) {
   const ecBytes = encoder.encode(dataBytes);
   //console.debug("getEcCodewords", { ecBytes });
   return Array.from(ecBytes, (b, idx) => {
-    const eccId = idx + dataBytes.length;
+    const eccId = idx + dataCodewords.length;
     return new ECCodeword(b, eccId, blockId);
   });
 }
@@ -253,6 +253,7 @@ function getCodewordsForBlock(
   //console.debug("getCodewordsForBlock", { blockId });
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
+    ecCodewordsPerBlock,
     dataBits,
     blockId
   );
@@ -276,6 +277,7 @@ const BlockUtils = {
       errorCorrectionLevel,
       version
     );
+    
 
     // ecBlocks is an { numBlocks, dataCodewordsPerBlock }[] used to map
     // the specifics of how to split up codewords for error correction.
