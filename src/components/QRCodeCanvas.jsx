@@ -32,11 +32,11 @@ export default function QRCodeCanvas() {
     errorCorrectionLevel,
     calculatedVersion: version,
     dataMask,
-    orderedBits,
+    codewords,
   } = useQRData();
   let moduleSize = 0;
 
-  console.debug("QRCodeCanvas", { errorCorrectionLevel, version, dataMask });
+  //console.debug("QRCodeCanvas", { errorCorrectionLevel, version, dataMask });
 
   if (dataMask === -1) {
     // ignore for now
@@ -62,6 +62,7 @@ export default function QRCodeCanvas() {
   function addModules(empty) {
     console.log("addModulesToMatrix");
     const newMatrix = empty.map((row) => [...row]);
+    const bits = codewords.flat();
     let bitIdx = 0;
     let up = true;
     const dimension = newMatrix.length;
@@ -80,8 +81,8 @@ export default function QRCodeCanvas() {
           if (!newMatrix[y][x]) {
             //console.debug({bits, bitIdx});
             let taggedBit;
-            if (bitIdx < orderedBits.length) {
-              taggedBit = orderedBits[bitIdx++];
+            if (bitIdx < bits.length) {
+              taggedBit = bits[bitIdx++];
             } else {
               taggedBit = REMAINDER_BIT;
             }

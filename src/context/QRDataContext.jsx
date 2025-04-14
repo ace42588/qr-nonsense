@@ -43,7 +43,7 @@ function dataReducer(state, action) {
         state.version,
         state.errorCorrectionLevel
       );
-      const orderedBits = QRUtils.getOrderedBits(
+      const codewords = QRUtils.getCodewords(
         chunks,
         calculatedVersion,
         state.errorCorrectionLevel
@@ -53,7 +53,7 @@ function dataReducer(state, action) {
         calculatedVersion,
         chunks,
         segments,
-        bits: [...orderedBits],
+        codewords,
       };
       console.log({ newState });
       return newState;
@@ -80,5 +80,5 @@ const initialData = {
   dataMask: 0,
   chunks: [],
   segments: [],
-  bits: [],
+  codewords: [],
 };

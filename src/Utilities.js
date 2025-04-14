@@ -178,13 +178,15 @@ export const QRUtils = {
 
 function getDataCodewordsForBlock(codewordsPerBlock, dataBits, blockId) {
   //console.debug({ codewordsPerBlock, dataBits, blockId });
-  return Array.from({ length: codewordsPerBlock }, (_, i) => {
-    const codwordBits = dataBits.slice(
+  const dataCodewords = Array.from({ length: codewordsPerBlock }, (_, i) => {
+    const codewordBits = dataBits.slice(
       i * codewordLength,
       i * codewordLength + codewordLength
     );
-    return new TaggedCodeword(codwordBits, i, blockId);
+    return new TaggedCodeword(codewordBits, i, blockId);
   });
+  //console.debug("getDataCodewordsForBlock", { dataCodewords });
+  return dataCodewords;
 }
 
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId) {
