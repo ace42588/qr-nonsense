@@ -31,11 +31,19 @@ const getModuleSize = (canvasWidth, matrixWidth) => {
   return cw / matrixWidth;
 };
 
-const createEmptyMatrix = (version) => {
+const createEmptyMatrix = (errorCorrectionLevel, version, dataMask) => {
   const numModules = version * 4 + 17;
-  return Array.from({ length: numModules }, () =>
+  const matrix = Array.from({ length: numModules }, () =>
     Array(numModules).fill(false)
   );
+  FinderPattern.populate(matrix);
+  TimingPattern.populate(matrix);
+  const alignmentPattern = new AlignmentPattern(version);
+  alignmentPattern.populate(matrix);
+  const formatInfo = new FormatInfo({ errorCorrectionLevel, dataMask });
+  formatInfo.populate(matrix);
+  const versionInfo = new VersionInfo(version);
+  versionInfo.populate(matrix);
 };
 
 export default function QRCodeCanvas() {
@@ -47,64 +55,53 @@ export default function QRCodeCanvas() {
     bits,
   } = useQRData();
   const { matrix, setMatrix } = useState(() => {
-    createEmptyMatrix(version);
+    createEmptyMatrix(errorCorrectionLevel, version, dataMask);
   });
   const { moduleSize, setModuleSize } = useState(0);
 
-  function generateMatrix() {
-    const newMatrix = createEmptyMatrix(version);
+  useEffect(() => {
+    function generateMatrix() {
+      const newMatrix = matrix.map((row) => [...row]);
+      let bitIdx = 0;
+      let up = true;
+      const dimension = newMatrix.length;
+      // write columns in pairs, right to left
+      for (let columnIdx = dimension - 1; columnIdx > 0; columnIdx -= 2) {
+        // Skip the vertical timing pattern column
+        if (columnIdx === 6) columnIdx--;
 
-    FinderPattern.populate(matrix);
-    TimingPattern.populate(matrix);
-    const alignmentPattern = new AlignmentPattern(version);
-    alignmentPattern.populate(matrix);
-    const formatInfo = new FormatInfo({ errorCorrectionLevel, dataMask });
-    formatInfo.populate(matrix);
-    const versionInfo = new VersionInfo(version);
-    versionInfo.populate(matrix);
+        for (let i = 0; i < dimension; i++) {
+          const y = up ? dimension - 1 - i : i;
 
-    let bitIdx = 0;
-    let up = true;
-    const dimension = matrix.length;
-    // write columns in pairs, right to left
-    for (let columnIdx = dimension - 1; columnIdx > 0; columnIdx -= 2) {
-      // Skip the vertical timing pattern column
-      if (columnIdx === 6) columnIdx--;
+          for (let columnOffset = 0; columnOffset < 2; columnOffset++) {
+            let x = columnIdx - columnOffset;
 
-      for (let i = 0; i < dimension; i++) {
-        const y = up ? dimension - 1 - i : i;
+            // check for pattern
+            if (!newMatrix[y][x]) {
+              let taggedBit;
+              if (bitIdx < bits.length) {
+                taggedBit = bits[bitIdx++];
+              } else {
+                taggedBit = REMAINDER_BIT;
+              }
 
-        for (let columnOffset = 0; columnOffset < 2; columnOffset++) {
-          let x = columnIdx - columnOffset;
-
-          // check for pattern
-          if (!matrix[y][x]) {
-            let taggedBit;
-            if (bitIdx < bits.length) {
-              taggedBit = bits[bitIdx++];
-            } else {
-              taggedBit = REMAINDER_BIT;
+              const isMasked = DATA_MASKS[dataMask]({ x, y });
+              newMatrix[y][x] = {
+                ...taggedBit,
+                x,
+                y,
+                isMasked,
+                isHighlighted: false,
+              };
             }
-
-            const isMasked = DATA_MASKS[dataMask]({ x, y });
-            newMatrix[y][x] = {
-              ...taggedBit,
-              x,
-              y,
-              isMasked,
-              isHighlighted: false,
-            };
           }
         }
+        up = !up; // Change direction
       }
-      up = !up; // Change direction
+      setMatrix(newMatrix);
     }
-    setMatrix(newMatrix);
-  }
-
-  useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas) {
+    if (canvas && matrix) {
       console.debug({ matrix });
       const ctx = canvas.getContext("2d");
       const newModuleSize = getModuleSize(canvas.width, matrix.length);
@@ -136,7 +133,7 @@ export default function QRCodeCanvas() {
         }
       }
     }
-  }, [matrix]);
+  }, [errorCorrectionLevel, version, dataMask, bits]);
 
   const handleClick = (event) => {
     event.preventDefault();
