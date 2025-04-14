@@ -128,7 +128,7 @@ export const QRUtils = {
       (total, { codewords }) => total + codewords.length,
       0
     );
-    return Array.from({ length: totalCodewords }, (_, idx) => {
+    const codewords = Array.from({ length: totalCodewords }, (_, idx) => {
       const blockIdx = idx % qrBlocks.length;
       const cwIdx = Math.floor(idx / qrBlocks.length);
       const { codewords } = qrBlocks[blockIdx];
@@ -137,6 +137,7 @@ export const QRUtils = {
         return [...bits];
       }
     });
+    return codewords.flat();
   },
   getVersion(data, inputVersion, errorCorrectionLevel) {
     let version = parseInt(inputVersion) || -1;

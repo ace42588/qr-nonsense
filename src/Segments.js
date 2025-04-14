@@ -42,9 +42,9 @@ class Segment {
 
 export class NumericSegment extends Segment {
   constructor(data, index) {
+    super(data, index);
     this.mode = MODE.Numeric;
     validateLength(data, 1, 3, this.mode.name);
-    super(data, index);
     this.encoding = this.mode;
     this._value = parseInt(this.data, 10);
     this.length = this._value.toString().length * 3 + 1;
@@ -57,9 +57,9 @@ export class NumericSegment extends Segment {
 
 export class AlphanumericSegment extends Segment {
   constructor(data, index) {
+    super(data, index);
     this.mode = MODE.Alphanumeric;
     validateLength(data, 1, 2, this.mode.name);
-    super(data, index);
     if (data.length === 1) {
       this._value = AlphaNumCharMap.indexOf(data[0]);
       this.length = 6;

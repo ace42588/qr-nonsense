@@ -57,6 +57,7 @@ function dataReducer(state, action) {
   switch (action.type) {
     case "ENCODE_DATA": {
       const { mode, encoding, data } = action.payload;
+      console.debug({ mode, encoding, data });
       const newChunks = Encoders(mode).encode(data, encoding);
       const bits = QRUtils.getBitsFromChunks([newChunks]);
       const version = QRUtils.getVersion(
@@ -87,7 +88,7 @@ function dataReducer(state, action) {
         state.errorCorrectionLevel
       );
       const finalBits = QRUtils.getOrderedBits(
-        newChunks],
+        newChunks,
         version,
         state.errorCorrectionLevel
       );

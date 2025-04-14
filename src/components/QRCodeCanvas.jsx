@@ -94,6 +94,7 @@ export default function QRCodeCanvas() {
 
           // check for pattern
           if (!newMatrix[y][x]) {
+            console.debug({bits, bitIdx});
             let taggedBit;
             if (bitIdx < bits.length) {
               taggedBit = bits[bitIdx++];

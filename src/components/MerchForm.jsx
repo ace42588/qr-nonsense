@@ -56,7 +56,7 @@ export default function MerchForm() {
             onChange={handleChangeEncoding}
           >
             {Encodings.map((encoding, idx) => (
-              <option key={encoding} value={idx}>
+              <option key={encoding} value={encoding}>
                 {encoding}
               </option>
             ))}
@@ -122,12 +122,13 @@ const buildHeader = (txn, confId, platform) => {
 };
 
 const parseInput = (input, encoding) => {
+  console.debug({input, encoding});
   const { value } = input;
   let { txn, cc, p, i } = JSON.parse(value);
   let parsedInput = {};
 
   switch (encoding) {
-    case "alphanumeric": {
+    case "Alphanumeric": {
       // ENCAPSULATOR = "$";
       // FIELD_SEPARATOR = "%";
       // QTY_SEPARATOR = ":";
