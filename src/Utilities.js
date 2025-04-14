@@ -241,6 +241,7 @@ function getCodewordsForBlock(
   dataBits,
   blockId
 ) {
+  console.debug("getCodewordsForBlock", { blockId });
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
     dataBits,
@@ -267,18 +268,16 @@ const BlockUtils = {
       version
     );
 
-    return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }) => {
+    return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }, btIdx) => {
       return Array.from({ length: numBlocks }, (_, i) => {
         return {
           codewords: getCodewordsForBlock(
             dataCodewordsPerBlock,
             ecCodewordsPerBlock,
-            dataBits
-          ).map((cw) => {
-            cw.blockId = i;
-            return cw;
-          }),
-          id: i,
+            dataBits,
+            btIdx + i
+          ),
+          id: btIdx + i,
         };
       });
     });
