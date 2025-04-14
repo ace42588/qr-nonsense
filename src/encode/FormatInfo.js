@@ -1,5 +1,5 @@
-import { FormatBit } from "./TaggedBit";
-import { makeModule } from "../utility";
+import { FormatBit } from "./TaggedBitstream";
+import { makeModule } from "../Utilities";
 
 export const ErrorCorrectionLevel = ["M", "L", "H", "Q"];
 

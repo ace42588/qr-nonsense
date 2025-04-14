@@ -1,6 +1,6 @@
 import { VERSIONS } from "./version";
 import { PatternBit } from "./TaggedBitstream";
-import { makeModule } from "../utility";
+import { makeModule } from "../Utilities";
 
 const FINDER_BITS = [
   new PatternBit({ bit: 0, patternType: "format", x: null, y: null }),

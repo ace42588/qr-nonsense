@@ -167,10 +167,11 @@ function getErrorCorrectionCodewords(encoder, codewords, blockId) {
 
 function getCodewordsForBlock(
   dataCodewordsPerBlock,
+  ecCodewordsPerBlock,
   dataBits,
-  encoder,
   blockId
 ) {
+  const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
     dataBits,
@@ -204,11 +205,14 @@ const BlockUtils = {
       version
     );
 
-    const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
-
     return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }) =>
       Array.from({ length: numBlocks }, (_, i) =>
-        getCodewordsForBlock(dataCodewordsPerBlock, dataBits, encoder, i)
+        getCodewordsForBlock(
+          dataCodewordsPerBlock,
+          ecCodewordsPerBlock,
+          dataBits,
+          i
+        )
       )
     );
   },
@@ -255,4 +259,4 @@ export function makeModule({ taggedBit, x, y, masked }) {
     isMasked: masked,
     isHighlighted: false,
   };
-};
+}

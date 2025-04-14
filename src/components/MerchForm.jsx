@@ -7,7 +7,7 @@ import {
   DataMaskSelector,
 } from "./Selectors";
 import { QRDataDispatchContext } from "../context/QRDataContext";
-import { Actions } from "../context/Constants";
+import { Actions } from "../Constants";
 
 const Encodings = ["JSON", "Alphanumeric", "PER"];
 

@@ -74,7 +74,7 @@ export function VersionSelector({ value, onChange }) {
       <select
         id="qr-version"
         value={value}
-        onChange={(e) => onChange(e.target.value === "auto" ? "auto" : parseInt(e.target.value))}
+        onChange={(e) => onChange(e.target.value)}
       >
         {versions.map((ver) => (
           <option key={ver.value} value={ver.value}>
@@ -105,7 +105,7 @@ export function DataMaskSelector({ value, onChange }) {
       <select
         id="data-mask"
         value={value}
-        onChange={(e) => onChange(e.target.value === "auto" ? "auto" : parseInt(e.target.value))}
+        onChange={(e) => onChange(e.target.value)}
       >
         {masks.map((mask) => (
           <option key={mask.value} value={mask.value}>
