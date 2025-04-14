@@ -262,7 +262,7 @@ export const BitUtils = {
    * @param {*} source - Source identifier.
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
-  createTaggedBits(bitStr, type, source, mode) {
+  createTaggedBits(bitStr, sourceType, sourceValue, mode) {
     if (mode && typeof mode === "object") {
       mode = mode.name
     }
@@ -270,8 +270,8 @@ export const BitUtils = {
       (bit, idx) =>
         new TaggedBit({
           bit,
-          type,
-          source,
+          type: sourceType,
+          source: sourceValue,
           idx,
           mode,
         })

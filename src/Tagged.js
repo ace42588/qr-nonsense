@@ -2,8 +2,8 @@ export class TaggedBit {
   constructor({ bit, type, source, id }) {
     this.value = !!(bit == "1");
     this.orginalValue = this.value;
-    this.type = type; // (e.g., 'mode', 'character indicator')
-    this.source = source; // Source value (e.g., the character or byte that generated this bit)
+    this.sourceType = type; // (e.g., 'mode', 'character indicator')
+    this.sourceValue = source; // Source value (e.g., the character or byte that generated this bit)
     this.id = id;
     this.altered = false;
   }

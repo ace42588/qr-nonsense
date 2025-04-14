@@ -2,18 +2,18 @@ import { MODE, AlphaNumCharMap } from "./Constants";
 import { BitUtils } from "./Utilities";
 
 function validateLength(data, min, max, type) {
-    if (data.length < min || data.length > max) {
-      throw new Error(
-        `${type} segment must have between ${min} and ${max} characters.`
-      );
-    }
+  if (data.length < min || data.length > max) {
+    throw new Error(
+      `${type} segment must have between ${min} and ${max} characters.`
+    );
   }
+}
 
 class Segment {
-  constructor(data, index, parentId) {
+  constructor(data, id, parentId) {
     this.data = data;
-    this.id = index;
-    this.parentId = parentId
+    this.id = id;
+    this.parentId = parentId;
     this._bitsCache = null;
   }
 
@@ -24,8 +24,11 @@ class Segment {
         bitStr,
         "data",
         this.value,
-        this.mode.toString()
-      );
+        this.mode.name
+      ).map((taggedBit) => {
+        taggedBit.segmentId = this.id;
+        return taggedBit;
+      });
     }
     return this._bitsCache;
   }
