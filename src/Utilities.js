@@ -240,6 +240,9 @@ export const BitUtils = {
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
   createTaggedBits(bitStr, type, source, mode) {
+    if (mode && typeof mode === "object") {
+      mode = mode.name
+    }
     return [...bitStr].map(
       (bit, idx) =>
         new TaggedBit({

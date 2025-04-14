@@ -108,7 +108,8 @@ export class RemainderBit extends TaggedBit {
 
 export class TaggedCodeword {
   constructor(taggedBits, codewordId, blockId) {
-    this.id = `${blockId}-${codewordId}`;
+    this.blockId = blockId;
+    this.id = codewordId;
     this.bits = taggedBits.map((taggedBit) => {
       taggedBit.codewordId = this.id;
       return taggedBit;

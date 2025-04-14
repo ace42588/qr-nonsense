@@ -20,20 +20,20 @@ export default function MerchForm() {
     const newInput = { ...input, value: e.target.value };
     setInput(newInput);
     handleChangeOutput();
-  };
+  }
 
   function handleChangeEncoding(e) {
     const newEncoding = e.target.value;
     setEncoding(newEncoding);
     handleChangeOutput();
-  };
-  
+  }
+
   function handleChangeOutput() {
     const order = parseInput(input);
     const output = encodeOrder(order, encoding);
     dispatch({
       type: Actions.ChangeInput,
-      payload: {inputs: [output]},
+      payload: { inputs: [output] },
     });
   }
 
@@ -91,16 +91,19 @@ export default function MerchForm() {
 }
 
 const encodeOrder = (order, encoding) => {
-  console.debug({order, encoding});
+  console.debug({ order, encoding });
   let { transactionId, conferenceCode, platform, items } = order;
   let encodedOrder = {};
-    switch (encoding) {
+  switch (encoding) {
     case "Alphanumeric": {
       // ENCAPSULATOR = "$";
       // FIELD_SEPARATOR = "%";
       // QTY_SEPARATOR = ":";
       // TERMINATOR = "/";
-      const encodedItems = items.reduce((str, { v, q }) => `${str}${v}:${q}/`, "");
+      const encodedItems = items.reduce(
+        (str, { v, q }) => `${str}${v}:${q}/`,
+        ""
+      );
       encodedOrder.mode = "alphanumeric";
       encodedOrder.data = `$1${platform}%${conferenceCode}%${transactionId}%${encodedItems}$`;
       break;
@@ -130,18 +133,21 @@ const encodeOrder = (order, encoding) => {
       break;
     }
     default: {
-      const obj = { txn: transactionId, cc: conferenceCode, p: platform, i: items };
+      const obj = {
+        txn: transactionId,
+        cc: conferenceCode,
+        p: platform,
+        i: items,
+      };
       encodedOrder.encoding = "utf-8";
       encodedOrder.mode = "byte";
       encodedOrder.data = JSON.stringify(obj);
     }
   }
   return encodedOrder;
-}
+};
 
-const modHex = () => {
-  
-}
+const modHex = () => {};
 
 // {"p":"A","cc":"133","txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}
 const buildHeader = (txn, confId, platform) => {
@@ -176,10 +182,15 @@ const buildHeader = (txn, confId, platform) => {
 };
 
 const parseInput = (input) => {
-  console.debug({input});
+  console.debug({ input });
   const { value } = input;
-  let { txn: transactionId, cc: conferenceCode, p:platform, i:items } = JSON.parse(value);
-  let parsedInput = {transactionId, conferenceCode, platform, items};
+  let {
+    txn: transactionId,
+    cc: conferenceCode,
+    p: platform,
+    i: items,
+  } = JSON.parse(value);
+  let parsedInput = { transactionId, conferenceCode, platform, items };
 
   return parsedInput;
 };
