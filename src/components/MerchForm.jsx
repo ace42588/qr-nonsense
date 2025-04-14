@@ -14,23 +14,25 @@ const Encodings = ["JSON", "Alphanumeric", "PER"];
 export default function MerchForm() {
   const [input, setInput] = useState({ value: sampleInput });
   const [encoding, setEncoding] = useState("JSON");
+  const [output, setOutput] = useState(() => parseInput(input, encoding));
   const dispatch = useContext(QRDataDispatchContext);
 
   const handleChangeInput = (e) => {
-    const newInput = parseInput({ ...input, value: e.target.value }, encoding);
-    
+    const newInput = { ...input, value: e.target.value };
+    const newOutput = parseInput(newInput, encoding);
     setInput(newInput);
+    setOutput(newOutput);
     dispatch({
       type: Actions.ChangeInput,
-      payload: {
-        ...parseInput(newInput, encoding),
-      },
+      payload: [output],
     });
   };
 
   const handleChangeEncoding = (e) => {
     const newEncoding = e.target.value;
+    const newOutput = parseInput(input, newEncoding);
     setEncoding(newEncoding);
+    setOutput(newOutput);
     dispatch({
       type: Actions.ChangeInput,
       payload: { ...parseInput(input, newEncoding) },
@@ -89,6 +91,8 @@ export default function MerchForm() {
     </form>
   );
 }
+
+const encodeOrder = (order, )
 
 // {"p":"A","cc":"133","txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}
 const buildHeader = (txn, confId, platform) => {
