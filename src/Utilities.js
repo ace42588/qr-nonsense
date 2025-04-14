@@ -219,14 +219,20 @@ export const QRUtils = {
   },
 };
 
-function getDataCodewordsForBlock(codewordsPerBlock, ecCodewordsPerBlock, dataBits, blockId) {
+function getDataCodewordsForBlock(
+  codewordsPerBlock,
+  ecCodewordsPerBlock,
+  dataBits,
+  blockId,
+  firstCodewordId
+) {
   //console.debug({ codewordsPerBlock, dataBits, blockId });
   const dataCodewords = Array.from({ length: codewordsPerBlock }, (_, i) => {
     const codewordBits = dataBits.slice(
       i * codewordLength,
       i * codewordLength + codewordLength
     );
-    return new TaggedCodeword(codewordBits, i, blockId);
+    return new TaggedCodeword(codewordBits, firstCodewordId + i, blockId);
   });
   //console.debug("getDataCodewordsForBlock", { dataCodewords });
   return dataCodewords;
@@ -248,14 +254,16 @@ function getCodewordsForBlock(
   dataCodewordsPerBlock,
   ecCodewordsPerBlock,
   dataBits,
-  blockId
+  blockId,
+  firstCodewordId
 ) {
   //console.debug("getCodewordsForBlock", { blockId });
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
     ecCodewordsPerBlock,
     dataBits,
-    blockId
+    blockId,
+    firstCodewordId
   );
 
   return [
@@ -277,29 +285,32 @@ const BlockUtils = {
       errorCorrectionLevel,
       version
     );
-        let processedBlocks = 0;
-    let processedCodewords = 0;
+    let lastBlockId = 0;
+    let lastCodewordId = 0;
 
     // ecBlocks is an { numBlocks, dataCodewordsPerBlock }[] used to map
     // the specifics of how to split up codewords for error correction.
     // The capacity of a block can vary within a QR code version.
 
-    return ecBlocks.flatMap(
-      ({ numBlocks, dataCodewordsPerBlock }) => {
-        return Array.from({ length: numBlocks }, (_, blockNumber) => {
-          const blockId = blockTypeIdx + blockNumber;
-          return {
-            codewords: getCodewordsForBlock(
-              dataCodewordsPerBlock,
-              ecCodewordsPerBlock,
-              dataBits,
-              blockId
-            ),
-            id: blockId,
-          };
-        });
-      }
-    );
+    return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }, idx) => {
+      const blocksForType = Array.from({ length: numBlocks }, (_, blockNumber) => {
+        const blockId = lastBlockId + blockNumber;
+        const blockCodewords = getCodewordsForBlock(
+          dataCodewordsPerBlock,
+          ecCodewordsPerBlock,
+          dataBits,
+          blockId,
+          lastCodewordId
+        );
+        lastCodewordId = lastCodewordId + blockCodewords.length;
+        return {
+          codewords: blockCodewords,
+          id: blockId,
+        };
+      });
+      lastBlockId = lastBlockId + blocksForType.length;
+      return blocksForType;
+    });
   },
 };
 
