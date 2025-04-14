@@ -1,5 +1,6 @@
 export class TaggedBit {
   constructor({ bit, type, source, id }) {
+    if (!id) throw new Error("TaggedBits must have an `id` value!");
     this.value = !!(bit == "1");
     this.orginalValue = this.value;
     this.sourceType = type; // (e.g., 'mode', 'character indicator')
@@ -11,7 +12,6 @@ export class TaggedBit {
   toggle() {
     this.altered = true;
     this.value = !this.value;
-
   }
 
   toString() {
@@ -113,7 +113,7 @@ export class TaggedCodeword {
     this.bits = taggedBits.map((taggedBit) => {
       taggedBit.codewordId = this.id;
       return taggedBit;
-    })
+    });
     this.byteValue = this.bits.reduce((byte, taggedBit) => {
       return (byte << 1) | taggedBit.value;
     }, 0);
@@ -124,7 +124,7 @@ export class ECCodeword extends TaggedCodeword {
   constructor(byte, codewordId, blockId) {
     super(
       Array.from({ length: 8 }).map(
-        (_, idx) => new ECBit({ bit: (byte >> 7-idx) & 1 })
+        (_, idx) => new ECBit({ bit: (byte >> (7 - idx)) & 1 })
       ),
       codewordId,
       blockId

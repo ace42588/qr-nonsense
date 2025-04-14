@@ -4,8 +4,45 @@ import { TaggedBit, TaggedCodeword, ECCodeword } from "./Tagged";
 
 const codewordLength = 8;
 
+export const BitUtils = {
+  /**
+   * Creates string of bits given a value and length
+   * @param {number} value - The value to convert and pad.
+   * @param {number} length - The desired string length.
+   * @returns {string} String of binary.
+   */
+  toPaddedBinary(value, length) {
+    return value.toString(2).padStart(length, "0");
+  },
+
+  /**
+   * Creates an array of TaggedBit instances from a string of bits.
+   * @param {string} bits - The binary string.
+   * @param {string} type - Type of the bit.
+   * @param {*} source - Source identifier.
+   * @returns {TaggedBit[]} Array of TaggedBit instances.
+   */
+  createTaggedBits(bitStr, sourceType, sourceValue, mode) {
+    if (mode && typeof mode === "object") {
+      mode = mode.name;
+    }
+    return [...bitStr].map(
+      (bit, idx) =>
+        new TaggedBit({
+          bit,
+          type: sourceType,
+          source: sourceValue,
+          idx,
+          mode,
+        })
+    );
+  },
+};
+
 const paddingBytes = PAD_BYTES.map((byte) => {
-  return byte.map((bit) => new TaggedBit(bit));
+  return byte.map((bit) =>
+    BitUtils.createTaggedBits(bit, "padding", null, null)
+  );
 });
 
 function getCodewordFillBits(bits, requiredDataCodewords) {
@@ -139,7 +176,7 @@ export const QRUtils = {
     });
     return codewords.flat();
   },
-  getCodewords(chunks, version, errorCorrectionLevel){
+  getCodewords(chunks, version, errorCorrectionLevel) {
     const qrBlocks = BlockUtils.getBlocks(
       chunks,
       errorCorrectionLevel,
@@ -158,7 +195,7 @@ export const QRUtils = {
         return [...bits];
       }
     });
-    return codewords
+    return codewords;
   },
   getVersion(data, inputVersion, errorCorrectionLevel) {
     let version = parseInt(inputVersion) || -1;
@@ -240,41 +277,6 @@ const BlockUtils = {
           i
         )
       )
-    );
-  },
-};
-
-export const BitUtils = {
-  /**
-   * Creates string of bits given a value and length
-   * @param {number} value - The value to convert and pad.
-   * @param {number} length - The desired string length.
-   * @returns {string} String of binary.
-   */
-  toPaddedBinary(value, length) {
-    return value.toString(2).padStart(length, "0");
-  },
-
-  /**
-   * Creates an array of TaggedBit instances from a string of bits.
-   * @param {string} bits - The binary string.
-   * @param {string} type - Type of the bit.
-   * @param {*} source - Source identifier.
-   * @returns {TaggedBit[]} Array of TaggedBit instances.
-   */
-  createTaggedBits(bitStr, sourceType, sourceValue, mode) {
-    if (mode && typeof mode === "object") {
-      mode = mode.name
-    }
-    return [...bitStr].map(
-      (bit, idx) =>
-        new TaggedBit({
-          bit,
-          type: sourceType,
-          source: sourceValue,
-          idx,
-          mode,
-        })
     );
   },
 };

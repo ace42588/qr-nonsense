@@ -60,6 +60,7 @@ export const MODE = {
   },
 };
 
+// { bit, type, source, id }
 export const PAD_BYTES = [
   [
     { bit: "1", type: "padding", source: 236, encoding: "none" },
