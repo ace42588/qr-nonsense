@@ -232,7 +232,10 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId) {
   //console.debug("getEcCodewords", { dataBytes });
   const ecBytes = encoder.encode(dataBytes);
   //console.debug("getEcCodewords", { ecBytes });
-  return Array.from(ecBytes, (b, idx) => new ECCodeword(b, idx, blockId));
+  return Array.from(ecBytes, (b, idx) => {
+    const eccId = idx + dataBytes.length;
+    return new ECCodeword(b, eccId, blockId);
+  });
 }
 
 function getCodewordsForBlock(
@@ -268,19 +271,26 @@ const BlockUtils = {
       version
     );
 
-    return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }, btIdx) => {
-      return Array.from({ length: numBlocks }, (_, i) => {
-        return {
-          codewords: getCodewordsForBlock(
-            dataCodewordsPerBlock,
-            ecCodewordsPerBlock,
-            dataBits,
-            btIdx + i
-          ),
-          id: btIdx + i,
-        };
-      });
-    });
+    // ecBlocks is an { numBlocks, dataCodewordsPerBlock }[] used to map
+    // the specifics of how to split up codewords for error correction.
+    // The capacity of a block can vary within a QR code version.
+
+    return ecBlocks.flatMap(
+      ({ numBlocks, dataCodewordsPerBlock }, blockTypeIdx) => {
+        return Array.from({ length: numBlocks }, (_, blockNumber) => {
+          const blockId = blockTypeIdx + blockNumber;
+          return {
+            codewords: getCodewordsForBlock(
+              dataCodewordsPerBlock,
+              ecCodewordsPerBlock,
+              dataBits,
+              blockId
+            ),
+            id: blockId,
+          };
+        });
+      }
+    );
   },
 };
 

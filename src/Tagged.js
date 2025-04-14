@@ -113,7 +113,7 @@ export class RemainderBit extends TaggedBit {
 
 export class TaggedCodeword {
   constructor(taggedBits, id, blockId) {
-    console.debug("TaggedCodeword", {taggedBits, id, blockId});
+    //console.debug("TaggedCodeword", {taggedBits, id, blockId});
     this.blockId = blockId;
     this.blockPosition = id;
     this.id = (blockId * id) + id;
