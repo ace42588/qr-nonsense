@@ -183,7 +183,7 @@ export const QRUtils = {
       errorCorrectionLevel,
       version
     );
-    console.debug("getCodewords", { qrBlocks });
+    //console.debug("getCodewords", { qrBlocks });
     const totalCodewords = qrBlocks.reduce(
       (total, { codewords }) => total + codewords.length,
       0

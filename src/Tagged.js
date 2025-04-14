@@ -7,7 +7,7 @@ export class TaggedBit {
     this.orginalValue = this.value;
     this.sourceType = type; // (e.g., 'mode', 'character indicator')
     this.sourceValue = source; // Source value (e.g., the character or byte that generated this bit)
-    this.id = id;
+    this.segmentPosition = id;
     this.altered = false;
     this.parentId;
   }
@@ -116,7 +116,7 @@ export class TaggedCodeword {
     //console.debug("TaggedCodeword", {taggedBits, id, blockId});
     this.blockId = blockId;
     this.blockPosition = id;
-    this.id = ((blockId + 1) * (id + 1)) + id;
+    this.id = id;
     this.bits = taggedBits.map((taggedBit, idx) => {
       taggedBit.codewordId = this.id;
       taggedBit.codewordPosition = idx;

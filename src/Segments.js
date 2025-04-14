@@ -13,7 +13,7 @@ class Segment {
   constructor(data, id, parentId) {
     this.data = data;
     this.id = id;
-    this.parentId = parentId;
+    this.inputId = parentId;
     this._bitsCache = null;
   }
 
