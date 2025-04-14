@@ -105,7 +105,7 @@ export const QRUtils = {
     }
     throw new Error("Data too large to fit in a QR code version 40.");
   },
-  getOrderedBits(chunks, errorCorrectionLevel, version) {
+  getOrderedBits(chunks, version, errorCorrectionLevel) {
     const qrBlocks = QRUtils.getBlocks(chunks, errorCorrectionLevel, version);
     const totalCodewords = qrBlocks.reduce(
       (total, { codewords }) => total + codewords.length,
@@ -122,8 +122,8 @@ export const QRUtils = {
     });
     return orderedBits;
   },
-  getVersion(input, data, errorCorrectionLevel) {
-    let version = parseInt(input) || -1;
+  getVersion(data, inputVersion, errorCorrectionLevel) {
+    let version = parseInt(inputVersion) || -1;
     if (1 <= version <= 40) {
       return version;
     } else if (version === -1) {
@@ -134,7 +134,7 @@ export const QRUtils = {
         );
       return QRUtils.getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
     }
-    throw new Error(`Invalid version: ${input.toString()}`);
+    throw new Error(`Invalid version: ${inputVersion.toString()}`);
   },
 };
 
@@ -146,19 +146,29 @@ function getBitsFromChunks(chunks) {
   });
 }
 
+function getDataCodewordsForBlock() {
+  
+}
+
+function getErrorCorrectionCodewords(encoder, codewords) {
+  return Array.from(
+    encoder.encode(
+      Uint8Array.from(codewords, (c) => c.byte),
+      (b, idx) => new ECCodeword(b, idx)
+    )
+  );
+}
+
 const BlockUtils = {
   getBlocks(chunks, errorCorrectionLevel, version) {
     const chunkBits = getBitsFromChunks(chunks);
     console.debug({ chunkBits });
-    
-    version = QRUtils.getVersion(
-      version,
-      chunkBits,
-      errorCorrectionLevel
-    );
+
+    version = QRUtils.getVersion(version, chunkBits, errorCorrectionLevel);
+
     const dataBits = QRUtils.getFinalizedBits(
-      version,
       chunkBits,
+      version,
       errorCorrectionLevel
     );
 
@@ -183,15 +193,12 @@ const BlockUtils = {
             );
           }
         );
-        const ecCodewords = Array.from(
-          rsEncoder.encode(
-            Uint8Array.from(dataCodewords, (c) => c.byte),
-            (b, idx) => new ECCodeword(b, idx)
-          )
-        );
 
         return {
-          codewords: [...dataCodewords, ...ecCodewords],
+          codewords: [
+            ...dataCodewords,
+            ...getErrorCorrectionCodewords(rsEncoder, dataCodewords),
+          ],
           blockId: i,
         };
       })
