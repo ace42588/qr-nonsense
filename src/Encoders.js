@@ -2,13 +2,13 @@ import { MODE } from "./Constants"
 import { BitUtils } from "./Utilities.js";
 import { NumericSegment, AlphanumericSegment, ByteSegment } from "./Segments";
 
-function* createSegments(input, regex, SegmentClass, errorMsg) {
+function* createSegments(input, parentId, regex, SegmentClass, errorMsg) {
   const groups = input.match(regex);
   if (!groups) {
     throw new Error(errorMsg);
   }
   for (let i = 0; i < groups.length; i++) {
-    yield new SegmentClass(groups[i], i);
+    yield new SegmentClass(groups[i], i, parentId);
   }
 }
 
@@ -58,13 +58,13 @@ class Encoder {
    * @param {string} encoding - Encoding type (e.g., "hex", "utf-8").
    * @returns {object} An object with header and segments.
    */
-  encode(data, encoding) {
+  encode(data, id, encoding) {
     return {
       header: [
         ...Encoder.computeModeIndicator(this.mode),
         ...Encoder.computeCharacterCountIndicator(data.length, this.mode),
       ],
-      segments: [...this.encodeData(data, encoding)],
+      segments: [...this.encodeData(data, id, encoding)],
     };
   }
 }
@@ -75,10 +75,11 @@ class NumericEncoder extends Encoder {
     this.mode = MODE.Numeric;
   }
 
-  *encodeData(input) {
+  *encodeData(input, id) {
     
     yield* createSegments(
       input,
+      id,
       /\d{1,3}/g,
       NumericSegment,
       `Invalid input for Numeric encoder: ${input}`
@@ -92,9 +93,10 @@ class AlphanumericEncoder extends Encoder {
     this.mode = MODE.Alphanumeric;
   }
 
-  *encodeData(input) {
+  *encodeData(input, id) {
     yield* createSegments(
       input,
+      id,
       /[0-9A-Z \$\%\*\+\-\.\/\:]{1,2}/g,
       AlphanumericSegment,
       `Invalid input for Alphanumeric encoder: ${input}`
@@ -108,11 +110,11 @@ class ByteEncoder extends Encoder {
     this.mode = MODE.Byte;
   }
 
-  *encodeData(input, encoding) {
+  *encodeData(input, id, encoding) {
     if (encoding === "hex") {
       for (let i = 0; i < input.length; i += 2) {
         const byte = parseInt(input.substring(i, i + 2), 16);
-        yield new ByteSegment(byte, i / 2, encoding);
+        yield new ByteSegment(byte, i / 2, id, encoding);
       }
     } else {
       // default for QR Codes
@@ -122,7 +124,7 @@ class ByteEncoder extends Encoder {
       for (let i = 0; i < chars.length; i++) {
         const char = chars[i];
         const byte = encoder.encode(char);
-        yield new ByteSegment(byte, i);
+        yield new ByteSegment(byte, i, id);
       }
     }
   }
@@ -134,7 +136,7 @@ class EciEncoder extends Encoder {
    * @param {number} input - The assignment number.
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
-  static encode(input) {
+  static encode(input, id) {
     const length = input < 256 ? 8 : 16;
     const bits = BitUtils.toPaddedBinary(input, length);
     return [

@@ -57,9 +57,10 @@ function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
       const { inputs } = action.payload;
-      const chunks = inputs.map({})
-      const newChunks = Encoders(mode).encode(data, encoding);
-      const bits = QRUtils.getBitsFromChunks([newChunks]);
+      const chunks = inputs.map(({data, mode, encoding}, idx) => {
+        Encoders(mode).encode(data, encoding, idx)
+      })
+      const bits = QRUtils.getBitsFromChunks(chunks);
       const version = QRUtils.getVersion(
         bits,
         state.version,

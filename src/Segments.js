@@ -10,9 +10,10 @@ function validateLength(data, min, max, type) {
   }
 
 class Segment {
-  constructor(data, index, parent) {
+  constructor(data, index, parentId) {
     this.data = data;
-    this.index = index;
+    this.id = index;
+    this.parentId = parentId
     this._bitsCache = null;
   }
 
@@ -41,7 +42,7 @@ class Segment {
 }
 
 export class NumericSegment extends Segment {
-  constructor(data, index) {
+  constructor(data, index, parentId) {
     super(data, index);
     this.mode = MODE.Numeric;
     validateLength(data, 1, 3, this.mode.name);
@@ -56,7 +57,7 @@ export class NumericSegment extends Segment {
 }
 
 export class AlphanumericSegment extends Segment {
-  constructor(data, index) {
+  constructor(data, index, parentId) {
     super(data, index);
     this.mode = MODE.Alphanumeric;
     validateLength(data, 1, 2, this.mode.name);
@@ -85,7 +86,7 @@ export class AlphanumericSegment extends Segment {
 }
 
 export class ByteSegment extends Segment {
-  constructor(data, index, encoding) {
+  constructor(data, index, parentId, encoding) {
     super(data & 0xff, index);
     this.mode = MODE.Byte;
     this.encoding = encoding || "latin-1";

@@ -16,21 +16,16 @@ export default function MerchForm() {
   const [encoding, setEncoding] = useState("JSON");
   const dispatch = useContext(QRDataDispatchContext);
 
-  const handleChangeInput = (e) => {
+  function handleChangeInput(e) {
     const newInput = { ...input, value: e.target.value };
-    const order = parseInput(input);
-    const newOutput = encodeOrder(order, encoding);
     setInput(newInput);
-    dispatch({
-      type: Actions.ChangeInput,
-      payload: {inputs: [output]},
-    });
+    handleChangeOutput();
   };
 
-  const handleChangeEncoding = (e) => {
+  function handleChangeEncoding(e) {
     const newEncoding = e.target.value;
     setEncoding(newEncoding);
-    handleChangeOutput()
+    handleChangeOutput();
   };
   
   function handleChangeOutput() {
