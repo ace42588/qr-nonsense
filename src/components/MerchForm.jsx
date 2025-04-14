@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useCallback } from "react";
 import "./styles.css";
 
 import {
@@ -12,18 +12,25 @@ import { Actions } from "../Constants";
 const Encodings = ["JSON", "Alphanumeric", "PER"];
 
 export default function MerchForm() {
-  const [input, setInput] = useState({ value: sampleInput });
+  const [input, setInput] = useState( sampleInput );
   const [encoding, setEncoding] = useState("JSON");
   const dispatch = useContext(QRDataDispatchContext);
+  
+  const updateQRData = useCallback(
+    (inputValue = input, encodingType = encoding) => {
+      const order = parseInput(inputValue);
+      const output = encodeOrder(order, encodingType);
+      dispatch({
+        type: Actions.ChangeInput,
+        inputs: [output],
+      });
+    },
+    [dispatch, input, encoding]
+  );
 
   useEffect(() => {
-    const order = parseInput(input);
-    const output = encodeOrder(order, encoding);
-    dispatch({
-      type: Actions.ChangeInput,
-      inputs: [output],
-    });
-  }, [dispatch]);
+    updateQRData();
+  }, [updateQRData]);
 
   return (
     <form className="input-form">
@@ -46,12 +53,7 @@ export default function MerchForm() {
               console.debug("handleChangeEncoding");
               const newEncoding = e.target.value;
               setEncoding(newEncoding);
-              const order = parseInput(input);
-              const output = encodeOrder(order, newEncoding);
-              dispatch({
-                type: Actions.ChangeInput,
-                inputs: [output],
-              });
+              updateQRData(input, newEncoding);
             }}
           >
             {Encodings.map((encoding, idx) => (
@@ -64,16 +66,11 @@ export default function MerchForm() {
           <textarea
             type="text"
             rows={16}
-            value={input.value}
+            value={input}
             onChange={(e) => {
               const newInput = { value: e.target.value };
               setInput(newInput);
-              const order = parseInput(newInput);
-              const output = encodeOrder(order, encoding);
-              dispatch({
-                type: Actions.ChangeInput,
-                inputs: [output],
-              });
+              updateQRData(newInput, encoding);
             }}
           />
         </div>
@@ -190,13 +187,12 @@ const buildHeader = (txn, confId, platform) => {
 
 const parseInput = (input) => {
   console.debug("parseInput", { input });
-  const { value } = input;
   let {
     txn: transactionId,
     cc: conferenceCode,
     p: platform,
     i: items,
-  } = JSON.parse(value);
+  } = JSON.parse(input);
   let parsedInput = { transactionId, conferenceCode, platform, items };
 
   return parsedInput;
