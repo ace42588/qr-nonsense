@@ -23,7 +23,7 @@ export const BitUtils = {
    * @returns {TaggedBit[]} Array of TaggedBit instances.
    */
   createTaggedBits(bitStr, sourceType, sourceValue, mode) {
-    console.debug("createTaggedBits", { bitStr, sourceType, sourceValue, mode });
+    //console.debug("createTaggedBits", { bitStr, sourceType, sourceValue, mode });
     return [...bitStr].map((bit, idx) => {
       const taggedBit = new TaggedBit({
         bit,
@@ -43,7 +43,7 @@ export const BitUtils = {
 const paddingBytes = PAD_BYTES.map((byte) => {
   //console.debug("paddingBytes", { byte });
   const bits = byte.toString(2);
-  return BitUtils.createTaggedBits(bits, "padding", byte, null)
+  return BitUtils.createTaggedBits(bits, "padding", byte, null);
 });
 
 function getCodewordFillBits(bits, requiredDataCodewords) {
@@ -228,9 +228,16 @@ function getDataCodewordsForBlock(codewordsPerBlock, dataBits, blockId) {
 }
 
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId) {
-  //console.debug({ ecCodewordsPerBlock, dataCodewords, blockId });
+  console.debug("getEcCodewords", {
+    ecCodewordsPerBlock,
+    dataCodewords,
+    blockId,
+  });
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
-  const ecBytes = Uint8Array.from(dataCodewords, (c, i) => c.byte);
+  const dataBytes = Array.from(dataCodewords, (c) => c.byte);
+  console.debug("getEcCodewords", { dataBytes });
+  const ecBytes = encoder.encode(Array.from(dataCodewords, (c) => c.byte));
+  console.debug("getEcCodewords", { ecBytes });
   return Array.from(ecBytes, (b, idx) => new ECCodeword(b, idx, blockId));
 }
 

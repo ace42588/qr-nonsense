@@ -1,13 +1,15 @@
 export class TaggedBit {
-  constructor({ bit, type, source, id }) {
-    console.debug("TaggedBit", { bit, type, source, id });
-    if ((typeof id === "undefined") || id === null) throw new Error("TaggedBits must have an `id` value!");
+  constructor({ bit, type, source, id, parentId }) {
+    //console.debug("TaggedBit", { bit, type, source, id });
+    if (typeof id === "undefined" || id === null)
+      throw new Error("TaggedBits must have an `id` value!");
     this.value = !!(bit == "1");
     this.orginalValue = this.value;
     this.sourceType = type; // (e.g., 'mode', 'character indicator')
     this.sourceValue = source; // Source value (e.g., the character or byte that generated this bit)
     this.id = id;
     this.altered = false;
+    this.parentId;
   }
 
   toggle() {
@@ -86,11 +88,13 @@ export class VersionBit extends TaggedBit {
 }
 
 export class ECBit extends TaggedBit {
-  constructor({ bit }) {
+  constructor({ bit, id, blockId }) {
     super({
-      bit: bit,
+      bit,
       type: "errorCorrection",
       source: null,
+      id,
+      parentId: blockId
     });
     this.encoding = "reed-solomon";
   }
@@ -125,7 +129,7 @@ export class ECCodeword extends TaggedCodeword {
   constructor(byte, codewordId, blockId) {
     super(
       Array.from({ length: 8 }).map(
-        (_, idx) => new ECBit({ bit: (byte >> (7 - idx)) & 1 })
+        (_, idx) => new ECBit({ bit: (byte >> (7 - idx)) & 1, id: idx, blockId })
       ),
       codewordId,
       blockId
