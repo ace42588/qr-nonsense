@@ -1,4 +1,4 @@
-import { VERSIONS } from "./version";
+import { VERSION_INFO } from "../Constants";
 import { PatternBit } from "./TaggedBitstream";
 import { makeModule } from "../Utilities";
 

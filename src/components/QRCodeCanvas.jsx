@@ -46,7 +46,6 @@ const createMatrix = (errorCorrectionLevel, version, dataMask) => {
 
 const generateMatrix = (qrData, errorCorrectionLevel, version, dataMask) => {
   console.debug({ qrData });
-  version = QRUtils.getVersion(qrData, version, errorCorrectionLevel);
   const matrix = createMatrix(errorCorrectionLevel, version, dataMask);
   let bitIdx = 0;
   let up = true;

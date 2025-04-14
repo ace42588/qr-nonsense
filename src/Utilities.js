@@ -145,7 +145,7 @@ export const QRUtils = {
       const numBits = data.length;
       if (!numBits)
         throw new Error(
-          `Cannot calculate required verson from ${data.toString()}`
+          `Cannot calculate required verson from ${JSON.stringify(data)}`
         );
       return getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
     }

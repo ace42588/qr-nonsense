@@ -59,17 +59,21 @@ function dataReducer(state, action) {
       const { mode, encoding, data } = action.payload;
       const chunk = Encoders(mode).encode(data, encoding);
       const newChunks = [...state.chunks, chunk];
-      const bits = QRUtils.getBitsFromChunks()
-      const version = QRUtils.getVersion(bits, version, )
+      const bits = QRUtils.getBitsFromChunks(newChunks);
+      const version = QRUtils.getVersion(
+        bits,
+        state.version,
+        state.errorCorrectionLevel
+      );
       const finalBits = QRUtils.getOrderedBits(
         newChunks,
-        state.version,
+        version,
         state.errorCorrectionLevel
       );
       return {
         ...state,
-        version: 
-        sections: newChunks,
+        calculatedVersion: version,
+        chunks: newChunks,
         bits: [...finalBits],
       };
     }
@@ -80,8 +84,9 @@ function dataReducer(state, action) {
 
 const initialData = {
   errorCorrectionLevel: 1,
-  version: "-1",
-  dataMask: "-1",
+  version: -1,
+  calculatedVersion: 1,
+  dataMask: -1,
   chunks: [],
   bits: [],
 };
