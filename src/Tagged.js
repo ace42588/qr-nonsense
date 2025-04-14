@@ -116,7 +116,7 @@ export class TaggedCodeword {
     //console.debug("TaggedCodeword", {taggedBits, id, blockId});
     this.blockId = blockId;
     this.blockPosition = id;
-    this.id = (blockId  * (id + 1)) + id;
+    this.id = ((blockId + 1) * (id + 1)) + id;
     this.bits = taggedBits.map((taggedBit, idx) => {
       taggedBit.codewordId = this.id;
       taggedBit.codewordPosition = idx;
