@@ -14,30 +14,33 @@ const Encodings = ["JSON", "Alphanumeric", "PER"];
 export default function MerchForm() {
   const [input, setInput] = useState({ value: sampleInput });
   const [encoding, setEncoding] = useState("JSON");
-  const [output, setOutput] = useState(() => parseInput(input, encoding));
   const dispatch = useContext(QRDataDispatchContext);
 
   const handleChangeInput = (e) => {
     const newInput = { ...input, value: e.target.value };
-    const newOutput = parseInput(newInput, encoding);
+    const order = parseInput(input);
+    const newOutput = encodeOrder(order, encoding);
     setInput(newInput);
-    setOutput(newOutput);
     dispatch({
       type: Actions.ChangeInput,
-      payload: [output],
+      payload: {inputs: [output]},
     });
   };
 
   const handleChangeEncoding = (e) => {
     const newEncoding = e.target.value;
-    const newOutput = parseInput(input, newEncoding);
     setEncoding(newEncoding);
-    setOutput(newOutput);
+    handleChangeOutput()
+  };
+  
+  function handleChangeOutput() {
+    const order = parseInput(input);
+    const output = encodeOrder(order, encoding);
     dispatch({
       type: Actions.ChangeInput,
-      payload: [output],
+      payload: {inputs: [output]},
     });
-  };
+  }
 
   return (
     <form className="input-form">
@@ -104,16 +107,14 @@ const encodeOrder = (order, encoding) => {
       // TERMINATOR = "/";
       const encodedItems = items.reduce((str, { v, q }) => `${str}${v}:${q}/`, "");
       encodedOrder.mode = "alphanumeric";
-      encodedOrder.data = `$1${platform}${
-        cc ? "%" + cc : ""
-      }%${txn}%${items}$`;
+      encodedOrder.data = `$1${platform}%${conferenceCode}%${transactionId}%${encodedItems}$`;
       break;
     }
     case "PER": {
       let hex = "";
-      let headerBytes = buildHeader(txn, cc, p);
-      let itemsBytes = new Uint8Array(i.length * 3);
-      i.forEach(({ v, q }, j) => {
+      let headerBytes = buildHeader(transactionId, conferenceCode, platform);
+      let itemsBytes = new Uint8Array(items.length * 3);
+      items.forEach(({ v, q }, j) => {
         let idx = j * 3;
         const variantNum = parseInt(v);
         itemsBytes[idx] = variantNum & 0xff;
@@ -175,60 +176,11 @@ const buildHeader = (txn, confId, platform) => {
   return bytes;
 };
 
-const parseInput = (input, encoding) => {
-  console.debug({input, encoding});
+const parseInput = (input) => {
+  console.debug({input});
   const { value } = input;
-  let { txn, cc, p, i } = JSON.parse(value);
-  let parsedInput = {};
-
-  switch (encoding) {
-    case "Alphanumeric": {
-      // ENCAPSULATOR = "$";
-      // FIELD_SEPARATOR = "%";
-      // QTY_SEPARATOR = ":";
-      // TERMINATOR = "/";
-      const items = i.reduce((str, { v, q }) => `${str}${v}:${q}/`, "");
-      parsedInput.mode = "alphanumeric";
-      parsedInput.data = `$1${p ? "%" + p : ""}${
-        cc ? "%" + cc : ""
-      }%${txn}%${items}$`;
-      break;
-    }
-    case "PER": {
-      let hex = "";
-      let headerBytes = buildHeader(txn, cc, p);
-      let itemsBytes = new Uint8Array(i.length * 3);
-      i.forEach(({ v, q }, j) => {
-        let idx = j * 3;
-        const variantNum = parseInt(v);
-        itemsBytes[idx] = variantNum & 0xff;
-        itemsBytes[++idx] = (variantNum >> 8) & 0xff;
-        itemsBytes[++idx] = parseInt(q) & 0xff;
-      });
-
-      hex = headerBytes.reduce((acc, curr) => {
-        return acc.concat(curr.toString(16));
-      }, hex);
-      hex = itemsBytes.reduce((acc, curr) => {
-        return acc.concat(curr.toString(16));
-      }, hex);
-
-      parsedInput.encoding = "hex";
-      parsedInput.mode = "byte";
-      parsedInput.data = hex;
-      break;
-    }
-    default: {
-      parsedInput.encoding = "utf-8";
-      parsedInput.mode = "byte";
-      try {
-        const obj = JSON.parse(value);
-        parsedInput.data = `${JSON.stringify(obj, null, 0)}`;
-      } catch (e) {
-        parsedInput.data = value;
-      }
-    }
-  }
+  let { txn: transactionId, cc: conferenceCode, p:platform, i:items } = JSON.parse(value);
+  let parsedInput = {transactionId, conferenceCode, platform, items};
 
   return parsedInput;
 };
