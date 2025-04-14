@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import "./styles.css";
 
 import {
@@ -16,29 +16,14 @@ export default function MerchForm() {
   const [encoding, setEncoding] = useState("JSON");
   const dispatch = useContext(QRDataDispatchContext);
 
-  function handleChangeInput(e) {
-    const newInput = { value: e.target.value };
-    setInput(newInput);
-    const order = parseInput(newInput);
-    const output = encodeOrder(order, encoding);
-    handleChangeOutput(output);
-  }
-
-  function handleChangeEncoding(e) {
-    console.debug("handleChangeEncoding");
-    const newEncoding = e.target.value;
-    setEncoding(newEncoding);
+  useEffect(() => {
     const order = parseInput(input);
-    const output = encodeOrder(order, newEncoding);
-    handleChangeOutput(output);
-  }
-
-  function handleChangeOutput(output) {
+    const output = encodeOrder(order, encoding);
     dispatch({
       type: Actions.ChangeInput,
       inputs: [output],
     });
-  }
+  }, [dispatch]);
 
   return (
     <form className="input-form">
@@ -57,7 +42,17 @@ export default function MerchForm() {
           <select
             id="encoding"
             value={encoding}
-            onChange={handleChangeEncoding}
+            onChange={(e) => {
+              console.debug("handleChangeEncoding");
+              const newEncoding = e.target.value;
+              setEncoding(newEncoding);
+              const order = parseInput(input);
+              const output = encodeOrder(order, newEncoding);
+              dispatch({
+                type: Actions.ChangeInput,
+                inputs: [output],
+              });
+            }}
           >
             {Encodings.map((encoding, idx) => (
               <option key={encoding} value={encoding}>
@@ -70,7 +65,16 @@ export default function MerchForm() {
             type="text"
             rows={16}
             value={input.value}
-            onChange={handleChangeInput}
+            onChange={(e) => {
+              const newInput = { value: e.target.value };
+              setInput(newInput);
+              const order = parseInput(newInput);
+              const output = encodeOrder(order, encoding);
+              dispatch({
+                type: Actions.ChangeInput,
+                inputs: [output],
+              });
+            }}
           />
         </div>
       </div>
@@ -78,11 +82,11 @@ export default function MerchForm() {
         <button
           onClick={(e) => {
             e.preventDefault();
+            const order = parseInput(input);
+            const output = encodeOrder(order, encoding);
             dispatch({
               type: Actions.ChangeInput,
-              payload: {
-                ...parseInput(input, encoding),
-              },
+              inputs: [output],
             });
           }}
         >
