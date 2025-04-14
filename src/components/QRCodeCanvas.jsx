@@ -26,11 +26,6 @@ const DATA_MASKS = [
 
 const REMAINDER_BIT = new RemainderBit();
 
-const getModuleSize = (canvasWidth, matrixWidth) => {
-  const cw = canvasWidth || 420;
-  return cw / matrixWidth;
-};
-
 const createEmptyMatrix = (errorCorrectionLevel, version, dataMask) => {
   const numModules = version * 4 + 17;
   const matrix = Array.from({ length: numModules }, () =>
@@ -49,35 +44,40 @@ const createEmptyMatrix = (errorCorrectionLevel, version, dataMask) => {
 
 export default function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const { matrix, setMatrix } = useState([[]]);
-  const { moduleSize, setModuleSize } = useState(0);
-
   const {
     errorCorrectionLevel,
     calculatedVersion: version,
     dataMask,
     bits,
   } = useQRData();
+  let moduleSize = 0;
+
+  console.log({
+    errorCorrectionLevel,
+    calculatedVersion: version,
+    dataMask,
+    bits,
+  });
 
   function createEmptyMatrix() {
     const numModules = version * 4 + 17;
-    const newMatrix = Array.from({ length: numModules }, () =>
+    const matrix = Array.from({ length: numModules }, () =>
       Array(numModules).fill(false)
     );
-    FinderPattern.populate(newMatrix);
-    TimingPattern.populate(newMatrix);
+    FinderPattern.populate(matrix);
+    TimingPattern.populate(matrix);
     const alignmentPattern = new AlignmentPattern(version);
-    alignmentPattern.populate(newMatrix);
+    alignmentPattern.populate(matrix);
     const formatInfo = new FormatInfo({ errorCorrectionLevel, dataMask });
-    formatInfo.populate(newMatrix);
+    formatInfo.populate(matrix);
     const versionInfo = new VersionInfo(version);
-    versionInfo.populate(newMatrix);
-    setMatrix(newMatrix);
+    versionInfo.populate(matrix);
+    return matrix;
   }
 
-  function addModulesToMatrix() {
+  function addModules(empty) {
     console.log("addModulesToMatrix");
-    const newMatrix = matrix.map((row) => [...row]);
+    const newMatrix = empty.map((row) => [...row]);
     let bitIdx = 0;
     let up = true;
     const dimension = newMatrix.length;
@@ -114,19 +114,18 @@ export default function QRCodeCanvas() {
       }
       up = !up; // Change direction
     }
-    setMatrix(newMatrix);
+    return newMatrix;
   }
 
-  createEmptyMatrix();
-  addModulesToMatrix();
+  const empty = createEmptyMatrix();
+  const matrix = addModules(empty);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas && matrix) {
-      console.log({ matrix });
+      //console.log({ matrix });
       const ctx = canvas.getContext("2d");
-      const newModuleSize = getModuleSize(canvas.width, matrix.length);
-      setModuleSize(newModuleSize);
+      moduleSize = canvas.width / matrix.length;
 
       // Draw the QR code on the canvas
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -134,7 +133,7 @@ export default function QRCodeCanvas() {
       for (let y = 0; y < matrix.length; y++) {
         for (let x = 0; x < matrix[y].length; x++) {
           const module = matrix[y][x];
-          console.log({ module });
+          //console.log({ module });
           const { value, isMasked } = module;
           const isDark = isMasked ? !value : value;
           ctx.fillStyle = isDark ? "black" : "white";
