@@ -42,6 +42,25 @@ function getFinalizedBits(dataBits, version, errorCorrectionLevel) {
   return bits;
 }
 
+function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
+  // Try each version until one is found that fits the data.
+  for (let version = 1; version <= 40; version++) {
+    const { capacity } = gerVersionInfo(errorCorrectionLevel, version);
+    // A terminator of up to 4 bits can be added.
+    // ...but is calculated based on the capacity. This is unneeded.
+    //const terminatorLength = getTerminatorLength(capacity, totalDataBits);
+    //const totalBitsWithTerminator = totalDataBits + terminatorLength;
+
+    // The total bits must be rounded up to the next whole 8-bit codeword.
+    const requiredBytes = Math.ceil(totalDataBits / codewordLength);
+
+    if (requiredBytes <= capacity) {
+      return version;
+    }
+  }
+  throw new Error("Data too large to fit in a QR code version 40.");
+}
+
 function getPaddingBits(bits, requiredDataCodewords) {
   const length = bits.length;
   if (length % codewordLength !== 0)
@@ -91,24 +110,6 @@ function gerVersionInfo(errorCorrectionLevel, version) {
 }
 
 export const QRUtils = {
-  getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
-    // Try each version until one is found that fits the data.
-    for (let version = 1; version <= 40; version++) {
-      const { capacity } = gerVersionInfo(errorCorrectionLevel, version);
-      // A terminator of up to 4 bits can be added.
-      // ...but is calculated based on the capacity. This is unneeded.
-      //const terminatorLength = getTerminatorLength(capacity, totalDataBits);
-      //const totalBitsWithTerminator = totalDataBits + terminatorLength;
-
-      // The total bits must be rounded up to the next whole 8-bit codeword.
-      const requiredBytes = Math.ceil(totalDataBits / codewordLength);
-
-      if (requiredBytes <= capacity) {
-        return version;
-      }
-    }
-    throw new Error("Data too large to fit in a QR code version 40.");
-  },
   getOrderedBits(chunks, version, errorCorrectionLevel) {
     const qrBlocks = BlockUtils.getBlocks(
       chunks,
@@ -139,7 +140,7 @@ export const QRUtils = {
         throw new Error(
           `Cannot calculate required verson from ${data.toString()}`
         );
-      return QRUtils.getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
+      return getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
     }
     throw new Error(`Invalid version: ${inputVersion.toString()}`);
   },
@@ -154,6 +155,7 @@ function getBitsFromChunks(chunks) {
 }
 
 function getDataCodewordsForBlock(codewordsPerBlock, dataBits, blockId) {
+  console.debug({codewordsPerBlock, dataBits, blockId});
   return Array.from({ length: codewordsPerBlock }, (_, i) => {
     const codwordBits = dataBits.slice(
       i * codewordLength,
@@ -163,13 +165,11 @@ function getDataCodewordsForBlock(codewordsPerBlock, dataBits, blockId) {
   });
 }
 
-function getErrorCorrectionCodewords(encoder, codewords, blockId) {
-  return Array.from(
-    encoder.encode(
-      Uint8Array.from(codewords, (c) => c.byte),
-      (b, idx) => new ECCodeword(b, idx, blockId)
-    )
-  );
+function getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId) {
+  console.debug({ecCodewordsPerBlock, dataCodewords, blockId});
+  const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
+  const ecBytes = Uint8Array.from(dataCodewords, (c, i) => c.byte);
+  return Array.from(ecBytes, (b, idx) => new ECCodeword(b, idx, blockId));
 }
 
 function getCodewordsForBlock(
@@ -178,7 +178,6 @@ function getCodewordsForBlock(
   dataBits,
   blockId
 ) {
-  const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
     dataBits,
@@ -188,7 +187,7 @@ function getCodewordsForBlock(
   return {
     codewords: [
       ...dataCodewords,
-      ...getErrorCorrectionCodewords(encoder, dataCodewords, blockId),
+      ...getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId),
     ],
     blockId,
   };
