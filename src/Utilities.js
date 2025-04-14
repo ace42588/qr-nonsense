@@ -183,19 +183,25 @@ export const QRUtils = {
       errorCorrectionLevel,
       version
     );
+    console.debug("getCodewords", { qrBlocks });
     const totalCodewords = qrBlocks.reduce(
       (total, { codewords }) => total + codewords.length,
       0
     );
-    const codewords = Array.from({ length: totalCodewords }, (_, idx) => {
-      const blockIdx = idx % qrBlocks.length;
-      const cwIdx = Math.floor(idx / qrBlocks.length);
-      const { codewords: bCodewords } = qrBlocks[blockIdx];
-      if (cwIdx < bCodewords.length) {
-        return bCodewords[cwIdx];
+    const orderedCodewords = Array.from(
+      { length: totalCodewords },
+      (_, idx) => {
+        const blockIdx = idx % qrBlocks.length;
+        const cwIdx = Math.floor(idx / qrBlocks.length);
+        const { codewords: bCodewords } = qrBlocks[blockIdx];
+        if (cwIdx < bCodewords.length) {
+          const codeword = bCodewords[cwIdx];
+          codeword.qrPosition = idx;
+          return codeword;
+        }
       }
-    });
-    return codewords;
+    );
+    return orderedCodewords;
   },
   getVersion(data, inputVersion, errorCorrectionLevel) {
     let version = parseInt(inputVersion) || -1;
@@ -244,7 +250,7 @@ function getCodewordsForBlock(
   dataBits,
   blockId
 ) {
-  console.debug("getCodewordsForBlock", { blockId });
+  //console.debug("getCodewordsForBlock", { blockId });
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
     dataBits,
