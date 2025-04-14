@@ -26,6 +26,11 @@ const DATA_MASKS = [
 
 const REMAINDER_BIT = new RemainderBit();
 
+const getModuleSize = (canvasWidth, matrixWidth) => {
+  const cw = canvasWidth || 420;
+  return cw / matrixWidth;
+};
+
 const createEmptyMatrix = (version) => {
   const numModules = version * 4 + 17;
   return Array.from({ length: numModules }, () =>
@@ -35,14 +40,18 @@ const createEmptyMatrix = (version) => {
 
 export default function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const { errorCorrectionLevel, calculatedVersion: version, dataMask, bits } =
-    useQRData();
+  const {
+    errorCorrectionLevel,
+    calculatedVersion: version,
+    dataMask,
+    bits,
+  } = useQRData();
   const { matrix, setMatrix } = useState(() => createEmptyMatrix(version));
   const { moduleSize, setModuleSize } = useState(0);
 
   function generateMatrix() {
     const newMatrix = createEmptyMatrix(version);
-    
+
     FinderPattern.populate(matrix);
     TimingPattern.populate(matrix);
     const alignmentPattern = new AlignmentPattern(version);
@@ -51,7 +60,7 @@ export default function QRCodeCanvas() {
     formatInfo.populate(matrix);
     const versionInfo = new VersionInfo(version);
     versionInfo.populate(matrix);
-    
+
     let bitIdx = 0;
     let up = true;
     const dimension = matrix.length;
@@ -93,31 +102,35 @@ export default function QRCodeCanvas() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    setModuleSize(canvas.width / matrix.length);
+    if (canvas) {
+      console.debug({matrix});
+      const ctx = canvas.getContext("2d");
+      const newModuleSize = getModuleSize(canvas.width, matrix.length);
+      setModuleSize(newModuleSize);
 
-    // Draw the QR code on the canvas
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      // Draw the QR code on the canvas
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    for (let y = 0; y < matrix.length; y++) {
-      for (let x = 0; x < matrix[y].length; x++) {
-        const module = matrix[y][x];
-        console.debug({ module });
-        const { value, isMasked } = module;
-        const isDark = isMasked ? !value : value;
-        ctx.fillStyle = isDark ? "black" : "white";
-        ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
+      for (let y = 0; y < matrix.length; y++) {
+        for (let x = 0; x < matrix[y].length; x++) {
+          const module = matrix[y][x];
+          console.debug({ module });
+          const { value, isMasked } = module;
+          const isDark = isMasked ? !value : value;
+          ctx.fillStyle = isDark ? "black" : "white";
+          ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
 
-        // Draw a border if highlighted
-        if (module && module.isHighlighted) {
-          ctx.strokeStyle = "red";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(
-            x * moduleSize,
-            y * moduleSize,
-            moduleSize,
-            moduleSize
-          );
+          // Draw a border if highlighted
+          if (module && module.isHighlighted) {
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(
+              x * moduleSize,
+              y * moduleSize,
+              moduleSize,
+              moduleSize
+            );
+          }
         }
       }
     }
