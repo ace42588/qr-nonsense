@@ -60,6 +60,7 @@ class Encoder {
    */
   encode(data, id, encoding) {
     return {
+      id,
       header: [
         ...Encoder.computeModeIndicator(this.mode),
         ...Encoder.computeCharacterCountIndicator(data.length, this.mode),
@@ -75,11 +76,11 @@ class NumericEncoder extends Encoder {
     this.mode = MODE.Numeric;
   }
 
-  *encodeData(input, id) {
+  *encodeData(input, parentId) {
     
     yield* createSegments(
       input,
-      id,
+      parentId,
       /\d{1,3}/g,
       NumericSegment,
       `Invalid input for Numeric encoder: ${input}`
@@ -93,10 +94,10 @@ class AlphanumericEncoder extends Encoder {
     this.mode = MODE.Alphanumeric;
   }
 
-  *encodeData(input, id) {
+  *encodeData(input, parentId) {
     yield* createSegments(
       input,
-      id,
+      parentId,
       /[0-9A-Z \$\%\*\+\-\.\/\:]{1,2}/g,
       AlphanumericSegment,
       `Invalid input for Alphanumeric encoder: ${input}`
@@ -110,11 +111,11 @@ class ByteEncoder extends Encoder {
     this.mode = MODE.Byte;
   }
 
-  *encodeData(input, id, encoding) {
+  *encodeData(input, parentId, encoding) {
     if (encoding === "hex") {
       for (let i = 0; i < input.length; i += 2) {
         const byte = parseInt(input.substring(i, i + 2), 16);
-        yield new ByteSegment(byte, i / 2, id, encoding);
+        yield new ByteSegment(byte, i / 2, parentId, encoding);
       }
     } else {
       // default for QR Codes
@@ -124,7 +125,7 @@ class ByteEncoder extends Encoder {
       for (let i = 0; i < chars.length; i++) {
         const char = chars[i];
         const byte = encoder.encode(char);
-        yield new ByteSegment(byte, i, id);
+        yield new ByteSegment(byte, i, parentId);
       }
     }
   }

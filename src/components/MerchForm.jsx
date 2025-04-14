@@ -136,7 +136,11 @@ const encodeOrder = (order, encoding) => {
       encodedOrder.data = JSON.stringify(obj);
     }
   }
+  return encodedOrder;
+}
 
+const modHex = () => {
+  
 }
 
 // {"p":"A","cc":"133","txn":"99999","i":[{"v":5432,"q":1},{"v":6666,"q":3},{"v":1234,"q":2}]}

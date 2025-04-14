@@ -9,33 +9,6 @@ export const QRDataDispatchContext = createContext(null);
 export function QRDataProvider({ children }) {
   const [state, dispatch] = useReducer(dataReducer, initialData);
 
-  /*
-  function handleChangeErrorCorrectionLevel(errorCorrectionLevel) {
-    dispatch({
-      type: "MODIFY_ERROR",
-      payload: { errorCorrectionLevel },
-    });
-  }
-  function handleChangeVersion(version) {
-    dispatch({
-      type: "MODIFY_VERSION",
-      payload: { version },
-    });
-  }
-  function handleChangeDataMask(dataMask) {
-    dispatch({
-      type: "MODIFY_DATA_MASK",
-      payload: { dataMask },
-    });
-  }
-  function handleChangeInput({ mode, encoding, ...data }) {
-    dispatch({
-      type: "ENCODE_DATA",
-      payload: { mode, encoding, data: Object.values(data)[0] },
-    });
-  }
-  */
-
   return (
     <QRDataContext.Provider value={state}>
       <QRDataDispatchContext.Provider value={dispatch}>
@@ -57,26 +30,33 @@ function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
       const { inputs } = action.payload;
-      const chunks = inputs.map(({data, mode, encoding}, idx) => {
-        Encoders(mode).encode(data, encoding, idx)
-      })
-      const bits = QRUtils.getBitsFromChunks(chunks);
+      console.debug({inputs})
+      // ({id, header, segments})[]
+      const chunks = inputs.map(({ data, mode, encoding }, idx) => {
+        Encoders(mode).encode(data, encoding, idx);
+      });
+      console.debug({chunks});
+      const segments = chunks.flatMap(({ segments }) => segments);
+      const dataBits = QRUtils.getBitsFromChunks(chunks);
       const version = QRUtils.getVersion(
-        bits,
+        dataBits,
         state.version,
         state.errorCorrectionLevel
       );
       const finalBits = QRUtils.getOrderedBits(
-        [newChunks],
+        chunks,
         version,
         state.errorCorrectionLevel
       );
-      return {
+      const newState = {
         ...state,
         calculatedVersion: version,
-        chunks: newChunks,
+        chunks,
+        segments,
         bits: [...finalBits],
-      };
+      }
+      console.log({newState});
+      return newState;
     }
   }
 }
@@ -87,5 +67,6 @@ const initialData = {
   calculatedVersion: 1,
   dataMask: 0,
   chunks: [],
+  segments: [],
   bits: [],
 };
