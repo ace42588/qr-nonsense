@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer } from "react";
-
+import { Actions } from "../Constants";
 import { QRUtils } from "../Utilities";
 import Encoders from "../Encoders";
 
@@ -55,9 +55,9 @@ export function useQRDataDispatch() {
 
 function dataReducer(state, action) {
   switch (action.type) {
-    case "ENCODE_DATA": {
+    case Actions.ChangeInput: {
       const { mode, encoding, data } = action.payload;
-      console.debug({ mode, encoding, data });
+      //console.debug({ mode, encoding, data });
       const newChunks = Encoders(mode).encode(data, encoding);
       const bits = QRUtils.getBitsFromChunks([newChunks]);
       const version = QRUtils.getVersion(

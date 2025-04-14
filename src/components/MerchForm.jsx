@@ -17,7 +17,8 @@ export default function MerchForm() {
   const dispatch = useContext(QRDataDispatchContext);
 
   const handleChangeInput = (e) => {
-    const newInput = { ...input, value: e.target.value };
+    const newInput = parseInput({ ...input, value: e.target.value }, encoding);
+    
     setInput(newInput);
     dispatch({
       type: Actions.ChangeInput,
