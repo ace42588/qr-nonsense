@@ -245,3 +245,14 @@ export const BitUtils = {
     );
   },
 };
+
+export function makeModule({ taggedBit, x, y, masked }) {
+  const { value, source } = taggedBit;
+  return {
+    ...taggedBit,
+    x,
+    y,
+    isMasked: masked,
+    isHighlighted: false,
+  };
+};

@@ -1,5 +1,5 @@
 import { VERSIONS } from "./version";
-import { PatternBit } from "./TaggedBit";
+import { PatternBit } from "./TaggedBitstream";
 import { makeModule } from "../utility";
 
 const FINDER_BITS = [

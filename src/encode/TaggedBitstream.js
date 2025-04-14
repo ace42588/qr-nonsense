@@ -1,4 +1,3 @@
-import { TaggedBit } from "./TaggedBit";
 import { VERSIONS } from "./version";
 
 const PAD_BYTES = [

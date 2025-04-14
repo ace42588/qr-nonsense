@@ -1,5 +1,5 @@
-import { TaggedCodeword, ECCodeword } from "./TaggedCodeword";
-import { ReedSolomonEncoder } from "./reedsolomon/index.js";
+import { TaggedCodeword, ECCodeword } from "../Tagged";
+import { ReedSolomonEncoder } from "../reedsolomon/index.js";
 import { VERSIONS } from "./version";
 
 class Block {

@@ -1,4 +1,4 @@
-import { VersionBit } from "./TaggedBit";
+import { VersionBit } from "./TaggedBitstream";
 import { VERSIONS } from "./version";
 
 export class VersionInfo {

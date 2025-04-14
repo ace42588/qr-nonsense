@@ -10,9 +10,6 @@ import {
 import InputForm from "./components/InputForm";
 import MerchForm from "./components/MerchForm";
 import VideoScanner from "./components/VideoScanner";
-import { QRUtils } from "./context/Utilities";
-import Encoders from "./context/Encoders";
-import { QRCodeMatrix } from "./QRCodeMatrix";
 import { QRDataProvider } from "./context/QRDataContext";
 
 import "./styles/App.css";
