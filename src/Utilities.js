@@ -111,6 +111,7 @@ function gerVersionInfo(errorCorrectionLevel, version) {
 
 export const QRUtils = {
   getBitsFromChunks(chunks) {
+    console.debug({chunks});
     return chunks.flatMap((chunk) => {
       const { header, segments } = chunk;
       const segmentBits = segments.flatMap((segment) => [...segment]);
