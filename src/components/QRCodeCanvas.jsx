@@ -8,7 +8,6 @@ import {
   AlignmentPattern,
 } from "../encode/FunctionPatterns";
 import { VersionInfo } from "../encode/VersionInfo";
-import { createBlocks } from "../encode/Block";
 import { RemainderBit, ECBit } from "../encode/TaggedBitstream";
 
 import { useQRData, useQRDataDispatch } from "../context/QRDataContext";
@@ -27,32 +26,32 @@ const DATA_MASKS = [
 
 const REMAINDER_BIT = new RemainderBit();
 
+const createEmptyMatrix = (version) => {
+  const numModules = version * 4 + 17;
+  return Array.from({ length: numModules }, () =>
+    Array(numModules).fill(false)
+  );
+};
+
 export default function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const { errorCorrectionLevel, version, calculatedVersion, dataMask, bits } =
+  const { errorCorrectionLevel, calculatedVersion: version, dataMask, bits } =
     useQRData();
-  const { matrix, setMatrix } = useState(createMatrix());
+  const { matrix, setMatrix } = useState(() => createEmptyMatrix(version));
   const { moduleSize, setModuleSize } = useState(0);
 
-  function createMatrix() {
-    const numModules = calculatedVersion * 4 + 17;
-    const matrix = Array.from({ length: numModules }, () =>
-      Array(numModules).fill(false)
-    );
+  function generateMatrix() {
+    const newMatrix = createEmptyMatrix(version);
+    
     FinderPattern.populate(matrix);
     TimingPattern.populate(matrix);
-    const alignmentPattern = new AlignmentPattern(calculatedVersion);
+    const alignmentPattern = new AlignmentPattern(version);
     alignmentPattern.populate(matrix);
     const formatInfo = new FormatInfo({ errorCorrectionLevel, dataMask });
     formatInfo.populate(matrix);
-    const versionInfo = new VersionInfo(calculatedVersion);
+    const versionInfo = new VersionInfo(version);
     versionInfo.populate(matrix);
-
-    return matrix;
-  }
-
-  function generateMatrix() {
-    const matrix = createMatrix();
+    
     let bitIdx = 0;
     let up = true;
     const dimension = matrix.length;
@@ -77,7 +76,7 @@ export default function QRCodeCanvas() {
             }
 
             const isMasked = DATA_MASKS[dataMask]({ x, y });
-            matrix[y][x] = {
+            newMatrix[y][x] = {
               ...taggedBit,
               x,
               y,
@@ -89,39 +88,36 @@ export default function QRCodeCanvas() {
       }
       up = !up; // Change direction
     }
-    return matrix;
+    setMatrix(newMatrix);
   }
-
-  matrix = generateMatrix();
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    if (matrix) {
-      setModuleSize(canvas.width / matrix.length);
+    setModuleSize(canvas.width / matrix.length);
 
-      // Draw the QR code on the canvas
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    // Draw the QR code on the canvas
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-      for (let y = 0; y < matrix.length; y++) {
-        for (let x = 0; x < matrix[y].length; x++) {
-          const module = matrix[y][x];
-          const { value, isMasked } = matrix[y][x];
-          const isDark = isMasked ? !value : value;
-          ctx.fillStyle = isDark ? "black" : "white";
-          ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
+    for (let y = 0; y < matrix.length; y++) {
+      for (let x = 0; x < matrix[y].length; x++) {
+        const module = matrix[y][x];
+        console.debug({ module });
+        const { value, isMasked } = module;
+        const isDark = isMasked ? !value : value;
+        ctx.fillStyle = isDark ? "black" : "white";
+        ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
 
-          // Draw a border if highlighted
-          if (module && module.isHighlighted) {
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(
-              x * moduleSize,
-              y * moduleSize,
-              moduleSize,
-              moduleSize
-            );
-          }
+        // Draw a border if highlighted
+        if (module && module.isHighlighted) {
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(
+            x * moduleSize,
+            y * moduleSize,
+            moduleSize,
+            moduleSize
+          );
         }
       }
     }
