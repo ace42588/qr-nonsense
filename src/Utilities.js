@@ -122,41 +122,45 @@ export const QRUtils = {
     });
     return orderedBits;
   },
-  getVersion(input, numBits, ecLevel) {
+  getVersion(input, data, errorCorrectionLevel) {
     let version = parseInt(input) || -1;
-    if (1 <= version <= 40){
+    if (1 <= version <= 40) {
       return version;
     } else if (version === -1) {
-      return QRUtils.getMinimumQRCodeVersion(
-        numBits,
-        ecLevel
-      );
+      const numBits = data.length;
+      if (!numBits)
+        throw new Error(
+          `Cannot calculate required verson from ${data.toString()}`
+        );
+      return QRUtils.getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
     }
-    throw new Error(`Invalid version`)
-  }
+    throw new Error(`Invalid version: ${input.toString()}`);
+  },
 };
 
-function getBitsFromChunks(chunks, errorCorrectionLevel, version) {
-    const chunkBits = chunks.flatMap(({ header, segments }) => {
-      const segmentBits = segments.flatMap((s) => [...s]);
-      return [...header, ...segmentBits];
-    });
+function getBitsFromChunks(chunks) {
+  return chunks.flatMap((chunk) => {
+    const { header, segments } = chunk;
+    const segmentBits = segments.flatMap((segment) => [...segment]);
+    return [...header, ...segmentBits];
+  });
+}
+
+const BlockUtils = {
+  getBlocks(chunks, errorCorrectionLevel, version) {
+    const chunkBits = getBitsFromChunks(chunks);
     console.debug({ chunkBits });
-    return QRUtils.getFinalizedBits(
-      chunkBits,
+    
+    version = QRUtils.getVersion(
       version,
+      chunkBits,
       errorCorrectionLevel
     );
-  }
-const BlockUtils = {
-
-  getBlocks(chunks, errorCorrectionLevel, version) {
-    if (version === "auto") {
-      version = QRUtils.getMinimumQRCodeVersion(
-        chunkBits.length,
-        errorCorrectionLevel
-      );
-    }
+    const dataBits = QRUtils.getFinalizedBits(
+      version,
+      chunkBits,
+      errorCorrectionLevel
+    );
 
     const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
       errorCorrectionLevel,
@@ -165,8 +169,6 @@ const BlockUtils = {
 
     const rsEncoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
 
-    getBitsFromChunks
-    
     return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }) =>
       Array.from({ length: numBlocks }, (_, i) => {
         const dataCodewords = Array.from(
@@ -194,7 +196,7 @@ const BlockUtils = {
         };
       })
     );
-  }
+  },
 };
 
 export const BitUtils = {
