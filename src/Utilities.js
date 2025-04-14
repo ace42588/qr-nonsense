@@ -146,8 +146,14 @@ function getBitsFromChunks(chunks) {
   });
 }
 
-function getDataCodewordsForBlock() {
-  
+function getDataCodewordsForBlock(codewordsPerBlock, dataBits, blockId) {
+  return Array.from({ length: codewordsPerBlock }, (_, i) => {
+    const codwordBits = dataBits.slice(
+      i * codewordLength,
+      i * codewordLength + codewordLength
+    );
+    new TaggedCodeword(codwordBits, i, blockId);
+  });
 }
 
 function getErrorCorrectionCodewords(encoder, codewords) {
@@ -157,6 +163,22 @@ function getErrorCorrectionCodewords(encoder, codewords) {
       (b, idx) => new ECCodeword(b, idx)
     )
   );
+}
+
+function getCodewordsForBlock(dataCodewordsPerBlock) {
+  const dataCodewords = getDataCodewordsForBlock(
+          dataCodewordsPerBlock,
+          dataBits,
+          i
+        );
+
+        return {
+          codewords: [
+            ...dataCodewords,
+            ...getErrorCorrectionCodewords(rsEncoder, dataCodewords),
+          ],
+          blockId: i,
+        };
 }
 
 const BlockUtils = {
@@ -181,17 +203,10 @@ const BlockUtils = {
 
     return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }) =>
       Array.from({ length: numBlocks }, (_, i) => {
-        const dataCodewords = Array.from(
-          { length: dataCodewordsPerBlock },
-          (_, j) => {
-            new TaggedCodeword(
-              dataBits.slice(
-                j * codewordLength,
-                j * codewordLength + codewordLength
-              ),
-              j
-            );
-          }
+        const dataCodewords = getDataCodewordsForBlock(
+          dataCodewordsPerBlock,
+          dataBits,
+          i
         );
 
         return {
