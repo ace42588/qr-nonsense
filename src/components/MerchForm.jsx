@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import "./styles.css"; // Import your component-specific styles
+import "./styles.css";
 
 import {
   ErrorCorrectionSelector,
@@ -17,19 +17,23 @@ export default function MerchForm() {
   const dispatch = useContext(QRDataDispatchContext);
 
   function handleChangeInput(e) {
-    const newInput = { ...input, value: e.target.value };
+    const newInput = { value: e.target.value };
     setInput(newInput);
-    handleChangeOutput();
+    const order = parseInput(input);
+    const output = encodeOrder(order, encoding);
+    handleChangeOutput(output);
   }
 
   function handleChangeEncoding(e) {
     const newEncoding = e.target.value;
     setEncoding(newEncoding);
-    handleChangeOutput();
+    const order = parseInput(input);
+    const output = encodeOrder(order, encoding);
+    handleChangeOutput(output);
   }
 
-  function handleChangeOutput() {
-    const order = parseInput(input);
+  function handleChangeOutput(order) {
+    console.debug("handleChangeOutput",{order, encoding});
     const output = encodeOrder(order, encoding);
     dispatch({
       type: Actions.ChangeInput,
@@ -91,7 +95,7 @@ export default function MerchForm() {
 }
 
 const encodeOrder = (order, encoding) => {
-  console.debug({ order, encoding });
+  console.debug("encodeOrder", { order, encoding });
   let { transactionId, conferenceCode, platform, items } = order;
   let encodedOrder = {};
   switch (encoding) {
@@ -182,7 +186,7 @@ const buildHeader = (txn, confId, platform) => {
 };
 
 const parseInput = (input) => {
-  console.debug({ input });
+  console.debug("parseInput", { input });
   const { value } = input;
   let {
     txn: transactionId,

@@ -38,7 +38,7 @@ class Encoder {
       throw new Error(`Invalid mode ${mode}`);
     }
     const modeBits = BitUtils.toPaddedBinary(bits, 4);
-    return BitUtils.createTaggedBits(modeBits, "mode", mode.name, null);
+    return BitUtils.createTaggedBits(modeBits, "modeIndicator", mode.name, null);
   }
 
   static computeCharacterCountIndicator(charCount, mode) {
