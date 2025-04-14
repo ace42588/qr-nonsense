@@ -62,9 +62,13 @@ function dataReducer(state, action) {
       const { dataMask } = action;
       return { ...state, dataMask };
     }
-      case Actions.ChangeVersion: {
+    case Actions.ChangeVersion: {
       const { version } = action;
       return { ...state, version };
+    }
+    case Actions.ChangeErrorCorretionLevel: {
+      const { errorCorrectionLevel } = action;
+      return { ...state, errorCorrectionLevel };
     }
   }
 }
