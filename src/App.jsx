@@ -37,15 +37,6 @@ export default function App() {
       <QRDataProvider>
         <div className="row">
           <div className="column">
-            <div className="row">
-              <ErrorCorrectionSelector />
-            </div>
-            <div className="row">
-              <VersionSelector />
-            </div>
-            <div className="row">
-              <DataMaskSelector />
-            </div>
             <div className="row">{selectUI()}</div>
           </div>
           <div className="column">
