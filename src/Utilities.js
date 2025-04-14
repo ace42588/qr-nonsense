@@ -17,6 +17,28 @@ function getCodewordFillBits(bits, requiredDataCodewords) {
   return BitUtils.createTaggedBits(bitStr, "fill", null, null);
 }
 
+/**
+ * Creates an array of bits that represent the modules of a QR code.
+ * @param {Object[]} data - The encoded sections of data.
+ * @param {number} version - The QR code version.
+ * @param {number} errorCorrectionLevel - Error Correction Level.
+ * @returns {TaggedBit[]} Array of TaggedBit instances.
+ */
+function getFinalizedBits(dataBits, version, errorCorrectionLevel) {
+  const requiredDataCodewords = getRequiredDataCodewords(
+    version,
+    errorCorrectionLevel
+  );
+  // Add terminator bits, based on version capacity
+  let bits = [...dataBits, ...getTerminatorBits(bits, requiredDataCodewords)];
+  // Pad the last codeword with 0s until its 8 bits
+  bits = [...bits, ...getCodewordFillBits(bits, requiredDataCodewords)];
+  // Add padding bytes, until the version capacity is full
+  bits = [...bits, ...getPaddingBits(bits, requiredDataCodewords)];
+
+  return bits;
+}
+
 function getPaddingBits(bits, requiredDataCodewords) {
   const length = bits.length;
   if (length % codewordLength !== 0)
@@ -66,27 +88,6 @@ function gerVersionInfo(errorCorrectionLevel, version) {
 }
 
 export const QRUtils = {
-  /**
-   * Creates an array of bits that represent the modules of a QR code.
-   * @param {Object[]} data - The encoded sections of data.
-   * @param {number} version - The QR code version.
-   * @param {number} errorCorrectionLevel - Error Correction Level.
-   * @returns {TaggedBit[]} Array of TaggedBit instances.
-   */
-  getFinalizedBits(dataBits, version, errorCorrectionLevel) {
-    const requiredDataCodewords = getRequiredDataCodewords(
-      version,
-      errorCorrectionLevel
-    );
-    // Add terminator bits, based on version capacity
-    let bits = [...dataBits, ...getTerminatorBits(bits, requiredDataCodewords)];
-    // Pad the last codeword with 0s until its 8 bits
-    bits = [...bits, ...getCodewordFillBits(bits, requiredDataCodewords)];
-    // Add padding bytes, until the version capacity is full
-    bits = [...bits, ...getPaddingBits(bits, requiredDataCodewords)];
-
-    return bits;
-  },
   getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
     // Try each version until one is found that fits the data.
     for (let version = 1; version <= 40; version++) {
@@ -106,12 +107,12 @@ export const QRUtils = {
     throw new Error("Data too large to fit in a QR code version 40.");
   },
   getOrderedBits(chunks, version, errorCorrectionLevel) {
-    const qrBlocks = QRUtils.getBlocks(chunks, errorCorrectionLevel, version);
+    const qrBlocks = BlockUtils.getBlocks(chunks, errorCorrectionLevel, version);
     const totalCodewords = qrBlocks.reduce(
       (total, { codewords }) => total + codewords.length,
       0
     );
-    const orderedBits = Array.from({ length: totalCodewords }, (_, idx) => {
+    return Array.from({ length: totalCodewords }, (_, idx) => {
       const blockIdx = idx % qrBlocks.length;
       const cwIdx = Math.floor(idx / qrBlocks.length);
       const { codewords } = qrBlocks[blockIdx];
@@ -120,7 +121,6 @@ export const QRUtils = {
         return [...bits];
       }
     });
-    return orderedBits;
   },
   getVersion(data, inputVersion, errorCorrectionLevel) {
     let version = parseInt(inputVersion) || -1;
@@ -194,7 +194,7 @@ const BlockUtils = {
 
     version = QRUtils.getVersion(version, chunkBits, errorCorrectionLevel);
 
-    const dataBits = QRUtils.getFinalizedBits(
+    const dataBits = getFinalizedBits(
       chunkBits,
       version,
       errorCorrectionLevel
