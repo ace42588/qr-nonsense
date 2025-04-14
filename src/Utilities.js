@@ -277,14 +277,15 @@ const BlockUtils = {
       errorCorrectionLevel,
       version
     );
-    
+        let processedBlocks = 0;
+    let processedCodewords = 0;
 
     // ecBlocks is an { numBlocks, dataCodewordsPerBlock }[] used to map
     // the specifics of how to split up codewords for error correction.
     // The capacity of a block can vary within a QR code version.
 
     return ecBlocks.flatMap(
-      ({ numBlocks, dataCodewordsPerBlock }, blockTypeIdx) => {
+      ({ numBlocks, dataCodewordsPerBlock }) => {
         return Array.from({ length: numBlocks }, (_, blockNumber) => {
           const blockId = blockTypeIdx + blockNumber;
           return {
