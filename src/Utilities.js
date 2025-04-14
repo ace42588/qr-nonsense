@@ -122,6 +122,18 @@ export const QRUtils = {
     });
     return orderedBits;
   },
+  getVersion(input, numBits, ecLevel) {
+    let version = parseInt(input) || -1;
+    if (1 <= version <= 40){
+      return version;
+    } else if (version === -1) {
+      return QRUtils.getMinimumQRCodeVersion(
+        numBits,
+        ecLevel
+      );
+    }
+    throw new Error(`Invalid version`)
+  }
 };
 
 function getBitsFromChunks(chunks, errorCorrectionLevel, version) {

@@ -60,7 +60,7 @@ export function ErrorCorrectionSelector({ value, onChange }) {
   );
 }
 
-const versions = [{ label: "Auto", value: "auto" }].concat(
+const versions = [{ label: "Auto", value: -1 }].concat(
   Array.from({ length: 40 }, (_, i) => ({
     label: `Version ${i + 1}`,
     value: i + 1,
@@ -87,7 +87,7 @@ export function VersionSelector({ value, onChange }) {
 }
 
 const masks = [
-  { label: "Auto", value: "auto" },
+  { label: "Auto", value: -1 },
   { label: "Mask 0", value: 0 },
   { label: "Mask 1", value: 1 },
   { label: "Mask 2", value: 2 },
