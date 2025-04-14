@@ -190,10 +190,9 @@ export const QRUtils = {
     const codewords = Array.from({ length: totalCodewords }, (_, idx) => {
       const blockIdx = idx % qrBlocks.length;
       const cwIdx = Math.floor(idx / qrBlocks.length);
-      const { codewords } = qrBlocks[blockIdx];
-      if (cwIdx < codewords.length) {
-        const { bits } = codewords[cwIdx];
-        return [...bits];
+      const { codewords: bCodewords } = qrBlocks[blockIdx];
+      if (cwIdx < bCodewords.length) {
+        return bCodewords[cwIdx];
       }
     });
     return codewords;
@@ -275,7 +274,10 @@ const BlockUtils = {
             dataCodewordsPerBlock,
             ecCodewordsPerBlock,
             dataBits
-          ),
+          ).map((cw) => {
+            cw.blockId = i;
+            return cw;
+          }),
           id: i,
         };
       });
