@@ -65,11 +65,6 @@ function gerVersionInfo(errorCorrectionLevel, version) {
   return versionInfo;
 }
 
-function getVersionCapacity(errorCorrectionLevel, version) {
-  const { capacity } = gerVersionInfo(errorCorrectionLevel, version);
-  return capacity;
-}
-
 export const QRUtils = {
   /**
    * Creates an array of bits that represent the modules of a QR code.
@@ -95,6 +90,7 @@ export const QRUtils = {
   getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
     // Try each version until one is found that fits the data.
     for (let version = 1; version <= 40; version++) {
+      const { capacity } = gerVersionInfo(errorCorrectionLevel, version);
       // A terminator of up to 4 bits can be added.
       // ...but is calculated based on the capacity. This is unneeded.
       //const terminatorLength = getTerminatorLength(capacity, totalDataBits);
@@ -103,19 +99,46 @@ export const QRUtils = {
       // The total bits must be rounded up to the next whole 8-bit codeword.
       const requiredBytes = Math.ceil(totalDataBits / codewordLength);
 
-      if (requiredBytes <= getVersionCapacity(errorCorrectionLevel, version)) {
+      if (requiredBytes <= capacity) {
         return version;
       }
     }
     throw new Error("Data too large to fit in a QR code version 40.");
   },
-  getBlocks(chunks, errorCorrectionLevel, version) {
+  getOrderedBits(chunks, errorCorrectionLevel, version) {
+    const qrBlocks = QRUtils.getBlocks(chunks, errorCorrectionLevel, version);
+    const totalCodewords = qrBlocks.reduce(
+      (total, { codewords }) => total + codewords.length,
+      0
+    );
+    const orderedBits = Array.from({ length: totalCodewords }, (_, idx) => {
+      const blockIdx = idx % qrBlocks.length;
+      const cwIdx = Math.floor(idx / qrBlocks.length);
+      const { codewords } = qrBlocks[blockIdx];
+      if (cwIdx < codewords.length) {
+        const { bits } = codewords[cwIdx];
+        return [...bits];
+      }
+    });
+    return orderedBits;
+  },
+};
+
+function getBitsFromChunks(chunks, errorCorrectionLevel, version) {
     const chunkBits = chunks.flatMap(({ header, segments }) => {
       const segmentBits = segments.flatMap((s) => [...s]);
       return [...header, ...segmentBits];
     });
     console.debug({ chunkBits });
+    return QRUtils.getFinalizedBits(
+      chunkBits,
+      version,
+      errorCorrectionLevel
+    );
+  }
+const BlockUtils = {
 
+  getBlocks(chunks, errorCorrectionLevel, version) {
     if (version === "auto") {
       version = QRUtils.getMinimumQRCodeVersion(
         chunkBits.length,
@@ -130,11 +153,7 @@ export const QRUtils = {
 
     const rsEncoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
 
-    const dataBits = QRUtils.getFinalizedBits(
-      chunkBits,
-      version,
-      errorCorrectionLevel
-    );
+    getBitsFromChunks
     
     return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }) =>
       Array.from({ length: numBlocks }, (_, i) => {
@@ -163,24 +182,7 @@ export const QRUtils = {
         };
       })
     );
-  },
-  getOrderedBits(chunks, errorCorrectionLevel, version) {
-    const qrBlocks = QRUtils.getBlocks(chunks, errorCorrectionLevel, version);
-    const totalCodewords = qrBlocks.reduce(
-      (total, { codewords }) => total + codewords.length,
-      0
-    );
-    const orderedBits = Array.from({ length: totalCodewords }, (_, idx) => {
-      const blockIdx = idx % qrBlocks.length;
-      const cwIdx = Math.floor(idx / qrBlocks.length);
-      const { codewords } = qrBlocks[blockIdx];
-      if (cwIdx < codewords.length) {
-        const { bits } = codewords[cwIdx];
-        return [...bits];
-      }
-    });
-    return orderedBits;
-  },
+  }
 };
 
 export const BitUtils = {
