@@ -52,13 +52,6 @@ export default function QRCodeCanvas() {
   } = useQRData();
   let moduleSize = 0;
 
-  console.log({
-    errorCorrectionLevel,
-    calculatedVersion: version,
-    dataMask,
-    bits,
-  });
-
   function createEmptyMatrix() {
     const numModules = version * 4 + 17;
     const matrix = Array.from({ length: numModules }, () =>

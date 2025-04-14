@@ -35,7 +35,7 @@ function dataReducer(state, action) {
       const chunks = inputs.map(({ data, mode, encoding }, idx) =>
         Encoders(mode).encode(data, idx, encoding)
       );
-      console.debug({ chunks });
+      //console.debug({ chunks });
       const segments = chunks.flatMap(({ segments }) => segments);
       const dataBits = QRUtils.getBitsFromChunks(chunks);
       const version = QRUtils.getVersion(
@@ -56,6 +56,11 @@ function dataReducer(state, action) {
         bits: [...finalBits],
       };
       console.log({ newState });
+      return newState;
+    }
+    case Actions.ChangeDataMask: {
+      const { dataMask } = action.payload;
+      const newState = { ...state, dataMask };
       return newState;
     }
   }

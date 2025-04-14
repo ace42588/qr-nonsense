@@ -1,7 +1,8 @@
 export const AlphaNumCharMap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
 export const Actions = {
-  ChangeInput: "ENCODE_DATA"
+  ChangeInput: "ENCODE_DATA",
+  ChangeDataMask: "UPDATE_DATAMASK",
 }
 
 export const MODE = {

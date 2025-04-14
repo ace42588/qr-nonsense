@@ -1,4 +1,5 @@
 import React from "react";
+import { useQRDataDispatch } from "../context/QRDataContext";
 
 export function ModeSelector({ mode, setMode }) {
   return (
@@ -7,8 +8,8 @@ export function ModeSelector({ mode, setMode }) {
         <input
           type="radio"
           value="scan"
-          checked={mode === 'scan'}
-          onChange={() => setMode('scan')}
+          checked={mode === "scan"}
+          onChange={() => setMode("scan")}
         />
         Scan QR Code
       </label>
@@ -16,8 +17,8 @@ export function ModeSelector({ mode, setMode }) {
         <input
           type="radio"
           value="manual"
-          checked={mode === 'manual'}
-          onChange={() => setMode('manual')}
+          checked={mode === "manual"}
+          onChange={() => setMode("manual")}
         />
         Manual Input
       </label>
@@ -25,8 +26,8 @@ export function ModeSelector({ mode, setMode }) {
         <input
           type="radio"
           value="merch"
-          checked={mode === 'merch'}
-          onChange={() => setMode('merch')}
+          checked={mode === "merch"}
+          onChange={() => setMode("merch")}
         />
         Merch Input
       </label>
@@ -99,6 +100,7 @@ const masks = [
 ];
 
 export function DataMaskSelector({ value, onChange }) {
+  const dispatch = useQRDataDispatch();
   return (
     <div className="data-mask-selector">
       <label htmlFor="data-mask">Data Mask:</label>
