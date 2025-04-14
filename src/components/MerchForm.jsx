@@ -95,7 +95,7 @@ export default function MerchForm() {
 }
 
 const encodeOrder = (order, encoding) => {
-  console.debug("encodeOrder", { order, encoding });
+  //console.debug("encodeOrder", { order, encoding });
   let { transactionId, conferenceCode, platform, items } = order;
   let encodedOrder = {};
   switch (encoding) {
@@ -187,7 +187,7 @@ const buildHeader = (txn, confId, platform) => {
 
 const parseInput = (raw) => {
   let safe = raw.replace(/(?<!\\)\\?(\n|\r\n)/g, '');
-  console.debug("parseInput", { raw, safe });
+  //console.debug("parseInput", { raw, safe });
   let {
     txn: transactionId,
     cc: conferenceCode,

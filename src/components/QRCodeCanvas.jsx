@@ -60,7 +60,7 @@ export default function QRCodeCanvas() {
   }
 
   function addModules(empty) {
-    console.log("addModulesToMatrix");
+    //console.log("addModulesToMatrix");
     const newMatrix = empty.map((row) => [...row]);
     const bits = codewords.flat();
     let bitIdx = 0;
