@@ -27,31 +27,31 @@ const DATA_MASKS = [
 
 const REMAINDER_BIT = new RemainderBit();
 
-function createMatrix(errorCorrectionLevel, version, dataMask) {
-  const numModules = version * 4 + 17;
-  const matrix = Array.from({ length: numModules }, () =>
-    Array(numModules).fill(false)
-  );
-  FinderPattern.populate(matrix);
-  TimingPattern.populate(matrix);
-  const alignmentPattern = new AlignmentPattern(version);
-  alignmentPattern.populate(matrix);
-  const formatInfo = new FormatInfo({ errorCorrectionLevel, dataMask });
-  formatInfo.populate(matrix);
-  const versionInfo = new VersionInfo(version);
-  versionInfo.populate(matrix);
-
-  return matrix;
-}
-
 export default function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const { errorCorrectionLevel, version, dataMask, bits } = useQRData();
+  const { errorCorrectionLevel, version, calculatedVersion, dataMask, bits } = useQRData();
   let matrix;
   let moduleSize = 0;
 
+  function createMatrix() {
+    const numModules = calculatedVersion * 4 + 17;
+    const matrix = Array.from({ length: numModules }, () =>
+      Array(numModules).fill(false)
+    );
+    FinderPattern.populate(matrix);
+    TimingPattern.populate(matrix);
+    const alignmentPattern = new AlignmentPattern(calculatedVersion);
+    alignmentPattern.populate(matrix);
+    const formatInfo = new FormatInfo({ errorCorrectionLevel, dataMask });
+    formatInfo.populate(matrix);
+    const versionInfo = new VersionInfo(calculatedVersion);
+    versionInfo.populate(matrix);
+
+    return matrix;
+  }
+
   function generateMatrix() {
-    const matrix = createMatrix(errorCorrectionLevel, version, dataMask);
+    const matrix = createMatrix();
     let bitIdx = 0;
     let up = true;
     const dimension = matrix.length;

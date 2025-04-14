@@ -1,15 +1,16 @@
 import { VersionBit } from "./TaggedBitstream";
-import { VERSIONS } from "./version";
+import { VERSION_INFO } from "../Constants";
 
 export class VersionInfo {
   constructor(version) {
+    console.debug({version});
     if (typeof version === "object") {
       this.version = version;
     } else {
-      this.version = VERSIONS[version - 1];
+      this.version = VERSION_INFO[version];
     }
     const { versionNumber, infoBits } = this.version;
-    this.versionNumber = versionNumber;
+    this.versionNumber = version;
     this.infoBits = infoBits;
   }
 
