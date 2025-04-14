@@ -29,9 +29,10 @@ const REMAINDER_BIT = new RemainderBit();
 
 export default function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const { errorCorrectionLevel, version, calculatedVersion, dataMask, bits } = useQRData();
-  let matrix;
-  let moduleSize = 0;
+  const { errorCorrectionLevel, version, calculatedVersion, dataMask, bits } =
+    useQRData();
+  const { matrix, setMatrix } = useState(createMatrix());
+  const { moduleSize, setModuleSize } = useState(0);
 
   function createMatrix() {
     const numModules = calculatedVersion * 4 + 17;
@@ -97,7 +98,7 @@ export default function QRCodeCanvas() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     if (matrix) {
-      moduleSize = canvas.width / matrix.length;
+      setModuleSize(canvas.width / matrix.length);
 
       // Draw the QR code on the canvas
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);

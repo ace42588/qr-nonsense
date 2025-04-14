@@ -3,7 +3,6 @@ import { VERSION_INFO } from "../Constants";
 
 export class VersionInfo {
   constructor(version) {
-    console.debug({version});
     if (typeof version === "object") {
       this.version = version;
     } else {
