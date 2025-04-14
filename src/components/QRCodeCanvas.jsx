@@ -11,7 +11,8 @@ import { VersionInfo } from "../encode/VersionInfo";
 import { createBlocks } from "../encode/Block";
 import { RemainderBit, ECBit } from "../encode/TaggedBitstream";
 
-import { useQRData, useQRDataDispatch } from '../context/QRDataContext';
+import { useQRData, useQRDataDispatch } from "../context/QRDataContext";
+import { QRUtils } from "../Utilities";
 
 const DATA_MASKS = [
   (p) => (p.y + p.x) % 2 === 0,
@@ -44,7 +45,8 @@ const createMatrix = (errorCorrectionLevel, version, dataMask) => {
 };
 
 const generateMatrix = (qrData, errorCorrectionLevel, version, dataMask) => {
-  console.debug({qrData});
+  console.debug({ qrData });
+  version = QRUtils.getVersion(qrData, version, errorCorrectionLevel);
   const matrix = createMatrix(errorCorrectionLevel, version, dataMask);
   let bitIdx = 0;
   let up = true;
@@ -75,7 +77,7 @@ const generateMatrix = (qrData, errorCorrectionLevel, version, dataMask) => {
             x,
             y,
             isMasked,
-            isHighlighted: false
+            isHighlighted: false,
           };
         }
       }
@@ -98,7 +100,6 @@ function QRCodeCanvas({
   let moduleSize = 0;
 
   if (qrData) {
-
     if (dataMask === "auto") {
       // ignore for now
       dataMask = 0;
