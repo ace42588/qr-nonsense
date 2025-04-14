@@ -161,7 +161,7 @@ function getDataCodewordsForBlock(codewordsPerBlock, dataBits, blockId) {
       i * codewordLength,
       i * codewordLength + codewordLength
     );
-    new TaggedCodeword(codwordBits, i, blockId);
+    return new TaggedCodeword(codwordBits, i, blockId);
   });
 }
 

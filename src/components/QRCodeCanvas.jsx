@@ -9,6 +9,9 @@ import {
 } from "../encode/FunctionPatterns";
 import { VersionInfo } from "../encode/VersionInfo";
 import { createBlocks } from "../encode/Block";
+import { RemainderBit, ECBit } from "../encode/TaggedBitstream";
+
+import { useQRData, useQRDataDispatch } from '../context/QRDataContext';
 
 const DATA_MASKS = [
   (p) => (p.y + p.x) % 2 === 0,
@@ -21,26 +24,7 @@ const DATA_MASKS = [
   (p) => (((p.y + p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
 ];
 
-const orderBits = (bitStream, errorCorrectionLevel, version) => {
-  //console.log("orderBits", { bitStream, errorCorrectionLevel, version });
-  let blocks = createBlocks(bitStream, errorCorrectionLevel, version);
-  //blocks.forEach((block) => block.generateErrorCorrection());
-  //console.log("orderBits", { blocks });
-  const totalCodewords = blocks.reduce((t, b) => t + b.totalCodewords, 0);
-  //console.log("orderBits", { totalCodewords });
-
-  let orderedBits = [];
-  for (let i = 0; i < totalCodewords; i++) {
-    const blockIdx = i % blocks.length;
-    const cwIdx = Math.floor(i / blocks.length);
-    let block = blocks[blockIdx];
-    if (cwIdx < block.codewords.length) {
-      const { bits } = block.codewords[cwIdx];
-      orderedBits.push(...bits);
-    }
-  }
-  return orderedBits;
-};
+const REMAINDER_BIT = new RemainderBit();
 
 const createMatrix = (errorCorrectionLevel, version, dataMask) => {
   const numModules = version * 4 + 17;
@@ -59,8 +43,8 @@ const createMatrix = (errorCorrectionLevel, version, dataMask) => {
   return matrix;
 };
 
-const generateMatrix = (bitStream, errorCorrectionLevel, version, dataMask) => {
-  const orderedBits = orderBits(bitStream, errorCorrectionLevel, version);
+const generateMatrix = (qrData, errorCorrectionLevel, version, dataMask) => {
+  console.debug({qrData});
   const matrix = createMatrix(errorCorrectionLevel, version, dataMask);
   let bitIdx = 0;
   let up = true;
@@ -79,12 +63,8 @@ const generateMatrix = (bitStream, errorCorrectionLevel, version, dataMask) => {
         // check for pattern
         if (!matrix[y][x]) {
           let taggedBit;
-          if (bitIdx < orderedBits.length) {
-            taggedBit = orderedBits[bitIdx++];
-            if (taggedBit instanceof ECBit) {
-              // no idea what this intends to do...
-              this;
-            }
+          if (bitIdx < qrData.length) {
+            taggedBit = qrData[bitIdx++];
           } else {
             taggedBit = REMAINDER_BIT;
           }
@@ -113,17 +93,18 @@ function QRCodeCanvas({
   dataMask,
 }) {
   const canvasRef = useRef(null);
+  const qrData = useQRData();
   let matrix;
   let moduleSize = 0;
 
-  if (bitStream) {
+  if (qrData) {
 
     if (dataMask === "auto") {
       // ignore for now
       dataMask = 0;
     }
 
-    matrix = generateMatrix(bitStream, errorCorrectionLevel, version, dataMask);
+    matrix = generateMatrix(qrData, errorCorrectionLevel, version, dataMask);
   }
 
   useEffect(() => {

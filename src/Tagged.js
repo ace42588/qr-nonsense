@@ -5,7 +5,6 @@ export class TaggedBit {
     this.type = type; // (e.g., 'mode', 'character indicator')
     this.source = source; // Source value (e.g., the character or byte that generated this bit)
     this.idx = idx;
-    this.codeword = null;
     this.altered = false;
   }
 
@@ -111,7 +110,7 @@ export class TaggedCodeword {
   constructor(taggedBits, codewordId, blockId) {
     this.id = `${blockId}-${codewordId}`;
     this.bits = taggedBits.map((taggedBit) => {
-      taggedBit.codeword = this.id;
+      taggedBit.codewordId = this.id;
       return taggedBit;
     })
     this.byte = this.bits.reduce((byte, taggedBit) => {
