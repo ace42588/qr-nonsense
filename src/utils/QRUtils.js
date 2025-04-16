@@ -182,7 +182,8 @@ export const QRUtils = {
     );
     return orderedCodewords;
   },
-  getVersion(data, inputVersion, errorCorrectionLevel) {
+  getVersion(chunks, inputVersion, errorCorrectionLevel) {
+    const data = BitUtils.getBitsFromChunks(chunks);
     let version = parseInt(inputVersion) || -1;
     if (1 <= version && version <= 40) {
       return version;

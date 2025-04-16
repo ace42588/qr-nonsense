@@ -1,7 +1,8 @@
 import { createContext, useContext, useReducer } from "react";
 import { Actions } from "../Constants";
-import { QRUtils } from "../Utilities";
-import { QRUtils, BitUtils } from "../utils"
+//import { QRUtils } from "../Utilities";
+import { BitUtils } from "../utils/BitUtils";
+import { QRUtils } from "../utils/QRUtils";
 import Encoders from "../Encoders";
 
 export const QRDataContext = createContext(null);
@@ -31,16 +32,12 @@ function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
       const { inputs } = action;
-      //console.debug({inputs});
-      // ({id, header, segments})[]
       const chunks = inputs.map(({ data, mode, encoding }, idx) =>
         Encoders(mode).encode(data, idx, encoding)
       );
-      //console.debug({ chunks });
       const segments = chunks.flatMap(({ segments }) => segments);
-      const dataBits = QRUtils.getBitsFromChunks(chunks);
       const calculatedVersion = QRUtils.getVersion(
-        dataBits,
+        chunks,
         state.version,
         state.errorCorrectionLevel
       );
@@ -65,13 +62,35 @@ function dataReducer(state, action) {
     }
     case Actions.ChangeVersion: {
       const { version } = action;
-      return { ...state, version };
+      const calculatedVersion = QRUtils.getVersion(
+        state.chunks,
+        state.version,
+        state.errorCorrectionLevel
+      );
+      return { ...state, version , calculatedVersion };
     }
     case Actions.ChangeErrorCorretionLevel: {
       const { errorCorrectionLevel } = action;
       return { ...state, errorCorrectionLevel };
     }
   }
+}
+
+function getQRDataFromInputs(inputs, version, ecLevel) {
+  const chunks = inputs.map(({ data, mode, encoding }, idx) =>
+        Encoders(mode).encode(data, idx, encoding)
+      );
+      const segments = chunks.flatMap(({ segments }) => segments);
+      const calculatedVersion = QRUtils.getVersion(
+        chunks,
+        .version,
+        state.errorCorrectionLevel
+      );
+      const codewords = QRUtils.getCodewords(
+        chunks,
+        calculatedVersion,
+        state.errorCorrectionLevel
+      );
 }
 
 const initialData = {
