@@ -1,7 +1,51 @@
-import { PAD_BYTES, EC_INFO, CodewordLength } from "../Constants";
-import { ReedSolomonEncoder } from "../reedsolomon/index.js";
-import { TaggedBit, TaggedCodeword, ECCodeword } from "../Tagged";
-import { QRUtils } from "./QRUtils"
+import { PAD_BYTES, CodewordLength } from "../Constants";
+import { TaggedBit } from "../Tagged";
+import { QRUtils } from "./QRUtils";
+
+export const BitUtils = {
+  /**
+   * Creates string of bits given a value and length
+   * @param {number} value - The value to convert and pad.
+   * @param {number} length - The desired string length.
+   * @returns {string} String of binary.
+   */
+  toPaddedBinary(value, length) {
+    return value.toString(2).padStart(length, "0");
+  },
+
+  /**
+   * Creates an array of TaggedBit instances from a string of bits.
+   * @param {string} bits - The binary string.
+   * @param {string} type - Type of the bit.
+   * @param {*} source - Source identifier.
+   * @returns {TaggedBit[]} Array of TaggedBit instances.
+   */
+  createTaggedBits(bitStr, sourceType, sourceValue, mode) {
+    //console.debug("createTaggedBits", { bitStr, sourceType, sourceValue, mode });
+    return [...bitStr].map((bit, idx) => {
+      const taggedBit = new TaggedBit({
+        bit,
+        type: sourceType,
+        source: sourceValue,
+        id: idx,
+        mode,
+      });
+      if (mode && typeof mode === "object") {
+        taggedBit.mode = mode.name;
+      }
+      return taggedBit;
+    });
+  },
+
+  getBitsFromChunks(chunks) {
+    console.debug("getBitsFromChunks", {chunks});
+    return chunks.flatMap((chunk) => {
+      const { header, segments } = chunk;
+      const segmentBits = segments.flatMap((segment) => [...segment]);
+      return [...header, ...segmentBits];
+    });
+  },
+};
 
 const paddingBytes = PAD_BYTES.map((byte) => {
   //console.debug("paddingBytes", { byte });
@@ -42,48 +86,3 @@ function getTerminatorLength(capacityBytes, totalDataBits) {
   const capacityBits = capacityBytes * CodewordLength;
   return Math.min(4, Math.max(0, capacityBits - totalDataBits));
 }
-
-export const BitUtils = {
-  /**
-   * Creates string of bits given a value and length
-   * @param {number} value - The value to convert and pad.
-   * @param {number} length - The desired string length.
-   * @returns {string} String of binary.
-   */
-  toPaddedBinary(value, length) {
-    return value.toString(2).padStart(length, "0");
-  },
-
-  /**
-   * Creates an array of TaggedBit instances from a string of bits.
-   * @param {string} bits - The binary string.
-   * @param {string} type - Type of the bit.
-   * @param {*} source - Source identifier.
-   * @returns {TaggedBit[]} Array of TaggedBit instances.
-   */
-  createTaggedBits(bitStr, sourceType, sourceValue, mode) {
-    //console.debug("createTaggedBits", { bitStr, sourceType, sourceValue, mode });
-    return [...bitStr].map((bit, idx) => {
-      const taggedBit = new TaggedBit({
-        bit,
-        type: sourceType,
-        source: sourceValue,
-        id: idx,
-        mode,
-      });
-      if (mode && typeof mode === "object") {
-        taggedBit.mode = mode.name;
-      }
-      return taggedBit;
-    });
-  },
-
-  getBitsFromChunks(chunks) {
-    //console.debug({chunks});
-    return chunks.flatMap((chunk) => {
-      const { header, segments } = chunk;
-      const segmentBits = segments.flatMap((segment) => [...segment]);
-      return [...header, ...segmentBits];
-    });
-  },
-};

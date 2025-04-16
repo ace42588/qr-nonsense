@@ -32,7 +32,8 @@ function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
       const { inputs } = action;
-      const newQRData = getQRDataFromInputs(inputs);
+      const { version, errorCorrectionLevel } = state;
+      const newQRData = getQRDataFromInputs(inputs, version, errorCorrectionLevel);
       const newState = {
         ...state,
         ...newQRData,

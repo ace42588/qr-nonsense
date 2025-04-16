@@ -1,13 +1,13 @@
-import { PAD_BYTES, EC_INFO, CodewordLength } from "./Constants";
-import { ReedSolomonEncoder } from "./reedsolomon/index.js";
-import { TaggedBit, TaggedCodeword, ECCodeword } from "./Tagged";
+import { EC_INFO, CodewordLength } from "../Constants";
+import { ReedSolomonEncoder } from "../reedsolomon/index.js";
+import { TaggedCodeword, ECCodeword } from "../Tagged";
 import { BitUtils } from "./BitUtils";
 
 function getBlocks(chunks, errorCorrectionLevel, version) {
   const chunkBits = BitUtils.getBitsFromChunks(chunks);
   //console.debug({ chunkBits });
 
-  version = QRUtils.getVersion(chunkBits, version, errorCorrectionLevel);
+  //version = QRUtils.getVersion(chunkBits, version, errorCorrectionLevel);
 
   const dataBits = BitUtils.getFinalizedBits(
     chunkBits,
