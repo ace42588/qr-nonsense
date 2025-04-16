@@ -32,26 +32,10 @@ function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
       const { inputs } = action;
-      const chunks = inputs.map(({ data, mode, encoding }, idx) =>
-        Encoders(mode).encode(data, idx, encoding)
-      );
-      const segments = chunks.flatMap(({ segments }) => segments);
-      const calculatedVersion = QRUtils.getVersion(
-        chunks,
-        state.version,
-        state.errorCorrectionLevel
-      );
-      const codewords = QRUtils.getCodewords(
-        chunks,
-        calculatedVersion,
-        state.errorCorrectionLevel
-      );
+      const newQRData = getQRDataFromInputs(inputs);
       const newState = {
         ...state,
-        calculatedVersion,
-        chunks,
-        segments,
-        codewords,
+        ...newQRData,
       };
       console.log({ newState });
       return newState;
@@ -67,7 +51,7 @@ function dataReducer(state, action) {
         state.version,
         state.errorCorrectionLevel
       );
-      return { ...state, version , calculatedVersion };
+      return { ...state, version, calculatedVersion };
     }
     case Actions.ChangeErrorCorretionLevel: {
       const { errorCorrectionLevel } = action;
@@ -78,19 +62,12 @@ function dataReducer(state, action) {
 
 function getQRDataFromInputs(inputs, version, ecLevel) {
   const chunks = inputs.map(({ data, mode, encoding }, idx) =>
-        Encoders(mode).encode(data, idx, encoding)
-      );
-      const segments = chunks.flatMap(({ segments }) => segments);
-      const calculatedVersion = QRUtils.getVersion(
-        chunks,
-        .version,
-        state.errorCorrectionLevel
-      );
-      const codewords = QRUtils.getCodewords(
-        chunks,
-        calculatedVersion,
-        state.errorCorrectionLevel
-      );
+    Encoders(mode).encode(data, idx, encoding)
+  );
+  const segments = chunks.flatMap(({ segments }) => segments);
+  const calculatedVersion = QRUtils.getVersion(chunks, version, ecLevel);
+  const codewords = QRUtils.getCodewords(chunks, calculatedVersion, ecLevel);
+  return { chunks, segments, calculatedVersion, codewords };
 }
 
 const initialData = {
