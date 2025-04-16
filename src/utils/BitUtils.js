@@ -1,14 +1,19 @@
-import { PAD_BYTES, EC_INFO } from "../Constants";
+import { PAD_BYTES, EC_INFO, CodewordLength } from "../Constants";
 import { ReedSolomonEncoder } from "../reedsolomon/index.js";
 import { TaggedBit, TaggedCodeword, ECCodeword } from "../Tagged";
+import { QRUtils } from "./QRUtils"
 
-const codewordLength = 8;
+const paddingBytes = PAD_BYTES.map((byte) => {
+  //console.debug("paddingBytes", { byte });
+  const bits = byte.toString(2);
+  return BitUtils.createTaggedBits(bits, "padding", byte, null);
+});
 
 function getPaddingBits(bits, requiredDataCodewords) {
   const length = bits.length;
-  if (length % codewordLength !== 0)
+  if (length % CodewordLength !== 0)
     throw new Error(`Bits (length: ${length}) aren't codeword/byte aligned!`);
-  const currentCodewords = length / codewordLength;
+  const currentCodewords = length / CodewordLength;
   const codewordsNeeded = requiredDataCodewords - currentCodewords;
   let padding = [];
   for (let i = 0; i < codewordsNeeded; i++) {
@@ -52,18 +57,43 @@ export const BitUtils = {
       return taggedBit;
     });
   },
-};
 
-const paddingBytes = PAD_BYTES.map((byte) => {
-  //console.debug("paddingBytes", { byte });
-  const bits = byte.toString(2);
-  return BitUtils.createTaggedBits(bits, "padding", byte, null);
-});
+  getBitsFromChunks(chunks) {
+    //console.debug({chunks});
+    return chunks.flatMap((chunk) => {
+      const { header, segments } = chunk;
+      const segmentBits = segments.flatMap((segment) => [...segment]);
+      return [...header, ...segmentBits];
+    });
+  },
+  
+    getOrderedBits(chunks, version, errorCorrectionLevel) {
+    const qrBlocks = BlockUtils.getBlocks(
+      chunks,
+      errorCorrectionLevel,
+      version
+    );
+    const totalCodewords = qrBlocks.reduce(
+      (total, { codewords }) => total + codewords.length,
+      0
+    );
+    const codewords = Array.from({ length: totalCodewords }, (_, idx) => {
+      const blockIdx = idx % qrBlocks.length;
+      const cwIdx = Math.floor(idx / qrBlocks.length);
+      const { codewords } = qrBlocks[blockIdx];
+      if (cwIdx < codewords.length) {
+        const { bits } = codewords[cwIdx];
+        return [...bits];
+      }
+    });
+    return codewords.flat();
+  },
+};
 
 function getCodewordFillBits(bits, requiredDataCodewords) {
   let bitStr;
-  let remaining = codewordLength - (bits.length % codewordLength);
-  if (0 < remaining < codewordLength) {
+  let remaining = CodewordLength - (bits.length % CodewordLength);
+  if (0 < remaining < CodewordLength) {
     bitStr = "".padStart(remaining, "0");
   }
   return BitUtils.createTaggedBits(bitStr, "fill", null, null);

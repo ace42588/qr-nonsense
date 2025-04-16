@@ -1,5 +1,7 @@
 export const AlphaNumCharMap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
+export const CodewordLength = 8;
+
 export const Actions = {
   ChangeInput: "UPDATE_INPUTS",
   ChangeDataMask: "UPDATE_DATAMASK",
