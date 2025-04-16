@@ -38,12 +38,38 @@ export const BitUtils = {
   },
 
   getBitsFromChunks(chunks) {
-    console.debug("getBitsFromChunks", {chunks});
+    //console.debug("getBitsFromChunks", { chunks });
     return chunks.flatMap((chunk) => {
       const { header, segments } = chunk;
       const segmentBits = segments.flatMap((segment) => [...segment]);
       return [...header, ...segmentBits];
     });
+  },
+  getTerminatorBits(bits, requiredDataCodewords) {
+    let length = getTerminatorLength(requiredDataCodewords, bits);
+    const bitStr = "".padStart(length, "0");
+    return BitUtils.createTaggedBits(bitStr, "terminator", null, null);
+  },
+  getCodewordFillBits(bits, requiredDataCodewords) {
+    let bitStr;
+    let remaining = CodewordLength - (bits.length % CodewordLength);
+    if (0 < remaining < CodewordLength) {
+      bitStr = "".padStart(remaining, "0");
+    }
+    return BitUtils.createTaggedBits(bitStr, "fill", null, null);
+  },
+  getPaddingBits(bits, requiredDataCodewords) {
+    const length = bits.length;
+    if (length % CodewordLength !== 0)
+      throw new Error(`Bits (length: ${length}) aren't codeword/byte aligned!`);
+    const currentCodewords = length / CodewordLength;
+    const codewordsNeeded = requiredDataCodewords - currentCodewords;
+    let padding = [];
+    for (let i = 0; i < codewordsNeeded; i++) {
+      const paddingByte = paddingBytes[i % 2];
+      padding = [...padding, ...paddingBytes[i % 2]];
+    }
+    return padding;
   },
 };
 
@@ -52,35 +78,6 @@ const paddingBytes = PAD_BYTES.map((byte) => {
   const bits = byte.toString(2);
   return BitUtils.createTaggedBits(bits, "padding", byte, null);
 });
-
-function getCodewordFillBits(bits, requiredDataCodewords) {
-  let bitStr;
-  let remaining = CodewordLength - (bits.length % CodewordLength);
-  if (0 < remaining < CodewordLength) {
-    bitStr = "".padStart(remaining, "0");
-  }
-  return BitUtils.createTaggedBits(bitStr, "fill", null, null);
-}
-
-function getPaddingBits(bits, requiredDataCodewords) {
-  const length = bits.length;
-  if (length % CodewordLength !== 0)
-    throw new Error(`Bits (length: ${length}) aren't codeword/byte aligned!`);
-  const currentCodewords = length / CodewordLength;
-  const codewordsNeeded = requiredDataCodewords - currentCodewords;
-  let padding = [];
-  for (let i = 0; i < codewordsNeeded; i++) {
-    const paddingByte = paddingBytes[i % 2];
-    padding = [...padding, ...paddingBytes[i % 2]];
-  }
-  return padding;
-}
-
-function getTerminatorBits(bits, requiredDataCodewords) {
-  let length = getTerminatorLength(requiredDataCodewords, bits);
-  const bitStr = "".padStart(length, "0");
-  return BitUtils.createTaggedBits(bitStr, "terminator", null, null);
-}
 
 function getTerminatorLength(capacityBytes, totalDataBits) {
   const capacityBits = capacityBytes * CodewordLength;

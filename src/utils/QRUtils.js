@@ -3,17 +3,42 @@ import { ReedSolomonEncoder } from "../reedsolomon/index.js";
 import { TaggedCodeword, ECCodeword } from "../Tagged";
 import { BitUtils } from "./BitUtils";
 
+function getRequiredDataCodewords(version, errorCorrectionLevel) {
+  const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
+  let requiredDataCodewords = 0;
+
+  return ecBlocks.reduce(
+    (total, { numBlocks, dataCodewordsPerBlock }) =>
+      total + numBlocks * dataCodewordsPerBlock,
+    requiredDataCodewords
+  );
+}
+
+function getFinalizedBits(dataBits, version, errorCorrectionLevel) {
+  const requiredDataCodewords = getRequiredDataCodewords(
+    version,
+    errorCorrectionLevel
+  );
+  const termBits = BitUtils.getTerminatorBits(dataBits, requiredDataCodewords);
+  // Add terminator bits, based on version capacity
+  let bits = [...dataBits, ...termBits];
+  const fillBits = BitUtils.getCodewordFillBits(bits, requiredDataCodewords);
+  // Pad the last codeword with 0s until its 8 bits
+  bits = [...bits, ...fillBits];
+  const padBits = BitUtils.getPaddingBits(bits, requiredDataCodewords);
+  // Add padding bytes, until the version capacity is full
+  bits = [...bits, ...padBits];
+
+  return bits;
+}
+
 function getBlocks(chunks, errorCorrectionLevel, version) {
   const chunkBits = BitUtils.getBitsFromChunks(chunks);
   //console.debug({ chunkBits });
 
   //version = QRUtils.getVersion(chunkBits, version, errorCorrectionLevel);
 
-  const dataBits = BitUtils.getFinalizedBits(
-    chunkBits,
-    version,
-    errorCorrectionLevel
-  );
+  const dataBits = getFinalizedBits(chunkBits, version, errorCorrectionLevel);
 
   const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
     errorCorrectionLevel,
@@ -136,11 +161,7 @@ function gerVersionInfo(errorCorrectionLevel, version) {
 
 export const QRUtils = {
   getOrderedBits(chunks, version, errorCorrectionLevel) {
-    const qrBlocks = getBlocks(
-      chunks,
-      errorCorrectionLevel,
-      version
-    );
+    const qrBlocks = getBlocks(chunks, errorCorrectionLevel, version);
     const totalCodewords = qrBlocks.reduce(
       (total, { codewords }) => total + codewords.length,
       0
@@ -157,11 +178,7 @@ export const QRUtils = {
     return codewords.flat();
   },
   getCodewords(chunks, version, errorCorrectionLevel) {
-    const qrBlocks = getBlocks(
-      chunks,
-      errorCorrectionLevel,
-      version
-    );
+    const qrBlocks = getBlocks(chunks, errorCorrectionLevel, version);
     //console.debug("getCodewords", { qrBlocks });
     const totalCodewords = qrBlocks.reduce(
       (total, { codewords }) => total + codewords.length,
