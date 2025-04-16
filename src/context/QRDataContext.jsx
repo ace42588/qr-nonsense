@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer } from "react";
 import { Actions } from "../Constants";
 import { QRUtils } from "../Utilities";
+import { QRUtils, BitUtils } from "../utils"
 import Encoders from "../Encoders";
 
 export const QRDataContext = createContext(null);

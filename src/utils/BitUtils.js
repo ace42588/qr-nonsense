@@ -9,6 +9,15 @@ const paddingBytes = PAD_BYTES.map((byte) => {
   return BitUtils.createTaggedBits(bits, "padding", byte, null);
 });
 
+function getCodewordFillBits(bits, requiredDataCodewords) {
+  let bitStr;
+  let remaining = CodewordLength - (bits.length % CodewordLength);
+  if (0 < remaining < CodewordLength) {
+    bitStr = "".padStart(remaining, "0");
+  }
+  return BitUtils.createTaggedBits(bitStr, "fill", null, null);
+}
+
 function getPaddingBits(bits, requiredDataCodewords) {
   const length = bits.length;
   if (length % CodewordLength !== 0)
@@ -21,6 +30,17 @@ function getPaddingBits(bits, requiredDataCodewords) {
     padding = [...padding, ...paddingBytes[i % 2]];
   }
   return padding;
+}
+
+function getTerminatorBits(bits, requiredDataCodewords) {
+  let length = getTerminatorLength(requiredDataCodewords, bits);
+  const bitStr = "".padStart(length, "0");
+  return BitUtils.createTaggedBits(bitStr, "terminator", null, null);
+}
+
+function getTerminatorLength(capacityBytes, totalDataBits) {
+  const capacityBits = capacityBytes * CodewordLength;
+  return Math.min(4, Math.max(0, capacityBits - totalDataBits));
 }
 
 export const BitUtils = {
@@ -66,66 +86,4 @@ export const BitUtils = {
       return [...header, ...segmentBits];
     });
   },
-  
-    getOrderedBits(chunks, version, errorCorrectionLevel) {
-    const qrBlocks = BlockUtils.getBlocks(
-      chunks,
-      errorCorrectionLevel,
-      version
-    );
-    const totalCodewords = qrBlocks.reduce(
-      (total, { codewords }) => total + codewords.length,
-      0
-    );
-    const codewords = Array.from({ length: totalCodewords }, (_, idx) => {
-      const blockIdx = idx % qrBlocks.length;
-      const cwIdx = Math.floor(idx / qrBlocks.length);
-      const { codewords } = qrBlocks[blockIdx];
-      if (cwIdx < codewords.length) {
-        const { bits } = codewords[cwIdx];
-        return [...bits];
-      }
-    });
-    return codewords.flat();
-  },
 };
-
-function getCodewordFillBits(bits, requiredDataCodewords) {
-  let bitStr;
-  let remaining = CodewordLength - (bits.length % CodewordLength);
-  if (0 < remaining < CodewordLength) {
-    bitStr = "".padStart(remaining, "0");
-  }
-  return BitUtils.createTaggedBits(bitStr, "fill", null, null);
-}
-
-/**
- * Creates an array of bits that represent the modules of a QR code.
- * @param {Object[]} data - The encoded sections of data.
- * @param {number} version - The QR code version.
- * @param {number} errorCorrectionLevel - Error Correction Level.
- * @returns {TaggedBit[]} Array of TaggedBit instances.
- */
-function getFinalizedBits(dataBits, version, errorCorrectionLevel) {
-  const requiredDataCodewords = getRequiredDataCodewords(
-    version,
-    errorCorrectionLevel
-  );
-  // Add terminator bits, based on version capacity
-  let bits = [
-    ...dataBits,
-    ...getTerminatorBits(dataBits, requiredDataCodewords),
-  ];
-  // Pad the last codeword with 0s until its 8 bits
-  bits = [...bits, ...getCodewordFillBits(bits, requiredDataCodewords)];
-  // Add padding bytes, until the version capacity is full
-  bits = [...bits, ...getPaddingBits(bits, requiredDataCodewords)];
-
-  return bits;
-}
-
-function getTerminatorBits(bits, requiredDataCodewords) {
-  let length = getTerminatorLength(requiredDataCodewords, bits);
-  const bitStr = "".padStart(length, "0");
-  return BitUtils.createTaggedBits(bitStr, "terminator", null, null);
-}
