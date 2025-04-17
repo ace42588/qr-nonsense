@@ -261,8 +261,6 @@ export function generateQRCodeMatrix({
     codewords,
   });
   const dimension = version * 4 + 17;
-  //console.debug("generateQRCodeMatrix", `Total number of modules:${dimension*dimension}`);
-
   function createBaseMatrix() {
     const matrix = Array.from({ length: dimension }, () =>
       Array(dimension).fill(false)
@@ -270,7 +268,7 @@ export function generateQRCodeMatrix({
     FinderPattern.populate(matrix);
     TimingPattern.populate(matrix);
     new AlignmentPattern(version).populate(matrix);
-    new FormatInfo({ errorCorrectionLevel, dataMask });
+    new FormatInfo({ errorCorrectionLevel, dataMask: 0 }).populate(matrix);
     new VersionInfo(version).populate(matrix);
     return matrix;
   }
@@ -313,7 +311,7 @@ export function generateQRCodeMatrix({
     });
   }
 
-  function applyCodewords(matrix) {
+  function addCodewords(matrix) {
     const bits = codewords.flatMap((cw) => cw.bits);
     //console.debug("applyCodewords",  {bits});
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
@@ -407,18 +405,19 @@ export function generateQRCodeMatrix({
   }
 
   const base = createBaseMatrix();
-  console.debug("generateQRCodeMatrix", { base });
-  const populated = applyCodewords(base);
+  const populated = addCodewords(base);
   console.debug("generateQRCodeMatrix", { populated });
 
   if (dataMask !== -1) {
-    return applyMask(populated, dataMask);
+    const masked = applyMask(populated, dataMask);
+    console.debug("generateQRCodeMatrix", { populated });
+    return { matrix: masked, dataMask };
   }
 
   // Automatic mask scoring
   let bestMatrix = null;
   let bestScore = Infinity;
-  let bestMask;
+  let bestMask = 0;
   for (let maskIdx = 0; maskIdx < 8; maskIdx++) {
     const testMatrix = applyMask(populated, maskIdx);
     const score = calculatePenalty(testMatrix);
@@ -429,6 +428,8 @@ export function generateQRCodeMatrix({
     }
   }
 
-  new FormatInfo({errorCorrectionLevel, bestMask}).populate(populated);
-  return bestMatrix;
+  new FormatInfo({ errorCorrectionLevel, dataMask: bestMask }).populate(
+    populated
+  );
+  return { matrix: bestMatrix, dataMask: bestMask };
 }
