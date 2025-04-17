@@ -45,6 +45,7 @@ function dataReducer(state, action) {
       const { dataMask } = action;
       return { ...state, dataMask };
     }
+      case 
     case Actions.ChangeVersion: {
       const { version } = action;
       const calculatedVersion = QRUtils.getVersion(
