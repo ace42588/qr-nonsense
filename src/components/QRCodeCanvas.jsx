@@ -51,7 +51,7 @@ export default function QRCodeCanvas() {
   }, [version, errorCorrectionLevel, dataMask, codewords]);
 
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !matrix) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
