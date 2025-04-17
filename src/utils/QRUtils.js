@@ -275,41 +275,6 @@ export function generateQRCodeMatrix({
     return matrix;
   }
 
-  /*
-  function addModules(empty) {
-    const newMatrix = empty.map((row) => [...row]);
-    const bits = codewords.flat();
-    let bitIdx = 0;
-    let up = true;
-    const dimension = newMatrix.length;
-    // write columns in pairs, right to left
-    for (let columnIdx = dimension - 1; columnIdx > 0; columnIdx -= 2) {
-      // Skip the vertical timing pattern column
-      if (columnIdx === 6) columnIdx--;
-
-      for (let i = 0; i < dimension; i++) {
-        const y = up ? dimension - 1 - i : i;
-
-        for (let columnOffset = 0; columnOffset < 2; columnOffset++) {
-          let x = columnIdx - columnOffset;
-
-          // check for pattern
-          if (!newMatrix[y][x]) {
-            //console.debug({bits, bitIdx});
-            let taggedBit;
-            if (bitIdx < bits.length) {
-              taggedBit = bits[bitIdx++];
-            } else {
-              taggedBit = REMAINDER_BIT;
-            }
-
-            const isMasked = DATA_MASKS[dataMask]({ x, y });
-            newMatrix[y][x] = {
-              ...taggedBit,
-              x,
-              y,
-              isMasked,
-
   function mapQRMatrix(matrix, callbackFn) {
     const newMatrix = matrix.map((row) => [...row]);
     let up = true;
@@ -362,48 +327,6 @@ export function generateQRCodeMatrix({
         y,
       };
     });
-  }
-
-  function applyData(matrix, maskIndex) {
-    const maskFunc = DATA_MASKS[maskIndex];
-    const masked = matrix.map((row) => [...row]);
-    const bits = codewords.flat();
-    let bitIdx = 0;
-    let up = true;
-
-    // write columns in pairs, right to left
-    for (let col = dimension - 1; col > 0; col -= 2) {
-      // Skip the vertical timing pattern column
-      if (col === 6) col--;
-      for (let i = 0; i < dimension; i++) {
-        const y = up ? dimension - 1 - i : i;
-        for (let offset = 0; offset < 2; offset++) {
-          const x = col - offset;
-          // check for pattern
-          if (!masked[y][x]) {
-            const bit = bits[bitIdx++] ?? REMAINDER_BIT;
-            const isMasked = maskFunc({ x, y });
-            const value = isMasked ? !bit.value : bit.value;
-            masked[y][x] = {
-              ...bit,
-              value,
-              isMasked,
-              isHighlighted: false,
-              x,
-              y,
-            };
-          }
-        }
-      }
-      up = !up;
-    }
-
-    new FormatInfo({
-      errorCorrectionLevel,
-      dataMask: maskIndex,
-    }).populate(masked);
-
-    return masked;
   }
 
   function calculatePenalty(matrix) {
@@ -495,14 +418,17 @@ export function generateQRCodeMatrix({
   // Automatic mask scoring
   let bestMatrix = null;
   let bestScore = Infinity;
+  let bestMask;
   for (let maskIdx = 0; maskIdx < 8; maskIdx++) {
     const testMatrix = applyMask(populated, maskIdx);
     const score = calculatePenalty(testMatrix);
     if (score < bestScore) {
       bestMatrix = testMatrix;
       bestScore = score;
+      bestMask = maskIdx;
     }
   }
 
+  new FormatInfo({errorCorrectionLevel, bestMask}).populate(populated);
   return bestMatrix;
 }
