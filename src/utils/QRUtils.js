@@ -318,6 +318,7 @@ export function generateQRCodeMatrix({
   function mapQRMatrix(matrix, callbackFn) {
     const newMatrix = matrix.map((row) => [...row]);
     let up = true;
+    let idx = 0;
 
     // write columns in pairs, right to left
     for (let col = dimension - 1; col > 0; col -= 2) {
@@ -330,7 +331,8 @@ export function generateQRCodeMatrix({
           const value = newMatrix[y][x];
           // check if matrix position is used for pattern
           if (!newMatrix[y][x]) {
-            newMatrix[y][x] = callbackFn({ x, y }, value);
+            idx++;
+            newMatrix[y][x] = callbackFn({ x, y, idx }, value);
           }
         }
       }
@@ -341,25 +343,21 @@ export function generateQRCodeMatrix({
 
   function applyMask(matrix, maskIndex) {
     const maskFunc = DATA_MASKS[maskIndex];
-    return mapQRMatrix(matrix, ({ x, y }, current) => {
-      current.isMasked = maskFunc({ x, y });
-      return current;
-    });
+    return mapQRMatrix(matrix, ({ x, y }, current) => ({
+      ...current,
+      isMasked: maskFunc({ x, y }),
+    }));
   }
 
   function applyCodewords(matrix) {
     const bits = codewords.flat();
-    console.debug("applyCodewords", {bits});
+    console.debug("applyCodewords", { bits });
     let bitIdx = 0;
-    return mapQRMatrix(matrix, ({ x, y }, current) => {
-      const bit = bits[bitIdx++] || REMAINDER_BIT;
-      console.debug("applyCodewords", {bit, current});
-      const { isMasked } = current;
-      const isDark = isMasked ? !bit.value : bit.value;
+    return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
+      const bit = bits[idx] || REMAINDER_BIT;
+      console.debug("applyCodewords", { bit, idx });
       return {
         bit,
-        isDark,
-        isMasked,
         isHighlighted: false,
         x,
         y,
@@ -488,8 +486,8 @@ export function generateQRCodeMatrix({
 
   const base = createBaseMatrix();
   const populated = applyCodewords(base);
-  console.debug("generateQRCodeMatrix", {populated});
-  
+  console.debug("generateQRCodeMatrix", { populated });
+
   if (dataMask !== -1) {
     return applyMask(populated, dataMask);
   }
