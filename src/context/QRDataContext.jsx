@@ -77,7 +77,7 @@ function getQRDataFromInputs(inputs, state) {
     errorCorrectionLevel
   );
   const { matrix, dataMask: calculatedDataMask } = generateQRCodeMatrix({
-    calculatedVersion,
+    version: calculatedVersion,
     errorCorrectionLevel,
     dataMask,
     codewords,
