@@ -30,12 +30,7 @@ export default function QRCodeCanvas() {
   const canvasRef = useRef(null);
   const { errorCorrectionLevel, calculatedVersion: version, dataMask, codewords } = useQRData();
 
-  const [matrix, setMatrix] = useState(generateQRCodeMatrix({
-      version,
-      errorCorrectionLevel,
-      dataMask,
-      codewords,
-    }));
+  const [matrix, setMatrix] = useState(null);
   
   useEffect(() => {
     if (!version || !codewords) return;

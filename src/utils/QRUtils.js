@@ -349,14 +349,16 @@ export function generateQRCodeMatrix({
 
   function applyCodewords(matrix) {
     const bits = codewords.flat();
+    console.debug("applyCodewords", {bits});
     let bitIdx = 0;
     return mapQRMatrix(matrix, ({ x, y }, current) => {
-      const bit = bits[bitIdx++] ?? REMAINDER_BIT;
+      const bit = bits[bitIdx++] || REMAINDER_BIT;
+      console.debug("applyCodewords", {bit, current});
       const { isMasked } = current;
-      const value = isMasked ? !bit.value : bit.value;
+      const isDark = isMasked ? !bit.value : bit.value;
       return {
-        ...bit,
-        value,
+        bit,
+        isDark,
         isMasked,
         isHighlighted: false,
         x,
@@ -486,6 +488,7 @@ export function generateQRCodeMatrix({
 
   const base = createBaseMatrix();
   const populated = applyCodewords(base);
+  console.debug("generateQRCodeMatrix", {populated});
   
   if (dataMask !== -1) {
     return applyMask(populated, dataMask);
