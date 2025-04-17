@@ -289,7 +289,7 @@ export function generateQRCodeMatrix({
           const x = col - offset;
           const value = newMatrix[y][x];
           // check if matrix position is used for pattern
-          if (!value) {
+          if (value && !(value.sourceType === "pattern")) {
             idx++;
             newMatrix[y][x] = callbackFn({ x, y, idx }, value);
           }
@@ -303,16 +303,14 @@ export function generateQRCodeMatrix({
   function applyMask(matrix, maskIndex) {
     console.debug("applyMask", {matrix, maskIndex})
     const maskFunc = DATA_MASKS[maskIndex];
-    return mapQRMatrix(matrix, ({ x, y }, current) => {
+    return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
+      console.debug("applyMask", {current});
       const isMasked = maskFunc({ x, y });
-      const masked
-      if (current) {
-        
-      }
+      const { value: existingValue } = current;
       return {
         ...current,
-        value: isMasked ? !current.value : current.value,
-        isMasked: maskFunc({ x, y }),
+        value: isMasked ? !existingValue : existingValue,
+        isMasked,
       };
     });
   }
