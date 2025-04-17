@@ -2,7 +2,7 @@ import { createContext, useContext, useReducer } from "react";
 import { Actions } from "../Constants";
 //import { QRUtils } from "../Utilities";
 import { BitUtils } from "../utils/BitUtils";
-import { QRUtils } from "../utils/QRUtils";
+import { QRUtils, generateQRCodeMatrix } from "../utils/QRUtils";
 import Encoders from "../Encoders";
 
 export const QRDataContext = createContext(null);
@@ -33,7 +33,10 @@ function dataReducer(state, action) {
     case Actions.ChangeInput: {
       const { inputs } = action;
       const { version, errorCorrectionLevel } = state;
-      const newQRData = getQRDataFromInputs(inputs, version, errorCorrectionLevel);
+      const newQRData = getQRDataFromInputs(
+        inputs,
+        state
+      );
       const newState = {
         ...state,
         ...newQRData,
@@ -45,7 +48,10 @@ function dataReducer(state, action) {
       const { dataMask } = action;
       return { ...state, dataMask };
     }
-      case 
+    case Actions.UpdateDataMask: {
+      const { calculatedDataMask } = action;
+      return { ...state, calculatedDataMask };
+    }
     case Actions.ChangeVersion: {
       const { version } = action;
       const calculatedVersion = QRUtils.getVersion(
@@ -62,14 +68,30 @@ function dataReducer(state, action) {
   }
 }
 
-function getQRDataFromInputs(inputs, version, ecLevel) {
+function getQRDataFromInputs(inputs, state) {
+  const { errorCorrectionLevel, version, dataMask } = state;
   const chunks = inputs.map(({ data, mode, encoding }, idx) =>
     Encoders(mode).encode(data, idx, encoding)
   );
   const segments = chunks.flatMap(({ segments }) => segments);
-  const calculatedVersion = QRUtils.getVersion(chunks, version, ecLevel);
-  const codewords = QRUtils.getCodewords(chunks, calculatedVersion, ecLevel);
-  return { chunks, segments, calculatedVersion, codewords };
+  const calculatedVersion = QRUtils.getVersion(
+    chunks,
+    version,
+    errorCorrectionLevel
+  );
+  const codewords = QRUtils.getCodewords(
+    chunks,
+    calculatedVersion,
+    errorCorrectionLevel
+  );
+  const { matrix, dataMask: calculatedDataMask } =
+    generateQRCodeMatrix({
+      version,
+      errorCorrectionLevel,
+      dataMask,
+      codewords,
+    });
+  return { chunks, segments, calculatedVersion, codewords, matrix, calculatedDataMask };
 }
 
 const initialData = {
@@ -81,4 +103,5 @@ const initialData = {
   chunks: [],
   segments: [],
   codewords: [],
+  matrix: null,
 };

@@ -18,25 +18,10 @@ export default function QRCodeCanvas() {
   const {
     errorCorrectionLevel,
     calculatedVersion: version,
-    dataMask,
+    calculatedDataMask: dataMask,
     codewords,
+    matrix
   } = useQRData();
-
-  const [matrix, setMatrix] = useState(null);
-
-  useEffect(() => {
-    if (!version || !codewords) return;
-
-    const { matrix: generatedMatrix, dataMask: calculatedMask } =
-      generateQRCodeMatrix({
-        version,
-        errorCorrectionLevel,
-        dataMask,
-        codewords,
-      });
-    console.debug({ calculatedMask });
-    setMatrix(generatedMatrix);
-  }, [version, errorCorrectionLevel, dataMask, codewords]);
 
   useEffect(() => {
     if (!canvasRef.current || !matrix) return;
@@ -109,7 +94,7 @@ export default function QRCodeCanvas() {
           return cell;
         })
       );
-      setMatrix(updated);
+      //setMatrix(updated);
     }
   };
 
