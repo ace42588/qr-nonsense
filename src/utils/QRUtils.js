@@ -317,8 +317,6 @@ export function generateQRCodeMatrix({
 */
   function mapQRMatrix(matrix, callbackFn) {
     const newMatrix = matrix.map((row) => [...row]);
-    const bits = codewords.flat();
-    let bitIdx = 0;
     let up = true;
 
     // write columns in pairs, right to left
@@ -332,36 +330,39 @@ export function generateQRCodeMatrix({
           const value = newMatrix[y][x];
           // check if matrix position is used for pattern
           if (!newMatrix[y][x]) {
-            newMatrix[y][x] = callbackFn({ x, y, newMatrix[y][x] });
+            newMatrix[y][x] = callbackFn({ x, y }, value);
           }
         }
       }
       up = !up;
     }
+    return newMatrix;
   }
 
   function applyMask(matrix, maskIndex) {
     const maskFunc = DATA_MASKS[maskIndex];
-    iterateQRMatrix(matrix, (p) => {
-      return {isMasked: maskFunc(p)};
-    })
+    return mapQRMatrix(matrix, ({ x, y }, current) => {
+      current.isMasked = maskFunc({ x, y });
+      return current;
+    });
   }
-  
+
   function applyCodewords(matrix) {
     const bits = codewords.flat();
     let bitIdx = 0;
-    iterateQRMatrix(matrix, ({x, y}) => {
+    return mapQRMatrix(matrix, ({ x, y }, current) => {
       const bit = bits[bitIdx++] ?? REMAINDER_BIT;
-            const value = isMasked ? !bit.value : bit.value;
-            return {
-              ...bit,
-              value,
-              isMasked,
-              isHighlighted: false,
-              x,
-              y,
-            };
-    })
+      const { isMasked } = current;
+      const value = isMasked ? !bit.value : bit.value;
+      return {
+        ...bit,
+        value,
+        isMasked,
+        isHighlighted: false,
+        x,
+        y,
+      };
+    });
   }
 
   function applyData(matrix, maskIndex) {
@@ -483,17 +484,18 @@ export function generateQRCodeMatrix({
     return score;
   }
 
+  const base = createBaseMatrix();
+  const populated = applyCodewords(base);
+  
   if (dataMask !== -1) {
-    const base = createBaseMatrix();
-    return applyData(base, dataMask);
+    return applyMask(populated, dataMask);
   }
 
   // Automatic mask scoring
   let bestMatrix = null;
   let bestScore = Infinity;
   for (let maskIdx = 0; maskIdx < 8; maskIdx++) {
-    const base = createBaseMatrix();
-    const testMatrix = applyData(base, maskIdx);
+    const testMatrix = applyMask(populated, maskIdx);
     const score = calculatePenalty(testMatrix);
     if (score < bestScore) {
       bestMatrix = testMatrix;
