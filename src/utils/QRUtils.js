@@ -241,9 +241,9 @@ const DATA_MASKS = [
   (p) => p.x % 3 === 0,
   (p) => (p.y + p.x) % 3 === 0,
   (p) => (Math.floor(p.y / 2) + Math.floor(p.x / 3)) % 2 === 0,
-  (p) => ((p.x * p.y) % 2 + (p.x * p.y) % 3) === 0,
-  (p) => (((p.y * p.x) % 2 + (p.y * p.x) % 3) % 2) === 0,
-  (p) => (((p.y + p.x) % 2 + (p.y * p.x) % 3) % 2) === 0,
+  (p) => ((p.x * p.y) % 2) + ((p.x * p.y) % 3) === 0,
+  (p) => (((p.y * p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
+  (p) => (((p.y + p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
 ];
 
 const REMAINDER_BIT = new RemainderBit();
@@ -256,23 +256,6 @@ export function generateQRCodeMatrix({
 }) {
   const dimension = version * 4 + 17;
 
-  /*
-  function createEmptyMatrix() {
-    const numModules = version * 4 + 17;
-    const matrix = Array.from({ length: numModules }, () =>
-      Array(numModules).fill(false)
-    );
-    FinderPattern.populate(matrix);
-    TimingPattern.populate(matrix);
-    const alignmentPattern = new AlignmentPattern(version);
-    alignmentPattern.populate(matrix);
-    const formatInfo = new FormatInfo({ errorCorrectionLevel, dataMask });
-    formatInfo.populate(matrix);
-    const versionInfo = new VersionInfo(version);
-    versionInfo.populate(matrix);
-    return matrix;
-  }
-  */
   function createBaseMatrix() {
     const matrix = Array.from({ length: dimension }, () =>
       Array(dimension).fill(false)
@@ -280,13 +263,13 @@ export function generateQRCodeMatrix({
     FinderPattern.populate(matrix);
     TimingPattern.populate(matrix);
     new AlignmentPattern(version).populate(matrix);
+    new FormatInfo({ errorCorrectionLevel, dataMask });
     new VersionInfo(version).populate(matrix);
     return matrix;
   }
-  
+
   /*
   function addModules(empty) {
-    //console.log("addModulesToMatrix");
     const newMatrix = empty.map((row) => [...row]);
     const bits = codewords.flat();
     let bitIdx = 0;
@@ -332,22 +315,28 @@ export function generateQRCodeMatrix({
   const empty = createEmptyMatrix();
   const matrix = addModules(empty);
 */
-
+  function applyMask(matrix, maskIndex) {
+    
+  }
+  
   function applyData(matrix, maskIndex) {
+    const maskFunc = DATA_MASKS[maskIndex];
     const masked = matrix.map((row) => [...row]);
     const bits = codewords.flat();
     let bitIdx = 0;
     let up = true;
 
+    // write columns in pairs, right to left
     for (let col = dimension - 1; col > 0; col -= 2) {
+      // Skip the vertical timing pattern column
       if (col === 6) col--;
       for (let i = 0; i < dimension; i++) {
         const y = up ? dimension - 1 - i : i;
         for (let offset = 0; offset < 2; offset++) {
           const x = col - offset;
+          // check for pattern
           if (!masked[y][x]) {
             const bit = bits[bitIdx++] ?? REMAINDER_BIT;
-            const maskFunc = DATA_MASKS[maskIndex];
             const isMasked = maskFunc({ x, y });
             const value = isMasked ? !bit.value : bit.value;
             masked[y][x] = {
