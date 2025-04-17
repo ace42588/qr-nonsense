@@ -301,9 +301,14 @@ export function generateQRCodeMatrix({
   }
 
   function applyMask(matrix, maskIndex) {
+    console.debug("applyMask", {matrix, maskIndex})
     const maskFunc = DATA_MASKS[maskIndex];
     return mapQRMatrix(matrix, ({ x, y }, current) => {
       const isMasked = maskFunc({ x, y });
+      const masked
+      if (current) {
+        
+      }
       return {
         ...current,
         value: isMasked ? !current.value : current.value,
@@ -407,7 +412,7 @@ export function generateQRCodeMatrix({
 
   const base = createBaseMatrix();
   const populated = addCodewords(base);
-  console.debug("generateQRCodeMatrix", { populated });
+  //console.debug("generateQRCodeMatrix", { populated });
 
   if (dataMask !== -1) {
     const masked = applyMask(populated, dataMask);
