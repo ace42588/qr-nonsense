@@ -254,7 +254,14 @@ export function generateQRCodeMatrix({
   dataMask,
   codewords,
 }) {
+  console.debug("generateQRCodeMatrix", {
+  version,
+  errorCorrectionLevel,
+  dataMask,
+  codewords,
+});
   const dimension = version * 4 + 17;
+  console.debug("generateQRCodeMatrix", `Total number of modules:${dimension*dimension}`);
 
   function createBaseMatrix() {
     const matrix = Array.from({ length: dimension }, () =>
@@ -330,7 +337,7 @@ export function generateQRCodeMatrix({
           const x = col - offset;
           const value = newMatrix[y][x];
           // check if matrix position is used for pattern
-          if (!newMatrix[y][x]) {
+          if (!value) {
             idx++;
             newMatrix[y][x] = callbackFn({ x, y, idx }, value);
           }
@@ -350,12 +357,11 @@ export function generateQRCodeMatrix({
   }
 
   function applyCodewords(matrix) {
-    const bits = codewords.flat();
-    console.debug("applyCodewords", { bits });
-    let bitIdx = 0;
+    const bits = codewords.flatMap((cw) => cw.bits);
+    console.debug("applyCodewords",  {bits});
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
       const bit = bits[idx] || REMAINDER_BIT;
-      console.debug("applyCodewords", { bit, idx });
+      //console.debug("applyCodewords", { bit, idx });
       return {
         bit,
         isHighlighted: false,
@@ -485,6 +491,7 @@ export function generateQRCodeMatrix({
   }
 
   const base = createBaseMatrix();
+  console.debug("generateQRCodeMatrix", {base});
   const populated = applyCodewords(base);
   console.debug("generateQRCodeMatrix", { populated });
 
