@@ -208,7 +208,7 @@ export const QRUtils = {
     return orderedCodewords;
   },
   getVersion(chunks, inputVersion, errorCorrectionLevel) {
-    console.debug("getVersion", {chunks, inputVersion, errorCorrectionLevel});
+    console.debug("getVersion", { chunks, inputVersion, errorCorrectionLevel });
     const data = BitUtils.getBitsFromChunks(chunks);
     let version = parseInt(inputVersion) || -1;
     if (1 <= version && version <= 40) {
@@ -264,7 +264,7 @@ export function generateQRCodeMatrix({
   const dimension = version * 4 + 17;
   function createBaseMatrix() {
     const matrix = Array.from({ length: dimension }, () =>
-      Array(dimension).fill({sourceType: "data"})
+      Array(dimension).fill({ sourceType: "data" })
     );
     FinderPattern.populate(matrix);
     TimingPattern.populate(matrix);
@@ -289,7 +289,7 @@ export function generateQRCodeMatrix({
           const x = col - offset;
           const module = newMatrix[y][x];
           // check if matrix position is used for pattern
-          if (module && (module.sourceType === "data")) {
+          if (module && module.sourceType === "data") {
             idx++;
             newMatrix[y][x] = callbackFn({ x, y, idx }, module);
           }
@@ -301,10 +301,10 @@ export function generateQRCodeMatrix({
   }
 
   function applyMask(matrix, maskIndex) {
-    console.debug("applyMask", {matrix, maskIndex})
+    //console.debug("applyMask", {matrix, maskIndex})
     const maskFunc = DATA_MASKS[maskIndex];
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
-      console.debug("applyMask", {current});
+      //console.debug("applyMask", {current});
       const isMasked = maskFunc({ x, y });
       const { value: existingValue } = current;
       return {
@@ -317,7 +317,7 @@ export function generateQRCodeMatrix({
 
   function addCodewords(matrix) {
     const bits = codewords.flatMap((cw) => cw.bits);
-    //console.debug("applyCodewords",  {bits});
+    console.debug("applyCodewords",  {bits});
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
       const bit = bits[idx] || REMAINDER_BIT;
       //console.debug("applyCodewords", { bit, idx });
