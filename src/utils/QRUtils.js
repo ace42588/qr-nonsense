@@ -309,19 +309,7 @@ export function generateQRCodeMatrix({
               x,
               y,
               isMasked,
-              isHighlighted: false,
-            };
-          }
-        }
-      }
-      up = !up; // Change direction
-    }
-    return newMatrix;
-  }
 
-  const empty = createEmptyMatrix();
-  const matrix = addModules(empty);
-*/
   function mapQRMatrix(matrix, callbackFn) {
     const newMatrix = matrix.map((row) => [...row]);
     let up = true;
