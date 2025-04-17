@@ -28,14 +28,19 @@ const REMAINDER_BIT = new RemainderBit();
 
 export default function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const { errorCorrectionLevel, calculatedVersion: version, dataMask, codewords } = useQRData();
+  const {
+    errorCorrectionLevel,
+    calculatedVersion: version,
+    dataMask,
+    codewords,
+  } = useQRData();
 
   const [matrix, setMatrix] = useState(null);
-  
+
   useEffect(() => {
     if (!version || !codewords) return;
 
-    const { matrix: generatedMatrix } = generateQRCodeMatrix({
+    const generatedMatrix = generateQRCodeMatrix({
       version,
       errorCorrectionLevel,
       dataMask,
@@ -44,9 +49,9 @@ export default function QRCodeCanvas() {
 
     setMatrix(generatedMatrix);
   }, [version, errorCorrectionLevel, dataMask, codewords]);
-  
-    useEffect(() => {
-    if (!canvasRef.current || !matrix) return;
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -60,7 +65,7 @@ export default function QRCodeCanvas() {
         const m = matrix[y][x];
         if (!m) continue;
 
-        ctx.fillStyle = m.isDark ? "black" : "white";
+        ctx.fillStyle = m.value ? "black" : "white";
         ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
 
         if (m.isHighlighted) {

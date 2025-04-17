@@ -255,11 +255,11 @@ export function generateQRCodeMatrix({
   codewords,
 }) {
   console.debug("generateQRCodeMatrix", {
-  version,
-  errorCorrectionLevel,
-  dataMask,
-  codewords,
-});
+    version,
+    errorCorrectionLevel,
+    dataMask,
+    codewords,
+  });
   const dimension = version * 4 + 17;
   //console.debug("generateQRCodeMatrix", `Total number of modules:${dimension*dimension}`);
 
@@ -351,11 +351,12 @@ export function generateQRCodeMatrix({
   function applyMask(matrix, maskIndex) {
     const maskFunc = DATA_MASKS[maskIndex];
     return mapQRMatrix(matrix, ({ x, y }, current) => {
-  const isMasked = maskFunc({ x, y});
-      return {...current,
-      value: isMasked ? !current
-      isMasked: maskFunc({ x, y }),
-    }
+      const isMasked = maskFunc({ x, y });
+      return {
+        ...current,
+        value: isMasked ? !current.value : current.value,
+        isMasked: maskFunc({ x, y }),
+      };
     });
   }
 
@@ -495,7 +496,7 @@ export function generateQRCodeMatrix({
   }
 
   const base = createBaseMatrix();
-  console.debug("generateQRCodeMatrix", {base});
+  console.debug("generateQRCodeMatrix", { base });
   const populated = applyCodewords(base);
   console.debug("generateQRCodeMatrix", { populated });
 
