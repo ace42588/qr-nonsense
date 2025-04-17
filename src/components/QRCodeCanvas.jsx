@@ -60,7 +60,7 @@ export default function QRCodeCanvas() {
         const m = matrix[y][x];
         if (!m) continue;
 
-        ctx.fillStyle = m.value ? "black" : "white";
+        ctx.fillStyle = m.isDark ? "black" : "white";
         ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
 
         if (m.isHighlighted) {
