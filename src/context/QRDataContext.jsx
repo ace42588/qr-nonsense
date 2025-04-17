@@ -31,10 +31,7 @@ function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
       const { inputs } = action;
-      const newQRData = getQRDataFromInputs(
-        inputs,
-        state
-      );
+      const newQRData = getQRDataFromInputs(inputs, state);
       const newState = {
         ...state,
         ...newQRData,
@@ -63,6 +60,7 @@ function dataReducer(state, action) {
 }
 
 function getQRDataFromInputs(inputs, state) {
+  if (!inputs) return {};
   const { errorCorrectionLevel, version, dataMask } = state;
   const chunks = inputs.map(({ data, mode, encoding }, idx) =>
     Encoders(mode).encode(data, idx, encoding)
@@ -78,14 +76,20 @@ function getQRDataFromInputs(inputs, state) {
     calculatedVersion,
     errorCorrectionLevel
   );
-  const { matrix, dataMask: calculatedDataMask } =
-    generateQRCodeMatrix({
-      calculatedVersion,
-      errorCorrectionLevel,
-      dataMask,
-      codewords,
-    });
-  return { chunks, segments, calculatedVersion, codewords, matrix, calculatedDataMask };
+  const { matrix, dataMask: calculatedDataMask } = generateQRCodeMatrix({
+    calculatedVersion,
+    errorCorrectionLevel,
+    dataMask,
+    codewords,
+  });
+  return {
+    chunks,
+    segments,
+    calculatedVersion,
+    codewords,
+    matrix,
+    calculatedDataMask,
+  };
 }
 
 const initialData = {
