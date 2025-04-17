@@ -11,7 +11,7 @@ import { VersionInfo } from "../encode/VersionInfo";
 import { RemainderBit, ECBit } from "../encode/TaggedBitstream";
 
 import { useQRData, useQRDataDispatch } from "../context/QRDataContext";
-import { QRUtils } from "../Utilities";
+import { QRUtils, generateQRCodeMatrix } from "../utils/QRUtils";
 
 const DATA_MASKS = [
   (p) => (p.y + p.x) % 2 === 0,
@@ -35,9 +35,10 @@ export default function QRCodeCanvas() {
     codewords,
   } = useQRData();
   let moduleSize = 0;
+  let matrix;
 
   //console.debug("QRCodeCanvas", { errorCorrectionLevel, version, dataMask });
-
+  /*
   if (dataMask === -1) {
     // ignore for now
     dataMask = 0;
@@ -105,13 +106,20 @@ export default function QRCodeCanvas() {
 
   const empty = createEmptyMatrix();
   const matrix = addModules(empty);
-
+*/
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas && matrix) {
+    if (canvas) {
+      matrix = generateQRCodeMatrix({
+        version,
+        errorCorrectionLevel,
+        dataMask,
+        codewords,
+      });
       //console.log({ matrix });
       const ctx = canvas.getContext("2d");
-      moduleSize = canvas.width / matrix.length;
+      const dimension = matrix.length;
+      moduleSize = canvas.width / dimension;
 
       // Draw the QR code on the canvas
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -139,7 +147,8 @@ export default function QRCodeCanvas() {
         }
       }
     }
-  }, [matrix]);
+    //  }, [matrix]);
+  }, [version, errorCorrectionLevel, dataMask, codewords]);
 
   const handleClick = (event) => {
     event.preventDefault();

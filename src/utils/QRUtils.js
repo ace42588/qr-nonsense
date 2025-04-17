@@ -2,6 +2,14 @@ import { EC_INFO, CodewordLength } from "../Constants";
 import { ReedSolomonEncoder } from "../reedsolomon/index.js";
 import { TaggedCodeword, ECCodeword } from "../Tagged";
 import { BitUtils } from "./BitUtils";
+import { FormatInfo } from "../encode/FormatInfo";
+import {
+  FinderPattern,
+  TimingPattern,
+  AlignmentPattern,
+} from "../encode/FunctionPatterns";
+import { VersionInfo } from "../encode/VersionInfo";
+import { RemainderBit } from "../encode/TaggedBitstream";
 
 function getRequiredDataCodewords(version, errorCorrectionLevel) {
   const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
@@ -225,4 +233,173 @@ export function makeModule({ taggedBit, x, y, masked }) {
     isMasked: masked,
     isHighlighted: false,
   };
+}
+
+const DATA_MASKS = [
+  (p) => (p.y + p.x) % 2 === 0,
+  (p) => p.y % 2 === 0,
+  (p) => p.x % 3 === 0,
+  (p) => (p.y + p.x) % 3 === 0,
+  (p) => (Math.floor(p.y / 2) + Math.floor(p.x / 3)) % 2 === 0,
+  (p) => ((p.x * p.y) % 2 + (p.x * p.y) % 3) === 0,
+  (p) => (((p.y * p.x) % 2 + (p.y * p.x) % 3) % 2) === 0,
+  (p) => (((p.y + p.x) % 2 + (p.y * p.x) % 3) % 2) === 0,
+];
+
+const REMAINDER_BIT = new RemainderBit();
+
+export function generateQRCodeMatrix({
+  version,
+  errorCorrectionLevel,
+  dataMask,
+  codewords,
+}) {
+  const dimension = version * 4 + 17;
+
+  function createBaseMatrix() {
+    const matrix = Array.from({ length: dimension }, () =>
+      Array(dimension).fill(false)
+    );
+    FinderPattern.populate(matrix);
+    TimingPattern.populate(matrix);
+    new AlignmentPattern(version).populate(matrix);
+    new VersionInfo(version).populate(matrix);
+    return matrix;
+  }
+
+  function applyData(matrix, maskIndex) {
+    const masked = matrix.map((row) => [...row]);
+    const bits = codewords.flat();
+    let bitIdx = 0;
+    let up = true;
+
+    for (let col = dimension - 1; col > 0; col -= 2) {
+      if (col === 6) col--;
+      for (let i = 0; i < dimension; i++) {
+        const y = up ? dimension - 1 - i : i;
+        for (let offset = 0; offset < 2; offset++) {
+          const x = col - offset;
+          if (!masked[y][x]) {
+            const bit = bits[bitIdx++] ?? REMAINDER_BIT;
+            const maskFunc = DATA_MASKS[maskIndex];
+            const isMasked = maskFunc({ x, y });
+            const value = isMasked ? !bit.value : bit.value;
+            masked[y][x] = {
+              ...bit,
+              value,
+              isMasked,
+              isHighlighted: false,
+              x,
+              y,
+            };
+          }
+        }
+      }
+      up = !up;
+    }
+
+    new FormatInfo({
+      errorCorrectionLevel,
+      dataMask: maskIndex,
+    }).populate(masked);
+
+    return masked;
+  }
+
+  function calculatePenalty(matrix) {
+    const size = matrix.length;
+    let score = 0;
+
+    // Rule 1: same-color runs
+    for (let y = 0; y < size; y++) {
+      let runColor = null;
+      let runLength = 0;
+      for (let x = 0; x < size; x++) {
+        const value = !!matrix[y][x]?.value;
+        if (value === runColor) {
+          runLength++;
+        } else {
+          if (runLength >= 5) score += 3 + (runLength - 5);
+          runColor = value;
+          runLength = 1;
+        }
+      }
+      if (runLength >= 5) score += 3 + (runLength - 5);
+    }
+
+    for (let x = 0; x < size; x++) {
+      let runColor = null;
+      let runLength = 0;
+      for (let y = 0; y < size; y++) {
+        const value = !!matrix[y][x]?.value;
+        if (value === runColor) {
+          runLength++;
+        } else {
+          if (runLength >= 5) score += 3 + (runLength - 5);
+          runColor = value;
+          runLength = 1;
+        }
+      }
+      if (runLength >= 5) score += 3 + (runLength - 5);
+    }
+
+    // Rule 2: 2x2 blocks
+    for (let y = 0; y < size - 1; y++) {
+      for (let x = 0; x < size - 1; x++) {
+        const v = !!matrix[y][x]?.value;
+        if (
+          v === !!matrix[y][x + 1]?.value &&
+          v === !!matrix[y + 1][x]?.value &&
+          v === !!matrix[y + 1][x + 1]?.value
+        ) {
+          score += 3;
+        }
+      }
+    }
+
+    // Rule 3: finder-like patterns
+    const pattern = [1, 0, 1, 1, 1, 0, 1];
+    const patternStr = pattern.join("");
+
+    const checkPattern = (arr) => arr.join("").includes(patternStr);
+
+    for (let y = 0; y < size; y++) {
+      const row = matrix[y].map((m) => (m?.value ? 1 : 0));
+      if (checkPattern(row)) score += 40;
+    }
+
+    for (let x = 0; x < size; x++) {
+      const col = matrix.map((row) => (row[x]?.value ? 1 : 0));
+      if (checkPattern(col)) score += 40;
+    }
+
+    // Rule 4: dark/light balance
+    const totalModules = size * size;
+    const darkCount = matrix.flat().filter((m) => m?.value).length;
+    const percent = (darkCount / totalModules) * 100;
+    const fivePercentSteps = Math.abs(Math.round(percent / 5) - 10);
+    score += fivePercentSteps * 10;
+
+    return score;
+  }
+
+  if (dataMask !== -1) {
+    const base = createBaseMatrix();
+    return applyData(base, dataMask);
+  }
+
+  // Automatic mask scoring
+  let bestMatrix = null;
+  let bestScore = Infinity;
+  for (let maskIdx = 0; maskIdx < 8; maskIdx++) {
+    const base = createBaseMatrix();
+    const testMatrix = applyData(base, maskIdx);
+    const score = calculatePenalty(testMatrix);
+    if (score < bestScore) {
+      bestMatrix = testMatrix;
+      bestScore = score;
+    }
+  }
+
+  return bestMatrix;
 }
