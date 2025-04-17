@@ -264,7 +264,7 @@ export function generateQRCodeMatrix({
   const dimension = version * 4 + 17;
   function createBaseMatrix() {
     const matrix = Array.from({ length: dimension }, () =>
-      Array(dimension).fill(false)
+      Array(dimension).fill({sourceType: "data"})
     );
     FinderPattern.populate(matrix);
     TimingPattern.populate(matrix);
@@ -287,11 +287,11 @@ export function generateQRCodeMatrix({
         const y = up ? dimension - 1 - i : i;
         for (let offset = 0; offset < 2; offset++) {
           const x = col - offset;
-          const value = newMatrix[y][x];
+          const module = newMatrix[y][x];
           // check if matrix position is used for pattern
-          if (value && !(value.sourceType === "pattern")) {
+          if (module && (module.sourceType === "data")) {
             idx++;
-            newMatrix[y][x] = callbackFn({ x, y, idx }, value);
+            newMatrix[y][x] = callbackFn({ x, y, idx }, module);
           }
         }
       }
