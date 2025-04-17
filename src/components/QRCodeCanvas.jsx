@@ -1,27 +1,13 @@
 import React, { useRef, useEffect, useState } from "react";
 import "./styles.css";
 
-import { FormatInfo } from "../encode/FormatInfo";
-import {
-  FinderPattern,
-  TimingPattern,
-  AlignmentPattern,
-} from "../encode/FunctionPatterns";
-import { VersionInfo } from "../encode/VersionInfo";
-import { RemainderBit, ECBit } from "../encode/TaggedBitstream";
-
+import { Actions } from "../Constants";
 import { useQRData, useQRDataDispatch } from "../context/QRDataContext";
-import { QRUtils, generateQRCodeMatrix } from "../utils/QRUtils";
 
 export default function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const {
-    errorCorrectionLevel,
-    calculatedVersion: version,
-    calculatedDataMask: dataMask,
-    codewords,
-    matrix
-  } = useQRData();
+  const { matrix } = useQRData();
+  const dispatch = useQRDataDispatch();
 
   useEffect(() => {
     if (!canvasRef.current || !matrix) return;
@@ -77,24 +63,7 @@ export default function QRCodeCanvas() {
       console.log(module);
     } else if (event.type === "contextmenu") {
       // Toggle value and update source
-      const updated = matrix.map((row, y) =>
-        row.map((cell, x) => {
-          if (x === xIndex && y === yIndex && cell) {
-            const newValue = !cell.value;
-            return {
-              ...cell,
-              value: newValue,
-              source: {
-                ...cell.source,
-                modified: true,
-                overrideValue: newValue,
-              },
-            };
-          }
-          return cell;
-        })
-      );
-      //setMatrix(updated);
+      dispatch({ type: Actions.ToggleModule, module});
     }
   };
 

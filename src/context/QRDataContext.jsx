@@ -1,6 +1,5 @@
 import { createContext, useContext, useReducer } from "react";
 import { Actions } from "../Constants";
-//import { QRUtils } from "../Utilities";
 import { BitUtils } from "../utils/BitUtils";
 import { QRUtils, generateQRCodeMatrix } from "../utils/QRUtils";
 import Encoders from "../Encoders";
@@ -32,7 +31,6 @@ function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
       const { inputs } = action;
-      const { version, errorCorrectionLevel } = state;
       const newQRData = getQRDataFromInputs(
         inputs,
         state
@@ -47,10 +45,6 @@ function dataReducer(state, action) {
     case Actions.ChangeDataMask: {
       const { dataMask } = action;
       return { ...state, dataMask };
-    }
-    case Actions.UpdateDataMask: {
-      const { calculatedDataMask } = action;
-      return { ...state, calculatedDataMask };
     }
     case Actions.ChangeVersion: {
       const { version } = action;
@@ -86,7 +80,7 @@ function getQRDataFromInputs(inputs, state) {
   );
   const { matrix, dataMask: calculatedDataMask } =
     generateQRCodeMatrix({
-      version,
+      calculatedVersion,
       errorCorrectionLevel,
       dataMask,
       codewords,
