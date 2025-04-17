@@ -28,14 +28,102 @@ const REMAINDER_BIT = new RemainderBit();
 
 export default function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const {
-    errorCorrectionLevel,
-    calculatedVersion: version,
-    dataMask,
-    codewords,
-  } = useQRData();
-  let moduleSize = 0;
-  let matrix;
+  const { errorCorrectionLevel, calculatedVersion: version, dataMask, codewords } = useQRData();
+
+  const [matrix, setMatrix] = useState(generateQRCodeMatrix({
+      version,
+      errorCorrectionLevel,
+      dataMask,
+      codewords,
+    }));
+  
+  useEffect(() => {
+    if (!version || !codewords) return;
+
+    const { matrix: generatedMatrix } = generateQRCodeMatrix({
+      version,
+      errorCorrectionLevel,
+      dataMask,
+      codewords,
+    });
+
+    setMatrix(generatedMatrix);
+  }, [version, errorCorrectionLevel, dataMask, codewords]);
+  
+    useEffect(() => {
+    if (!canvasRef.current || !matrix) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const dimension = matrix.length;
+    const moduleSize = canvas.width / dimension;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let y = 0; y < dimension; y++) {
+      for (let x = 0; x < dimension; x++) {
+        const m = matrix[y][x];
+        if (!m) continue;
+
+        ctx.fillStyle = m.value ? "black" : "white";
+        ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
+
+        if (m.isHighlighted) {
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(
+            x * moduleSize,
+            y * moduleSize,
+            moduleSize,
+            moduleSize
+          );
+        }
+      }
+    }
+  }, [matrix]);
+
+  const handleClick = (event) => {
+    event.preventDefault();
+
+    const canvas = canvasRef.current;
+    if (!canvas || !matrix) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const dimension = matrix.length;
+    const moduleSize = canvas.width / dimension;
+    const xIndex = Math.floor(x / moduleSize);
+    const yIndex = Math.floor(y / moduleSize);
+
+    const module = matrix[yIndex]?.[xIndex];
+    if (!module) return;
+
+    if (event.type === "click") {
+      console.log(module);
+    } else if (event.type === "contextmenu") {
+      // Toggle value and update source
+      const updated = matrix.map((row, y) =>
+        row.map((cell, x) => {
+          if (x === xIndex && y === yIndex && cell) {
+            const newValue = !cell.value;
+            return {
+              ...cell,
+              value: newValue,
+              source: {
+                ...cell.source,
+                modified: true,
+                overrideValue: newValue,
+              },
+            };
+          }
+          return cell;
+        })
+      );
+      setMatrix(updated);
+    }
+  };
 
   //console.debug("QRCodeCanvas", { errorCorrectionLevel, version, dataMask });
   /*
@@ -107,70 +195,6 @@ export default function QRCodeCanvas() {
   const empty = createEmptyMatrix();
   const matrix = addModules(empty);
 */
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      matrix = generateQRCodeMatrix({
-        version,
-        errorCorrectionLevel,
-        dataMask,
-        codewords,
-      });
-      //console.log({ matrix });
-      const ctx = canvas.getContext("2d");
-      const dimension = matrix.length;
-      moduleSize = canvas.width / dimension;
-
-      // Draw the QR code on the canvas
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-      for (let y = 0; y < matrix.length; y++) {
-        for (let x = 0; x < matrix[y].length; x++) {
-          const module = matrix[y][x];
-          //console.log({ module });
-          const { value, isMasked } = module;
-          const isDark = isMasked ? !value : value;
-          ctx.fillStyle = isDark ? "black" : "white";
-          ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
-
-          // Draw a border if highlighted
-          if (module && module.isHighlighted) {
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(
-              x * moduleSize,
-              y * moduleSize,
-              moduleSize,
-              moduleSize
-            );
-          }
-        }
-      }
-    }
-    //  }, [matrix]);
-  }, [version, errorCorrectionLevel, dataMask, codewords]);
-
-  const handleClick = (event) => {
-    event.preventDefault();
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    const xIndex = Math.floor(x / moduleSize);
-    const yIndex = Math.floor(y / moduleSize);
-
-    const module = matrix[yIndex][xIndex];
-    if (module) {
-      console.log(module);
-      //const newModule = {...module};
-      //if (event.type === "click") {
-      //  newModule.highlight = !module.highlight;
-      //} else if (event.type === "contextmenu") {
-      //  module.toggleBit();
-      //}
-    }
-    return false;
-  };
 
   return (
     <canvas

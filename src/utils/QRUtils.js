@@ -256,6 +256,23 @@ export function generateQRCodeMatrix({
 }) {
   const dimension = version * 4 + 17;
 
+  /*
+  function createEmptyMatrix() {
+    const numModules = version * 4 + 17;
+    const matrix = Array.from({ length: numModules }, () =>
+      Array(numModules).fill(false)
+    );
+    FinderPattern.populate(matrix);
+    TimingPattern.populate(matrix);
+    const alignmentPattern = new AlignmentPattern(version);
+    alignmentPattern.populate(matrix);
+    const formatInfo = new FormatInfo({ errorCorrectionLevel, dataMask });
+    formatInfo.populate(matrix);
+    const versionInfo = new VersionInfo(version);
+    versionInfo.populate(matrix);
+    return matrix;
+  }
+  */
   function createBaseMatrix() {
     const matrix = Array.from({ length: dimension }, () =>
       Array(dimension).fill(false)
@@ -266,6 +283,55 @@ export function generateQRCodeMatrix({
     new VersionInfo(version).populate(matrix);
     return matrix;
   }
+  
+  /*
+  function addModules(empty) {
+    //console.log("addModulesToMatrix");
+    const newMatrix = empty.map((row) => [...row]);
+    const bits = codewords.flat();
+    let bitIdx = 0;
+    let up = true;
+    const dimension = newMatrix.length;
+    // write columns in pairs, right to left
+    for (let columnIdx = dimension - 1; columnIdx > 0; columnIdx -= 2) {
+      // Skip the vertical timing pattern column
+      if (columnIdx === 6) columnIdx--;
+
+      for (let i = 0; i < dimension; i++) {
+        const y = up ? dimension - 1 - i : i;
+
+        for (let columnOffset = 0; columnOffset < 2; columnOffset++) {
+          let x = columnIdx - columnOffset;
+
+          // check for pattern
+          if (!newMatrix[y][x]) {
+            //console.debug({bits, bitIdx});
+            let taggedBit;
+            if (bitIdx < bits.length) {
+              taggedBit = bits[bitIdx++];
+            } else {
+              taggedBit = REMAINDER_BIT;
+            }
+
+            const isMasked = DATA_MASKS[dataMask]({ x, y });
+            newMatrix[y][x] = {
+              ...taggedBit,
+              x,
+              y,
+              isMasked,
+              isHighlighted: false,
+            };
+          }
+        }
+      }
+      up = !up; // Change direction
+    }
+    return newMatrix;
+  }
+
+  const empty = createEmptyMatrix();
+  const matrix = addModules(empty);
+*/
 
   function applyData(matrix, maskIndex) {
     const masked = matrix.map((row) => [...row]);
