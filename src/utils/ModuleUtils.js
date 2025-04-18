@@ -5,21 +5,23 @@ import {
   VERSION_INFO,
 } from "../Constants";
 
-export function makeModule({ bit, x, y, masked }) {
+export function makeModule({ bit, x, y, isMasked }) {
+  console.debug("makeModule", arguments);
   let { value } = bit;
   value = !!value;
-  const isDark = masked ? !value : value;
+  const isDark = isMasked ? !value : value;
   return {
     bit,
     x,
     y,
     isDark,
-    isMasked: !!masked,
+    isMasked: masked,
     isHighlighted: false,
   };
 }
 
 function makeNonDataModule(value, source, x, y) {
+  value = parseInt(value);
   const bit = {
     value,
     source,
@@ -80,9 +82,10 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const source = "FormatInfo";
   const size = matrix.length;
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
-  console.debug("addFormatInfoModules", {formatInfo});
+  //console.debug("addFormatInfoModules", {formatInfo});
   const bits = formatInfo.toString(2);
   const values = `${bits}${bits}`;
+  //console.debug("addFormatInfoModules", {values});
   const positions = [
     // Horizontal
     { x: 0, y: 8 },

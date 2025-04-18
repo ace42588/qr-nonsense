@@ -331,11 +331,11 @@ export function generateQRCodeMatrix({
   }
 
   function applyMask(matrix, maskIndex) {
-    //console.debug("applyMask", {matrix, maskIndex})
+    console.debug("applyMask", {matrix, maskIndex})
     const maskFunc = DATA_MASKS[maskIndex];
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
-      //console.debug("applyMask", {current});
       const isMasked = maskFunc({ x, y });
+      console.debug("applyMask", {current});
       return makeModule({...current, isMasked});
     });
   }
@@ -343,7 +343,7 @@ export function generateQRCodeMatrix({
   function addCodewords(matrix) {
     const bits = codewords.flatMap((cw) => cw.bits);
     const remainderBit = { value: 0, source: "Remainder" };
-    console.debug("applyCodewords", { bits });
+    //console.debug("applyCodewords", { bits });
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
       const bit = bits[idx] || remainderBit;
       return makeModule({ bit, x, y });
