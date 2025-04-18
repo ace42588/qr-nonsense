@@ -95,18 +95,6 @@ export class FormatInfo {
   }
 }
 
-const separatorModule = makeNonDataModule( 0, "separator", null, null);
-
-const TIMING_BITS = [
-  new PatternBit({ bit: 0, patternType: "timing", x: null, y: null }),
-  new PatternBit({ bit: 1, patternType: "timing", x: null, y: null }),
-];
-
-const ALIGNMENT_BITS = [
-  new PatternBit({ bit: 0, patternType: "alignment", x: null, y: null }),
-  new PatternBit({ bit: 1, patternType: "alignment", x: null, y: null }),
-];
-
 export class FinderPattern {
   static populate(matrix) {
     this.drawPattern(matrix, 0, 0);
@@ -148,10 +136,10 @@ export class FinderPattern {
       matrix[7][i] = makeNonDataModule(0, source, i, 7);
       // Top-right separator
       matrix[i][size - 8] = makeNonDataModule(0, source, size - 8, i);
-      matrix[7][size - 1 - i] = makeNonDataModule(0, "separator", size - 1 - i, 7);
+      matrix[7][size - 1 - i] = makeNonDataModule(0, source, size - 1 - i, 7);
       // Bottom-left separator
-      matrix[size - 1 - i][7] = makeNonDataModule(0, "separator", 7, size - 1 - i);
-      matrix[size - 8][i] = makeNonDataModule(0, "separator", i, size - 8);
+      matrix[size - 1 - i][7] = makeNonDataModule(0, source, 7, size - 1 - i);
+      matrix[size - 8][i] = makeNonDataModule(0, source, i, size - 8);
     }
 
   }
@@ -159,37 +147,11 @@ export class FinderPattern {
 
 export class TimingPattern {
   static populate(matrix) {
-    const darkModule = new PatternBit({ bit: true, patternType: "timing" });
-    const lightModule = new PatternBit({ bit: false, patternType: "timing" });
     const size = matrix.length;
     for (let i = 8; i < size - 8; i++) {
-      if (i % 2 === 0) {
-        matrix[6][i] = makeModule({
-          taggedBit: TIMING_BITS[1],
-          x: i,
-          y: 6,
-          masked,
-        });
-        matrix[i][6] = makeModule({
-          taggedBit: TIMING_BITS[1],
-          x: 6,
-          y: i,
-          masked,
-        });
-      } else {
-        matrix[6][i] = makeModule({
-          taggedBit: TIMING_BITS[0],
-          x: i,
-          y: 6,
-          masked,
-        });
-        matrix[i][6] = makeModule({
-          taggedBit: TIMING_BITS[0],
-          x: 6,
-          y: i,
-          masked,
-        });
-      }
+      const even = (i % 2 === 0);
+        matrix[6][i] = makeNonDataModule(even, "TimingPattern", i, 6);
+        matrix[i][6] = makeNonDataModule(even, "TimingPattern", 6, i);
     }
   }
 }
@@ -236,11 +198,7 @@ export class AlignmentPattern {
   }
 
   static drawAlignmentPattern(matrix, centerX, centerY) {
-    const darkModule = new PatternBit({ bit: true, patternType: "alignment" });
-    const lightModule = new PatternBit({
-      bit: false,
-      patternType: "alignment",
-    });
+
     const pattern = [
       [1, 1, 1, 1, 1],
       [1, 0, 0, 0, 1],
@@ -252,12 +210,8 @@ export class AlignmentPattern {
     for (let y = 0; y < 5; y++) {
       for (let x = 0; x < 5; x++) {
         const value = pattern[y][x];
-        matrix[centerY - 2 + y][centerX - 2 + x] = makeModule({
-          taggedBit: FINDER_BITS[value],
-          x: centerX - 2 + x,
-          y: centerY - 2 + y,
-          masked,
-        });
+        matrix[centerY - 2 + y][centerX - 2 + x] = makeNonDataModule( value, "AlignmentPattern", centerX - 2 + x,
+          centerY - 2 + y);
       }
     }
   }
@@ -294,25 +248,17 @@ export class VersionInfo {
 
   populate(matrix) {
     if (this.versionNumber < 7) return;
-    const source = "version";
-    const posVal = "black";
-    const negVal = "white";
+    const source = "VersionInfo";
     const versionString = this.getVersionString();
     const size = matrix.length;
 
-    // Bottom-left version information
     for (let i = 0; i < 6; i++) {
       for (let j = 0; j < 3; j++) {
-        const value = versionString[i * 3 + j] === "1" ? posVal : negVal;
-        matrix[size - 11 + j][i] = new VersionBit({ bit: value });
-      }
-    }
-
-    // Top-right version information
-    for (let i = 0; i < 6; i++) {
-      for (let j = 0; j < 3; j++) {
-        const value = versionString[i * 3 + j] === "1" ? posVal : negVal;
-        matrix[i][size - 11 + j] = new VersionBit({ bit: value });
+        const value = versionString[i * 3 + j];
+        // Bottom-left version information
+        matrix[size - 11 + j][i] = makeNonDataModule(value, source, size - 11 + j, i);
+        // Top-right version information
+        matrix[i][size - 11 + j] = makeNonDataModule(value, source, i, size - 11 + j);
       }
     }
   }
