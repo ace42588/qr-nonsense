@@ -61,10 +61,14 @@ class Encoder {
   encode(data, chunkId, encoding) {
     return {
       chunkId,
-      header: [
-        ...Encoder.computeModeIndicator(this.mode),
-        ...Encoder.computeCharacterCountIndicator(data.length, this.mode),
-      ],
+      //header: [
+      //  ...Encoder.computeModeIndicator(this.mode),
+      //  ...Encoder.computeCharacterCountIndicator(data.length, this.mode),
+      //],
+      header: {
+        mode: this.mode,
+        characterCount: 
+      }
       segments: [...this.encodeData(data, chunkId, encoding)],
     };
   }

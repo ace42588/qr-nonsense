@@ -5,6 +5,14 @@ function getBits(value, source) {
   
 }
 
+function getHeaderBits(header, chunkId) {
+  
+}
+
+function getSegmentBits(segments, chunkId) {
+  
+}
+
 export const BitUtils = {
   /**
    * Creates string of bits given a value and length

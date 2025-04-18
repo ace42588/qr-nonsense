@@ -10,10 +10,10 @@ function validateLength(data, min, max, type) {
 }
 
 class Segment {
-  constructor(data, id, parentId) {
+  constructor(data, id, sourceId) {
     this.data = data;
     this.id = id;
-    this.inputId = parentId;
+    this.sourceId = sourceId;
     this._bitsCache = null;
   }
 
