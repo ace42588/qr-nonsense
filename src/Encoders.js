@@ -64,6 +64,7 @@ class Encoder {
    * @returns {object} An object with header and segments.
    */
   encode(data, chunkId, encoding) {
+    const segments = [...this.encodeData(data, chunkId, encoding)];
     return {
       id: chunkId,
       //header: [
@@ -75,12 +76,12 @@ class Encoder {
         characterCount: {
           count: data.length,
           indicatorLength: Encoder.computeIndicatorLength(
-            data.length,
+            segments.length,
             this.mode
           ),
         },
       },
-      segments: [...this.encodeData(data, chunkId, encoding)],
+      segments,
     };
   }
 }
