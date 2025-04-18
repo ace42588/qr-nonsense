@@ -268,8 +268,5 @@ export function addNonDataModules(
   addTimingPatterns();
   addVersionInfo();
 
-  console.debug("addNonDataModules", {
-    matrix,
-  });
   return matrix;
 }

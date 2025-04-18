@@ -72,7 +72,10 @@ class Encoder {
       //  ...Encoder.computeCharacterCountIndicator(data.length, this.mode),
       //],
       header: {
-        mode: this.mode.bits,
+        mode: {
+          bits: this.mode.bits,
+          name: this.mode.name,
+        },
         characterCount: {
           count: data.length,
           indicatorLength: Encoder.computeIndicatorLength(

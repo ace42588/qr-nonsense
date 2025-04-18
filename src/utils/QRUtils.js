@@ -188,7 +188,6 @@ export const QRUtils = {
     return orderedCodewords;
   },
   getVersion(chunks, inputVersion, errorCorrectionLevel) {
-    console.debug("getVersion", { chunks, inputVersion, errorCorrectionLevel });
     const data = BitUtils.getBitsFromChunks(chunks);
     let version = parseInt(inputVersion) || -1;
     if (1 <= version && version <= 40) {
@@ -315,8 +314,8 @@ export function generateQRCodeMatrix({
           const module = newMatrix[y][x];
           // check if matrix position is used for pattern
           if (!module || (module && !module.nonData)) {
-            idx++;
             newMatrix[y][x] = callbackFn({ x, y, idx }, module);
+            idx++;
           }
         }
       }
@@ -350,7 +349,6 @@ export function generateQRCodeMatrix({
 
   if (dataMask !== -1) {
     const masked = applyMask(populated, dataMask);
-    console.debug("generateQRCodeMatrix", { populated });
     return { matrix: masked, dataMask };
   }
 
@@ -368,7 +366,6 @@ export function generateQRCodeMatrix({
       bestMask = maskIdx;
     }
   }
-  console.debug("generateQRCodeMatrix", {bestMask});
 
   addFormatInfoModules(bestMatrix, errorCorrectionLevel, bestMask);
   return { matrix: bestMatrix, dataMask: bestMask };

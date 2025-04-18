@@ -28,7 +28,6 @@ export function useQRDataDispatch() {
 }
 
 function dataReducer(state, action) {
-  console.debug("dataReducer", { action });
   switch (action.type) {
     case Actions.ChangeInput: {
       const { inputs } = action;

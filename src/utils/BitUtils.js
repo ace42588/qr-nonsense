@@ -9,7 +9,7 @@ function getHeaderBits(header, chunkId) {
     mode,
     characterCount: { count, indicatorLength },
   } = header;
-  const modeBits = BitUtils.toPaddedBinary(mode, 4);
+  const modeBits = BitUtils.toPaddedBinary(mode.bits, 4);
   const modeTagged = BitUtils.createTaggedBits(
     modeBits,
     "modeIndicator",
@@ -17,18 +17,20 @@ function getHeaderBits(header, chunkId) {
     null
   );
   const charCountBits = BitUtils.toPaddedBinary(count, indicatorLength);
-  return BitUtils.createTaggedBits(
+  const countTagged = BitUtils.createTaggedBits(
     charCountBits,
     "characterCount",
     count,
     null
   );
-  return [...modeTagged];
+  const headerBits = [...modeTagged, ...countTagged];
+  console.debug("getHeaderBits", { headerBits });
+  return [...modeTagged, ...countTagged];
 }
 
 function getSegmentBits(segments, chunkId) {
-  console.debug("getSegmentBits", {segments});
-  return segments.flatMap((segment) => [...segment])
+  console.debug("getSegmentBits", { segments });
+  return segments.flatMap((segment) => [...segment]);
 }
 
 export const BitUtils = {
