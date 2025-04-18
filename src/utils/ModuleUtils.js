@@ -8,7 +8,7 @@ import {
 export function makeModule({ bit, x, y, masked }) {
   let { value } = bit;
   value = !!value;
-  const isDark = masked ? !value: value;
+  const isDark = masked ? !value : value;
   return {
     bit,
     x,
@@ -132,12 +132,6 @@ export function addNonDataModules(
   version,
   dataMask
 ) {
-  console.debug("addNonDataModules", {
-    matrix,
-    errorCorrectionLevel,
-    version,
-    dataMask,
-  });
   const size = matrix.length;
 
   function addAlignmentPatterns() {
@@ -270,5 +264,8 @@ export function addNonDataModules(
   addTimingPatterns();
   addVersionInfo();
 
+  console.debug("addNonDataModules", {
+    matrix,
+  });
   return matrix;
 }

@@ -20,12 +20,14 @@ export default function QRCodeCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (let y = 0; y < dimension; y++) {
+      const row = matrix[y];
+      //console.debug({row});
       for (let x = 0; x < dimension; x++) {
-        const m = matrix[y][x];
-
+        const m = row[x];
+        //console.debug({m});
         if (!m) continue;
 
-        ctx.fillStyle = m.value ? "black" : "white";
+        ctx.fillStyle = m.isDark ? "black" : "white";
         ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
 
         if (m.isHighlighted) {
