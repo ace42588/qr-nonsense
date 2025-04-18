@@ -130,7 +130,7 @@ export function addNonDataModules(
   const size = matrix.length;
 
   function addAlignmentPatterns() {
-    console.debug("addAlignmentPatterns", { matrix });
+    //console.debug("addAlignmentPatterns", { matrix });
     const source = "AlignmentPattern";
     if (version === 1) return [];
 
@@ -150,6 +150,7 @@ export function addNonDataModules(
     }
 
     function drawAlignmentPattern(centerX, centerY) {
+      console.debug("drawAlignmentPattern", {centerX, centerY})
       for (let y = 0; y < 5; y++) {
         for (let x = 0; x < 5; x++) {
           const value = ALIGNMENT_PATTERN[y][x];
