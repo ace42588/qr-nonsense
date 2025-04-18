@@ -27,6 +27,7 @@ function makeNonDataModule(value, source, x, y) {
 }
 
 function getAlignmentPatternPositions(version) {
+  console.debug("getAlignmentPatternPositions", { version });
   if (version === 1) return [];
   const positions = [6];
   const numPositions = Math.floor(version / 7) + 2;
@@ -39,10 +40,13 @@ function getAlignmentPatternPositions(version) {
     positions.push(pos);
   }
   positions.push(version * 4 + 10);
+  console.debug("getAlignmentPatternPositions", { positions });
   return positions;
 }
 
 function getBitsFromFormatInfo(ecLevel, mask) {
+  console.debug("getBitsFromFormatInfo", { ecLevel, mask });
+  if (mask === -1) return 0x1111;
   for (const entry of FORMAT_INFO_TABLE) {
     if (
       entry.formatInfo.errorCorrectionLevel === ecLevel &&
@@ -127,6 +131,12 @@ export function addNonDataModules(
   version,
   dataMask
 ) {
+  console.debug("addNonDataModules", {
+    matrix,
+    errorCorrectionLevel,
+    version,
+    dataMask,
+  });
   const size = matrix.length;
 
   function addAlignmentPatterns() {
@@ -135,6 +145,7 @@ export function addNonDataModules(
     if (version === 1) return [];
 
     function shouldDrawAlignmentPattern(x, y) {
+      console.debug("shouldDrawAlignmentPattern", { x, y });
       const finderPatternPositions = [
         { x: 0, y: 0 },
         { x: size - 7, y: 0 },
@@ -150,7 +161,7 @@ export function addNonDataModules(
     }
 
     function drawAlignmentPattern(centerX, centerY) {
-      console.debug("drawAlignmentPattern", {centerX, centerY})
+      console.debug("drawAlignmentPattern", { centerX, centerY });
       for (let y = 0; y < 5; y++) {
         for (let x = 0; x < 5; x++) {
           const value = ALIGNMENT_PATTERN[y][x];
@@ -168,7 +179,7 @@ export function addNonDataModules(
 
     for (let i = 0; i < positions.length; i++) {
       for (let j = 0; j < positions.length; j++) {
-        if (shouldDrawAlignmentPattern( positions[i], positions[j])) {
+        if (shouldDrawAlignmentPattern(positions[i], positions[j])) {
           drawAlignmentPattern(positions[i], positions[j]);
         }
       }

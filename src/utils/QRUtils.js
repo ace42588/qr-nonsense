@@ -239,7 +239,7 @@ export function generateQRCodeMatrix({
     const matrix = Array.from({ length: dimension }, () =>
       Array(dimension).fill(null)
     );
-    addNonDataModules(matrix);
+    addNonDataModules(matrix, errorCorrectionLevel, version, dataMask);
     return matrix;
   }
 
