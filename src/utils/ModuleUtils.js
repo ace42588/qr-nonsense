@@ -95,7 +95,7 @@ export class FormatInfo {
   }
 }
 
-const SEPARATOR_BIT = makeNonDataModule( 0, patternType: "separator" });
+const separatorModule = makeNonDataModule( 0, "separator", null, null);
 
 const TIMING_BITS = [
   new PatternBit({ bit: 0, patternType: "timing", x: null, y: null }),
@@ -129,67 +129,31 @@ export class FinderPattern {
     for (let y = 0; y < 7; y++) {
       for (let x = 0; x < 7; x++) {
         const value = pattern[y][x];
-        matrix[startY + y][startX + x] = makeModule({
-          taggedBit: FINDER_BITS[value],
+        matrix[startY + y][startX + x] = makeNonDataModule(
+          value,
+          "FinderPattern",
           x,
-          y,
-          masked,
-        });
+          y);
       }
     }
   }
 
   static drawSeparators(matrix) {
-    const module = new PatternBit({ bit: false, patternType: "separator" });
     const size = matrix.length;
+    const source = "Separator";
 
-    // Top-left separator
     for (let i = 0; i < 8; i++) {
-      matrix[i][7] = makeModule({
-        taggedBit: SEPARATOR_BIT,
-        x: 7,
-        y: i,
-        masked,
-      });
-      matrix[7][i] = makeModule({
-        taggedBit: SEPARATOR_BIT,
-        x: i,
-        y: 7,
-        masked,
-      });
+      // Top-left separator
+      matrix[i][7] = makeNonDataModule(0, source, 7, i);
+      matrix[7][i] = makeNonDataModule(0, source, i, 7);
+      // Top-right separator
+      matrix[i][size - 8] = makeNonDataModule(0, source, size - 8, i);
+      matrix[7][size - 1 - i] = makeNonDataModule(0, "separator", size - 1 - i, 7);
+      // Bottom-left separator
+      matrix[size - 1 - i][7] = makeNonDataModule(0, "separator", 7, size - 1 - i);
+      matrix[size - 8][i] = makeNonDataModule(0, "separator", i, size - 8);
     }
 
-    // Top-right separator
-    for (let i = 0; i < 8; i++) {
-      matrix[i][size - 8] = makeModule({
-        taggedBit: SEPARATOR_BIT,
-        x: size - 8,
-        y: i,
-        masked,
-      });
-      matrix[7][size - 1 - i] = makeModule({
-        taggedBit: SEPARATOR_BIT,
-        x: size - 1 - i,
-        y: 7,
-        masked,
-      });
-    }
-
-    // Bottom-left separator
-    for (let i = 0; i < 8; i++) {
-      matrix[size - 1 - i][7] = makeModule({
-        taggedBit: SEPARATOR_BIT,
-        x: 7,
-        y: size - 1 - i,
-        masked,
-      });
-      matrix[size - 8][i] = makeModule({
-        taggedBit: SEPARATOR_BIT,
-        x: i,
-        y: size - 8,
-        masked,
-      });
-    }
   }
 }
 
