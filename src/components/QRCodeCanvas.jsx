@@ -22,6 +22,7 @@ export default function QRCodeCanvas() {
     for (let y = 0; y < dimension; y++) {
       for (let x = 0; x < dimension; x++) {
         const m = matrix[y][x];
+
         if (!m) continue;
 
         ctx.fillStyle = m.value ? "black" : "white";

@@ -6,7 +6,8 @@ import {
 } from "../Constants";
 
 export function makeModule({ bit, x, y, masked }) {
-  const { value } = bit;
+  let { value } = bit;
+  value = !!value;
   const isDark = masked ? !value: value;
   return {
     bit,
@@ -29,7 +30,6 @@ function makeNonDataModule(value, source, x, y) {
 }
 
 function getAlignmentPatternPositions(version) {
-  console.debug("getAlignmentPatternPositions", { version });
   if (version === 1) return [];
   const positions = [6];
   const numPositions = Math.floor(version / 7) + 2;
@@ -42,12 +42,10 @@ function getAlignmentPatternPositions(version) {
     positions.push(pos);
   }
   positions.push(version * 4 + 10);
-  console.debug("getAlignmentPatternPositions", { positions });
   return positions;
 }
 
 function getBitsFromFormatInfo(ecLevel, mask) {
-  console.debug("getBitsFromFormatInfo", { ecLevel, mask });
   if (mask === -1) return 0x1111;
   for (const entry of FORMAT_INFO_TABLE) {
     if (
@@ -143,12 +141,10 @@ export function addNonDataModules(
   const size = matrix.length;
 
   function addAlignmentPatterns() {
-    //console.debug("addAlignmentPatterns", { matrix });
     const source = "AlignmentPattern";
     if (version === 1) return [];
 
     function shouldDrawAlignmentPattern(x, y) {
-      console.debug("shouldDrawAlignmentPattern", { x, y });
       const finderPatternPositions = [
         { x: 0, y: 0 },
         { x: size - 7, y: 0 },
@@ -164,7 +160,6 @@ export function addNonDataModules(
     }
 
     function drawAlignmentPattern(centerX, centerY) {
-      console.debug("drawAlignmentPattern", { centerX, centerY });
       for (let y = 0; y < 5; y++) {
         for (let x = 0; x < 5; x++) {
           const value = ALIGNMENT_PATTERN[y][x];

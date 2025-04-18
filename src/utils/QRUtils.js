@@ -165,23 +165,6 @@ function gerVersionInfo(errorCorrectionLevel, version) {
 }
 
 export const QRUtils = {
-  getOrderedBits(chunks, version, errorCorrectionLevel) {
-    const qrBlocks = getBlocks(chunks, errorCorrectionLevel, version);
-    const totalCodewords = qrBlocks.reduce(
-      (total, { codewords }) => total + codewords.length,
-      0
-    );
-    const codewords = Array.from({ length: totalCodewords }, (_, idx) => {
-      const blockIdx = idx % qrBlocks.length;
-      const cwIdx = Math.floor(idx / qrBlocks.length);
-      const { codewords } = qrBlocks[blockIdx];
-      if (cwIdx < codewords.length) {
-        const { bits } = codewords[cwIdx];
-        return [...bits];
-      }
-    });
-    return codewords.flat();
-  },
   getCodewords(chunks, version, errorCorrectionLevel) {
     const qrBlocks = getBlocks(chunks, errorCorrectionLevel, version);
     //console.debug("getCodewords", { qrBlocks });
@@ -336,7 +319,7 @@ export function generateQRCodeMatrix({
           const x = col - offset;
           const module = newMatrix[y][x];
           // check if matrix position is used for pattern
-          if (module && !module.nonData) {
+          if (!module || (module && !module.nonData)) {
             idx++;
             newMatrix[y][x] = callbackFn({ x, y, idx }, module);
           }
