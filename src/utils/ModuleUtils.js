@@ -14,16 +14,15 @@ export function makeModule({ taggedBit, x, y, masked }) {
 function makeNonDataModule(value, source, x, y) {
   const taggedBit = {
     value,
-    source
+    source,
   };
-  return makeModule({taggedBit, x, y, masked: false});
+  return makeModule({ taggedBit, x, y, masked: false });
 }
 
 function getBitsFromFormatInfo(ecLevel, mask) {
   for (const entry of FORMAT_INFO_TABLE) {
     if (
-      entry.formatInfo.errorCorrectionLevel ===
-        ecLevel &&
+      entry.formatInfo.errorCorrectionLevel === ecLevel &&
       entry.formatInfo.dataMask === mask
     ) {
       return entry.bits;
@@ -47,7 +46,10 @@ export class FormatInfo {
   }
 
   populate(matrix) {
-    const bits = getBitsFromFormatInfo( this.errorCorrectionLevel, this.dataMask ).toString(2);
+    const bits = getBitsFromFormatInfo(
+      this.errorCorrectionLevel,
+      this.dataMask
+    ).toString(2);
     const values = bits.split("").concat(bits.split(""));
     const size = matrix.length;
     const positions = [
@@ -87,11 +89,11 @@ export class FormatInfo {
     // Tile the format bits
     for (let i = 0; i < values.length; i++) {
       const { x, y } = positions[i];
-      matrix[y][x] = makeNonDataModule( values[i], "formatInfo", x, y);
+      matrix[y][x] = makeNonDataModule(values[i], "FormatInfo", x, y);
     }
 
     // Add the dark module
-    matrix[size - 8][8] = makeNonDataModule( 1, 8, size - 8);
+    matrix[size - 8][8] = makeNonDataModule(1, 8, size - 8);
   }
 }
 
@@ -121,7 +123,8 @@ export class FinderPattern {
           value,
           "FinderPattern",
           x,
-          y);
+          y
+        );
       }
     }
   }
@@ -141,7 +144,6 @@ export class FinderPattern {
       matrix[size - 1 - i][7] = makeNonDataModule(0, source, 7, size - 1 - i);
       matrix[size - 8][i] = makeNonDataModule(0, source, i, size - 8);
     }
-
   }
 }
 
@@ -149,9 +151,9 @@ export class TimingPattern {
   static populate(matrix) {
     const size = matrix.length;
     for (let i = 8; i < size - 8; i++) {
-      const even = (i % 2 === 0);
-        matrix[6][i] = makeNonDataModule(even, "TimingPattern", i, 6);
-        matrix[i][6] = makeNonDataModule(even, "TimingPattern", 6, i);
+      const even = i % 2 === 0;
+      matrix[6][i] = makeNonDataModule(even, "TimingPattern", i, 6);
+      matrix[i][6] = makeNonDataModule(even, "TimingPattern", 6, i);
     }
   }
 }
@@ -198,7 +200,6 @@ export class AlignmentPattern {
   }
 
   static drawAlignmentPattern(matrix, centerX, centerY) {
-
     const pattern = [
       [1, 1, 1, 1, 1],
       [1, 0, 0, 0, 1],
@@ -210,8 +211,12 @@ export class AlignmentPattern {
     for (let y = 0; y < 5; y++) {
       for (let x = 0; x < 5; x++) {
         const value = pattern[y][x];
-        matrix[centerY - 2 + y][centerX - 2 + x] = makeNonDataModule( value, "AlignmentPattern", centerX - 2 + x,
-          centerY - 2 + y);
+        matrix[centerY - 2 + y][centerX - 2 + x] = makeNonDataModule(
+          value,
+          "AlignmentPattern",
+          centerX - 2 + x,
+          centerY - 2 + y
+        );
       }
     }
   }
@@ -256,9 +261,19 @@ export class VersionInfo {
       for (let j = 0; j < 3; j++) {
         const value = versionString[i * 3 + j];
         // Bottom-left version information
-        matrix[size - 11 + j][i] = makeNonDataModule(value, source, size - 11 + j, i);
+        matrix[size - 11 + j][i] = makeNonDataModule(
+          value,
+          source,
+          size - 11 + j,
+          i
+        );
         // Top-right version information
-        matrix[i][size - 11 + j] = makeNonDataModule(value, source, i, size - 11 + j);
+        matrix[i][size - 11 + j] = makeNonDataModule(
+          value,
+          source,
+          i,
+          size - 11 + j
+        );
       }
     }
   }
@@ -295,5 +310,57 @@ export class VersionInfo {
     }
 
     return bits.padStart(length, "0");
+  }
+}
+
+export function addNonDataModules(matrix, errorCorrectionLevel, dataMask) {
+  const size = matrix.length;
+  function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
+    const bits = getBitsFromFormatInfo(errorCorrectionLevel, dataMask).toString(
+      2
+    );
+    const values = `${bits}${bits}`;
+    const positions = [
+      // Horizontal
+      { x: 0, y: 8 },
+      { x: 1, y: 8 },
+      { x: 2, y: 8 },
+      { x: 3, y: 8 },
+      { x: 4, y: 8 },
+      { x: 5, y: 8 },
+      { x: 7, y: 8 },
+      { x: size - 8, y: 8 },
+      { x: size - 7, y: 8 },
+      { x: size - 6, y: 8 },
+      { x: size - 5, y: 8 },
+      { x: size - 4, y: 8 },
+      { x: size - 3, y: 8 },
+      { x: size - 2, y: 8 },
+      { x: size - 1, y: 8 },
+      // Vertical
+      { x: 8, y: size - 1 },
+      { x: 8, y: size - 2 },
+      { x: 8, y: size - 3 },
+      { x: 8, y: size - 4 },
+      { x: 8, y: size - 5 },
+      { x: 8, y: size - 6 },
+      { x: 8, y: size - 7 },
+      { x: 8, y: 8 },
+      { x: 8, y: 7 },
+      { x: 8, y: 5 },
+      { x: 8, y: 4 },
+      { x: 8, y: 3 },
+      { x: 8, y: 2 },
+      { x: 8, y: 1 },
+      { x: 8, y: 0 },
+    ];
+    // Tile the format bits
+    for (let i = 0; i < values.length; i++) {
+      const { x, y } = positions[i];
+      matrix[y][x] = makeNonDataModule(values[i], "FormatInfo", x, y);
+    }
+
+    // Add the dark module
+    matrix[size - 8][8] = makeNonDataModule(1, 8, size - 8);
   }
 }
