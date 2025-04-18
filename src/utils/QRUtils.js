@@ -2,13 +2,7 @@ import { DATA_MASKS, EC_INFO, CodewordLength } from "../Constants";
 import { ReedSolomonEncoder } from "../reedsolomon/index.js";
 import { TaggedCodeword, ECCodeword } from "../Tagged";
 import { BitUtils } from "./BitUtils";
-import { FormatInfo } from "../encode/FormatInfo";
-import {
-  FinderPattern,
-  TimingPattern,
-  AlignmentPattern,
-} from "../encode/FunctionPatterns";
-import { VersionInfo } from "../encode/VersionInfo";
+import { addNonDataModules, makeModule } from "./ModuleUtils"
 import { RemainderBit } from "../encode/TaggedBitstream";
 
 function getRequiredDataCodewords(version, errorCorrectionLevel) {
@@ -225,7 +219,7 @@ export const QRUtils = {
   },
 };
 
-const REMAINDER_BIT = new RemainderBit();
+const REMAINDER_BIT = makeModule();
 
 export function generateQRCodeMatrix({
   version,
@@ -242,13 +236,9 @@ export function generateQRCodeMatrix({
   const dimension = version * 4 + 17;
   function createBaseMatrix() {
     const matrix = Array.from({ length: dimension }, () =>
-      Array(dimension).fill({ sourceType: "data" })
+      Array(dimension).fill(null)
     );
-    FinderPattern.populate(matrix);
-    TimingPattern.populate(matrix);
-    new AlignmentPattern(version).populate(matrix);
-    new FormatInfo({ errorCorrectionLevel, dataMask: 0 }).populate(matrix);
-    new VersionInfo(version).populate(matrix);
+    addNonDataModules(matrix);
     return matrix;
   }
 
@@ -267,7 +257,7 @@ export function generateQRCodeMatrix({
           const x = col - offset;
           const module = newMatrix[y][x];
           // check if matrix position is used for pattern
-          if (module && module.sourceType === "data") {
+          if (module && !module.nonData) {
             idx++;
             newMatrix[y][x] = callbackFn({ x, y, idx }, module);
           }
@@ -295,17 +285,11 @@ export function generateQRCodeMatrix({
 
   function addCodewords(matrix) {
     const bits = codewords.flatMap((cw) => cw.bits);
+    const remainderBit = {value: 0, source: "Remainder"};
     console.debug("applyCodewords",  {bits});
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
-      const bit = bits[idx] || REMAINDER_BIT;
-      console.debug("applyCodewords", { bit, idx });
-      return {
-        bit,
-        value: bit.value,
-        isHighlighted: false,
-        x,
-        y,
-      };
+      const bit = bits[idx] || makeModule({ taggedBit, x, y, masked: false });
+      return makeModule({ taggedBit, x, y, masked: false });
     });
   }
 

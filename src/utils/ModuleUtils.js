@@ -21,7 +21,9 @@ function makeNonDataModule(value, source, x, y) {
     value,
     source,
   };
-  return makeModule({ taggedBit, x, y, masked: false });
+  const module = makeModule({ taggedBit, x, y, masked: false });
+  module.nonData = true;
+  return module;
 }
 
 function getBitsFromFormatInfo(ecLevel, mask) {
@@ -245,6 +247,9 @@ export function addNonDataModules(
   addFormatInfoModules();
   addFinderPatterns();
   addSeparators();
+  addTimingPatterns();
+  addVersionInfo();
   
+  return matrix
   
 }
