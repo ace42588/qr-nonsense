@@ -1,12 +1,23 @@
 import { FORMAT_INFO_TABLE, VERSION_INFO } from "../Constants";
-import { FormatBit } from "./TaggedBitstream";
 
-const FORMAT_BITS = [
-  new FormatBit({ bit: 0, source: "format", x: null, y: null }),
-  new FormatBit({ bit: 1, source: "format", x: null, y: null })
-]
+export function makeModule({ taggedBit, x, y, masked }) {
+  const { value, source } = taggedBit;
+  return {
+    bit: taggedBit,
+    x,
+    y,
+    isMasked: masked,
+    isHighlighted: false,
+  };
+}
 
-const masked = false;
+function makeNonDataModule(value, source, x, y) {
+  const taggedBit = {
+    value,
+    source
+  };
+  return makeModule({taggedBit, x, y, masked: false});
+}
 
 function getBitsFromFormatInfo(ecLevel, mask) {
   for (const entry of FORMAT_INFO_TABLE) {
@@ -76,22 +87,15 @@ export class FormatInfo {
     // Tile the format bits
     for (let i = 0; i < values.length; i++) {
       const { x, y } = positions[i];
-      matrix[y][x] = makeModule({ taggedBit: FORMAT_BITS[values[i]], x, y, masked });
+      matrix[y][x] = makeNonDataModule( values[i], "formatInfo", x, y);
     }
 
     // Add the dark module
-    matrix[size - 8][8] = makeModule({ taggedBit: FORMAT_BITS[1], x: 8, y: size - 8, masked });
+    matrix[size - 8][8] = makeNonDataModule( 1, 8, size - 8);
   }
 }
 
-import { PatternBit } from "./TaggedBitstream";
-
-const FINDER_BITS = [
-  new PatternBit({ bit: 0, patternType: "format", x: null, y: null }),
-  new PatternBit({ bit: 1, patternType: "format", x: null, y: null }),
-];
-
-const SEPARATOR_BIT = new PatternBit({ bit: false, patternType: "separator" });
+const SEPARATOR_BIT = makeNonDataModule( 0, patternType: "separator" });
 
 const TIMING_BITS = [
   new PatternBit({ bit: 0, patternType: "timing", x: null, y: null }),
@@ -312,8 +316,6 @@ export class AlignmentPattern {
   }
 }
 
-import { VersionBit } from "./TaggedBitstream";
-
 export class VersionInfo {
   constructor(version) {
     if (typeof version === "object") {
@@ -384,15 +386,4 @@ export class VersionInfo {
 
     return bits.padStart(length, "0");
   }
-}
-
-export function makeModule({ taggedBit, x, y, masked }) {
-  const { value, source } = taggedBit;
-  return {
-    bit: taggedBit,
-    x,
-    y,
-    isMasked: masked,
-    isHighlighted: false,
-  };
 }
