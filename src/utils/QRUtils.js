@@ -222,6 +222,83 @@ export const QRUtils = {
   },
 };
 
+function calculatePenalty(matrix) {
+  const size = matrix.length;
+  let score = 0;
+
+  // Rule 1: same-color runs
+  for (let y = 0; y < size; y++) {
+    let runColor = null;
+    let runLength = 0;
+    for (let x = 0; x < size; x++) {
+      const value = !!matrix[y][x]?.value;
+      if (value === runColor) {
+        runLength++;
+      } else {
+        if (runLength >= 5) score += 3 + (runLength - 5);
+        runColor = value;
+        runLength = 1;
+      }
+    }
+    if (runLength >= 5) score += 3 + (runLength - 5);
+  }
+
+  for (let x = 0; x < size; x++) {
+    let runColor = null;
+    let runLength = 0;
+    for (let y = 0; y < size; y++) {
+      const value = !!matrix[y][x]?.value;
+      if (value === runColor) {
+        runLength++;
+      } else {
+        if (runLength >= 5) score += 3 + (runLength - 5);
+        runColor = value;
+        runLength = 1;
+      }
+    }
+    if (runLength >= 5) score += 3 + (runLength - 5);
+  }
+
+  // Rule 2: 2x2 blocks
+  for (let y = 0; y < size - 1; y++) {
+    for (let x = 0; x < size - 1; x++) {
+      const v = !!matrix[y][x]?.value;
+      if (
+        v === !!matrix[y][x + 1]?.value &&
+        v === !!matrix[y + 1][x]?.value &&
+        v === !!matrix[y + 1][x + 1]?.value
+      ) {
+        score += 3;
+      }
+    }
+  }
+
+  // Rule 3: finder-like patterns
+  const pattern = [1, 0, 1, 1, 1, 0, 1];
+  const patternStr = pattern.join("");
+
+  const checkPattern = (arr) => arr.join("").includes(patternStr);
+
+  for (let y = 0; y < size; y++) {
+    const row = matrix[y].map((m) => (m?.value ? 1 : 0));
+    if (checkPattern(row)) score += 40;
+  }
+
+  for (let x = 0; x < size; x++) {
+    const col = matrix.map((row) => (row[x]?.value ? 1 : 0));
+    if (checkPattern(col)) score += 40;
+  }
+
+  // Rule 4: dark/light balance
+  const totalModules = size * size;
+  const darkCount = matrix.flat().filter((m) => m?.value).length;
+  const percent = (darkCount / totalModules) * 100;
+  const fivePercentSteps = Math.abs(Math.round(percent / 5) - 10);
+  score += fivePercentSteps * 10;
+
+  return score;
+}
+
 export function generateQRCodeMatrix({
   version,
   errorCorrectionLevel,
@@ -235,6 +312,7 @@ export function generateQRCodeMatrix({
     codewords,
   });
   const dimension = version * 4 + 17;
+  
   function createBaseMatrix() {
     const matrix = Array.from({ length: dimension }, () =>
       Array(dimension).fill(null)
@@ -275,12 +353,7 @@ export function generateQRCodeMatrix({
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
       //console.debug("applyMask", {current});
       const isMasked = maskFunc({ x, y });
-      const { value: existingValue } = current;
-      return {
-        ...current,
-        isDark: isMasked ? !existingValue : existingValue,
-        isMasked,
-      };
+      return makeModule({...current, isMasked});
     });
   }
 
@@ -290,85 +363,8 @@ export function generateQRCodeMatrix({
     console.debug("applyCodewords", { bits });
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
       const bit = bits[idx] || remainderBit;
-      return makeModule({ taggedBit: bit, x, y, masked: false });
+      return makeModule({ bit, x, y });
     });
-  }
-
-  function calculatePenalty(matrix) {
-    const size = matrix.length;
-    let score = 0;
-
-    // Rule 1: same-color runs
-    for (let y = 0; y < size; y++) {
-      let runColor = null;
-      let runLength = 0;
-      for (let x = 0; x < size; x++) {
-        const value = !!matrix[y][x]?.value;
-        if (value === runColor) {
-          runLength++;
-        } else {
-          if (runLength >= 5) score += 3 + (runLength - 5);
-          runColor = value;
-          runLength = 1;
-        }
-      }
-      if (runLength >= 5) score += 3 + (runLength - 5);
-    }
-
-    for (let x = 0; x < size; x++) {
-      let runColor = null;
-      let runLength = 0;
-      for (let y = 0; y < size; y++) {
-        const value = !!matrix[y][x]?.value;
-        if (value === runColor) {
-          runLength++;
-        } else {
-          if (runLength >= 5) score += 3 + (runLength - 5);
-          runColor = value;
-          runLength = 1;
-        }
-      }
-      if (runLength >= 5) score += 3 + (runLength - 5);
-    }
-
-    // Rule 2: 2x2 blocks
-    for (let y = 0; y < size - 1; y++) {
-      for (let x = 0; x < size - 1; x++) {
-        const v = !!matrix[y][x]?.value;
-        if (
-          v === !!matrix[y][x + 1]?.value &&
-          v === !!matrix[y + 1][x]?.value &&
-          v === !!matrix[y + 1][x + 1]?.value
-        ) {
-          score += 3;
-        }
-      }
-    }
-
-    // Rule 3: finder-like patterns
-    const pattern = [1, 0, 1, 1, 1, 0, 1];
-    const patternStr = pattern.join("");
-
-    const checkPattern = (arr) => arr.join("").includes(patternStr);
-
-    for (let y = 0; y < size; y++) {
-      const row = matrix[y].map((m) => (m?.value ? 1 : 0));
-      if (checkPattern(row)) score += 40;
-    }
-
-    for (let x = 0; x < size; x++) {
-      const col = matrix.map((row) => (row[x]?.value ? 1 : 0));
-      if (checkPattern(col)) score += 40;
-    }
-
-    // Rule 4: dark/light balance
-    const totalModules = size * size;
-    const darkCount = matrix.flat().filter((m) => m?.value).length;
-    const percent = (darkCount / totalModules) * 100;
-    const fivePercentSteps = Math.abs(Math.round(percent / 5) - 10);
-    score += fivePercentSteps * 10;
-
-    return score;
   }
 
   const base = createBaseMatrix();

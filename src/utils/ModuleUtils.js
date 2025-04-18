@@ -5,23 +5,25 @@ import {
   VERSION_INFO,
 } from "../Constants";
 
-export function makeModule({ taggedBit, x, y, masked }) {
-  const { value, source } = taggedBit;
+export function makeModule({ bit, x, y, masked }) {
+  const { value } = bit;
+  const isDark = masked ? !value: value;
   return {
-    bit: taggedBit,
+    bit,
     x,
     y,
-    isMasked: masked,
+    isDark,
+    isMasked: !!masked,
     isHighlighted: false,
   };
 }
 
 function makeNonDataModule(value, source, x, y) {
-  const taggedBit = {
+  const bit = {
     value,
     source,
   };
-  const module = makeModule({ taggedBit, x, y, masked: false });
+  const module = makeModule({ bit, x, y, masked: false });
   module.nonData = true;
   return module;
 }
@@ -58,7 +60,8 @@ function getBitsFromFormatInfo(ecLevel, mask) {
   throw new Error("Format information not found");
 }
 
-function computeBCH(bits, generator, length) {
+function computeBCH(bits, length) {
+  const generator = 0b1111100100101; // Generator polynomial for BCH(18, 6)
   const maxIter = 9;
   let iters = 0;
   let bitsInt = parseInt(bits, 2);
@@ -236,9 +239,8 @@ export function addNonDataModules(
     function getVersionString() {
       const versionBits = VERSION_INFO[version].toString(2).padStart(6, "0");
       const paddedVersionBits = versionBits.padEnd(18, "0");
-      const generator = 0b1111100100101; // Generator polynomial for BCH(18, 6)
 
-      const errorCorrectionBits = computeBCH(paddedVersionBits, generator, 12);
+      const errorCorrectionBits = computeBCH(paddedVersionBits, 12);
       return (versionBits + errorCorrectionBits).padStart(18, "0");
     }
     if (version < 7) return;
