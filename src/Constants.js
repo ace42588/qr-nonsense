@@ -98,6 +98,16 @@ export const FORMAT_INFO_TABLE = [
   { bits: 0x2bed, formatInfo: { errorCorrectionLevel: 2, dataMask: 7 } },
 ];
 
+export const DATA_MASKS = [
+  (p) => (p.y + p.x) % 2 === 0,
+  (p) => p.y % 2 === 0,
+  (p) => p.x % 3 === 0,
+  (p) => (p.y + p.x) % 3 === 0,
+  (p) => (Math.floor(p.y / 2) + Math.floor(p.x / 3)) % 2 === 0,
+  (p) => ((p.x * p.y) % 2) + ((p.x * p.y) % 3) === 0,
+  (p) => (((p.y * p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
+  (p) => (((p.y + p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
+];
 
 export const PAD_BYTES = [236, 17];
 

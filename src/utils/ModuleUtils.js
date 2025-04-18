@@ -1,8 +1,5 @@
 import { FORMAT_INFO_TABLE, VERSION_INFO } from "../Constants";
 import { FormatBit } from "./TaggedBitstream";
-import { makeModule } from "../Utilities";
-
-export const ErrorCorrectionLevel = ["M", "L", "H", "Q"];
 
 const FORMAT_BITS = [
   new FormatBit({ bit: 0, source: "format", x: null, y: null }),
@@ -12,7 +9,6 @@ const FORMAT_BITS = [
 const masked = false;
 
 function getBitsFromFormatInfo(ecLevel, mask) {
-  if (mask === "auto") return 0x0000;
   for (const entry of FORMAT_INFO_TABLE) {
     if (
       entry.formatInfo.errorCorrectionLevel ===
@@ -31,7 +27,7 @@ export class FormatInfo {
     // Convert error correction level to its number equivalent
     if (/^[HMLQ]$/i.test(errorCorrectionLevel)) {
       let ecl = errorCorrectionLevel.toUpperCase();
-      errorCorrectionLevel = ErrorCorrectionLevel.indexOf(ecl);
+      errorCorrectionLevel = ["M", "L", "H", "Q"].indexOf(ecl);
     } else {
       errorCorrectionLevel = parseInt(errorCorrectionLevel);
     }
@@ -388,4 +384,15 @@ export class VersionInfo {
 
     return bits.padStart(length, "0");
   }
+}
+
+export function makeModule({ taggedBit, x, y, masked }) {
+  const { value, source } = taggedBit;
+  return {
+    bit: taggedBit,
+    x,
+    y,
+    isMasked: masked,
+    isHighlighted: false,
+  };
 }

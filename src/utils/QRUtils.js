@@ -1,4 +1,4 @@
-import { EC_INFO, CodewordLength } from "../Constants";
+import { DATA_MASKS, EC_INFO, CodewordLength } from "../Constants";
 import { ReedSolomonEncoder } from "../reedsolomon/index.js";
 import { TaggedCodeword, ECCodeword } from "../Tagged";
 import { BitUtils } from "./BitUtils";
@@ -224,28 +224,6 @@ export const QRUtils = {
     throw new Error(`Invalid version: ${inputVersion.toString()}`);
   },
 };
-
-export function makeModule({ taggedBit, x, y, masked }) {
-  const { value, source } = taggedBit;
-  return {
-    ...taggedBit,
-    x,
-    y,
-    isMasked: masked,
-    isHighlighted: false,
-  };
-}
-
-const DATA_MASKS = [
-  (p) => (p.y + p.x) % 2 === 0,
-  (p) => p.y % 2 === 0,
-  (p) => p.x % 3 === 0,
-  (p) => (p.y + p.x) % 3 === 0,
-  (p) => (Math.floor(p.y / 2) + Math.floor(p.x / 3)) % 2 === 0,
-  (p) => ((p.x * p.y) % 2) + ((p.x * p.y) % 3) === 0,
-  (p) => (((p.y * p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
-  (p) => (((p.y + p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
-];
 
 const REMAINDER_BIT = new RemainderBit();
 
