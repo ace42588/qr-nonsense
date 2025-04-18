@@ -15,7 +15,7 @@ export function makeModule({ bit, x, y, masked }) {
     y,
     isDark,
     isMasked: !!masked,
-    isHighlighted: false,
+    isHighlighted: true,
   };
 }
 
@@ -180,23 +180,23 @@ export function addNonDataModules(
 
   function addFinderPatterns() {
     const source = "FinderPattern";
-    function addPattern(matrix, startX, startY) {
+    function addPattern(startX, startY) {
       for (let y = 0; y < 7; y++) {
         for (let x = 0; x < 7; x++) {
           const value = FINDER_PATTERN[y][x];
           matrix[startY + y][startX + x] = makeNonDataModule(
             value,
             source,
-            x,
-            y
+            startX + x,
+            startY + y
           );
         }
       }
     }
 
-    addPattern(matrix, 0, 0);
-    addPattern(matrix, size - 7, 0);
-    addPattern(matrix, 0, size - 7);
+    addPattern(0, 0);
+    addPattern(size - 7, 0);
+    addPattern(0, size - 7);
   }
 
   function addSeparators() {
