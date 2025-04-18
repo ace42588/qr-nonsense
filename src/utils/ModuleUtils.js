@@ -26,7 +26,7 @@ function makeNonDataModule(value, source, x, y) {
     value,
     source,
   };
-  const module = makeModule({ bit, x, y, masked: false });
+  const module = makeModule({ bit, x, y, isMasked: false });
   module.nonData = true;
   return module;
 }
@@ -222,9 +222,9 @@ export function addNonDataModules(
   function addTimingPatterns() {
     const source = "TimingPattern";
     for (let i = 8; i < size - 8; i++) {
-      const even = i % 2 === 0;
-      matrix[6][i] = makeNonDataModule(even, source, i, 6);
-      matrix[i][6] = makeNonDataModule(even, source, 6, i);
+      const value = (i % 2 === 0) ? 1 : 0;
+      matrix[6][i] = makeNonDataModule(value, source, i, 6);
+      matrix[i][6] = makeNonDataModule(value, source, 6, i);
     }
   }
 

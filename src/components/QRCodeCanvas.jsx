@@ -62,7 +62,7 @@ export default function QRCodeCanvas() {
     if (!module) return;
 
     if (event.type === "click") {
-      console.log(module);
+      console.log(module.bit);
     } else if (event.type === "contextmenu") {
       // Toggle value and update source
       dispatch({ type: Actions.ToggleModule, module });

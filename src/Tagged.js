@@ -4,11 +4,9 @@ export class TaggedBit {
     if (typeof id === "undefined" || id === null)
       throw new Error("TaggedBits must have an `id` value!");
     this.value = !!(bit == "1");
-    this.orginalValue = this.value;
     this.sourceType = type; // (e.g., 'mode', 'character indicator')
     this.sourceValue = source; // Source value (e.g., the character or byte that generated this bit)
     this.segmentPosition = id;
-    this.altered = false;
     this.parentId;
   }
 
