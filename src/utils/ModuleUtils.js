@@ -60,6 +60,58 @@ export function addNonDataModules(
   dataMask
 ) {
   const size = matrix.length;
+  
+  function addAlignmentPatterns() {
+    const source = "AlignmentPattern";
+    if (version === 1) return [];
+
+    function shouldDrawAlignmentPattern(x, y) {
+      const finderPatternPositions = [
+        { x: 0, y: 0 },
+        { x: size - 7, y: 0 },
+        { x: 0, y: size - 7 },
+      ];
+
+      for (const pos of finderPatternPositions) {
+        if (Math.abs(pos.x - x) < 9 && Math.abs(pos.y - y) < 9) {
+          return false;
+        }
+      }
+      return true;
+    }
+    
+    const positions = [6];
+    const numPositions = Math.floor(version / 7) + 2;
+    const step = Math.ceil((size - 13) / (numPositions - 1));
+    for (
+      let pos = version * 4 + 10 - step * (numPositions - 2);
+      pos >= 6;
+      pos -= step
+    ) {
+      positions.push(pos);
+    }
+    positions.push(version * 4 + 10);
+    for (let i = 0; i < positions.length; i++) {
+      for (let j = 0; j < positions.length; j++) {
+        const centerX = positions[i];
+        const centerY = positions[j];
+        if (shouldDrawAlignmentPattern(centerX, centerY)) {
+          for (let y = 0; y < 5; y++) {
+            for (let x = 0; x < 5; x++) {
+              const value = ALIGNMENT_PATTERN[y][x];
+              matrix[centerY - 2 + y][centerX - 2 + x] = makeNonDataModule(
+                value,
+                source,
+                centerX - 2 + x,
+                centerY - 2 + y
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+  
   function addFormatInfoModules() {
     const source = "FormatInfo";
     const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
@@ -108,9 +160,10 @@ export function addNonDataModules(
     // Add the dark module
     matrix[size - 8][8] = makeNonDataModule(1, 8, size - 8);
   }
+  
   function addFinderPatterns() {
-    function drawPattern(matrix, startX, startY) {
-      const source = "FinderPattern";
+    const source = "FinderPattern";
+    function addPattern(matrix, startX, startY) {
       for (let y = 0; y < 7; y++) {
         for (let x = 0; x < 7; x++) {
           const value = FINDER_PATTERN[y][x];
@@ -124,11 +177,11 @@ export function addNonDataModules(
       }
     }
 
-    drawPattern(matrix, 0, 0);
-    drawPattern(matrix, size - 7, 0);
-    drawPattern(matrix, 0, size - 7);
+    addPattern(matrix, 0, 0);
+    addPattern(matrix, size - 7, 0);
+    addPattern(matrix, 0, size - 7);
   }
-  
+
   function addSeparators() {
     const source = "Separator";
 
@@ -144,7 +197,7 @@ export function addNonDataModules(
       matrix[size - 8][i] = makeNonDataModule(0, source, i, size - 8);
     }
   }
-  
+
   function addTimingPatterns() {
     const source = "TimingPattern";
     for (let i = 8; i < size - 8; i++) {
@@ -154,79 +207,13 @@ export function addNonDataModules(
     }
   }
   
-  function addAlignmentPatterns() {
-    function drawAlignmentPattern(centerX, centerY) {
-      const source = "AlignmentPattern";
-      for (let y = 0; y < 5; y++) {
-        for (let x = 0; x < 5; x++) {
-          const value = ALIGNMENT_PATTERN[y][x];
-          matrix[centerY - 2 + y][centerX - 2 + x] = makeNonDataModule(
-            value,
-            source,
-            centerX - 2 + x,
-            centerY - 2 + y
-          );
-        }
-      }
-    }
-    function shouldDrawAlignmentPattern(x, y) {
-      const finderPatternPositions = [
-        { x: 0, y: 0 },
-        { x: size - 7, y: 0 },
-        { x: 0, y: size - 7 },
-      ];
-
-      for (const pos of finderPatternPositions) {
-        if (Math.abs(pos.x - x) < 9 && Math.abs(pos.y - y) < 9) {
-          return false;
-        }
-      }
-      return true;
-    }
-    if (version === 1) return [];
-      const positions = [6];
-      const numPositions = Math.floor(version / 7) + 2;
-      const step = Math.ceil((version * 4 + 17 - 13) / (numPositions - 1));
-      for (
-        let pos = version * 4 + 10 - step * (numPositions - 2);
-        pos >= 6;
-        pos -= step
-      ) {
-        positions.push(pos);
-      }
-      positions.push(version * 4 + 10);
-    for (let i = 0; i < positions.length; i++) {
-      for (let j = 0; j < positions.length; j++) {
-        const centerX = positions[i];
-          const centerY = positions[j];
-        if (shouldDrawAlignmentPattern(centerX, centerY)) {
-          drawAlignmentPattern(positions[i], positions[j]);
-          for (let y = 0; y < 5; y++) {
-        for (let x = 0; x < 5; x++) {
-          const value = ALIGNMENT_PATTERN[y][x];
-          matrix[centerY - 2 + y][centerX - 2 + x] = makeNonDataModule(
-            value,
-            source,
-            centerX - 2 + x,
-            centerY - 2 + y
-          );
-        }
-      }
-        }
-      }
-    }
-  }
   function addVersionInfo() {
     function getVersionString() {
       const versionBits = VERSION_INFO[version].toString(2).padStart(6, "0");
       const paddedVersionBits = versionBits.padEnd(18, "0");
       const generator = 0b1111100100101; // Generator polynomial for BCH(18, 6)
 
-      const errorCorrectionBits = VersionInfo.computeBCH(
-        paddedVersionBits,
-        generator,
-        12
-      );
+      const errorCorrectionBits = computeBCH(paddedVersionBits, generator, 12);
       return (versionBits + errorCorrectionBits).padStart(18, "0");
     }
     if (version < 7) return;
@@ -253,4 +240,11 @@ export function addNonDataModules(
       }
     }
   }
+  
+  addAlignmentPatterns();
+  addFormatInfoModules();
+  addFinderPatterns();
+  addSeparators();
+  
+  
 }
