@@ -28,10 +28,16 @@ export function useQRDataDispatch() {
 }
 
 function dataReducer(state, action) {
+  console.debug("dataReducer", {action});
   switch (action.type) {
     case Actions.ChangeInput: {
       const { inputs } = action;
-      const newQRData = getQRDataFromInputs(inputs, state);
+      const newQRData = getQRDataFromInputs(
+        inputs,
+        state.errorCorrectionLevel,
+        state.version,
+        state.dataMask
+      );
       const newState = {
         ...state,
         ...newQRData,
@@ -41,27 +47,39 @@ function dataReducer(state, action) {
     }
     case Actions.ChangeDataMask: {
       const { dataMask } = action;
-      return { ...state, dataMask };
+      const newQRData = getQRDataFromInputs(
+        state.inputs,
+        state.errorCorrectionLevel,
+        state.version,
+        dataMask
+      );
+      return { ...state, ...newQRData, dataMask };
     }
     case Actions.ChangeVersion: {
       const { version } = action;
-      const calculatedVersion = QRUtils.getVersion(
-        state.chunks,
-        state.version,
-        state.errorCorrectionLevel
+      const newQRData = getQRDataFromInputs(
+        state.inputs,
+        state.errorCorrectionLevel,
+        version,
+        state.dataMask
       );
-      return { ...state, version, calculatedVersion };
+      return { ...state, ...newQRData, version };
     }
     case Actions.ChangeErrorCorretionLevel: {
       const { errorCorrectionLevel } = action;
-      return { ...state, errorCorrectionLevel };
+      const newQRData = getQRDataFromInputs(
+        state.inputs,
+        errorCorrectionLevel,
+        state.version,
+        state.dataMask
+      );
+      return { ...state, ...newQRData, errorCorrectionLevel };
     }
   }
 }
 
-function getQRDataFromInputs(inputs, state) {
+function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
   if (!inputs) return {};
-  const { errorCorrectionLevel, version, dataMask } = state;
   const chunks = inputs.map(({ data, mode, encoding }, idx) =>
     Encoders(mode).encode(data, idx, encoding)
   );
@@ -93,6 +111,7 @@ function getQRDataFromInputs(inputs, state) {
 }
 
 const initialData = {
+  inputs: [],
   errorCorrectionLevel: 1,
   version: -1,
   calculatedVersion: 1,

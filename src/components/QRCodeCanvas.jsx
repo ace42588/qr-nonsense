@@ -51,23 +51,12 @@ export default function QRCodeCanvas() {
     if (!canvas || !matrix) return;
 
     const rect = canvas.getBoundingClientRect();
-    console.debug({ event, rect });
-    const { left, top } = rect;
-    const { clientX, clientY, pageX, pageY } = event;
-    const { offsetLeft, offsetTop } = event.target;
-    console.debug({ clientX, clientY });
-    console.debug({ pageX, pageY });
-    console.debug({ offsetLeft, offsetTop });
-    console.debug({ left, top });
-    const x = event.clientX - offsetLeft;
-    const y = event.clientY - offsetTop;
-    console.debug({ x, y });
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
 
-    const moduleSize = canvas.width / matrix.length;
-    console.debug({ moduleSize });
+    const moduleSize = canvas.scrollWidth / matrix.length;
     const xIndex = Math.floor(x / moduleSize);
     const yIndex = Math.floor(y / moduleSize);
-    console.debug({ xIndex, yIndex });
 
     const module = matrix[yIndex]?.[xIndex];
     if (!module) return;

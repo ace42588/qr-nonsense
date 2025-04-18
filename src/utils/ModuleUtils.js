@@ -15,7 +15,7 @@ export function makeModule({ bit, x, y, masked }) {
     y,
     isDark,
     isMasked: !!masked,
-    isHighlighted: true,
+    isHighlighted: false,
   };
 }
 
@@ -80,6 +80,7 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const source = "FormatInfo";
   const size = matrix.length;
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
+  console.debug("addFormatInfoModules", {formatInfo});
   const bits = formatInfo.toString(2);
   const values = `${bits}${bits}`;
   const positions = [
