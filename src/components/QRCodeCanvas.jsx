@@ -51,11 +51,12 @@ export default function QRCodeCanvas() {
     if (!canvas || !matrix) return;
 
     const rect = canvas.getBoundingClientRect();
+    console.debug({event, rect});
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
+    console.debug()
 
-    const dimension = matrix.length;
-    const moduleSize = canvas.width / dimension;
+    const moduleSize = canvas.width / matrix.length;
     const xIndex = Math.floor(x / moduleSize);
     const yIndex = Math.floor(y / moduleSize);
 
@@ -72,6 +73,7 @@ export default function QRCodeCanvas() {
 
   return (
     <canvas
+      id="canvas"
       ref={canvasRef}
       width="420"
       height="420"
