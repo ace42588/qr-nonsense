@@ -47,7 +47,6 @@
 /* QRCodeCanvas Styles */
 canvas {
   border: 1px solid #000000;
-  max-width: 100%;
   height: auto;
   display: block;
   margin: 0 auto;

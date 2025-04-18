@@ -51,22 +51,23 @@ export default function QRCodeCanvas() {
     if (!canvas || !matrix) return;
 
     const rect = canvas.getBoundingClientRect();
-    console.debug({event, rect});
-    const {left, top} = rect;
+    console.debug({ event, rect });
+    const { left, top } = rect;
     const { clientX, clientY, pageX, pageY } = event;
     const { offsetLeft, offsetTop } = event.target;
-    console.debug({ clientX, clientY});
+    console.debug({ clientX, clientY });
     console.debug({ pageX, pageY });
     console.debug({ offsetLeft, offsetTop });
     console.debug({ left, top });
     const x = event.clientX - offsetLeft;
     const y = event.clientY - offsetTop;
-    console.debug({x, y});
+    console.debug({ x, y });
 
     const moduleSize = canvas.width / matrix.length;
+    console.debug({ moduleSize });
     const xIndex = Math.floor(x / moduleSize);
     const yIndex = Math.floor(y / moduleSize);
-    console.debug({xIndex, yIndex});
+    console.debug({ xIndex, yIndex });
 
     const module = matrix[yIndex]?.[xIndex];
     if (!module) return;
@@ -75,19 +76,21 @@ export default function QRCodeCanvas() {
       console.log(module);
     } else if (event.type === "contextmenu") {
       // Toggle value and update source
-      dispatch({ type: Actions.ToggleModule, module});
+      dispatch({ type: Actions.ToggleModule, module });
     }
   };
 
   return (
-    <canvas
-      id="canvas"
-      ref={canvasRef}
-      width="420"
-      height="420"
-      onClick={handleClick}
-      onContextMenu={handleClick} // Handle right-click as well
-      style={{ border: "1px solid #000" }}
-    ></canvas>
+    <div className="qr-code-canvas-container">
+      <canvas
+        id="canvas"
+        ref={canvasRef}
+        width="420"
+        height="420"
+        onClick={handleClick}
+        onContextMenu={handleClick} // Handle right-click as well
+        style={{ border: "1px solid #000" }}
+      ></canvas>
+    </div>
   );
 }
