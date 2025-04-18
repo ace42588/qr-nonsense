@@ -6,7 +6,7 @@ import {
 } from "../Constants";
 
 export function makeModule({ bit, x, y, isMasked }) {
-  console.debug("makeModule", arguments);
+  //console.debug("makeModule", arguments);
   let { value } = bit;
   value = !!value;
   const isDark = isMasked ? !value : value;
@@ -15,7 +15,7 @@ export function makeModule({ bit, x, y, isMasked }) {
     x,
     y,
     isDark,
-    isMasked: masked,
+    isMasked,
     isHighlighted: false,
   };
 }

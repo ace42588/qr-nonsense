@@ -214,7 +214,7 @@ function calculatePenalty(matrix) {
     let runColor = null;
     let runLength = 0;
     for (let x = 0; x < size; x++) {
-      const value = !!matrix[y][x]?.value;
+      const value = !!matrix[y][x]?.isDark;
       if (value === runColor) {
         runLength++;
       } else {
@@ -230,7 +230,7 @@ function calculatePenalty(matrix) {
     let runColor = null;
     let runLength = 0;
     for (let y = 0; y < size; y++) {
-      const value = !!matrix[y][x]?.value;
+      const value = !!matrix[y][x]?.isDark;
       if (value === runColor) {
         runLength++;
       } else {
@@ -245,11 +245,11 @@ function calculatePenalty(matrix) {
   // Rule 2: 2x2 blocks
   for (let y = 0; y < size - 1; y++) {
     for (let x = 0; x < size - 1; x++) {
-      const v = !!matrix[y][x]?.value;
+      const v = !!matrix[y][x]?.isDark;
       if (
-        v === !!matrix[y][x + 1]?.value &&
-        v === !!matrix[y + 1][x]?.value &&
-        v === !!matrix[y + 1][x + 1]?.value
+        v === !!matrix[y][x + 1]?.isDark &&
+        v === !!matrix[y + 1][x]?.isDark &&
+        v === !!matrix[y + 1][x + 1]?.isDark
       ) {
         score += 3;
       }
@@ -263,18 +263,18 @@ function calculatePenalty(matrix) {
   const checkPattern = (arr) => arr.join("").includes(patternStr);
 
   for (let y = 0; y < size; y++) {
-    const row = matrix[y].map((m) => (m?.value ? 1 : 0));
+    const row = matrix[y].map((m) => (m?.isDark ? 1 : 0));
     if (checkPattern(row)) score += 40;
   }
 
   for (let x = 0; x < size; x++) {
-    const col = matrix.map((row) => (row[x]?.value ? 1 : 0));
+    const col = matrix.map((row) => (row[x]?.isDark ? 1 : 0));
     if (checkPattern(col)) score += 40;
   }
 
   // Rule 4: dark/light balance
   const totalModules = size * size;
-  const darkCount = matrix.flat().filter((m) => m?.value).length;
+  const darkCount = matrix.flat().filter((m) => m?.isDark).length;
   const percent = (darkCount / totalModules) * 100;
   const fivePercentSteps = Math.abs(Math.round(percent / 5) - 10);
   score += fivePercentSteps * 10;
@@ -288,12 +288,7 @@ export function generateQRCodeMatrix({
   dataMask,
   codewords,
 }) {
-  console.debug("generateQRCodeMatrix", {
-    version,
-    errorCorrectionLevel,
-    dataMask,
-    codewords,
-  });
+
   const dimension = version * 4 + 17;
   
   function createBaseMatrix() {
@@ -331,11 +326,11 @@ export function generateQRCodeMatrix({
   }
 
   function applyMask(matrix, maskIndex) {
-    console.debug("applyMask", {matrix, maskIndex})
+    //console.debug("applyMask", {matrix, maskIndex})
     const maskFunc = DATA_MASKS[maskIndex];
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
       const isMasked = maskFunc({ x, y });
-      console.debug("applyMask", {current});
+      //console.debug("applyMask", {current});
       return makeModule({...current, isMasked});
     });
   }
@@ -366,12 +361,14 @@ export function generateQRCodeMatrix({
   for (let maskIdx = 0; maskIdx < 8; maskIdx++) {
     const testMatrix = applyMask(populated, maskIdx);
     const score = calculatePenalty(testMatrix);
+    //console.debug("generateQRCodeMatrix", {bestScore, score});
     if (score < bestScore) {
       bestMatrix = testMatrix;
       bestScore = score;
       bestMask = maskIdx;
     }
   }
+  console.debug("generateQRCodeMatrix", {bestMask});
 
   addFormatInfoModules(bestMatrix, errorCorrectionLevel, bestMask);
   return { matrix: bestMatrix, dataMask: bestMask };

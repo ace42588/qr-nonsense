@@ -1,6 +1,9 @@
 import { PAD_BYTES, CodewordLength } from "../Constants";
 import { TaggedBit } from "../Tagged";
-import { QRUtils } from "./QRUtils";
+
+function getBits(value, source) {
+  
+}
 
 export const BitUtils = {
   /**
