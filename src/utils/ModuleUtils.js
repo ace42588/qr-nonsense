@@ -1,4 +1,4 @@
-import { FINDER_PATTERN, FORMAT_INFO_TABLE, VERSION_INFO } from "../Constants";
+import { ALIGNMENT_PATTERN, FINDER_PATTERN, FORMAT_INFO_TABLE, VERSION_INFO } from "../Constants";
 
 export function makeModule({ taggedBit, x, y, masked }) {
   const { value, source } = taggedBit;
@@ -148,6 +148,21 @@ export class TimingPattern {
   }
 }
 
+function shouldDrawAlignmentPattern(matrix, x, y) {
+    const finderPatternPositions = [
+      { x: 0, y: 0 },
+      { x: matrix.length - 7, y: 0 },
+      { x: 0, y: matrix.length - 7 },
+    ];
+
+    for (const pos of finderPatternPositions) {
+      if (Math.abs(pos.x - x) < 9 && Math.abs(pos.y - y) < 9) {
+        return false;
+      }
+    }
+    return true;
+  }
+
 export class AlignmentPattern {
   constructor(version) {
     this.version = version;
@@ -190,20 +205,13 @@ export class AlignmentPattern {
   }
 
   static drawAlignmentPattern(matrix, centerX, centerY) {
-    const pattern = [
-      [1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 1],
-      [1, 0, 1, 0, 1],
-      [1, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1],
-    ];
-
+    const source = "AlignmentPattern";
     for (let y = 0; y < 5; y++) {
       for (let x = 0; x < 5; x++) {
-        const value = pattern[y][x];
+        const value = ALIGNMENT_PATTERN[y][x];
         matrix[centerY - 2 + y][centerX - 2 + x] = makeNonDataModule(
           value,
-          "AlignmentPattern",
+          source,
           centerX - 2 + x,
           centerY - 2 + y
         );
@@ -303,7 +311,7 @@ export class VersionInfo {
   }
 }
 
-export function addNonDataModules(matrix, errorCorrectionLevel, dataMask) {
+export function addNonDataModules(matrix, errorCorrectionLevel, version, dataMask) {
   const size = matrix.length;
   function addFormatInfoModules() {
     const bits = getBitsFromFormatInfo(errorCorrectionLevel, dataMask).toString(
@@ -388,5 +396,48 @@ export function addNonDataModules(matrix, errorCorrectionLevel, dataMask) {
     drawPattern(matrix, size - 7, 0);
     drawPattern(matrix, 0, size - 7);
     drawSeparators(matrix);
+  }
+  function addTimingPatterns() {
+    const source = "TimingPattern";
+    for (let i = 8; i < size - 8; i++) {
+      const even = i % 2 === 0;
+      matrix[6][i] = makeNonDataModule(even, source, i, 6);
+      matrix[i][6] = makeNonDataModule(even, source, 6, i);
+    }
+  }
+  function addAlignmentPatterns() {
+    function getAlignmentPatternPositions() {
+    if (version === 1) return [];
+    const positions = [6];
+    const numPositions = Math.floor(version / 7) + 2;
+    const step = Math.ceil((version * 4 + 17 - 13) / (numPositions - 1));
+    for (
+      let pos = version * 4 + 10 - step * (numPositions - 2);
+      pos >= 6;
+      pos -= step
+    ) {
+      positions.push(pos);
+    }
+    positions.push(version * 4 + 10);
+    return positions;
+  }
+    const positions = getAlignmentPatternPositions();
+    for (let i = 0; i < positions.length; i++) {
+      for (let j = 0; j < positions.length; j++) {
+        if (
+          shouldDrawAlignmentPattern(
+            matrix,
+            positions[i],
+            positions[j]
+          )
+        ) {
+          drawAlignmentPattern(
+            matrix,
+            positions[i],
+            positions[j]
+          );
+        }
+      }
+    }
   }
 }

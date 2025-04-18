@@ -63,6 +63,14 @@ export const MODE = {
   },
 };
 
+export const ALIGNMENT_PATTERN = [
+  [1, 1, 1, 1, 1],
+  [1, 0, 0, 0, 1],
+  [1, 0, 1, 0, 1],
+  [1, 0, 0, 0, 1],
+  [1, 1, 1, 1, 1],
+];
+
 export const FINDER_PATTERN = [
   [1, 1, 1, 1, 1, 1, 1],
   [1, 0, 0, 0, 0, 0, 1],
