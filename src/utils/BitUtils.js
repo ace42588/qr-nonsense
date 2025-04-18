@@ -1,17 +1,32 @@
 import { PAD_BYTES, CodewordLength } from "../Constants";
 import { TaggedBit } from "../Tagged";
 
-function getBits(value, source) {
-  
-}
+function getBits(value, source) {}
 
 function getHeaderBits(header, chunkId) {
-  
+  console.debug("getHeaderBits", { header });
+  const {
+    mode,
+    characterCount: { count, indicatorLength },
+  } = header;
+  const modeBits = BitUtils.toPaddedBinary(mode, 4);
+  const modeTagged = BitUtils.createTaggedBits(
+    modeBits,
+    "modeIndicator",
+    mode.name,
+    null
+  );
+  const charCountBits = BitUtils.toPaddedBinary(count, indicatorLength);
+  return BitUtils.createTaggedBits(
+    charCountBits,
+    "characterCount",
+    count,
+    null
+  );
+  return [...modeTagged];
 }
 
-function getSegmentBits(segments, chunkId) {
-  
-}
+function getSegmentBits(segments, chunkId) {}
 
 export const BitUtils = {
   /**
@@ -52,9 +67,9 @@ export const BitUtils = {
     //console.debug("getBitsFromChunks", { chunks });
     return chunks.flatMap((chunk, idx) => {
       const { header, segments } = chunk;
-      //const hbs = getHeaderBits(header, idx);
+      const headerBits = getHeaderBits(header, idx);
       const segmentBits = segments.flatMap((segment) => [...segment]);
-      return [...header, ...segmentBits];
+      return [...headerBits, ...segmentBits];
     });
   },
   getTerminatorBits(bits, requiredDataCodewords) {

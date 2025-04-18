@@ -1,4 +1,4 @@
-import { MODE } from "./Constants"
+import { MODE } from "./Constants";
 import { BitUtils } from "./Utilities.js";
 import { NumericSegment, AlphanumericSegment, ByteSegment } from "./Segments";
 
@@ -38,7 +38,12 @@ class Encoder {
       throw new Error(`Invalid mode ${mode}`);
     }
     const modeBits = BitUtils.toPaddedBinary(bits, 4);
-    return BitUtils.createTaggedBits(modeBits, "modeIndicator", mode.name, null);
+    return BitUtils.createTaggedBits(
+      modeBits,
+      "modeIndicator",
+      mode.name,
+      null
+    );
   }
 
   static computeCharacterCountIndicator(charCount, mode) {
@@ -61,14 +66,20 @@ class Encoder {
   encode(data, chunkId, encoding) {
     return {
       id: chunkId,
-      header: [
-        ...Encoder.computeModeIndicator(this.mode),
-        ...Encoder.computeCharacterCountIndicator(data.length, this.mode),
-      ],
-      //header: {
-      //  mode: this.mode,
-      //  charcterCount: data.length
-      //},
+      //header: [
+      //  ...Encoder.computeModeIndicator(this.mode),
+      //  ...Encoder.computeCharacterCountIndicator(data.length, this.mode),
+      //],
+      header: {
+        mode: this.mode.bits,
+        characterCount: {
+          count: data.length,
+          indicatorLength: Encoder.computeIndicatorLength(
+            data.length,
+            this.mode
+          ),
+        },
+      },
       segments: [...this.encodeData(data, chunkId, encoding)],
     };
   }
@@ -81,7 +92,6 @@ class NumericEncoder extends Encoder {
   }
 
   *encodeData(input, parentId) {
-    
     yield* createSegments(
       input,
       parentId,
