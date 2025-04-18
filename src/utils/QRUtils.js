@@ -2,8 +2,11 @@ import { DATA_MASKS, EC_INFO, CodewordLength } from "../Constants";
 import { ReedSolomonEncoder } from "../reedsolomon/index.js";
 import { TaggedCodeword, ECCodeword } from "../Tagged";
 import { BitUtils } from "./BitUtils";
-import { addNonDataModules, makeModule } from "./ModuleUtils"
-import { RemainderBit } from "../encode/TaggedBitstream";
+import {
+  addFormatInfoModules,
+  addNonDataModules,
+  makeModule,
+} from "./ModuleUtils";
 
 function getRequiredDataCodewords(version, errorCorrectionLevel) {
   const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
@@ -277,7 +280,7 @@ export function generateQRCodeMatrix({
       const { value: existingValue } = current;
       return {
         ...current,
-        value: isMasked ? !existingValue : existingValue,
+        isDark: isMasked ? !existingValue : existingValue,
         isMasked,
       };
     });
@@ -285,11 +288,11 @@ export function generateQRCodeMatrix({
 
   function addCodewords(matrix) {
     const bits = codewords.flatMap((cw) => cw.bits);
-    const remainderBit = {value: 0, source: "Remainder"};
-    console.debug("applyCodewords",  {bits});
+    const remainderBit = { value: 0, source: "Remainder" };
+    console.debug("applyCodewords", { bits });
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
-      const bit = bits[idx] || makeModule({ taggedBit, x, y, masked: false });
-      return makeModule({ taggedBit, x, y, masked: false });
+      const bit = bits[idx] || remainderBit;
+      return makeModule({ taggedBit: bit, x, y, masked: false });
     });
   }
 
@@ -372,7 +375,6 @@ export function generateQRCodeMatrix({
 
   const base = createBaseMatrix();
   const populated = addCodewords(base);
-  //console.debug("generateQRCodeMatrix", { populated });
 
   if (dataMask !== -1) {
     const masked = applyMask(populated, dataMask);
@@ -394,8 +396,6 @@ export function generateQRCodeMatrix({
     }
   }
 
-  new FormatInfo({ errorCorrectionLevel, dataMask: bestMask }).populate(
-    populated
-  );
+  addFormatInfoModules(bestMatrix, errorCorrectionLevel, bestMask);
   return { matrix: bestMatrix, dataMask: bestMask };
 }

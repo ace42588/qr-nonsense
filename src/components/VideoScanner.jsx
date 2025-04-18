@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import jsQR from "jsqr";
 import "./styles.css";
 
-import { getEncoder } from "../encode/Encoder";
+import Encoders from "../Encoders";
 import { TaggedBitstream } from "../encode/TaggedBitstream";
 
 function VideoScanner({
@@ -21,7 +21,7 @@ function VideoScanner({
     const bitStream = new TaggedBitstream();
 
     chunks.forEach(({ type, encoding, ...data }) =>
-      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
+      Encoder({ type }).encode(Object.values(data)[0], encoding)
     );
     console.log({ bitStream });
     setBitStream(bitStream);

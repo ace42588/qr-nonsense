@@ -55,6 +55,56 @@ function computeBCH(bits, generator, length) {
   return bits.padStart(length, "0");
 }
 
+export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
+  const source = "FormatInfo";
+  const size = matrix.length;
+  const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
+  const bits = formatInfo.toString(2);
+  const values = `${bits}${bits}`;
+  const positions = [
+    // Horizontal
+    { x: 0, y: 8 },
+    { x: 1, y: 8 },
+    { x: 2, y: 8 },
+    { x: 3, y: 8 },
+    { x: 4, y: 8 },
+    { x: 5, y: 8 },
+    { x: 7, y: 8 },
+    { x: size - 8, y: 8 },
+    { x: size - 7, y: 8 },
+    { x: size - 6, y: 8 },
+    { x: size - 5, y: 8 },
+    { x: size - 4, y: 8 },
+    { x: size - 3, y: 8 },
+    { x: size - 2, y: 8 },
+    { x: size - 1, y: 8 },
+    // Vertical
+    { x: 8, y: size - 1 },
+    { x: 8, y: size - 2 },
+    { x: 8, y: size - 3 },
+    { x: 8, y: size - 4 },
+    { x: 8, y: size - 5 },
+    { x: 8, y: size - 6 },
+    { x: 8, y: size - 7 },
+    { x: 8, y: 8 },
+    { x: 8, y: 7 },
+    { x: 8, y: 5 },
+    { x: 8, y: 4 },
+    { x: 8, y: 3 },
+    { x: 8, y: 2 },
+    { x: 8, y: 1 },
+    { x: 8, y: 0 },
+  ];
+  // Tile the format bits
+  for (let i = 0; i < values.length; i++) {
+    const { x, y } = positions[i];
+    matrix[y][x] = makeNonDataModule(values[i], source, x, y);
+  }
+
+  // Add the dark module
+  matrix[size - 8][8] = makeNonDataModule(1, 8, size - 8);
+}
+
 export function addNonDataModules(
   matrix,
   errorCorrectionLevel,
@@ -62,7 +112,7 @@ export function addNonDataModules(
   dataMask
 ) {
   const size = matrix.length;
-  
+
   function addAlignmentPatterns() {
     const source = "AlignmentPattern";
     if (version === 1) return [];
@@ -81,7 +131,7 @@ export function addNonDataModules(
       }
       return true;
     }
-    
+
     const positions = [6];
     const numPositions = Math.floor(version / 7) + 2;
     const step = Math.ceil((size - 13) / (numPositions - 1));
@@ -113,56 +163,7 @@ export function addNonDataModules(
       }
     }
   }
-  
-  function addFormatInfoModules() {
-    const source = "FormatInfo";
-    const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
-    const bits = formatInfo.toString(2);
-    const values = `${bits}${bits}`;
-    const positions = [
-      // Horizontal
-      { x: 0, y: 8 },
-      { x: 1, y: 8 },
-      { x: 2, y: 8 },
-      { x: 3, y: 8 },
-      { x: 4, y: 8 },
-      { x: 5, y: 8 },
-      { x: 7, y: 8 },
-      { x: size - 8, y: 8 },
-      { x: size - 7, y: 8 },
-      { x: size - 6, y: 8 },
-      { x: size - 5, y: 8 },
-      { x: size - 4, y: 8 },
-      { x: size - 3, y: 8 },
-      { x: size - 2, y: 8 },
-      { x: size - 1, y: 8 },
-      // Vertical
-      { x: 8, y: size - 1 },
-      { x: 8, y: size - 2 },
-      { x: 8, y: size - 3 },
-      { x: 8, y: size - 4 },
-      { x: 8, y: size - 5 },
-      { x: 8, y: size - 6 },
-      { x: 8, y: size - 7 },
-      { x: 8, y: 8 },
-      { x: 8, y: 7 },
-      { x: 8, y: 5 },
-      { x: 8, y: 4 },
-      { x: 8, y: 3 },
-      { x: 8, y: 2 },
-      { x: 8, y: 1 },
-      { x: 8, y: 0 },
-    ];
-    // Tile the format bits
-    for (let i = 0; i < values.length; i++) {
-      const { x, y } = positions[i];
-      matrix[y][x] = makeNonDataModule(values[i], source, x, y);
-    }
 
-    // Add the dark module
-    matrix[size - 8][8] = makeNonDataModule(1, 8, size - 8);
-  }
-  
   function addFinderPatterns() {
     const source = "FinderPattern";
     function addPattern(matrix, startX, startY) {
@@ -208,7 +209,7 @@ export function addNonDataModules(
       matrix[i][6] = makeNonDataModule(even, source, 6, i);
     }
   }
-  
+
   function addVersionInfo() {
     function getVersionString() {
       const versionBits = VERSION_INFO[version].toString(2).padStart(6, "0");
@@ -242,14 +243,13 @@ export function addNonDataModules(
       }
     }
   }
-  
+
   addAlignmentPatterns();
-  addFormatInfoModules();
+  addFormatInfoModules(matrix, errorCorrectionLevel, dataMask);
   addFinderPatterns();
   addSeparators();
   addTimingPatterns();
   addVersionInfo();
-  
-  return matrix
-  
+
+  return matrix;
 }
