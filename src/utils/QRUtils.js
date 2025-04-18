@@ -320,7 +320,7 @@ export function generateQRCodeMatrix({
     console.debug("applyCodewords",  {bits});
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
       const bit = bits[idx] || REMAINDER_BIT;
-      //console.debug("applyCodewords", { bit, idx });
+      console.debug("applyCodewords", { bit, idx });
       return {
         bit,
         value: bit.value,
