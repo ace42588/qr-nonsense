@@ -52,6 +52,7 @@ export const BitUtils = {
     //console.debug("getBitsFromChunks", { chunks });
     return chunks.flatMap((chunk, idx) => {
       const { header, segments } = chunk;
+      //const hbs = getHeaderBits(header, idx);
       const segmentBits = segments.flatMap((segment) => [...segment]);
       return [...header, ...segmentBits];
     });
