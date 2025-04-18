@@ -61,10 +61,9 @@ export function addNonDataModules(
 ) {
   const size = matrix.length;
   function addFormatInfoModules() {
+    const source = "FormatInfo";
     const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
-    const bits = getBitsFromFormatInfo(errorCorrectionLevel, dataMask).toString(
-      2
-    );
+    const bits = formatInfo.toString(2);
     const values = `${bits}${bits}`;
     const positions = [
       // Horizontal
@@ -103,7 +102,7 @@ export function addNonDataModules(
     // Tile the format bits
     for (let i = 0; i < values.length; i++) {
       const { x, y } = positions[i];
-      matrix[y][x] = makeNonDataModule(values[i], "FormatInfo", x, y);
+      matrix[y][x] = makeNonDataModule(values[i], source, x, y);
     }
 
     // Add the dark module
@@ -125,26 +124,27 @@ export function addNonDataModules(
       }
     }
 
-    function drawSeparators(matrix) {
-      const source = "Separator";
-
-      for (let i = 0; i < 8; i++) {
-        // Top-left separator
-        matrix[i][7] = makeNonDataModule(0, source, 7, i);
-        matrix[7][i] = makeNonDataModule(0, source, i, 7);
-        // Top-right separator
-        matrix[i][size - 8] = makeNonDataModule(0, source, size - 8, i);
-        matrix[7][size - 1 - i] = makeNonDataModule(0, source, size - 1 - i, 7);
-        // Bottom-left separator
-        matrix[size - 1 - i][7] = makeNonDataModule(0, source, 7, size - 1 - i);
-        matrix[size - 8][i] = makeNonDataModule(0, source, i, size - 8);
-      }
-    }
     drawPattern(matrix, 0, 0);
     drawPattern(matrix, size - 7, 0);
     drawPattern(matrix, 0, size - 7);
-    drawSeparators(matrix);
   }
+  
+  function addSeparators() {
+    const source = "Separator";
+
+    for (let i = 0; i < 8; i++) {
+      // Top-left separator
+      matrix[i][7] = makeNonDataModule(0, source, 7, i);
+      matrix[7][i] = makeNonDataModule(0, source, i, 7);
+      // Top-right separator
+      matrix[i][size - 8] = makeNonDataModule(0, source, size - 8, i);
+      matrix[7][size - 1 - i] = makeNonDataModule(0, source, size - 1 - i, 7);
+      // Bottom-left separator
+      matrix[size - 1 - i][7] = makeNonDataModule(0, source, 7, size - 1 - i);
+      matrix[size - 8][i] = makeNonDataModule(0, source, i, size - 8);
+    }
+  }
+  
   function addTimingPatterns() {
     const source = "TimingPattern";
     for (let i = 8; i < size - 8; i++) {
@@ -153,6 +153,7 @@ export function addNonDataModules(
       matrix[i][6] = makeNonDataModule(even, source, 6, i);
     }
   }
+  
   function addAlignmentPatterns() {
     function drawAlignmentPattern(centerX, centerY) {
       const source = "AlignmentPattern";
@@ -168,21 +169,6 @@ export function addNonDataModules(
         }
       }
     }
-    function getAlignmentPatternPositions() {
-      if (version === 1) return [];
-      const positions = [6];
-      const numPositions = Math.floor(version / 7) + 2;
-      const step = Math.ceil((version * 4 + 17 - 13) / (numPositions - 1));
-      for (
-        let pos = version * 4 + 10 - step * (numPositions - 2);
-        pos >= 6;
-        pos -= step
-      ) {
-        positions.push(pos);
-      }
-      positions.push(version * 4 + 10);
-      return positions;
-    }
     function shouldDrawAlignmentPattern(x, y) {
       const finderPatternPositions = [
         { x: 0, y: 0 },
@@ -197,11 +183,35 @@ export function addNonDataModules(
       }
       return true;
     }
-    const positions = getAlignmentPatternPositions();
+    if (version === 1) return [];
+      const positions = [6];
+      const numPositions = Math.floor(version / 7) + 2;
+      const step = Math.ceil((version * 4 + 17 - 13) / (numPositions - 1));
+      for (
+        let pos = version * 4 + 10 - step * (numPositions - 2);
+        pos >= 6;
+        pos -= step
+      ) {
+        positions.push(pos);
+      }
+      positions.push(version * 4 + 10);
     for (let i = 0; i < positions.length; i++) {
       for (let j = 0; j < positions.length; j++) {
-        if (shouldDrawAlignmentPattern(positions[i], positions[j])) {
+        const centerX = positions[i];
+          const centerY = positions[j];
+        if (shouldDrawAlignmentPattern(centerX, centerY)) {
           drawAlignmentPattern(positions[i], positions[j]);
+          for (let y = 0; y < 5; y++) {
+        for (let x = 0; x < 5; x++) {
+          const value = ALIGNMENT_PATTERN[y][x];
+          matrix[centerY - 2 + y][centerX - 2 + x] = makeNonDataModule(
+            value,
+            source,
+            centerX - 2 + x,
+            centerY - 2 + y
+          );
+        }
+      }
         }
       }
     }
