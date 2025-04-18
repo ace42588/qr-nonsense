@@ -26,6 +26,22 @@ function makeNonDataModule(value, source, x, y) {
   return module;
 }
 
+function getAlignmentPatternPositions(version) {
+    if (version === 1) return [];
+    const positions = [6];
+    const numPositions = Math.floor(version / 7) + 2;
+    const step = Math.ceil((version * 4 + 17 - 13) / (numPositions - 1));
+    for (
+      let pos = version * 4 + 10 - step * (numPositions - 2);
+      pos >= 6;
+      pos -= step
+    ) {
+      positions.push(pos);
+    }
+    positions.push(version * 4 + 10);
+    return positions;
+  }
+
 function getBitsFromFormatInfo(ecLevel, mask) {
   for (const entry of FORMAT_INFO_TABLE) {
     if (
@@ -114,6 +130,7 @@ export function addNonDataModules(
   const size = matrix.length;
 
   function addAlignmentPatterns() {
+    console.debug("addAlignmentPatterns",{matrix});
     const source = "AlignmentPattern";
     if (version === 1) return [];
 
@@ -131,18 +148,8 @@ export function addNonDataModules(
       }
       return true;
     }
-
-    const positions = [6];
-    const numPositions = Math.floor(version / 7) + 2;
-    const step = Math.ceil((size - 13) / (numPositions - 1));
-    for (
-      let pos = version * 4 + 10 - step * (numPositions - 2);
-      pos >= 6;
-      pos -= step
-    ) {
-      positions.push(pos);
-    }
-    positions.push(version * 4 + 10);
+    
+    const positions = getAlignmentPatternPositions(version);
     for (let i = 0; i < positions.length; i++) {
       for (let j = 0; j < positions.length; j++) {
         const centerX = positions[i];
@@ -150,6 +157,7 @@ export function addNonDataModules(
         if (shouldDrawAlignmentPattern(centerX, centerY)) {
           for (let y = 0; y < 5; y++) {
             for (let x = 0; x < 5; x++) {
+              console.debug("addAlignmentPatterns", {centerX, centerY});
               const value = ALIGNMENT_PATTERN[y][x];
               matrix[centerY - 2 + y][centerX - 2 + x] = makeNonDataModule(
                 value,
@@ -159,6 +167,23 @@ export function addNonDataModules(
               );
             }
           }
+        }
+      }
+    }
+    for (let i = 0; i < positions.length; i++) {
+      for (let j = 0; j < positions.length; j++) {
+        if (
+          AlignmentPattern.shouldDrawAlignmentPattern(
+            matrix,
+            positions[i],
+            positions[j]
+          )
+        ) {
+          AlignmentPattern.drawAlignmentPattern(
+            matrix,
+            positions[i],
+            positions[j]
+          );
         }
       }
     }
