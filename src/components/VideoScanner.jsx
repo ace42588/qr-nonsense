@@ -3,7 +3,6 @@ import jsQR from "jsqr";
 import "./styles.css";
 
 import Encoders from "../Encoders";
-import { TaggedBitstream } from "../encode/TaggedBitstream";
 
 function VideoScanner({
   setBitStream,
@@ -18,13 +17,10 @@ function VideoScanner({
   const processQRCodeData = ({ chunks, version, formatInfo }) => {
     console.log({ chunks, version, formatInfo });
     const { errorCorrectionLevel, dataMask } = formatInfo;
-    const bitStream = new TaggedBitstream();
 
     chunks.forEach(({ type, encoding, ...data }) =>
-      Encoder({ type }).encode(Object.values(data)[0], encoding)
+      Encoders(type).encode(Object.values(data)[0], encoding)
     );
-    console.log({ bitStream });
-    setBitStream(bitStream);
     setVersion(version);
     setDataMask(dataMask);
     setErrorCorrectionLevel(errorCorrectionLevel);

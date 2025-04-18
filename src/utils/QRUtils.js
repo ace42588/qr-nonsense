@@ -222,8 +222,6 @@ export const QRUtils = {
   },
 };
 
-const REMAINDER_BIT = makeModule();
-
 export function generateQRCodeMatrix({
   version,
   errorCorrectionLevel,

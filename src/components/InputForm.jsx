@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState, useContext, useEffect, useCallback } from "react";
 import "./styles.css"; // Import your component-specific styles
 
 import {ErrorCorrectionSelector, VersionSelector, DataMaskSelector} from "./Selectors";
 
-import { getEncoder } from "../encode/Encoder";
-import { TaggedBitstream } from "../encode/TaggedBitstream";
+import { QRDataDispatchContext } from "../context/QRDataContext";
+import { Actions } from "../Constants";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 
@@ -89,16 +89,23 @@ function InputForm({ setBitStream,
 
   const [inputs, setInputs] = useState([{ type: "byte", value: "" }]);
   
-  const updateBitStream = () => {
-    const chunks = inputs.map((i) => parseInput(i));
-    const formatInfo = { dataMask };
-    
-    const bitStream = new TaggedBitstream();
-    chunks.forEach(({ type, encoding, ...data }) =>
-      getEncoder({ type, bitStream }).encode(Object.values(data)[0], encoding)
-    );
-    setBitStream(bitStream);
-  };
+  const [encoding, setEncoding] = useState("JSON");
+  const dispatch = useContext(QRDataDispatchContext);
+  
+  const updateQRData = useCallback(
+    (inputValue = inputs, encodingType = encoding) => {
+      const parsed = inputs.map((i) => parseInput(i));
+      dispatch({
+        type: Actions.ChangeInput,
+        inputs: parsed,
+      });
+    },
+    [dispatch, inputs, encoding]
+  );
+
+  useEffect(() => {
+    updateQRData();
+  }, [updateQRData]);
   
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
