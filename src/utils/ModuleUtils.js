@@ -1,4 +1,4 @@
-import { FORMAT_INFO_TABLE, VERSION_INFO } from "../Constants";
+import { FINDER_PATTERN, FORMAT_INFO_TABLE, VERSION_INFO } from "../Constants";
 
 export function makeModule({ taggedBit, x, y, masked }) {
   const { value, source } = taggedBit;
@@ -106,19 +106,9 @@ export class FinderPattern {
   }
 
   static drawPattern(matrix, startX, startY) {
-    const pattern = [
-      [1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 1, 1, 1, 0, 1],
-      [1, 0, 1, 1, 1, 0, 1],
-      [1, 0, 1, 1, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1],
-    ];
-
     for (let y = 0; y < 7; y++) {
       for (let x = 0; x < 7; x++) {
-        const value = pattern[y][x];
+        const value = FINDER_PATTERN[y][x];
         matrix[startY + y][startX + x] = makeNonDataModule(
           value,
           "FinderPattern",
@@ -315,7 +305,7 @@ export class VersionInfo {
 
 export function addNonDataModules(matrix, errorCorrectionLevel, dataMask) {
   const size = matrix.length;
-  function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
+  function addFormatInfoModules() {
     const bits = getBitsFromFormatInfo(errorCorrectionLevel, dataMask).toString(
       2
     );
@@ -362,5 +352,41 @@ export function addNonDataModules(matrix, errorCorrectionLevel, dataMask) {
 
     // Add the dark module
     matrix[size - 8][8] = makeNonDataModule(1, 8, size - 8);
+  }
+  function addFinderPatterns() {
+    function drawPattern(matrix, startX, startY) {
+      const source = "FinderPattern";
+      for (let y = 0; y < 7; y++) {
+        for (let x = 0; x < 7; x++) {
+          const value = FINDER_PATTERN[y][x];
+          matrix[startY + y][startX + x] = makeNonDataModule(
+            value,
+            source,
+            x,
+            y
+          );
+        }
+      }
+    }
+
+    function drawSeparators(matrix) {
+      const source = "Separator";
+
+      for (let i = 0; i < 8; i++) {
+        // Top-left separator
+        matrix[i][7] = makeNonDataModule(0, source, 7, i);
+        matrix[7][i] = makeNonDataModule(0, source, i, 7);
+        // Top-right separator
+        matrix[i][size - 8] = makeNonDataModule(0, source, size - 8, i);
+        matrix[7][size - 1 - i] = makeNonDataModule(0, source, size - 1 - i, 7);
+        // Bottom-left separator
+        matrix[size - 1 - i][7] = makeNonDataModule(0, source, 7, size - 1 - i);
+        matrix[size - 8][i] = makeNonDataModule(0, source, i, size - 8);
+      }
+    }
+    drawPattern(matrix, 0, 0);
+    drawPattern(matrix, size - 7, 0);
+    drawPattern(matrix, 0, size - 7);
+    drawSeparators(matrix);
   }
 }

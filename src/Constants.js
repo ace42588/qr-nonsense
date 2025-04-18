@@ -63,6 +63,16 @@ export const MODE = {
   },
 };
 
+export const FINDER_PATTERN = [
+  [1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 1, 1, 0, 1],
+  [1, 0, 1, 1, 1, 0, 1],
+  [1, 0, 1, 1, 1, 0, 1],
+  [1, 0, 0, 0, 0, 0, 1],
+  [1, 1, 1, 1, 1, 1, 1],
+];
+
 export const FORMAT_INFO_TABLE = [
   { bits: 0x5412, formatInfo: { errorCorrectionLevel: 1, dataMask: 0 } },
   { bits: 0x5125, formatInfo: { errorCorrectionLevel: 1, dataMask: 1 } },
