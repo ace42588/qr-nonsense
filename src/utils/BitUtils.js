@@ -26,7 +26,10 @@ function getHeaderBits(header, chunkId) {
   return [...modeTagged];
 }
 
-function getSegmentBits(segments, chunkId) {}
+function getSegmentBits(segments, chunkId) {
+  console.debug("getSegmentBits", {segments});
+  return segments.flatMap((segment) => [...segment])
+}
 
 export const BitUtils = {
   /**
@@ -68,7 +71,7 @@ export const BitUtils = {
     return chunks.flatMap((chunk, idx) => {
       const { header, segments } = chunk;
       const headerBits = getHeaderBits(header, idx);
-      const segmentBits = segments.flatMap((segment) => [...segment]);
+      const segmentBits = getSegmentBits(segments, idx);
       return [...headerBits, ...segmentBits];
     });
   },
