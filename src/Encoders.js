@@ -12,14 +12,14 @@ function makeSegment(data, mode) {
   };
 }
 
-function* createSegments(input, parentId, regex, SegmentClass, errorMsg) {
-  const groups = input.match(regex);
+function* createSegments(input, mode, errorMsg) {
+  const groups = input.match(mode.groupingRegex);
   if (!groups) {
-    throw new Error(errorMsg);
+    throw new Error(`Invalid input for ${mode.name} encoder: ${input}`);
   }
   for (let i = 0; i < groups.length; i++) {
     //yield new SegmentClass(groups[i], i, parentId);
-    makeSegment(input)
+    makeSegment(input, mode.name);
   }
 }
 
@@ -75,15 +75,9 @@ class Encoder {
    * @returns {object} An object with header and segments.
    */
   encode(data, chunkId, encoding) {
-    const segments = [...this.encodeData(data, chunkId, encoding)].map(
-      (segment) => ({ ...segment, id: lastSegmentID++ })
-    );
+    const segments = [...this.encodeData(data, chunkId, encoding)];
     return {
       id: chunkId,
-      //header: [
-      //  ...Encoder.computeModeIndicator(this.mode),
-      //  ...Encoder.computeCharacterCountIndicator(data.length, this.mode),
-      //],
       header: {
         mode: {
           bits: this.mode.bits,
@@ -110,13 +104,9 @@ class NumericEncoder extends Encoder {
     this.mode = MODE.Numeric;
   }
 
-  *encodeData(input, parentId) {
+  *encodeData(input) {
     yield* createSegments(
-      input,
-      parentId,
-      /\d{1,3}/g,
-      NumericSegment,
-      `Invalid input for Numeric encoder: ${input}`
+      input, this.mode
     );
   }
 }
@@ -128,13 +118,9 @@ class AlphanumericEncoder extends Encoder {
     this.mode = MODE.Alphanumeric;
   }
 
-  *encodeData(input, parentId) {
+  *encodeData(input) {
     yield* createSegments(
-      input,
-      parentId,
-      /[0-9A-Z \$\%\*\+\-\.\/\:]{1,2}/g,
-      AlphanumericSegment,
-      `Invalid input for Alphanumeric encoder: ${input}`
+      input, this.mode
     );
   }
 }
@@ -146,11 +132,11 @@ class ByteEncoder extends Encoder {
     this.mode = MODE.Byte;
   }
 
-  *encodeData(input, parentId, encoding) {
+  *encodeData(input, encoding) {
     if (encoding === "hex") {
       for (let i = 0; i < input.length; i += 2) {
         const byte = parseInt(input.substring(i, i + 2), 16);
-        yield new ByteSegment(byte, i / 2, parentId, encoding);
+        yield new ByteSegment(byte, i / 2, encoding);
       }
     } else {
       // default for QR Codes
@@ -160,7 +146,7 @@ class ByteEncoder extends Encoder {
       for (let i = 0; i < chars.length; i++) {
         const char = chars[i];
         const byte = encoder.encode(char);
-        yield new ByteSegment(byte, i, parentId);
+        yield new ByteSegment(byte, i);
       }
     }
   }

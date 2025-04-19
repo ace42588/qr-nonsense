@@ -23,6 +23,7 @@ export const MODE = {
       { max: 1000, length: 12 },
       { max: Infinity, length: 14 },
     ],
+    groupingRegex: /\d{1,3}/g
   },
   Alphanumeric: {
     name: "alphanumeric",
@@ -32,6 +33,7 @@ export const MODE = {
       { max: 1225, length: 11 },
       { max: Infinity, length: 13 },
     ],
+    groupingRegex: /[0-9A-Z \$\%\*\+\-\.\/\:]{1,2}/g
   },
   StructuredAppend: {
     name: "StructuredAppend",
