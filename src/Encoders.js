@@ -1,5 +1,5 @@
 import { MODE, AlphaNumCharMap } from "./Constants";
-import { getBits } from "./Utilities.js";
+import { getBits } from "./utils/BitUtils";
 import { NumericSegment, AlphanumericSegment, ByteSegment } from "./Segments";
 
 let lastSegmentID = 0;
@@ -101,31 +101,6 @@ class Encoder {
     return thresholds[thresholds.length - 1].length;
   }
 
-  static computeModeIndicator(mode) {
-    const { bits } = mode;
-    if (!bits) {
-      throw new Error(`Invalid mode ${mode}`);
-    }
-    const modeBits = BitUtils.toPaddedBinary(bits, 4);
-    return BitUtils.createTaggedBits(
-      modeBits,
-      "modeIndicator",
-      mode.name,
-      null
-    );
-  }
-
-  static computeCharacterCountIndicator(charCount, mode) {
-    const length = Encoder.computeIndicatorLength(charCount, mode);
-    const charCountBits = BitUtils.toPaddedBinary(charCount, length);
-    return BitUtils.createTaggedBits(
-      charCountBits,
-      "characterCount",
-      charCount,
-      null
-    );
-  }
-
   /**
    * Encodes the data.
    * @param {string} data - Data to encode.
@@ -205,6 +180,10 @@ class ByteEncoder extends Encoder {
 }
 
 class EciEncoder extends Encoder {
+  constructor() {
+    super();
+    this.mode = MODE.ECI;
+  }
   /**
    * Encodes the ECI assignment number.
    * @param {number} input - The assignment number.
@@ -213,10 +192,16 @@ class EciEncoder extends Encoder {
   static encode(input, id) {
     const length = input < 256 ? 8 : 16;
     const bits = BitUtils.toPaddedBinary(input, length);
-    return [
-      ...Encoder.computeModeIndicator(MODE.ECI),
-      ...BitUtils.createTaggedBits(bits, "assignmentNumber", input, null),
-    ];
+    const mode = {
+        value: this.mode.bits,
+        text: this.mode.name,
+        length: 4,
+      }
+    const segment = makeSegment(input, input, "ECI");
+    return {
+      mode,
+      segments: [makeSegment(input, input, "Assignment Number")]
+    };
   }
 }
 

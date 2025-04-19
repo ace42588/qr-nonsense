@@ -54,6 +54,10 @@ export const MODE = {
   ECI: {
     name: "eci",
     bits: 0x7,
+    thresholds: [
+      { max: 256, length: 8 },
+      { max: Infinity, length: 16 },
+    ]
   },
   Kanji: {
     name: "kanji",
