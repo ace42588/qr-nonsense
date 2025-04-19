@@ -1,7 +1,14 @@
 import { PAD_BYTES, CodewordLength } from "../Constants";
 import { TaggedBit } from "../Tagged";
 
-let lastBitID = 0;
+let lastBitId = 0;
+
+// ~24k bits possible
+function getId() {
+  if (lastBitId >= 0xffff) lastBitId = 0;
+
+  return lastBitId++;
+}
 
 // ~24k bits possible
 export function getBits(value, length) {
@@ -14,7 +21,7 @@ export function getBits(value, length) {
         );
       return [...value].map((bit, idx) => ({
         bit,
-        id: lastBitID++,
+        id: getId(),
       }));
     }
     case "number": {
@@ -24,7 +31,7 @@ export function getBits(value, length) {
         );
       return Array.from({ length: 8 }).map((_, idx) => ({
         bit: (value >> (7 - idx)) & 1,
-        id: lastBitID++,
+        id: getId(),
       }));
     }
     default: {
@@ -35,10 +42,7 @@ export function getBits(value, length) {
 
 function getHeaderBits(header, chunkId) {
   console.debug("getHeaderBits", { header });
-  const {
-    mode,
-    characterCount,
-  } = header;
+  const { mode, characterCount } = header;
   const modeBits = BitUtils.toPaddedBinary(mode.value, mode.length);
   //const modeTagged = BitUtils.createTaggedBits(
   //  modeBits,
@@ -47,7 +51,10 @@ function getHeaderBits(header, chunkId) {
   //  null
   //);
   const modeTagged = getBits(modeBits);
-  const charCountBits = BitUtils.toPaddedBinary(characterCount.value, characterCount.length);
+  const charCountBits = BitUtils.toPaddedBinary(
+    characterCount.value,
+    characterCount.length
+  );
   //const countTagged = BitUtils.createTaggedBits(
   //  charCountBits,
   //  "characterCount",
@@ -103,7 +110,7 @@ export const BitUtils = {
   getBitsFromChunks(chunks) {
     //console.debug("getBitsFromChunks", { chunks });
     return chunks.flatMap((chunk, idx) => {
-      console.debug("getBitsFromChunks",{chunk});
+      console.debug("getBitsFromChunks", { chunk });
       const { header, segments } = chunk;
       const headerBits = getHeaderBits(header, idx);
       const segmentBits = getSegmentBits(segments, idx);

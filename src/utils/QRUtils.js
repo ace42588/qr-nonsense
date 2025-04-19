@@ -11,10 +11,13 @@ import {
 let lastCodewordId = 0;
 
 function getCodeword(bits, type) {
+  console.debug("getCodeword", {bits, type});
+  if (!bits || bits.length !== 8)
+    throw new Error("Invalid bits for getCodeword()");
   return {
     id: lastCodewordId++,
     type,
-    bits: getBits(bits),
+    bitIds: bits.map(({id}) => id),
   };
 }
 
@@ -134,14 +137,17 @@ function getDataCodewordsForBlock(
 
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId) {
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
-  const dataBytes = Array.from(dataCodewords, (c) => c.byteValue);
+  const dataBytes = Array.from(dataCodewords, (cw) => {
+    const {bits} = cw;
+    const str = bits.join("");
+    return parseInt(str, 2)
+  });
   //console.debug("getEcCodewords", { dataBytes });
   const ecBytes = encoder.encode(dataBytes);
   //console.debug("getEcCodewords", { ecBytes });
   return Array.from(ecBytes, (b, idx) => {
-    const eccId = idx + dataCodewords.length;
     //return new ECCodeword(b, eccId, blockId);
-    return getCodeword(b, "Error Correction");
+    return getCodeword(getBits(b), "Error Correction");
   });
 }
 
