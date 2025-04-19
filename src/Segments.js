@@ -44,6 +44,7 @@ class Segment {
   }
 }
 
+// 7089 max
 export class NumericSegment extends Segment {
   constructor(data, index, parentId) {
     super(data, index, parentId);
@@ -59,6 +60,7 @@ export class NumericSegment extends Segment {
   }
 }
 
+// 4296 max
 export class AlphanumericSegment extends Segment {
   constructor(data, index, parentId) {
     super(data, index, parentId);
@@ -88,6 +90,7 @@ export class AlphanumericSegment extends Segment {
   }
 }
 
+// 2953 max
 export class ByteSegment extends Segment {
   constructor(data, index, parentId, encoding) {
     super(data & 0xff, index, parentId);

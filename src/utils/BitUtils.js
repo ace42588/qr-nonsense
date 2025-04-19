@@ -1,6 +1,7 @@
 import { PAD_BYTES, CodewordLength } from "../Constants";
 import { TaggedBit } from "../Tagged";
 
+// ~24k bits possible
 function getBits(value, source) {
   switch (typeof value) {
     case "string": {

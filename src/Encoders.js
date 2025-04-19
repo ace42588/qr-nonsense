@@ -12,6 +12,8 @@ function* createSegments(input, parentId, regex, SegmentClass, errorMsg) {
   }
 }
 
+let lastSegmentID = 0;
+
 class Encoder {
   /**
    * Computes the bit-length indicator based on thresholds.
@@ -89,6 +91,7 @@ class Encoder {
   }
 }
 
+// 7089 max
 class NumericEncoder extends Encoder {
   constructor() {
     super();
@@ -106,6 +109,7 @@ class NumericEncoder extends Encoder {
   }
 }
 
+// 4296 max
 class AlphanumericEncoder extends Encoder {
   constructor() {
     super();
@@ -123,6 +127,7 @@ class AlphanumericEncoder extends Encoder {
   }
 }
 
+// 2953 max
 class ByteEncoder extends Encoder {
   constructor() {
     super();
