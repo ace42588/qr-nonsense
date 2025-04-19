@@ -1,9 +1,6 @@
 import { DATA_MASKS } from "../Constants";
-import {
-  addFormatInfoModules,
-  makeModule,
-} from "./ModuleUtils";
-import { calculatePenalty } from "./calculatePenalty"
+import { addFormatInfoModules, makeModule } from "./ModuleUtils";
+import { calculatePenalty } from "./calculatePenalty";
 
 const remainderBit = { value: 0, source: "Remainder" };
 
@@ -36,18 +33,22 @@ function QRMatrix(dimension) {
     }
     return newMatrix;
   };
-  this.setModule = function(x, y, value) {
+  this.setModule = function (x, y, value) {
     const newMatrix = matrix.map((row) => [...row]);
     newMatrix[y][x] = value;
-  }
+  };
 }
 
-function addNonDataModules(
-  matrix,
-  errorCorrectionLevel,
-  version,
-  dataMask
-) {
+function addCodewords(matrix, codewords) {
+  const bits = codewords.flatMap((cw) => cw.bits);
+  //console.debug("applyCodewords", { bits });
+  return matrix.map(matrix, ({ x, y, idx }, current) => {
+    const bit = bits[idx] || remainderBit;
+    return makeModule({ bit, x, y });
+  });
+}
+
+function addNonDataModules(matrix, errorCorrectionLevel, version, dataMask) {
   const size = matrix.length;
 
   function addAlignmentPatterns() {
@@ -134,7 +135,7 @@ function addNonDataModules(
   function addTimingPatterns() {
     const source = "TimingPattern";
     for (let i = 8; i < size - 8; i++) {
-      const value = (i % 2 === 0) ? 1 : 0;
+      const value = i % 2 === 0 ? 1 : 0;
       matrix[6][i] = makeNonDataModule(value, source, i, 6);
       matrix[i][6] = makeNonDataModule(value, source, 6, i);
     }
@@ -183,27 +184,27 @@ function addNonDataModules(
   return matrix;
 }
 
-function applyDataMask(matrix, dataMask, errorCorrectionLevel){
-  function applyMask(maskIndex) {
-    //console.debug("applyMask", {matrix, maskIndex})
-    const maskFunc = DATA_MASKS[maskIndex];
-    return matrix.map(matrix, ({ x, y, idx }, current) => {
-      const isMasked = maskFunc({ x, y });
-      //console.debug("applyMask", {current});
-      return makeModule({...current, isMasked});
-    });
-  }
+function maskModules(matrix, maskIndex) {
+  //console.debug("applyMask", {matrix, maskIndex})
+  const maskFunc = DATA_MASKS[maskIndex];
+  return matrix.map(matrix, ({ x, y, idx }, current) => {
+    const isMasked = maskFunc({ x, y });
+    //console.debug("applyMask", {current});
+    return makeModule({ ...current, isMasked });
+  });
+}
+
+function applyDataMask(matrix, dataMask) {
   if (dataMask !== -1) {
-    const masked = applyMask(dataMask);
+    const masked = maskModules(matrix, dataMask);
     return { matrix: masked, dataMask };
   }
-  
   // Automatic mask scoring
   let bestMatrix = null;
   let bestScore = Infinity;
   let bestMask = 0;
   for (let maskIdx = 0; maskIdx < 8; maskIdx++) {
-    const testMatrix = applyMask(maskIdx);
+    const testMatrix = maskModules(matrix, maskIdx);
     const score = calculatePenalty(testMatrix);
     //console.debug("generateQRCodeMatrix", {bestScore, score});
     if (score < bestScore) {
@@ -222,22 +223,12 @@ export function generateQRCodeMatrix({
   dataMask,
   codewords,
 }) {
-
-  function addCodewords() {
-    const bits = codewords.flatMap((cw) => cw.bits);
-    //console.debug("applyCodewords", { bits });
-    return matrix.map(matrix, ({ x, y, idx }, current) => {
-      const bit = bits[idx] || remainderBit;
-      return makeModule({ bit, x, y });
-    });
-  }
-
   const dimension = version * 4 + 17;
   let matrix = new QRMatrix(dimension);
   matrix = addNonDataModules(matrix, errorCorrectionLevel, version, dataMask);
-  matrix = addCodewords();
-
-
+  matrix = addCodewords(matrix, codewords);
+  let {}applyDataMask(matrix, dataMask);
   addFormatInfoModules(bestMatrix, errorCorrectionLevel, bestMask);
+
   return { matrix: bestMatrix, dataMask: bestMask };
 }
