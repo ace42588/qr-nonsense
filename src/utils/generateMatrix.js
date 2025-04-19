@@ -5,6 +5,8 @@ import {
 } from "./ModuleUtils";
 import { calculatePenalty } from "./calculatePenalty"
 
+const remainderBit = { value: 0, source: "Remainder" };
+
 function QRMatrix(dimension) {
   const matrix = Array.from({ length: dimension }, () =>
     Array(dimension).fill(null)
@@ -188,11 +190,6 @@ export function generateQRCodeMatrix({
   dataMask,
   codewords,
 }) {
-
-  const dimension = version * 4 + 17;
-  let matrix = new QRMatrix(dimension);
-  matrix = addNonDataModules(matrix, errorCorrectionLevel, version, dataMask);
-
   function applyMask(maskIndex) {
     //console.debug("applyMask", {matrix, maskIndex})
     const maskFunc = DATA_MASKS[maskIndex];
@@ -205,7 +202,6 @@ export function generateQRCodeMatrix({
 
   function addCodewords() {
     const bits = codewords.flatMap((cw) => cw.bits);
-    const remainderBit = { value: 0, source: "Remainder" };
     //console.debug("applyCodewords", { bits });
     return matrix.map(matrix, ({ x, y, idx }, current) => {
       const bit = bits[idx] || remainderBit;
@@ -213,11 +209,18 @@ export function generateQRCodeMatrix({
     });
   }
 
-  const populated = addCodewords();
+  
+  const dimension = version * 4 + 17;
+  let matrix = new QRMatrix(dimension);
+  matrix = addNonDataModules(matrix, errorCorrectionLevel, version, dataMask);
+  matrix = addCodewords();
 
   if (dataMask !== -1) {
-    const masked = applyMask(populated, dataMask);
+    const masked = applyMask(dataMask);
     return { matrix: masked, dataMask };
+  } else {
+    let bestScore = Infinity;
+    DATA_MASKS.forEach((_, idx) => {})
   }
 
   // Automatic mask scoring
@@ -225,7 +228,7 @@ export function generateQRCodeMatrix({
   let bestScore = Infinity;
   let bestMask = 0;
   for (let maskIdx = 0; maskIdx < 8; maskIdx++) {
-    const testMatrix = applyMask(populated, maskIdx);
+    const testMatrix = applyMask(maskIdx);
     const score = calculatePenalty(testMatrix);
     //console.debug("generateQRCodeMatrix", {bestScore, score});
     if (score < bestScore) {
