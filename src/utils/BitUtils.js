@@ -106,7 +106,9 @@ export const BitUtils = {
   getTerminatorBits(bits, requiredDataCodewords) {
     let length = getTerminatorLength(requiredDataCodewords, bits);
     const bitStr = "".padStart(length, "0");
-    return BitUtils.createTaggedBits(bitStr, "terminator", null, null);
+    //return BitUtils.createTaggedBits(bitStr, "terminator", null, null);
+    const termBits = getBits(0, length);
+    return termBits;
   },
   getCodewordFillBits(bits, requiredDataCodewords) {
     let bitStr;
