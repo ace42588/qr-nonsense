@@ -38,21 +38,31 @@ export function getCodewordsForBlock(
   dataCodewordsPerBlock,
   ecCodewordsPerBlock,
   dataBits,
-  blockId,
-  firstCodewordId
 ) {
   //console.debug("getCodewordsForBlock", { blockId });
+  const requiredDataCodewords = getRequiredDataCodewords(
+    version,
+    errorCorrectionLevel
+  );
+  const termBits = BitUtils.getTerminatorBits(dataBits, requiredDataCodewords);
+  // Add terminator bits, based on version capacity
+  let bits = [...dataBits, ...termBits];
+  const fillBits = BitUtils.getCodewordFillBits(bits, requiredDataCodewords);
+  // Pad the last codeword with 0s until its 8 bits
+  bits = [...bits, ...fillBits];
+  const padBits = BitUtils.getPaddingBits(bits, requiredDataCodewords);
+  // Add padding bytes, until the version capacity is full
+  bits = [...bits, ...padBits];
+  
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
     ecCodewordsPerBlock,
     dataBits,
-    blockId,
-    firstCodewordId
   );
 
   return [
     ...dataCodewords,
-    ...getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId),
+    ...getEcCodewords(ecCodewordsPerBlock, dataCodewords),
   ];
 }
 
@@ -60,8 +70,6 @@ function getDataCodewordsForBlock(
   codewordsPerBlock,
   ecCodewordsPerBlock,
   dataBits,
-  blockId,
-  firstCodewordId
 ) {
   //console.debug({ codewordsPerBlock, dataBits, blockId });
   const dataCodewords = Array.from({ length: codewordsPerBlock }, (_, i) => {
@@ -69,14 +77,13 @@ function getDataCodewordsForBlock(
       i * CodewordLength,
       i * CodewordLength + CodewordLength
     );
-    //return new TaggedCodeword(bits, firstCodewordId + i, blockId);
     return getCodeword(bits, "Data");
   });
   //console.debug("getDataCodewordsForBlock", { dataCodewords });
   return dataCodewords;
 }
 
-function getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId) {
+function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
   const dataBytes = Array.from(dataCodewords, ({ bits }) =>
     bits.reduce((num, { bit }, idx) => num | (bit << idx), 0)

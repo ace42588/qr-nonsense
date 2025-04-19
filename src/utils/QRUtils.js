@@ -30,9 +30,6 @@ function getFinalizedBits(dataBits, version, errorCorrectionLevel) {
 function getBlocks(chunks, errorCorrectionLevel, version) {
   const chunkBits = BitUtils.getBitsFromChunks(chunks);
   //console.debug({ chunkBits });
-
-  //version = QRUtils.getVersion(chunkBits, version, errorCorrectionLevel);
-
   const dataBits = getFinalizedBits(chunkBits, version, errorCorrectionLevel);
 
   const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
@@ -54,9 +51,7 @@ function getBlocks(chunks, errorCorrectionLevel, version) {
         const blockCodewords = getCodewordsForBlock(
           dataCodewordsPerBlock,
           ecCodewordsPerBlock,
-          dataBits,
-          blockId,
-          lastCodewordId
+          dataBits
         );
         lastCodewordId = lastCodewordId + blockCodewords.length;
         return {
