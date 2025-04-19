@@ -4,15 +4,32 @@ import { NumericSegment, AlphanumericSegment, ByteSegment } from "./Segments";
 
 let lastSegmentID = 0;
 
-function makeSegment(data, mode) {
+function makeSegment(data, inputMode) {
   return {
     id: lastSegmentID++,
     data,
-    mode
+    inputMode,
   };
 }
 
-function* createSegments(input, mode, errorMsg) {
+function* createSegments(input, mode, inputEncoding) {
+  if (mode.name === "byte") {
+    if (inputEncoding === "hex") {
+      for (let i = 0; i < input.length; i += 2) {
+        const byte = parseInt(input.substring(i, i + 2), 16);
+        yield { ...makeSegment(byte, mode.name), inputEncoding };
+      }
+    } else {
+      // default for QR Codes
+      
+      const encoder = new TextEncoder("latin1");
+      for (let i = 0; i < input.length; i++) {
+        const char = input[i];
+        const byte = encoder.encode(char);
+        yield { ...makeSegment(byte, mode.name), inputEncoding };
+      }
+    }
+  }
   const groups = input.match(mode.groupingRegex);
   if (!groups) {
     throw new Error(`Invalid input for ${mode.name} encoder: ${input}`);
@@ -105,9 +122,7 @@ class NumericEncoder extends Encoder {
   }
 
   *encodeData(input) {
-    yield* createSegments(
-      input, this.mode
-    );
+    yield* createSegments(input, this.mode);
   }
 }
 
@@ -119,9 +134,7 @@ class AlphanumericEncoder extends Encoder {
   }
 
   *encodeData(input) {
-    yield* createSegments(
-      input, this.mode
-    );
+    yield* createSegments(input, this.mode);
   }
 }
 
