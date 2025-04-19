@@ -59,6 +59,7 @@ function encodeNonByte(data, mode) {
 }
 
 function* createSegments(input, mode, inputEncoding) {
+  //console.debug("createSegments", {input, mode, inputEncoding});
   if (!input || !mode)
     throw new Error(`Invalid arguments for createSegments() ${arguments}`);
   if (mode.name === "byte") {
@@ -73,7 +74,7 @@ function* createSegments(input, mode, inputEncoding) {
       const encoder = new TextEncoder("latin1");
       for (let i = 0; i < input.length; i++) {
         const char = input[i];
-        const byte = encoder.encode(char);
+        const byte = encoder.encode(char)[0];
         yield { ...makeSegment(byte, char, mode.name), inputEncoding: "utf-8" };
       }
     }
@@ -84,7 +85,7 @@ function* createSegments(input, mode, inputEncoding) {
     }
     for (let i = 0; i < groups.length; i++) {
       //yield new SegmentClass(groups[i], i, parentId);
-      const { value, length } = encodeNonByte(groups[i], mode.name);
+      const { value, length } = encodeNonByte(groups[i], mode);
       yield { ...makeSegment(groups[i], groups[i], mode.name), value, length };
     }
   }
@@ -117,7 +118,8 @@ class Encoder {
    * @returns {object} An object with header and segments.
    */
   encode(data, chunkId, encoding) {
-    const segments = [...this.encodeData(data, chunkId, encoding)];
+    const segments = [...createSegments(data, this.mode, encoding)];
+    console.debug("encode", {segments});
     const mode = {
       value: this.mode.bits,
       text: this.mode.name,
