@@ -8,6 +8,27 @@ import {
   makeModule,
 } from "./ModuleUtils";
 
+let lastCodewordId = 0;
+
+function getDataCodeword(bits, blockId) {
+    //console.debug("TaggedCodeword", {taggedBits, id, blockId});
+    this.blockId = blockId;
+    bits.map((taggedBit, idx) => ({
+      ...taggedBit
+    });
+    this.byteValue = this.bits.reduce((byte, taggedBit) => {
+      return (byte << 1) | taggedBit.value;
+    }, 0);
+  }
+
+
+function getErrorCorrectionCodeword(byte, blockId) {
+    const bits = Array.from({ length: 8 }).map(
+        (_, idx) => new ECBit({ bit: (byte >> (7 - idx)) & 1, id: idx, blockId })
+      );
+    const type = "ErrorCorrection"
+}
+
 function getRequiredDataCodewords(version, errorCorrectionLevel) {
   const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
   let requiredDataCodewords = 0;
