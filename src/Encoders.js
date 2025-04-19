@@ -2,17 +2,26 @@ import { MODE } from "./Constants";
 import { BitUtils } from "./Utilities.js";
 import { NumericSegment, AlphanumericSegment, ByteSegment } from "./Segments";
 
+let lastSegmentID = 0;
+
+function makeSegment(data, mode) {
+  return {
+    id: lastSegmentID++,
+    data,
+    mode
+  };
+}
+
 function* createSegments(input, parentId, regex, SegmentClass, errorMsg) {
   const groups = input.match(regex);
   if (!groups) {
     throw new Error(errorMsg);
   }
   for (let i = 0; i < groups.length; i++) {
-    yield new SegmentClass(groups[i], i, parentId);
+    //yield new SegmentClass(groups[i], i, parentId);
+    makeSegment(input)
   }
 }
-
-let lastSegmentID = 0;
 
 class Encoder {
   /**
