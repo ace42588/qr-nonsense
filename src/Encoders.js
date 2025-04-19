@@ -2,7 +2,14 @@ import { MODE, AlphaNumCharMap } from "./Constants";
 import { getBits } from "./utils/BitUtils";
 import { NumericSegment, AlphanumericSegment, ByteSegment } from "./Segments";
 
-let lastSegmentID = 0;
+let lastSegmentId = 0;
+
+// ~24k bits possible
+function getId() {
+  if (lastSegmentId >= 0xffff) lastSegmentId = 0;
+
+  return lastSegmentId++;
+}
 
 function validateLength(data, min, max, type) {
   if (data.length < min || data.length > max) {
@@ -14,7 +21,7 @@ function validateLength(data, min, max, type) {
 
 function makeSegment(value, text, inputMode) {
   return {
-    id: lastSegmentID++,
+    id: getId(),
     value,
     text,
     inputMode,
@@ -52,6 +59,8 @@ function encodeNonByte(data, mode) {
 }
 
 function* createSegments(input, mode, inputEncoding) {
+  if (!input || !mode)
+    throw new Error(`Invalid arguments for createSegments() ${arguments}`);
   if (mode.name === "byte") {
     if (inputEncoding === "hex") {
       for (let i = 0; i < input.length; i += 2) {
@@ -75,7 +84,7 @@ function* createSegments(input, mode, inputEncoding) {
     }
     for (let i = 0; i < groups.length; i++) {
       //yield new SegmentClass(groups[i], i, parentId);
-      const { value, length } = encodeNonByte(groups[i]);
+      const { value, length } = encodeNonByte(groups[i], mode.name);
       yield { ...makeSegment(groups[i], groups[i], mode.name), value, length };
     }
   }
@@ -110,16 +119,16 @@ class Encoder {
   encode(data, chunkId, encoding) {
     const segments = [...this.encodeData(data, chunkId, encoding)];
     const mode = {
-        value: this.mode.bits,
-        text: this.mode.name,
-        length: 4,
-      }
+      value: this.mode.bits,
+      text: this.mode.name,
+      length: 4,
+    };
     const modeBits = getBits(mode.value, mode.length);
-      mode.bitIds = modeBits.map(({ id }) => id);
+    mode.bitIds = modeBits.map(({ id }) => id);
     const characterCount = {
-        value: segments.length,
-        length: Encoder.computeIndicatorLength(segments.length, this.mode),
-      }
+      value: segments.length,
+      length: Encoder.computeIndicatorLength(segments.length, this.mode),
+    };
     return {
       mode,
       characterCount,
@@ -191,16 +200,16 @@ class EciEncoder extends Encoder {
    */
   static encode(input, id) {
     const length = input < 256 ? 8 : 16;
-    const bits = BitUtils.toPaddedBinary(input, length);
     const mode = {
-        value: this.mode.bits,
-        text: this.mode.name,
-        length: 4,
-      }
+      value: this.mode.bits,
+      text: this.mode.name,
+      length: 4,
+    };
     const segment = makeSegment(input, input, "ECI");
+
     return {
       mode,
-      segments: [makeSegment(input, input, "Assignment Number")]
+      segments: [{ ...segment, length }],
     };
   }
 }
