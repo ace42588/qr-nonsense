@@ -20,7 +20,7 @@ export function getBits(value, length) {
           `Invalid string value for getBits(): ${JSON.stringify(value)}`
         );
       return [...value].map((bit, idx) => ({
-        bit,
+        bit: parseInt(bit),
         id: getId(),
       }));
     }
