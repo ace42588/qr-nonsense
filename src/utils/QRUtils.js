@@ -10,12 +10,18 @@ import {
 
 let lastCodewordId = 0;
 
+function getId() {
+  if (lastCodewordId >= 0xffff) lastCodewordId = 0;
+
+  return lastCodewordId++;
+}
+
 function getCodeword(bits, type) {
   //console.debug("getCodeword", { bits, type });
   if (!bits || bits.length !== 8)
     throw new Error(`Invalid bits for getCodeword(): ${bits}`);
   return {
-    id: lastCodewordId++,
+    id: getId(),
     type,
     bits,
     bitIds: bits.map(({ id }) => id),
@@ -138,13 +144,12 @@ function getDataCodewordsForBlock(
 
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId) {
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
-  const dataBytes = Array.from(dataCodewords, ({ bits }) => {
-    console.debug("getEcCodewords", { bits });
-    return bits.reduce((num, bit, idx) => num | (bit << idx), 0);
-  });
-  console.debug("getEcCodewords", { dataBytes });
+  const dataBytes = Array.from(dataCodewords, ({ bits }) =>
+    bits.reduce((num, { bit }, idx) => num | (bit << idx), 0)
+  );
+  //console.debug("getEcCodewords", { dataBytes });
   const ecBytes = encoder.encode(dataBytes);
-  console.debug("getEcCodewords", { ecBytes });
+  //console.debug("getEcCodewords", { ecBytes });
   return Array.from(ecBytes, (b, idx) => {
     //return new ECCodeword(b, eccId, blockId);
     return getCodeword(getBits(b), "Error Correction");
