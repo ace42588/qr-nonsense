@@ -4,7 +4,7 @@ import { TaggedBit } from "../Tagged";
 let lastBitID = 0;
 
 // ~24k bits possible
-export function getBits(value, source) {
+export function getBits(value, length) {
   switch (typeof value) {
     case "string": {
       const re = /[01]{2,}/gm;
@@ -12,7 +12,7 @@ export function getBits(value, source) {
         throw new Error(
           `Invalid string value for getBits(): ${JSON.stringify(value)}`
         );
-      return value.map((bit, idx) => ({
+      return [...value].map((bit, idx) => ({
         bit,
         id: lastBitID++,
       }));
@@ -37,25 +37,27 @@ function getHeaderBits(header, chunkId) {
   console.debug("getHeaderBits", { header });
   const {
     mode,
-    characterCount: { count, indicatorLength },
+    characterCount,
   } = header;
-  const modeBits = BitUtils.toPaddedBinary(mode.bits, 4);
-  const modeTagged = BitUtils.createTaggedBits(
-    modeBits,
-    "modeIndicator",
-    mode.name,
-    null
-  );
-  const charCountBits = BitUtils.toPaddedBinary(count, indicatorLength);
-  const countTagged = BitUtils.createTaggedBits(
-    charCountBits,
-    "characterCount",
-    count,
-    null
-  );
+  const modeBits = BitUtils.toPaddedBinary(mode.value, mode.length);
+  //const modeTagged = BitUtils.createTaggedBits(
+  //  modeBits,
+  //  "modeIndicator",
+  //  mode.name,
+  //  null
+  //);
+  const modeTagged = getBits(modeBits);
+  const charCountBits = BitUtils.toPaddedBinary(characterCount.value, characterCount.length);
+  //const countTagged = BitUtils.createTaggedBits(
+  //  charCountBits,
+  //  "characterCount",
+  //  count,
+  //  null
+  //);
+  const countTagged = getBits(charCountBits);
   const headerBits = [...modeTagged, ...countTagged];
   console.debug("getHeaderBits", { headerBits });
-  return [...modeTagged, ...countTagged];
+  return headerBits;
 }
 
 function getSegmentBits(segments, chunkId) {
@@ -105,10 +107,7 @@ export const BitUtils = {
       const { header, segments } = chunk;
       const headerBits = getHeaderBits(header, idx);
       const segmentBits = getSegmentBits(segments, idx);
-      const bits = [...headerBits, ...segmentBits].map((b) => ({
-        ...b,
-        id: lastBitID,
-      }));
+      const bits = [...headerBits, ...segmentBits];
       return bits;
     });
   },

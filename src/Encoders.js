@@ -139,11 +139,12 @@ class Encoder {
       header: {
         mode: {
           value: this.mode.bits,
-          name: this.mode.name,
+          text: this.mode.name,
+          length: 4
         },
         characterCount: {
-          count: data.length,
-          indicatorLength: Encoder.computeIndicatorLength(
+          value: segments.length,
+          length: Encoder.computeIndicatorLength(
             segments.length,
             this.mode
           ),
