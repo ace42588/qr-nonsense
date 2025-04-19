@@ -1,7 +1,7 @@
 import { DATA_MASKS, EC_INFO, CodewordLength } from "../Constants";
 import { ReedSolomonEncoder } from "../reedsolomon/index.js";
 import { BitUtils, getBits } from "./BitUtils";
-import { gerVersionInfo } from "./QRUtils"
+import { gerVersionInfo } from "./QRUtils";
 
 let lastCodewordId = 0;
 
@@ -23,7 +23,7 @@ function getCodeword(bits, type) {
   };
 }
 
-export function getRequiredDataCodewords(version, errorCorrectionLevel) {
+function getRequiredDataCodewords(version, errorCorrectionLevel) {
   const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
   let requiredDataCodewords = 0;
 
@@ -38,6 +38,8 @@ export function getCodewordsForBlock(
   dataCodewordsPerBlock,
   ecCodewordsPerBlock,
   dataBits,
+  version,
+  errorCorrectionLevel
 ) {
   //console.debug("getCodewordsForBlock", { blockId });
   const requiredDataCodewords = getRequiredDataCodewords(
@@ -53,11 +55,11 @@ export function getCodewordsForBlock(
   const padBits = BitUtils.getPaddingBits(bits, requiredDataCodewords);
   // Add padding bytes, until the version capacity is full
   bits = [...bits, ...padBits];
-  
+
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
     ecCodewordsPerBlock,
-    dataBits,
+    dataBits
   );
 
   return [
@@ -69,7 +71,7 @@ export function getCodewordsForBlock(
 function getDataCodewordsForBlock(
   codewordsPerBlock,
   ecCodewordsPerBlock,
-  dataBits,
+  dataBits
 ) {
   //console.debug({ codewordsPerBlock, dataBits, blockId });
   const dataCodewords = Array.from({ length: codewordsPerBlock }, (_, i) => {
