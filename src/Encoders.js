@@ -1,10 +1,18 @@
-import { MODE } from "./Constants";
+import { MODE, AlphaNumCharMap } from "./Constants";
 import { BitUtils } from "./Utilities.js";
 import { NumericSegment, AlphanumericSegment, ByteSegment } from "./Segments";
 
 let lastSegmentID = 0;
 
-function makeSegment(data, inputMode) {
+function validateLength(data, min, max, type) {
+  if (data.length < min || data.length > max) {
+    throw new Error(
+      `${type} segment must have between ${min} and ${max} characters.`
+    );
+  }
+}
+
+function makeSegment(data, text, inputMode) {
   return {
     id: lastSegmentID++,
     data,
@@ -12,31 +20,63 @@ function makeSegment(data, inputMode) {
   };
 }
 
+function encodeNumeric(data) {
+  validateLength(data, 1, 3, this.mode.name);
+  const value = parseInt(data, 10);
+  return {
+    value,
+    length: value.toString().length * 3 + 1
+  }
+}
+
+function encodeAlphanumeric(data) {
+  let value, length;
+  if (data.length === 1) {
+      value = AlphaNumCharMap.indexOf(data[0]);
+      length = 6;
+    } else if (data.length === 2) {
+      value =
+        AlphaNumCharMap.indexOf(data[0]) * 45 +
+        AlphaNumCharMap.indexOf(data[1]);
+      this.length = 11;
+    }
+}
+
 function* createSegments(input, mode, inputEncoding) {
   if (mode.name === "byte") {
     if (inputEncoding === "hex") {
       for (let i = 0; i < input.length; i += 2) {
+        const hex = input.substring(i, i + 2);
         const byte = parseInt(input.substring(i, i + 2), 16);
-        yield { ...makeSegment(byte, mode.name), inputEncoding };
+        yield { ...makeSegment(byte, `0x${hex}`, mode.name), inputEncoding};
       }
     } else {
       // default for QR Codes
-      
       const encoder = new TextEncoder("latin1");
       for (let i = 0; i < input.length; i++) {
         const char = input[i];
         const byte = encoder.encode(char);
-        yield { ...makeSegment(byte, mode.name), inputEncoding };
+        yield { ...makeSegment(byte, char, mode.name), inputEncoding: "utf-8"};
       }
     }
-  }
-  const groups = input.match(mode.groupingRegex);
-  if (!groups) {
-    throw new Error(`Invalid input for ${mode.name} encoder: ${input}`);
-  }
-  for (let i = 0; i < groups.length; i++) {
-    //yield new SegmentClass(groups[i], i, parentId);
-    makeSegment(input, mode.name);
+  } else {
+    const groups = input.match(mode.groupingRegex);
+    if (!groups) {
+      throw new Error(`Invalid input for ${mode.name} encoder: ${input}`);
+    }
+    for (let i = 0; i < groups.length; i++) {
+      //yield new SegmentClass(groups[i], i, parentId);
+      if (data.length === 1) {
+      this._value = AlphaNumCharMap.indexOf(data[0]);
+      this.length = 6;
+    } else if (data.length === 2) {
+      this._value =
+        AlphaNumCharMap.indexOf(data[0]) * 45 +
+        AlphaNumCharMap.indexOf(data[1]);
+      this.length = 11;
+    }
+      makeSegment(groups[i], groups[i], mode.name);
+    }
   }
 }
 
