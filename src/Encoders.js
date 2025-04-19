@@ -12,34 +12,42 @@ function validateLength(data, min, max, type) {
   }
 }
 
-function makeSegment(data, text, inputMode) {
+function makeSegment(value, text, inputMode) {
   return {
     id: lastSegmentID++,
-    data,
+    value,
     inputMode,
+    length: 8,
   };
 }
 
 function encodeNumeric(data) {
-  validateLength(data, 1, 3, this.mode.name);
+  validateLength(data, 1, 3, "Numeric");
   const value = parseInt(data, 10);
+  const length = value.toString().length * 3 + 1;
   return {
     value,
-    length: value.toString().length * 3 + 1
-  }
+    length,
+  };
 }
 
 function encodeAlphanumeric(data) {
-  let value, length;
-  if (data.length === 1) {
-      value = AlphaNumCharMap.indexOf(data[0]);
-      length = 6;
-    } else if (data.length === 2) {
-      value =
-        AlphaNumCharMap.indexOf(data[0]) * 45 +
-        AlphaNumCharMap.indexOf(data[1]);
-      this.length = 11;
-    }
+  validateLength(data, 1, 2, "Alphanumeric");
+  let value = AlphaNumCharMap.indexOf(data[0]);
+  let length = 6;
+  if (data.length === 2) {
+    value =
+      AlphaNumCharMap.indexOf(data[0]) * 45 + AlphaNumCharMap.indexOf(data[1]);
+    length = 11;
+  }
+  return { value, length };
+}
+
+function encodeSegment(data, mode) {
+  const {name} = mode;
+  if (name === "numeric") return encodeNumeric(data);
+  if (name === "alphanumeric") return encodeAlphanumeric(data);
+  if (name === "byte") return encodeByte
 }
 
 function* createSegments(input, mode, inputEncoding) {
@@ -48,7 +56,7 @@ function* createSegments(input, mode, inputEncoding) {
       for (let i = 0; i < input.length; i += 2) {
         const hex = input.substring(i, i + 2);
         const byte = parseInt(input.substring(i, i + 2), 16);
-        yield { ...makeSegment(byte, `0x${hex}`, mode.name), inputEncoding};
+        yield { ...makeSegment(byte, `0x${hex}`, mode.name), inputEncoding };
       }
     } else {
       // default for QR Codes
@@ -56,7 +64,7 @@ function* createSegments(input, mode, inputEncoding) {
       for (let i = 0; i < input.length; i++) {
         const char = input[i];
         const byte = encoder.encode(char);
-        yield { ...makeSegment(byte, char, mode.name), inputEncoding: "utf-8"};
+        yield { ...makeSegment(byte, char, mode.name), inputEncoding: "utf-8" };
       }
     }
   } else {
@@ -66,15 +74,7 @@ function* createSegments(input, mode, inputEncoding) {
     }
     for (let i = 0; i < groups.length; i++) {
       //yield new SegmentClass(groups[i], i, parentId);
-      if (data.length === 1) {
-      this._value = AlphaNumCharMap.indexOf(data[0]);
-      this.length = 6;
-    } else if (data.length === 2) {
-      this._value =
-        AlphaNumCharMap.indexOf(data[0]) * 45 +
-        AlphaNumCharMap.indexOf(data[1]);
-      this.length = 11;
-    }
+
       makeSegment(groups[i], groups[i], mode.name);
     }
   }
