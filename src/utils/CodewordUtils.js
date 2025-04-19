@@ -59,7 +59,7 @@ export function getCodewordsForBlock(
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
     ecCodewordsPerBlock,
-    dataBits
+    bits
   );
 
   return [
@@ -73,7 +73,7 @@ function getDataCodewordsForBlock(
   ecCodewordsPerBlock,
   dataBits
 ) {
-  //console.debug({ codewordsPerBlock, dataBits, blockId });
+  console.debug({ codewordsPerBlock, dataBits });
   const dataCodewords = Array.from({ length: codewordsPerBlock }, (_, i) => {
     const bits = dataBits.slice(
       i * CodewordLength,
