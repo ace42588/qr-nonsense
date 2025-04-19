@@ -1,7 +1,13 @@
 import { PAD_BYTES, CodewordLength } from "../Constants";
 import { TaggedBit } from "../Tagged";
 
-function getBits(value, source) {}
+function getBits(value, source) {
+  switch (typeof value) {
+    case "string": {
+      
+    }
+  }
+}
 
 function getHeaderBits(header, chunkId) {
   console.debug("getHeaderBits", { header });
