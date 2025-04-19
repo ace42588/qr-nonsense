@@ -10,7 +10,7 @@ export function getBits(value, source) {
       const re = /[01]{2,}/gm;
       if (!re.test(value))
         throw new Error(
-          `Invalid value for getBits(): ${JSON.stringify(value)}`
+          `Invalid string value for getBits(): ${JSON.stringify(value)}`
         );
       return value.map((bit, idx) => ({
         bit,
@@ -28,7 +28,7 @@ export function getBits(value, source) {
       }));
     }
     default: {
-      throw new Error(`Invalid value for getBits(): ${value}`);
+      throw new Error(`Invalid value for getBits(): ${JSON.stringify(value)}`);
     }
   }
 }
@@ -60,7 +60,7 @@ function getHeaderBits(header, chunkId) {
 
 function getSegmentBits(segments, chunkId) {
   console.debug("getSegmentBits", { segments });
-  return segments.flatMap((segment) => getBits(segment.data));
+  return segments.flatMap((segment) => getBits(segment.value));
 }
 
 export const BitUtils = {
@@ -101,6 +101,7 @@ export const BitUtils = {
   getBitsFromChunks(chunks) {
     //console.debug("getBitsFromChunks", { chunks });
     return chunks.flatMap((chunk, idx) => {
+      console.debug("getBitsFromChunks",{chunk});
       const { header, segments } = chunk;
       const headerBits = getHeaderBits(header, idx);
       const segmentBits = getSegmentBits(segments, idx);

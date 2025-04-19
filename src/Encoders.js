@@ -16,6 +16,7 @@ function makeSegment(value, text, inputMode) {
   return {
     id: lastSegmentID++,
     value,
+    text,
     inputMode,
     length: 8,
   };
@@ -137,7 +138,7 @@ class Encoder {
       id: chunkId,
       header: {
         mode: {
-          bits: this.mode.bits,
+          value: this.mode.bits,
           name: this.mode.name,
         },
         characterCount: {
@@ -185,8 +186,22 @@ class ByteEncoder extends Encoder {
     this.mode = MODE.Byte;
   }
 
-  *encodeData(input, encoding) {
-    yield* createSegments(input, this.mode, encoding);
+  *encodeData(input, inputEncoding) {
+    if (inputEncoding === "hex") {
+      for (let i = 0; i < input.length; i += 2) {
+        const hex = input.substring(i, i + 2);
+        const byte = parseInt(input.substring(i, i + 2), 16);
+        yield { ...makeSegment(byte, `0x${hex}`, "Byte"), inputEncoding };
+      }
+    } else {
+      // default for QR Codes
+      const encoder = new TextEncoder("latin1");
+      for (let i = 0; i < input.length; i++) {
+        const char = input[i];
+        const byte = encoder.encode(char)[0];
+        yield { ...makeSegment(byte, char, "Byte"), inputEncoding: "utf-8" };
+      }
+    }
   }
 }
 
