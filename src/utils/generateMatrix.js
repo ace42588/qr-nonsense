@@ -183,13 +183,7 @@ function addNonDataModules(
   return matrix;
 }
 
-
-export function generateQRCodeMatrix({
-  version,
-  errorCorrectionLevel,
-  dataMask,
-  codewords,
-}) {
+function applyDataMask(matrix, dataMask, errorCorrectionLevel){
   function applyMask(maskIndex) {
     //console.debug("applyMask", {matrix, maskIndex})
     const maskFunc = DATA_MASKS[maskIndex];
@@ -199,30 +193,11 @@ export function generateQRCodeMatrix({
       return makeModule({...current, isMasked});
     });
   }
-
-  function addCodewords() {
-    const bits = codewords.flatMap((cw) => cw.bits);
-    //console.debug("applyCodewords", { bits });
-    return matrix.map(matrix, ({ x, y, idx }, current) => {
-      const bit = bits[idx] || remainderBit;
-      return makeModule({ bit, x, y });
-    });
-  }
-
-  
-  const dimension = version * 4 + 17;
-  let matrix = new QRMatrix(dimension);
-  matrix = addNonDataModules(matrix, errorCorrectionLevel, version, dataMask);
-  matrix = addCodewords();
-
   if (dataMask !== -1) {
     const masked = applyMask(dataMask);
     return { matrix: masked, dataMask };
-  } else {
-    let bestScore = Infinity;
-    DATA_MASKS.forEach((_, idx) => {})
   }
-
+  
   // Automatic mask scoring
   let bestMatrix = null;
   let bestScore = Infinity;
@@ -237,6 +212,31 @@ export function generateQRCodeMatrix({
       bestMask = maskIdx;
     }
   }
+  addFormatInfoModules(bestMatrix, errorCorrectionLevel, bestMask);
+  return { matrix: bestMatrix, dataMask: bestMask };
+}
+
+export function generateQRCodeMatrix({
+  version,
+  errorCorrectionLevel,
+  dataMask,
+  codewords,
+}) {
+
+  function addCodewords() {
+    const bits = codewords.flatMap((cw) => cw.bits);
+    //console.debug("applyCodewords", { bits });
+    return matrix.map(matrix, ({ x, y, idx }, current) => {
+      const bit = bits[idx] || remainderBit;
+      return makeModule({ bit, x, y });
+    });
+  }
+
+  const dimension = version * 4 + 17;
+  let matrix = new QRMatrix(dimension);
+  matrix = addNonDataModules(matrix, errorCorrectionLevel, version, dataMask);
+  matrix = addCodewords();
+
 
   addFormatInfoModules(bestMatrix, errorCorrectionLevel, bestMask);
   return { matrix: bestMatrix, dataMask: bestMask };
