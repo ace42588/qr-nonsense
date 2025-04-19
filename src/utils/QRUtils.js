@@ -175,7 +175,7 @@ function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   throw new Error("Data too large to fit in a QR code version 40.");
 }
 
-function gerVersionInfo(errorCorrectionLevel, version) {
+export function gerVersionInfo(errorCorrectionLevel, version) {
   const versions = EC_INFO[errorCorrectionLevel];
   if (!EC_INFO[errorCorrectionLevel]) {
     throw new Error("Invalid error correction level: " + errorCorrectionLevel);

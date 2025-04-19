@@ -91,7 +91,8 @@ export const BitUtils = {
       characterCount.bitIds = charCountBits.map(({ id }) => id);
       
       const segmentBits = segments.flatMap((segment) => {
-        const bits = getBits(segment.value);
+        const { length, value } = segment;
+        const bits = getBits(value, length);
         segment.bitIds = bits.map(({ id }) => id);
         return bits;
       });
