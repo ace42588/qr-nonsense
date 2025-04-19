@@ -10,23 +10,33 @@ import {
 
 let lastCodewordId = 0;
 
+function getCodeword(bits, type, blockId) {
+  return {
+      id: lastCodewordId++,
+      type,
+      bits: bits.map((taggedBit, idx) => ({...taggedBit})),
+    blockId
+    };
+}
+
 function getDataCodeword(bits, blockId) {
-    //console.debug("TaggedCodeword", {taggedBits, id, blockId});
-    this.blockId = blockId;
-    bits.map((taggedBit, idx) => ({
-      ...taggedBit
-    });
-    this.byteValue = this.bits.reduce((byte, taggedBit) => {
-      return (byte << 1) | taggedBit.value;
-    }, 0);
+    //console.debug("TaggedCodeword", {bits});
+  const type = "Data";
+    return getCodeword(bits, type);
   }
 
 
 function getErrorCorrectionCodeword(byte, blockId) {
     const bits = Array.from({ length: 8 }).map(
-        (_, idx) => new ECBit({ bit: (byte >> (7 - idx)) & 1, id: idx, blockId })
+        (_, idx) => { bit: (byte >> (7 - idx)) & 1, id: idx, blockId })
       );
     const type = "ErrorCorrection"
+    return {
+      id: lastCodewordId++,
+      type: "data",
+      bits: bits.map((taggedBit, idx) => ({...taggedBit})),
+      blockId
+    };
 }
 
 function getRequiredDataCodewords(version, errorCorrectionLevel) {

@@ -7,8 +7,15 @@ let lastBitID = 0;
 function getBits(value, source) {
   switch (typeof value) {
     case "string": {
+      return value.map((bit, idx) => ({
+        bit,
+        id: lastBitID++ ,
+      }));
     }
     case "number": {
+      return Array.from({ length: 8 }).map(
+        (_, idx) => ({ bit: (value >> (7 - idx)) & 1, id: lastBitID++ })
+      )
     }
   }
 }
