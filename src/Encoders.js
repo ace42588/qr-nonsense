@@ -1,5 +1,5 @@
 import { MODE, AlphaNumCharMap } from "./Constants";
-import { BitUtils } from "./Utilities.js";
+import { getBits } from "./Utilities.js";
 import { NumericSegment, AlphanumericSegment, ByteSegment } from "./Segments";
 
 let lastSegmentID = 0;
@@ -134,18 +134,22 @@ class Encoder {
    */
   encode(data, chunkId, encoding) {
     const segments = [...this.encodeData(data, chunkId, encoding)];
-    return {
-      mode: {
+    const mode = {
         value: this.mode.bits,
         text: this.mode.name,
         length: 4,
-      },
-      characterCount: {
+      }
+    const modeBits = getBits(mode.value, mode.length);
+      mode.bitIds = modeBits.map(({ id }) => id);
+    const characterCount = {
         value: segments.length,
         length: Encoder.computeIndicatorLength(segments.length, this.mode),
-      },
+      }
+    return {
+      mode,
+      characterCount,
       segments,
-      childIds: segments.map(({ id }) => id),
+      bitIds: segments.map(({ id }) => id),
     };
   }
 }

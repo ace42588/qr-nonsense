@@ -12,6 +12,9 @@ function getId() {
 
 // ~24k bits possible
 export function getBits(value, length) {
+  if (value && length) {
+    value = BitUtils.toPaddedBinary(value, length);
+  }
   switch (typeof value) {
     case "string": {
       const re = /[01]{2,}/gm;
@@ -38,32 +41,6 @@ export function getBits(value, length) {
       throw new Error(`Invalid value for getBits(): ${JSON.stringify(value)}`);
     }
   }
-}
-
-function getHeaderBits(header, chunkId) {
-  const { mode, characterCount } = header;
-  const modeBits = BitUtils.toPaddedBinary(mode.value, mode.length);
-  const modeTagged = getBits(modeBits);
-  mode.bitIds = modeTagged.map(({ id }) => id);
-  const charCountBits = BitUtils.toPaddedBinary(
-    characterCount.value,
-    characterCount.length
-  );
-  const countTagged = getBits(charCountBits);
-  characterCount.bitIds = countTagged.map(({ id }) => id);
-  const headerBits = [...modeTagged, ...countTagged];
-  //console.debug("getHeaderBits", { headerBits });
-  return headerBits;
-}
-
-function getSegmentBits(segments, chunkId) {
-  const segmentBits = segments.flatMap((segment) => {
-    const bits = getBits(segment.value);
-    segment.bitIds = bits.map(({ id }) => id);
-    return bits;
-  });
-  //console.debug("getSegmentBits", { segmentBits });
-  return segments.flatMap((segment) => getBits(segment.value));
 }
 
 export const BitUtils = {
@@ -104,13 +81,24 @@ export const BitUtils = {
   getBitsFromChunks(chunks) {
     //console.debug("getBitsFromChunks", { chunks });
     return chunks.flatMap((chunk, idx) => {
-      console.debug("getBitsFromChunks", { chunk });
-      const { header, segments } = chunk;
-      const headerBits = getHeaderBits(header, idx);
-      header.bitIds = headerBits.map(({ id }) => id);
-      const segmentBits = getSegmentBits(segments, idx);
+      //console.debug("getBitsFromChunks", { chunk });
+      const { mode, characterCount, segments } = chunk;
+      
+      const modeBits = getBits(mode.value, mode.length);
+      mode.bitIds = modeBits.map(({ id }) => id);
+
+      const charCountBits = getBits(characterCount.value, characterCount.length);
+      characterCount.bitIds = charCountBits.map(({ id }) => id);
+      
+      const segmentBits = segments.flatMap((segment) => {
+        const bits = getBits(segment.value);
+        segment.bitIds = bits.map(({ id }) => id);
+        return bits;
+      });
       segments.bitIds = segmentBits.map(({ id }) => id);
-      const bits = [...headerBits, ...segmentBits];
+      
+      const bits = [...modeBits, ...charCountBits, ...segmentBits];
+      console.debug("getBitsFromChunks", { bits });
       return bits;
     });
   },
