@@ -43,11 +43,11 @@ function encodeAlphanumeric(data) {
   return { value, length };
 }
 
-function encodeSegment(data, mode) {
-  const {name} = mode;
+function encodeNonByte(data, mode) {
+  const { name } = mode;
   if (name === "numeric") return encodeNumeric(data);
   if (name === "alphanumeric") return encodeAlphanumeric(data);
-  if (name === "byte") return encodeByte
+  throw new Error(`Invalid mode: ${name}`);
 }
 
 function* createSegments(input, mode, inputEncoding) {
@@ -74,8 +74,8 @@ function* createSegments(input, mode, inputEncoding) {
     }
     for (let i = 0; i < groups.length; i++) {
       //yield new SegmentClass(groups[i], i, parentId);
-
-      makeSegment(groups[i], groups[i], mode.name);
+      const { value, length } = encodeNonByte(groups[i]);
+      yield { ...makeSegment(groups[i], groups[i], mode.name), value, length };
     }
   }
 }
@@ -186,22 +186,7 @@ class ByteEncoder extends Encoder {
   }
 
   *encodeData(input, encoding) {
-    if (encoding === "hex") {
-      for (let i = 0; i < input.length; i += 2) {
-        const byte = parseInt(input.substring(i, i + 2), 16);
-        yield new ByteSegment(byte, i / 2, encoding);
-      }
-    } else {
-      // default for QR Codes
-      const encoder = new TextEncoder("latin1");
-      const chars = [...input];
-
-      for (let i = 0; i < chars.length; i++) {
-        const char = chars[i];
-        const byte = encoder.encode(char);
-        yield new ByteSegment(byte, i);
-      }
-    }
+    yield* createSegments(input, this.mode, encoding);
   }
 }
 
