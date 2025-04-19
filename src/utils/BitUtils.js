@@ -4,18 +4,26 @@ import { TaggedBit } from "../Tagged";
 let lastBitID = 0;
 
 // ~24k bits possible
-function getBits(value, source) {
+export function getBits(value, source) {
   switch (typeof value) {
     case "string": {
+      const re = /[01]{2,}/gm;
+      if (!re.test(value))
+        throw new Error(
+          `Invalid value for getBits(): ${JSON.stringify(value)}`
+        );
       return value.map((bit, idx) => ({
         bit,
-        id: lastBitID++ ,
+        id: lastBitID++,
       }));
     }
     case "number": {
-      return Array.from({ length: 8 }).map(
-        (_, idx) => ({ bit: (value >> (7 - idx)) & 1, id: lastBitID++ })
-      )
+      if (value < 0 || value > 255)
+        throw new Error(`Invalid byte value for getBits(): ${value}`);
+      return Array.from({ length: 8 }).map((_, idx) => ({
+        bit: (value >> (7 - idx)) & 1,
+        id: lastBitID++,
+      }));
     }
   }
 }

@@ -1,7 +1,7 @@
 import { DATA_MASKS, EC_INFO, CodewordLength } from "../Constants";
 import { ReedSolomonEncoder } from "../reedsolomon/index.js";
 import { TaggedCodeword, ECCodeword } from "../Tagged";
-import { BitUtils } from "./BitUtils";
+import { BitUtils, getBits } from "./BitUtils";
 import {
   addFormatInfoModules,
   addNonDataModules,
@@ -10,33 +10,23 @@ import {
 
 let lastCodewordId = 0;
 
-function getCodeword(bits, type, blockId) {
+function getCodeword(bits, type) {
   return {
-      id: lastCodewordId++,
-      type,
-      bits: bits.map((taggedBit, idx) => ({...taggedBit})),
-    blockId
-    };
+    id: lastCodewordId++,
+    type,
+    bits: getBits(bits),
+  };
 }
 
-function getDataCodeword(bits, blockId) {
-    //console.debug("TaggedCodeword", {bits});
+function getDataCodeword(bits) {
+  //console.debug("TaggedCodeword", {bits});
   const type = "Data";
-    return getCodeword(bits, type);
-  }
+  return { ...getCodeword(bits), type };
+}
 
-
-function getErrorCorrectionCodeword(byte, blockId) {
-    const bits = Array.from({ length: 8 }).map(
-        (_, idx) => { bit: (byte >> (7 - idx)) & 1, id: idx, blockId })
-      );
-    const type = "ErrorCorrection"
-    return {
-      id: lastCodewordId++,
-      type: "data",
-      bits: bits.map((taggedBit, idx) => ({...taggedBit})),
-      blockId
-    };
+function getErrorCorrectionCodeword(byte) {
+  const type = "ErrorCorrection";
+  return { ...getCodeword(byte), type };
 }
 
 function getRequiredDataCodewords(version, errorCorrectionLevel) {
@@ -318,9 +308,8 @@ export function generateQRCodeMatrix({
   dataMask,
   codewords,
 }) {
-
   const dimension = version * 4 + 17;
-  
+
   function createBaseMatrix() {
     const matrix = Array.from({ length: dimension }, () =>
       Array(dimension).fill(null)
@@ -361,7 +350,7 @@ export function generateQRCodeMatrix({
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
       const isMasked = maskFunc({ x, y });
       //console.debug("applyMask", {current});
-      return makeModule({...current, isMasked});
+      return makeModule({ ...current, isMasked });
     });
   }
 
