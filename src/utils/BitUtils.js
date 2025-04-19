@@ -19,11 +19,16 @@ export function getBits(value, source) {
     }
     case "number": {
       if (value < 0 || value > 255)
-        throw new Error(`Invalid byte value for getBits(): ${value}`);
+        throw new Error(
+          `Invalid byte value for getBits(): ${value.toString()}`
+        );
       return Array.from({ length: 8 }).map((_, idx) => ({
         bit: (value >> (7 - idx)) & 1,
         id: lastBitID++,
       }));
+    }
+    default: {
+      throw new Error(`Invalid value for getBits(): ${value}`);
     }
   }
 }
@@ -55,7 +60,7 @@ function getHeaderBits(header, chunkId) {
 
 function getSegmentBits(segments, chunkId) {
   console.debug("getSegmentBits", { segments });
-  return segments.flatMap((segment) => [...segment]);
+  return segments.flatMap((segment) => getBits(segment.data));
 }
 
 export const BitUtils = {

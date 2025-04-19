@@ -18,17 +18,6 @@ function getCodeword(bits, type) {
   };
 }
 
-function getDataCodeword(bits) {
-  //console.debug("TaggedCodeword", {bits});
-  const type = "Data";
-  return { ...getCodeword(bits), type };
-}
-
-function getErrorCorrectionCodeword(byte) {
-  const type = "ErrorCorrection";
-  return { ...getCodeword(byte), type };
-}
-
 function getRequiredDataCodewords(version, errorCorrectionLevel) {
   const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
   let requiredDataCodewords = 0;
@@ -132,11 +121,12 @@ function getDataCodewordsForBlock(
 ) {
   //console.debug({ codewordsPerBlock, dataBits, blockId });
   const dataCodewords = Array.from({ length: codewordsPerBlock }, (_, i) => {
-    const codewordBits = dataBits.slice(
+    const bits = dataBits.slice(
       i * CodewordLength,
       i * CodewordLength + CodewordLength
     );
-    return new TaggedCodeword(codewordBits, firstCodewordId + i, blockId);
+    //return new TaggedCodeword(bits, firstCodewordId + i, blockId);
+    return getCodeword(bits, "Data");
   });
   //console.debug("getDataCodewordsForBlock", { dataCodewords });
   return dataCodewords;
@@ -150,7 +140,8 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords, blockId) {
   //console.debug("getEcCodewords", { ecBytes });
   return Array.from(ecBytes, (b, idx) => {
     const eccId = idx + dataCodewords.length;
-    return new ECCodeword(b, eccId, blockId);
+    //return new ECCodeword(b, eccId, blockId);
+    return getCodeword(b, "Error Correction");
   });
 }
 
