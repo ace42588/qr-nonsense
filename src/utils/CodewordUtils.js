@@ -1,6 +1,7 @@
 import { DATA_MASKS, EC_INFO, CodewordLength } from "../Constants";
 import { ReedSolomonEncoder } from "../reedsolomon/index.js";
 import { BitUtils, getBits } from "./BitUtils";
+import { gerVersionInfo } from "./QRUtils"
 
 let lastCodewordId = 0;
 
@@ -22,7 +23,7 @@ function getCodeword(bits, type) {
   };
 }
 
-function getRequiredDataCodewords(version, errorCorrectionLevel) {
+export function getRequiredDataCodewords(version, errorCorrectionLevel) {
   const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
   let requiredDataCodewords = 0;
 
@@ -33,68 +34,7 @@ function getRequiredDataCodewords(version, errorCorrectionLevel) {
   );
 }
 
-function getFinalizedBits(dataBits, version, errorCorrectionLevel) {
-  const requiredDataCodewords = getRequiredDataCodewords(
-    version,
-    errorCorrectionLevel
-  );
-  const termBits = BitUtils.getTerminatorBits(dataBits, requiredDataCodewords);
-  // Add terminator bits, based on version capacity
-  let bits = [...dataBits, ...termBits];
-  const fillBits = BitUtils.getCodewordFillBits(bits, requiredDataCodewords);
-  // Pad the last codeword with 0s until its 8 bits
-  bits = [...bits, ...fillBits];
-  const padBits = BitUtils.getPaddingBits(bits, requiredDataCodewords);
-  // Add padding bytes, until the version capacity is full
-  bits = [...bits, ...padBits];
-
-  return bits;
-}
-
-function getBlocks(chunks, errorCorrectionLevel, version) {
-  const chunkBits = BitUtils.getBitsFromChunks(chunks);
-  //console.debug({ chunkBits });
-
-  //version = QRUtils.getVersion(chunkBits, version, errorCorrectionLevel);
-
-  const dataBits = getFinalizedBits(chunkBits, version, errorCorrectionLevel);
-
-  const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
-    errorCorrectionLevel,
-    version
-  );
-  let lastBlockId = 0;
-  let lastCodewordId = 0;
-
-  // ecBlocks is an { numBlocks, dataCodewordsPerBlock }[] used to map
-  // the specifics of how to split up codewords for error correction.
-  // The capacity of a block can vary within a QR code version.
-
-  return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }, idx) => {
-    const blocksForType = Array.from(
-      { length: numBlocks },
-      (_, blockNumber) => {
-        const blockId = lastBlockId + blockNumber;
-        const blockCodewords = getCodewordsForBlock(
-          dataCodewordsPerBlock,
-          ecCodewordsPerBlock,
-          dataBits,
-          blockId,
-          lastCodewordId
-        );
-        lastCodewordId = lastCodewordId + blockCodewords.length;
-        return {
-          codewords: blockCodewords,
-          id: blockId,
-        };
-      }
-    );
-    lastBlockId = lastBlockId + blocksForType.length;
-    return blocksForType;
-  });
-}
-
-function getCodewordsForBlock(
+export function getCodewordsForBlock(
   dataCodewordsPerBlock,
   ecCodewordsPerBlock,
   dataBits,
