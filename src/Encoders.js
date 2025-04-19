@@ -66,7 +66,9 @@ class Encoder {
    * @returns {object} An object with header and segments.
    */
   encode(data, chunkId, encoding) {
-    const segments = [...this.encodeData(data, chunkId, encoding)];
+    const segments = [...this.encodeData(data, chunkId, encoding)].map(
+      (segment) => ({ ...segment, id: lastSegmentID++ })
+    );
     return {
       id: chunkId,
       //header: [
@@ -87,6 +89,7 @@ class Encoder {
         },
       },
       segments,
+      childIds: segments.map(({ id }) => id),
     };
   }
 }

@@ -1,11 +1,14 @@
 import { PAD_BYTES, CodewordLength } from "../Constants";
 import { TaggedBit } from "../Tagged";
 
+let lastBitID = 0;
+
 // ~24k bits possible
 function getBits(value, source) {
   switch (typeof value) {
     case "string": {
-      
+    }
+    case "number": {
     }
   }
 }
@@ -81,7 +84,11 @@ export const BitUtils = {
       const { header, segments } = chunk;
       const headerBits = getHeaderBits(header, idx);
       const segmentBits = getSegmentBits(segments, idx);
-      return [...headerBits, ...segmentBits];
+      const bits = [...headerBits, ...segmentBits].map((b) => ({
+        ...b,
+        id: lastBitID,
+      }));
+      return bits;
     });
   },
   getTerminatorBits(bits, requiredDataCodewords) {
