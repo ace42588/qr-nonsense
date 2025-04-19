@@ -135,20 +135,14 @@ class Encoder {
   encode(data, chunkId, encoding) {
     const segments = [...this.encodeData(data, chunkId, encoding)];
     return {
-      id: chunkId,
-      header: {
-        mode: {
-          value: this.mode.bits,
-          text: this.mode.name,
-          length: 4
-        },
-        characterCount: {
-          value: segments.length,
-          length: Encoder.computeIndicatorLength(
-            segments.length,
-            this.mode
-          ),
-        },
+      mode: {
+        value: this.mode.bits,
+        text: this.mode.name,
+        length: 4,
+      },
+      characterCount: {
+        value: segments.length,
+        length: Encoder.computeIndicatorLength(segments.length, this.mode),
       },
       segments,
       childIds: segments.map(({ id }) => id),

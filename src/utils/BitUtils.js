@@ -44,19 +44,25 @@ function getHeaderBits(header, chunkId) {
   const { mode, characterCount } = header;
   const modeBits = BitUtils.toPaddedBinary(mode.value, mode.length);
   const modeTagged = getBits(modeBits);
+  mode.bitIds = modeTagged.map(({ id }) => id);
   const charCountBits = BitUtils.toPaddedBinary(
     characterCount.value,
     characterCount.length
   );
   const countTagged = getBits(charCountBits);
+  characterCount.bitIds = countTagged.map(({ id }) => id);
   const headerBits = [...modeTagged, ...countTagged];
-  console.debug("getHeaderBits", { headerBits });
+  //console.debug("getHeaderBits", { headerBits });
   return headerBits;
 }
 
 function getSegmentBits(segments, chunkId) {
-  const segmentBits = segments.flatMap((segment) => getBits(segment.value));
-  console.debug("getSegmentBits", {segmentBits});
+  const segmentBits = segments.flatMap((segment) => {
+    const bits = getBits(segment.value);
+    segment.bitIds = bits.map(({ id }) => id);
+    return bits;
+  });
+  //console.debug("getSegmentBits", { segmentBits });
   return segments.flatMap((segment) => getBits(segment.value));
 }
 
@@ -101,7 +107,9 @@ export const BitUtils = {
       console.debug("getBitsFromChunks", { chunk });
       const { header, segments } = chunk;
       const headerBits = getHeaderBits(header, idx);
+      header.bitIds = headerBits.map(({ id }) => id);
       const segmentBits = getSegmentBits(segments, idx);
+      segments.bitIds = segmentBits.map(({ id }) => id);
       const bits = [...headerBits, ...segmentBits];
       return bits;
     });
