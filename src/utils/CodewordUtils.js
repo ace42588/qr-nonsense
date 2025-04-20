@@ -51,15 +51,20 @@ export function getCodewordsForBlock(
     version,
     errorCorrectionLevel
   );
-  const chunkBits = encodedInputs.flatMap(({ bits }) => bits);
+  let bits = encodedInputs.flatMap(({ bits }) => bits);
   // Add terminator bits, based on version capacity
-  const terminatorLength = getTerminatorLength(
+  const numTermBits = getTerminatorLength(
     requiredDataCodewords,
     chunkBits.length
   );
-  const termBits = getBits(0, length);
+  const termBits = getBits(0, numTermBits);
   console.debug("getCodewordsForBlock", {termBits});
-  const dataBits = [...chunkBits, ...termBits];
+  bits = [...bits, ...termBits];
+  const numFillBits = CodewordLength - (bits.length % 8);
+  const fillBits = getBits(0, numTermBits);
+  bits = [...bits, ...fillBits];
+  const numPadBytes = 
+  
 
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
