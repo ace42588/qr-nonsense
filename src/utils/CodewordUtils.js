@@ -55,19 +55,21 @@ export function getCodewordsForBlock(
   // Add terminator bits, based on version capacity
   const numTermBits = getTerminatorLength(requiredDataCodewords, bits.length);
   const termBits = getBits(0, numTermBits);
-  //console.debug("getCodewordsForBlock", { numTermBits, termBits });
   bits = [...bits, ...termBits];
-  const numFillBits = CodewordLength - (bits.length % CodewordLength);
-  console.debug("getCodewordsForBlock", { numFillBits });
+  // add filler bits to complete the last codeword
+  const remainder = bits.length % CodewordLength;
+  const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
   const fillBits = getBits(0, numTermBits);
   bits = [...bits, ...fillBits];
-  const numPadBytes = requiredDataCodewords - Math.ceil(bits / CodewordLength);
-  console.debug("getCodewordsForBlock", { numPadBytes });
-  const padBytes = Array.from({ length: numPadBytes }, (_, i) =>
-    getBits(PAD_BYTES[i % 2])
-  );
+  // add padding to fill the capacity
+  const numPadBytes =
+    requiredDataCodewords - Math.ceil(bits.length / CodewordLength);
+  const padBytes = Array.from({ length: numPadBytes }, (_, i) => {
+    const byte = PAD_BYTES[i % 2];
+    return getBits(byte, 8);
+  });
   bits = [...bits, ...padBytes.flat()];
-  console.debug("getCodewordsForBlock",{bits})
+  console.debug("getCodewordsForBlock", { bits });
 
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
@@ -91,6 +93,7 @@ function getDataCodewordsForBlock(
     const start = i * CodewordLength;
     const end = start + CodewordLength;
     const bits = dataBits.slice(start, end);
+    console.debug("getDataCodewordsForBlock", {start, end, bits})
     if (bits.length === 8) {
       return getCodeword(bits, "Data");
     }
