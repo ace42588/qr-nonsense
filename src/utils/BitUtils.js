@@ -22,6 +22,7 @@ export function getBits(value, length, source) {
   if (!!value && length) {
     value = value.toString(2).padStart(length, "0");
   }
+  console.debug("getBits", {value, length, source});
   switch (typeof value) {
     case "string": {
       const re = /[01]{2,}/gm;

@@ -97,14 +97,14 @@ function getCodewordsForBlock(
 
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
-  const dataBytes = Array.from(dataCodewords, ({ bits }) =>
+  const dataBytes = Array.from(dataCodewords, ({ bits }, idx) =>
     bits.reduce((num, { value }, idx) => num | (value << idx), 0)
   );
-  //console.debug("getEcCodewords", { dataBytes });
+  console.debug("getEcCodewords", { dataBytes });
   const ecBytes = encoder.encode(dataBytes);
-  //console.debug("getEcCodewords", { ecBytes });
-  return Array.from(ecBytes, (b, idx) => {
-    //return new ECCodeword(b, eccId, blockId);
+  console.debug("getEcCodewords", { ecBytes });
+  return Array.from(ecBytes, (b) => {
+    console.debug("getEcCodewords", {b});
     return getCodeword(getBits(b, 8), "Error Correction");
   });
 }
