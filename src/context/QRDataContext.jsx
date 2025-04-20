@@ -76,17 +76,18 @@ function dataReducer(state, action) {
     }
     case Actions.HighlightModules: {
       const {
-        payload: { type, id },
+        segment: { type, id },
       } = action;
-      console.debug(Actions.HighlightModules, { type, id });
       const modulesToUpdate = state.segmentMap.get(id);
-      console.debug(modulesToUpdate);
-      const newMatrix = state.matrix.map((row) =>
-        [...row].map((module) => {
-          console.debug(Actions.HighlightModules, { module });
+      console.debug(Actions.HighlightModules, { modulesToUpdate });
+      const newMatrix = state.matrix.map((row) => {
+        row.map((module) => {
+          const { bit } = module;
+          if (bit.id && modulesToUpdate.some((id) => m.id === bit.id))
+            console.debug(Actions.HighlightModules, { module });
           return module;
-        })
-      );
+        });
+      });
       return state;
     }
     default: {
