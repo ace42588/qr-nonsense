@@ -93,8 +93,11 @@ function dataReducer(state, action) {
       };
     }
     case Actions.HighlightSegment: {
-      const { bit } = action;
+      const {
+        module: { bit },
+      } = action;
       const segmentToUpdate = state.bitMap.get(bit.id);
+      if (!segmentToUpdate) return state;
       const newSegments = state.segments.map((segment) => {
         let { id, isHighlighted } = segment;
         const newSegment = { ...segment };

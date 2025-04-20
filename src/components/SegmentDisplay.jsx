@@ -18,9 +18,9 @@ export default function SegmentDisplay({ bitStream }) {
     <div className="segment-display">
       <h3>Segments</h3>
       <div className="segment-container">
-        {segments.map((segment, index) => (
+        {segments.map(({id, text, isHighlighted}, index) => (
           <button
-            key={segment.id}
+            key={id}
             className="segment-button"
             onClick={() => handleSegmentClick(segment)}
             title={`Segment ${index + 1}`}
