@@ -260,12 +260,12 @@ export function addNonDataModules(
       }
     }
   }
-
-  addAlignmentPatterns();
-  addFormatInfoModules(matrix, errorCorrectionLevel, dataMask);
+  
   addFinderPatterns();
   addSeparators();
+  addAlignmentPatterns();
   addTimingPatterns();
+  addFormatInfoModules(matrix, errorCorrectionLevel, dataMask);
   addVersionInfo();
 
   return matrix;
