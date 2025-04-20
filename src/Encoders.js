@@ -139,11 +139,12 @@ class Encoder {
     };
     const charCountBits = getBits(characterCount.value, characterCount.length);
     characterCount.bitIds = charCountBits.map(({ id }) => id);
-    return {
+    const encoded = {
       mode,
       characterCount,
       segments,
     };
+    return encoded;
   }
 }
 

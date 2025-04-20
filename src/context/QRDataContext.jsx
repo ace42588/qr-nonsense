@@ -78,6 +78,7 @@ function dataReducer(state, action) {
   }
 }
 
+
 function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
   if (!inputs) return {};
   const chunks = inputs.map(({ data, mode, encoding }) =>
