@@ -8,7 +8,7 @@ import {
 import { getCodewordsForBlock } from "./CodewordUtils";
 import { calculatePenalty } from "./calculatePenalty";
 
-function getBlocks(inputs, errorCorrectionLevel, version) {
+function getBlocks(encodedInputs, errorCorrectionLevel, version) {
   const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
     errorCorrectionLevel,
     version
@@ -27,7 +27,7 @@ function getBlocks(inputs, errorCorrectionLevel, version) {
         const blockCodewords = getCodewordsForBlock(
           dataCodewordsPerBlock,
           ecCodewordsPerBlock,
-          inputs,
+          encodedInputs,
           version,
           errorCorrectionLevel
         );

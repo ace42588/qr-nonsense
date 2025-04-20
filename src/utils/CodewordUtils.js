@@ -42,7 +42,7 @@ function getTerminatorLength(capacityBytes, totalDataBits) {
 export function getCodewordsForBlock(
   dataCodewordsPerBlock,
   ecCodewordsPerBlock,
-  inputs,
+  encodedInputs,
   version,
   errorCorrectionLevel
 ) {
@@ -51,7 +51,7 @@ export function getCodewordsForBlock(
     version,
     errorCorrectionLevel
   );
-  const dataBits = BitUtils.getBitsFromChunks(inputs, requiredDataCodewords);
+  const dataBits = BitUtils.getBitsFromChunks(encodedInputs, requiredDataCodewords);
 
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,

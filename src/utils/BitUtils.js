@@ -56,10 +56,9 @@ export const BitUtils = {
 
   getBitsFromChunks(chunks, requiredDataCodewords) {
     //console.debug("getBitsFromChunks", { chunks });
-    const chunkBits = chunks.flatMap((chunk, idx) => {
+    const chunkBits = chunks.flatMap((chunk) => {
       //console.debug("getBitsFromChunks", { chunk });
       const { mode, characterCount, segments } = chunk;
-      const modeBits = getBits(mode.value, mode.length);
       const charCountBits = getBits(characterCount.value, characterCount.length);
       const segmentBits = segments.flatMap((segment) => {
         const { length, value } = segment;
