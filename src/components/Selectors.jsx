@@ -44,7 +44,7 @@ const levels = [
 ];
 
 export function ErrorCorrectionSelector() {
-  const [ecLevel, setEcLevel] = useState(1);
+  const [ecLevel, setEcLevel] = useState(0);
   const dispatch = useQRDataDispatch();
   return (
     <div className="error-correction-selector">

@@ -131,7 +131,7 @@ function dataReducer(state, action) {
 
 const initialData = {
   encodedInputs: [],
-  errorCorrectionLevel: 1,
+  errorCorrectionLevel: 0,
   version: -1,
   calculatedVersion: 1,
   dataMask: -1,
