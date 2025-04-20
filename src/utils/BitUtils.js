@@ -11,7 +11,7 @@ function getId() {
 }
 
 // ~24k bits possible
-export function getBits(value, length) {
+export function getBits(value, length, source) {
   if (value && length) {
     value = BitUtils.toPaddedBinary(value, length);
   }
@@ -23,7 +23,7 @@ export function getBits(value, length) {
           `Invalid string value for getBits(): ${JSON.stringify(value)}`
         );
       return [...value].map((bit, idx) => ({
-        bit: parseInt(bit),
+        value: parseInt(bit),
         id: getId(),
       }));
     }
@@ -33,7 +33,7 @@ export function getBits(value, length) {
           `Invalid byte value for getBits(): ${value.toString()}`
         );
       return Array.from({ length: 8 }).map((_, idx) => ({
-        bit: (value >> (7 - idx)) & 1,
+        value: (value >> (7 - idx)) & 1,
         id: getId(),
       }));
     }

@@ -46,7 +46,7 @@ export function getCodewordsForBlock(
   version,
   errorCorrectionLevel
 ) {
-  console.debug("getCodewordsForBlock", { encodedInputs });
+  //console.debug("getCodewordsForBlock", { encodedInputs });
   const requiredDataCodewords = getRequiredDataCodewords(
     version,
     errorCorrectionLevel
@@ -82,7 +82,7 @@ function getDataCodewordsForBlock(
     const start = i * CodewordLength;
     const end = start + CodewordLength;
     // add padding byte if we are out of data
-    if (end > dataBits.length) {
+    if (start > dataBits.length) {
       const byte = PAD_BYTES[i % 2];
       const bits = byte.toString(2).padStart(CodewordLength, 0).split("");
       return getCodeword(bits, "Padding");
