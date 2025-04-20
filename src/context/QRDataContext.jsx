@@ -76,19 +76,23 @@ function dataReducer(state, action) {
     }
     case Actions.HighlightModules: {
       const {
-        segment: { type, id },
+        segment
       } = action;
       const modulesToUpdate = state.segmentMap.get(id);
-      console.debug(Actions.HighlightModules, { modulesToUpdate });
       const newMatrix = state.matrix.map((row) => {
-        row.map((module) => {
-          const { bit } = module;
-          if (bit.id && modulesToUpdate.some((id) => m.id === bit.id))
-            console.debug(Actions.HighlightModules, { module });
-          return module;
+        return row.map((module) => {
+          let { bit, isHighlighted } = module;
+          const newModule = { ...module };
+          if (bit.id && modulesToUpdate.some((id) => id === bit.id)) {
+            newModule.isHighlighted = !isHighlighted;
+          }
+          return newModule;
         });
       });
-      return state;
+      return {
+        ...state,
+        matrix: newMatrix,
+      };
     }
     default: {
       console.error("dataReducer", `Unrecognized action: ${action.type}`);
