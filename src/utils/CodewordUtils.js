@@ -56,11 +56,13 @@ export function getCodewordsForBlock(
   const numTermBits = getTerminatorLength(requiredDataCodewords, bits.length);
   const termBits = getBits(0, numTermBits);
   bits = [...bits, ...termBits];
+  //console.debug("getCodewordsForBlock", { termBits, bits });
   // add filler bits to complete the last codeword
   const remainder = bits.length % CodewordLength;
   const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
-  const fillBits = getBits(0, numTermBits);
+  const fillBits = getBits(0, numFillBits);
   bits = [...bits, ...fillBits];
+  //console.debug("getCodewordsForBlock", { remainder, numFillBits, fillBits, bits });
   // add padding to fill the capacity
   const numPadBytes =
     requiredDataCodewords - Math.ceil(bits.length / CodewordLength);
@@ -68,8 +70,8 @@ export function getCodewordsForBlock(
     const byte = PAD_BYTES[i % 2];
     return getBits(byte, 8);
   });
+  //console.debug("getCodewordsForBlock", { padBytes, bits });
   bits = [...bits, ...padBytes.flat()];
-  console.debug("getCodewordsForBlock", { bits });
 
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
@@ -93,7 +95,6 @@ function getDataCodewordsForBlock(
     const start = i * CodewordLength;
     const end = start + CodewordLength;
     const bits = dataBits.slice(start, end);
-    console.debug("getDataCodewordsForBlock", {start, end, bits})
     if (bits.length === 8) {
       return getCodeword(bits, "Data");
     }
@@ -106,13 +107,13 @@ function getDataCodewordsForBlock(
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
   const dataBytes = Array.from(dataCodewords, ({ bits }) =>
-    bits.reduce((num, { bit }, idx) => num | (bit << idx), 0)
+    bits.reduce((num, { value }, idx) => num | (value << idx), 0)
   );
-  //console.debug("getEcCodewords", { dataBytes });
+  console.debug("getEcCodewords", { dataBytes });
   const ecBytes = encoder.encode(dataBytes);
-  //console.debug("getEcCodewords", { ecBytes });
+  console.debug("getEcCodewords", { ecBytes });
   return Array.from(ecBytes, (b, idx) => {
     //return new ECCodeword(b, eccId, blockId);
-    return getCodeword(getBits(b), "Error Correction");
+    return getCodeword(getBits(b, 8), "Error Correction");
   });
 }
