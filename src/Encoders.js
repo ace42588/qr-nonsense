@@ -143,6 +143,11 @@ class Encoder {
     mode.bitIds = modeBits.map(({ id }) => id);
     characterCount.bitIds = charCountBits.map(({ id }) => id);
     segments.bitIds = segmentBits.map(({ id }) => id);
+    
+    const bitMap = new Map();
+    modeBits.forEach(({id}) => bitMap.set(id, mode));
+    charCountBits.forEach(({id}) => bitMap.set(id, characterCount));
+    
     const encoded = {
       mode,
       characterCount,
