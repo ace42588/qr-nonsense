@@ -83,7 +83,7 @@ function getCodewordsForBlock(
       const cwStart = numProcessedCodewords + i * CodewordLength;
       const bits = encodedData.slice(cwStart, cwStart + CodewordLength);
       if (bits.length === 8) {
-        return getCodeword(bits, "Data");
+        return getCodeword(bits, "data");
       }
       throw new Error("Issue creating codeword from data");
     }
@@ -104,8 +104,8 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const ecBytes = encoder.encode(dataBytes);
   console.debug("getEcCodewords", { ecBytes });
   return Array.from(ecBytes, (b) => {
-    console.debug("getEcCodewords", {b});
-    return getCodeword(getBits(b, 8), "Error Correction");
+    //console.debug("getEcCodewords", {b});
+    return getCodeword(getBits(b, 8), "errorCorrection");
   });
 }
 

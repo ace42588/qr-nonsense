@@ -22,7 +22,7 @@ export function getBits(value, length, source) {
   if (!!value && length) {
     value = value.toString(2).padStart(length, "0");
   }
-  console.debug("getBits", { value, length });
+  //console.debug("getBits", { value, length });
   switch (typeof value) {
     case "string": {
       const re = /[01]{2,}/gm;
@@ -31,7 +31,7 @@ export function getBits(value, length, source) {
           `Invalid string value for getBits(): ${JSON.stringify(value)}`
         );
       const bits = [...value].map((bit) => getBit(parseInt(bit)));
-      console.debug({ bits });
+      //console.debug({ bits });
       return bits;
     }
     case "number": {
@@ -42,7 +42,7 @@ export function getBits(value, length, source) {
       const bits = Array.from({ length }).map((_, idx) =>
         getBit((value >> (7 - idx)) & 1)
       );
-      console.debug({ bits });
+      //console.debug({ bits });
       return bits;
     }
     default: {

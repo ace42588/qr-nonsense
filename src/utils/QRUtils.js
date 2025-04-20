@@ -84,6 +84,7 @@ export function getQRDataFromInputs(
   });
   return {
     ...encoded,
+    ecCodewords: codewords.filter((cw) => cw.type === "errorCorrection"),
     encodedInputs,
     calculatedVersion,
     codewords,
