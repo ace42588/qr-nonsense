@@ -138,11 +138,13 @@ function generateQRCodeMatrix({
   function applyMask(matrix, maskIndex) {
     //console.debug("applyMask", {matrix, maskIndex})
     const maskFunc = DATA_MASKS[maskIndex];
-    return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
+    const masked = mapQRMatrix(matrix, ({ x, y, idx }, current) => {
       const isMasked = maskFunc({ x, y });
       //console.debug("applyMask", {current});
       return makeModule({ ...current, isMasked });
     });
+    addFormatInfoModules(masked, errorCorrectionLevel, maskIndex);
+    return
   }
 
   function addCodewords(matrix) {
@@ -164,7 +166,6 @@ function generateQRCodeMatrix({
   }
 
   // Automatic mask scoring
-  let bestMatrix = null;
   let bestScore = Infinity;
   let bestMask = 0;
   for (let maskIdx = 0; maskIdx < 8; maskIdx++) {
@@ -172,12 +173,11 @@ function generateQRCodeMatrix({
     const score = calculatePenalty(testMatrix);
     //console.debug("generateQRCodeMatrix", {bestScore, score});
     if (score < bestScore) {
-      bestMatrix = testMatrix;
       bestScore = score;
       bestMask = maskIdx;
     }
   }
 
-  addFormatInfoModules(bestMatrix, errorCorrectionLevel, bestMask);
-  return { matrix: bestMatrix, dataMask: bestMask };
+  //addFormatInfoModules(bestMatrix, errorCorrectionLevel, bestMask);
+  return { matrix: applyMask(populated, bestMask), dataMask: bestMask };
 }
