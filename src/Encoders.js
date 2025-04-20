@@ -1,5 +1,6 @@
 import { MODE, AlphaNumCharMap } from "./Constants";
 import { getBits } from "./utils/BitUtils";
+import { getRequiredDataCodewords } from "./utils/CodewordUtils"
 import { NumericSegment, AlphanumericSegment, ByteSegment } from "./Segments";
 
 let lastSegmentId = 0;
@@ -246,6 +247,34 @@ const encoders = {
     throw new Error("Kanji mode not implemented");
   },
 };
+
+export function finalizeEncoding(encodedInputs, version, errorCorrectionLevel) {
+  //console.debug("getCodewordsForBlock", { encodedInputs });
+  const requiredDataCodewords = getRequiredDataCodewords(
+    version,
+    errorCorrectionLevel
+  );
+  let bits = encodedInputs.flatMap(({ bits }) => bits);
+  // Add terminator bits, based on version capacity
+  const numTermBits = getTerminatorLength(requiredDataCodewords, bits.length);
+  const termBits = getBits(0, numTermBits);
+  bits = [...bits, ...termBits];
+  //console.debug("getCodewordsForBlock", { termBits, bits });
+  // add filler bits to complete the last codeword
+  const remainder = bits.length % CodewordLength;
+  const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
+  const fillBits = getBits(0, numFillBits);
+  bits = [...bits, ...fillBits];
+  //console.debug("getCodewordsForBlock", { remainder, numFillBits, fillBits, bits });
+  // add padding to fill the capacity
+  const numPadBytes =
+    requiredDataCodewords - Math.ceil(bits.length / CodewordLength);
+  const padBytes = Array.from({ length: numPadBytes }, (_, i) => {
+    const byte = PAD_BYTES[i % 2];
+    return getBits(byte, 8);
+  });
+  //console.debug("getCodewordsForBlock", { padBytes, bits });
+}
 
 export default function GetEncoder(mode) {
   if (!mode) throw new Error("Mode is required.");

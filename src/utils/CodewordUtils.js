@@ -23,7 +23,7 @@ function getCodeword(bits, type) {
   };
 }
 
-function getRequiredDataCodewords(version, errorCorrectionLevel) {
+export function getRequiredDataCodewords(version, errorCorrectionLevel) {
   const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
   let requiredDataCodewords = 0;
 
