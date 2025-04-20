@@ -34,18 +34,12 @@ export function getRequiredDataCodewords(version, errorCorrectionLevel) {
   );
 }
 
-function getTerminatorLength(capacityBytes, totalDataBits) {
-  const capacityBits = capacityBytes * CodewordLength;
-  return Math.min(4, Math.max(0, capacityBits - totalDataBits));
-}
-
 export function getCodewordsForBlock(
   dataCodewordsPerBlock,
   ecCodewordsPerBlock,
+  numProcessedCodewords,
   encodedData
 ) {
-  
-
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
     ecCodewordsPerBlock,
@@ -63,11 +57,8 @@ function getDataCodewordsForBlock(
   ecCodewordsPerBlock,
   dataBits
 ) {
-  console.debug("getDataCodewordsForBlock", { codewordsPerBlock, dataBits });
   const dataCodewords = Array.from({ length: codewordsPerBlock }, (_, i) => {
-    const start = i * CodewordLength;
-    const end = start + CodewordLength;
-    const bits = dataBits.slice(start, end);
+    const bits = dataBits.slice(i * CodewordLength, i * CodewordLength + CodewordLength);
     if (bits.length === 8) {
       return getCodeword(bits, "Data");
     }

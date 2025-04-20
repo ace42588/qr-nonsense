@@ -252,12 +252,8 @@ function getTerminatorLength(capacityBytes, totalDataBits) {
   return Math.min(4, Math.max(0, capacityBits - totalDataBits));
 }
 
-export function finalizeEncoding(encodedInputs, version, errorCorrectionLevel) {
+export function finalizeEncoding(encodedInputs, requiredDataCodewords) {
   //console.debug("finalizeEncoding", { encodedInputs });
-  const requiredDataCodewords = getRequiredDataCodewords(
-    version,
-    errorCorrectionLevel
-  );
   let bits = encodedInputs.flatMap(({ bits }) => bits);
   // Add terminator bits, based on version capacity
   const numTermBits = getTerminatorLength(requiredDataCodewords, bits.length);
