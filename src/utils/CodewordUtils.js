@@ -77,7 +77,7 @@ function getDataCodewordsForBlock(
     // add padding byte if we are out of data
     if (end > dataBits.length) {
       const byte = PAD_BYTES[i % 2];
-      const bits = byte.toString(2).split("");
+      const bits = byte.toString(2).padStart(CodewordLength, 0).split("");
       return getCodeword(bits, "Padding");
     }
     const bits = dataBits.slice(start, end);
