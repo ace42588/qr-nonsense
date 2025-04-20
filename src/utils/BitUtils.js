@@ -78,9 +78,9 @@ export const BitUtils = {
     });
   },
 
-  getBitsFromChunks(chunks) {
+  getBitsFromChunks(chunks, requiredDataCodewords) {
     //console.debug("getBitsFromChunks", { chunks });
-    return chunks.flatMap((chunk, idx) => {
+    const chunkBits = chunks.flatMap((chunk, idx) => {
       //console.debug("getBitsFromChunks", { chunk });
       const { mode, characterCount, segments } = chunk;
       
@@ -102,13 +102,12 @@ export const BitUtils = {
       console.debug("getBitsFromChunks", { bits });
       return bits;
     });
-  },
-  getTerminatorBits(bits, requiredDataCodewords) {
-    let length = getTerminatorLength(requiredDataCodewords, bits);
-    const bitStr = "".padStart(length, "0");
-    //return BitUtils.createTaggedBits(bitStr, "terminator", null, null);
+    // Add terminator bits, based on version capacity
+    const terminatorLength = getTerminatorLength(requiredDataCodewords, chunkBits);
     const termBits = getBits(0, length);
-    return termBits;
+    const bits = [...chunkBits, ...termBits];
+    console.debug("getBitsFromChunks", { bits });
+    return bits;
   },
   getCodewordFillBits(bits, requiredDataCodewords) {
     let bitStr;

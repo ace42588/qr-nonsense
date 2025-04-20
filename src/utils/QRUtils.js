@@ -8,9 +8,7 @@ import {
 import { getCodewordsForBlock } from "./CodewordUtils";
 import { calculatePenalty } from "./calculatePenalty";
 
-function getBlocks(chunks, errorCorrectionLevel, version) {
-  const dataBits = BitUtils.getBitsFromChunks(chunks);
-
+function getBlocks(inputs, errorCorrectionLevel, version) {
   const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
     errorCorrectionLevel,
     version
@@ -29,7 +27,7 @@ function getBlocks(chunks, errorCorrectionLevel, version) {
         const blockCodewords = getCodewordsForBlock(
           dataCodewordsPerBlock,
           ecCodewordsPerBlock,
-          dataBits,
+          inputs,
           version,
           errorCorrectionLevel
         );

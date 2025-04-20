@@ -34,10 +34,15 @@ function getRequiredDataCodewords(version, errorCorrectionLevel) {
   );
 }
 
+function getTerminatorLength(capacityBytes, totalDataBits) {
+  const capacityBits = capacityBytes * CodewordLength;
+  return Math.min(4, Math.max(0, capacityBits - totalDataBits));
+}
+
 export function getCodewordsForBlock(
   dataCodewordsPerBlock,
   ecCodewordsPerBlock,
-  dataBits,
+  inputs,
   version,
   errorCorrectionLevel
 ) {
@@ -46,9 +51,9 @@ export function getCodewordsForBlock(
     version,
     errorCorrectionLevel
   );
-  const termBits = BitUtils.getTerminatorBits(dataBits, requiredDataCodewords);
+  const dataBits = BitUtils.getBitsFromChunks(inputs, requiredDataCodewords);
   // Add terminator bits, based on version capacity
-  let bits = [...dataBits, ...termBits];
+
   const fillBits = BitUtils.getCodewordFillBits(bits, requiredDataCodewords);
   // Pad the last codeword with 0s until its 8 bits
   bits = [...bits, ...fillBits];
