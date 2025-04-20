@@ -40,32 +40,22 @@ export function getCodewordsForBlock(
   numProcessedCodewords,
   encodedData
 ) {
-  const dataCodewords = getDataCodewordsForBlock(
-    dataCodewordsPerBlock,
-    ecCodewordsPerBlock,
-    encodedData
+  const dataCodewords = Array.from(
+    { length: dataCodewordsPerBlock },
+    (_, i) => {
+      const cwStart = numProcessedCodewords + i * CodewordLength;
+      const bits = encodedData.slice(cwStart, cwStart + CodewordLength);
+      if (bits.length === 8) {
+        return getCodeword(bits, "Data");
+      }
+      throw new Error("Issue creating codeword from data");
+    }
   );
 
   return [
     ...dataCodewords,
     ...getEcCodewords(ecCodewordsPerBlock, dataCodewords),
   ];
-}
-
-function getDataCodewordsForBlock(
-  codewordsPerBlock,
-  ecCodewordsPerBlock,
-  dataBits
-) {
-  const dataCodewords = Array.from({ length: codewordsPerBlock }, (_, i) => {
-    const bits = dataBits.slice(i * CodewordLength, i * CodewordLength + CodewordLength);
-    if (bits.length === 8) {
-      return getCodeword(bits, "Data");
-    }
-    throw new Error("Issue creating codeword from data");
-  });
-  console.debug("getDataCodewordsForBlock", { dataCodewords });
-  return dataCodewords;
 }
 
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
