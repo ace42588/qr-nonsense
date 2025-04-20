@@ -81,20 +81,19 @@ function dataReducer(state, action) {
 
 function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
   if (!inputs) return {};
-  const chunks = inputs.map(({ data, mode, encoding }) =>
+  const encodedInputs = inputs.map(({ data, mode, encoding }) =>
     Encoders(mode).encode(data, encoding)
   );
-  console.debug("getQRDataFromInputs", {chunks});
-  const maps = chunks.map(({bitMap}) => bitMap);
+  const maps = encodedInputs.map(({bitMap}) => bitMap);
   const bitMap = maps.reduce((map, current) => new Map([...map, ...current]));
-  const segments = chunks.flatMap(({ segments }) => segments);
+  const segments = encodedInputs.flatMap(({ segments }) => segments);
   const calculatedVersion = QRUtils.getVersion(
-    chunks,
+    bitMap.size,
     version,
     errorCorrectionLevel
   );
   const codewords = QRUtils.getCodewords(
-    chunks,
+    encodedInputs,
     calculatedVersion,
     errorCorrectionLevel
   );
@@ -105,7 +104,7 @@ function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
     codewords,
   });
   return {
-    chunks,
+    encodedInputs,
     segments,
     calculatedVersion,
     codewords,
@@ -116,7 +115,7 @@ function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
 }
 
 const initialData = {
-  inputs: [],
+  encodedInputs: [],
   errorCorrectionLevel: 1,
   version: -1,
   calculatedVersion: 1,

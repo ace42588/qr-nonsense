@@ -68,8 +68,8 @@ export function gerVersionInfo(errorCorrectionLevel, version) {
 }
 
 export const QRUtils = {
-  getCodewords(chunks, version, errorCorrectionLevel) {
-    const qrBlocks = getBlocks(chunks, errorCorrectionLevel, version);
+  getCodewords(encodedInputs, version, errorCorrectionLevel) {
+    const qrBlocks = getBlocks(encodedInputs, errorCorrectionLevel, version);
     //console.debug("getCodewords", { qrBlocks });
     const totalCodewords = qrBlocks.reduce(
       (total, { codewords }) => total + codewords.length,
@@ -91,17 +91,11 @@ export const QRUtils = {
     console.debug("QRUtils.getCodewords", { orderedCodewords });
     return orderedCodewords;
   },
-  getVersion(chunks, inputVersion, errorCorrectionLevel) {
-    const data = BitUtils.getBitsFromChunks(chunks);
+  getVersion(numBits, inputVersion, errorCorrectionLevel) {
     let version = parseInt(inputVersion) || -1;
     if (1 <= version && version <= 40) {
       return version;
     } else if (version == -1) {
-      const numBits = data.length;
-      if (!numBits)
-        throw new Error(
-          `Cannot calculate required verson from ${JSON.stringify(data)}`
-        );
       return getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
     }
     throw new Error(`Invalid version: ${inputVersion.toString()}`);
