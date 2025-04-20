@@ -20,7 +20,7 @@ function getBit(value) {
 // ~24k bits possible
 export function getBits(value, length, source) {
   if (!!value && length) {
-    value = BitUtils.toPaddedBinary(value, length);
+    value = value.toString(2).padStart(length, "0");
   }
   switch (typeof value) {
     case "string": {
@@ -44,35 +44,4 @@ export function getBits(value, length, source) {
       throw new Error(`Invalid value for getBits(): ${JSON.stringify(value)}`);
     }
   }
-}
-
-export const BitUtils = {
-  /**
-   * Creates string of bits given a value and length
-   * @param {number} value - The value to convert and pad.
-   * @param {number} length - The desired string length.
-   * @returns {string} String of binary.
-   */
-  toPaddedBinary(value, length) {
-    return value.toString(2).padStart(length, "0");
-  },
-
-  getBitsFromChunks(chunks, requiredDataCodewords) {
-    //console.debug("getBitsFromChunks", { chunks });
-    const chunkBits = chunks.flatMap(({ bits }) => bits);
-    // Add terminator bits, based on version capacity
-    const terminatorLength = getTerminatorLength(
-      requiredDataCodewords,
-      chunkBits
-    );
-    const termBits = getBits(0, length);
-    const bits = [...chunkBits, ...termBits];
-    //console.debug("getBitsFromChunks", { bits });
-    return bits;
-  },
-};
-
-function getTerminatorLength(capacityBytes, totalDataBits) {
-  const capacityBits = capacityBytes * CodewordLength;
-  return Math.min(4, Math.max(0, capacityBits - totalDataBits));
 }
