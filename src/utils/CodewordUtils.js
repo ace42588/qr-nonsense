@@ -52,19 +52,11 @@ export function getCodewordsForBlock(
     errorCorrectionLevel
   );
   const dataBits = BitUtils.getBitsFromChunks(inputs, requiredDataCodewords);
-  // Add terminator bits, based on version capacity
-
-  const fillBits = BitUtils.getCodewordFillBits(bits, requiredDataCodewords);
-  // Pad the last codeword with 0s until its 8 bits
-  bits = [...bits, ...fillBits];
-  const padBits = BitUtils.getPaddingBits(bits, requiredDataCodewords);
-  // Add padding bytes, until the version capacity is full
-  bits = [...bits, ...padBits];
 
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
     ecCodewordsPerBlock,
-    bits
+    dataBits
   );
 
   return [
@@ -80,26 +72,24 @@ function getDataCodewordsForBlock(
 ) {
   console.debug({ codewordsPerBlock, dataBits });
   const dataCodewords = Array.from({ length: codewordsPerBlock }, (_, i) => {
-    const bits = dataBits.slice(
-      i * CodewordLength,
-      i * CodewordLength + CodewordLength
-    );
-    let cwBits;
-    if (bits.length === 8) {
-      
-    }
-    if (bits.length = 0) {
-      // add padding byte if we are out of data
-      const byte = PAD_BYTES[i%2];
+    const start = i * CodewordLength;
+    const end = start + CodewordLength;
+    // add padding byte if we are out of data
+    if (end > dataBits.length) {
+      const byte = PAD_BYTES[i % 2];
       const bits = byte.toString(2);
-      
+      return getCodeword(bits, "Padding");
+    }
+    const bits = dataBits.slice(start, end);
+    if (bits.length === 8) {
+      return getCodeword(bits, "Data");
     } else if (bits.length < 8) {
       // add fill bits to the codeword
       const length = CodewordLength - bits.length;
-      const fill = Array.from({length}).fill(0);
+      const fill = Array.from({ length }).fill(0);
       return getCodeword([...bits, ...fill], "Data (filled)");
     }
-    return getCodeword(bits, "Data");
+    throw new Error("Issue creating codeword from data");
   });
   //console.debug("getDataCodewordsForBlock", { dataCodewords });
   return dataCodewords;
