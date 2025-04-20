@@ -98,7 +98,7 @@ export const BitUtils = {
     const terminatorLength = getTerminatorLength(requiredDataCodewords, chunkBits);
     const termBits = getBits(0, length);
     const bits = [...chunkBits, ...termBits];
-    console.debug("getBitsFromChunks", { bits });
+    //console.debug("getBitsFromChunks", { bits });
     return bits;
   },
   getCodewordFillBits(bits, requiredDataCodewords) {

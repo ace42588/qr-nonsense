@@ -120,11 +120,13 @@ class Encoder {
   encode(data, inputEncoding) {
     const segments = [...createSegments(data, this.mode, inputEncoding)];
     const mode = {
+      type: "Mode Indicator",
       value: this.mode.bits,
       text: this.mode.name,
       length: 4,
     };
     const characterCount = {
+      type: "Character Count Indicator",
       value: segments.length,
       length: Encoder.computeIndicatorLength(segments.length, this.mode),
     };
@@ -132,26 +134,27 @@ class Encoder {
     const bitMap = new Map();
     
     const modeBits = getBits(mode.value, mode.length);
+    modeBits.forEach(({id}) => bitMap.set(id, mode));
     const charCountBits = getBits(characterCount.value, characterCount.length);
+    charCountBits.forEach(({id}) => bitMap.set(id, characterCount));
     const segmentBits = segments.flatMap((segment) => {
       const { length, value } = segment;
       const bits = getBits(value, length);
-      segment.bitIds = bits.map(({ id }) => id);
+      bits.forEach(({id}) => bitMap.set(id, segment))
+      //segment.bitIds = bits.map(({ id }) => id);
       return bits;
     });
-    
-    mode.bitIds = modeBits.map(({ id }) => id);
-    characterCount.bitIds = charCountBits.map(({ id }) => id);
-    segments.bitIds = segmentBits.map(({ id }) => id);
-    
-    const bitMap = new Map();
-    modeBits.forEach(({id}) => bitMap.set(id, mode));
     charCountBits.forEach(({id}) => bitMap.set(id, characterCount));
+    
+    //mode.bitIds = modeBits.map(({ id }) => id);
+    //characterCount.bitIds = charCountBits.map(({ id }) => id);
+    //segments.bitIds = segmentBits.map(({ id }) => id);
     
     const encoded = {
       mode,
       characterCount,
       segments,
+      bitMap
     };
     return encoded;
   }
