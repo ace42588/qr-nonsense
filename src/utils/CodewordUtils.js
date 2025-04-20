@@ -12,7 +12,7 @@ function getId() {
 }
 
 function getCodeword(bits, type) {
-  //console.debug("getCodeword", { bits, type });
+  console.debug("getCodeword", { bits, type });
   if (!bits || bits.length !== 8)
     throw new Error(`Invalid bits for getCodeword(): ${bits}`);
   return {
@@ -46,12 +46,19 @@ export function getCodewordsForBlock(
   version,
   errorCorrectionLevel
 ) {
-  //console.debug("getCodewordsForBlock", { blockId });
+  console.debug("getCodewordsForBlock", { encodedInputs });
   const requiredDataCodewords = getRequiredDataCodewords(
     version,
     errorCorrectionLevel
   );
-  const dataBits = BitUtils.getBitsFromChunks(encodedInputs, requiredDataCodewords);
+  const chunkBits = encodedInputs.flatMap(({ bits }) => bits);
+  // Add terminator bits, based on version capacity
+  const terminatorLength = getTerminatorLength(
+    requiredDataCodewords,
+    chunkBits
+  );
+  const termBits = getBits(0, length);
+  const dataBits = [...chunkBits, ...termBits];
 
   const dataCodewords = getDataCodewordsForBlock(
     dataCodewordsPerBlock,
