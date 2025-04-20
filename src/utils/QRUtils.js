@@ -94,6 +94,7 @@ export const QRUtils = {
         }
       }
     );
+    console.debug("QRUtils.getCodewords", { orderedCodewords });
     return orderedCodewords;
   },
   getVersion(chunks, inputVersion, errorCorrectionLevel) {

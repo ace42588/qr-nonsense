@@ -117,8 +117,8 @@ class Encoder {
    * @param {string} encoding - Encoding type (e.g., "hex", "utf-8").
    * @returns {object} An object with header and segments.
    */
-  encode(data, chunkId, encoding) {
-    const segments = [...createSegments(data, this.mode, encoding)];
+  encode(data, inputEncoding) {
+    const segments = [...createSegments(data, this.mode, inputEncoding)];
     const segmentBits = segments.flatMap((segment) => {
       const { length, value } = segment;
       const bits = getBits(value, length);
@@ -126,7 +126,6 @@ class Encoder {
       return bits;
     });
     segments.bitIds = segmentBits.map(({ id }) => id);
-    console.debug("encode", { segments });
     const mode = {
       value: this.mode.bits,
       text: this.mode.name,
