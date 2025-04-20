@@ -129,7 +129,7 @@ class Encoder {
     };
     const characterCount = {
       type: "Character Count Indicator",
-      value: segments.length,
+      value: data.length,
       length: Encoder.computeIndicatorLength(segments.length, this.mode),
     };
 
