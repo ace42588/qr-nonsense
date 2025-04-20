@@ -1,5 +1,4 @@
 import { PAD_BYTES, CodewordLength } from "../Constants";
-import { TaggedBit } from "../Tagged";
 
 let lastBitId = 0;
 

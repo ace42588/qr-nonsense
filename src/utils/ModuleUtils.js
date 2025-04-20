@@ -27,8 +27,9 @@ function makeNonDataModule(value, source, x, y) {
     source,
   };
   const module = makeModule({ bit, x, y, isMasked: false });
+  module
   module.nonData = true;
-  return module;
+  return {...module, nonData: true, source};
 }
 
 function getAlignmentPatternPositions(version) {
@@ -127,7 +128,7 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   }
 
   // Add the dark module
-  matrix[size - 8][8] = makeNonDataModule(1, 8, size - 8);
+  matrix[size - 8][8] = makeNonDataModule(1, "Datk Module", 8, size - 8);
 }
 
 export function addNonDataModules(
