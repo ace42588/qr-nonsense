@@ -93,12 +93,21 @@ function dataReducer(state, action) {
       };
     }
     case Actions.HighlightSegment: {
-      const {
-        module: { bit, nonData },
-      } = action;
+      const { module } = action;
+      const { bit, nonData } = module;
       if (nonData) {
-        const {source} = module;
-        const newMatrix = state.matrix.map((row) => row.map((module) => ))
+        const {
+          source: { name },
+        } = module;
+        const newMatrix = state.matrix.map((row) =>
+          row.map((module) => {
+            const newModule = { ...module };
+            if (module.source && module.source.name === name)
+              newModule.isHighlighted = !module.isHighlighted;
+            return newModule;
+          })
+        );
+        return { ...state, matrix: newMatrix };
       }
       const segmentToUpdate = state.bitMap.get(bit.id);
       if (!segmentToUpdate) return state;

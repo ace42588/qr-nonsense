@@ -15,9 +15,15 @@ export default function QRCodeCanvas() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const dimension = matrix.length;
-    const moduleSize = canvas.width / dimension;
+    const quietZone = 4;
+    const totalDimension = dimension + quietZone * 2;
+    const moduleSize = canvas.width / totalDimension;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Fill entire canvas with white (including quiet zone)
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (let y = 0; y < dimension; y++) {
       for (let x = 0; x < dimension; x++) {
@@ -25,14 +31,19 @@ export default function QRCodeCanvas() {
         if (!m) continue;
 
         ctx.fillStyle = m.isDark ? "black" : "white";
-        ctx.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
+        ctx.fillRect(
+          (x + quietZone) * moduleSize,
+          (y + quietZone) * moduleSize,
+          moduleSize,
+          moduleSize
+        );
 
         if (m.isHighlighted) {
           ctx.strokeStyle = "red";
           ctx.lineWidth = 2;
           ctx.strokeRect(
-            x * moduleSize,
-            y * moduleSize,
+            (x + quietZone) * moduleSize,
+            (y + quietZone) * moduleSize,
             moduleSize,
             moduleSize
           );
@@ -51,21 +62,29 @@ export default function QRCodeCanvas() {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    const moduleSize = canvas.scrollWidth / matrix.length;
-    const xIndex = Math.floor(x / moduleSize);
-    const yIndex = Math.floor(y / moduleSize);
+    const moduleSize = canvas.scrollWidth / (matrix.length + 8); // +8 for both sides
+    const xIndex = Math.floor(x / moduleSize) - 4;
+    const yIndex = Math.floor(y / moduleSize) - 4;
+
+    if (
+      xIndex < 0 ||
+      yIndex < 0 ||
+      xIndex >= matrix.length ||
+      yIndex >= matrix.length
+    )
+      return;
 
     const module = matrix[yIndex]?.[xIndex];
     if (!module) return;
-    
+
     console.debug(module);
     let source;
     if (module.nonData) {
       source = module.source;
-    } else if (module.bit.id){ 
+    } else if (module.bit.id) {
       source = bitMap.get(module.bit.id);
     }
-    
+
     console.debug(source);
 
     let type =
