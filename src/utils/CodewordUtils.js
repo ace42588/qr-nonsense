@@ -55,9 +55,10 @@ export function getCodewordsForBlock(
   // Add terminator bits, based on version capacity
   const terminatorLength = getTerminatorLength(
     requiredDataCodewords,
-    chunkBits
+    chunkBits.length
   );
   const termBits = getBits(0, length);
+  console.debug("getCodewordsForBlock", {termBits});
   const dataBits = [...chunkBits, ...termBits];
 
   const dataCodewords = getDataCodewordsForBlock(
