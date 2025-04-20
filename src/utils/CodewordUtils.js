@@ -58,9 +58,11 @@ export function getCodewordsForBlock(
   //console.debug("getCodewordsForBlock", { numTermBits, termBits });
   bits = [...bits, ...termBits];
   const numFillBits = CodewordLength - (bits.length % CodewordLength);
+  console.debug("getCodewordsForBlock", { numFillBits });
   const fillBits = getBits(0, numTermBits);
   bits = [...bits, ...fillBits];
-  const numPadBytes = requiredDataCodewords - bits.length / CodewordLength;
+  const numPadBytes = requiredDataCodewords - Math.ceil(bits / CodewordLength);
+  console.debug("getCodewordsForBlock", { numPadBytes });
   const padBytes = Array.from({ length: numPadBytes }, (_, i) =>
     getBits(PAD_BYTES[i % 2])
   );
