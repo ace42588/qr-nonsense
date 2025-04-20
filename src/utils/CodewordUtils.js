@@ -12,7 +12,7 @@ function getId() {
 }
 
 function getCodeword(bits, type) {
-  console.debug("getCodeword", { bits, type });
+  //console.debug("getCodeword", { bits, type });
   if (!bits || bits.length !== 8)
     throw new Error(`Invalid bits for getCodeword(): ${bits}`);
   return {
@@ -77,7 +77,7 @@ function getDataCodewordsForBlock(
   ecCodewordsPerBlock,
   dataBits
 ) {
-  //console.debug({ codewordsPerBlock, dataBits });
+  console.debug("getDataCodewordsForBlock",{ codewordsPerBlock, dataBits });
   const dataCodewords = Array.from({ length: codewordsPerBlock }, (_, i) => {
     const start = i * CodewordLength;
     const end = start + CodewordLength;
@@ -98,7 +98,7 @@ function getDataCodewordsForBlock(
     }
     throw new Error("Issue creating codeword from data");
   });
-  //console.debug("getDataCodewordsForBlock", { dataCodewords });
+  console.debug("getDataCodewordsForBlock", { dataCodewords });
   return dataCodewords;
 }
 

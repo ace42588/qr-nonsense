@@ -63,9 +63,8 @@ export default function QRCodeCanvas() {
 
     if (event.type === "click") {
       console.log(module.bit);
-      console.log(bitMap);
       const source = bitMap.get(module.bit.id);
-      if (source) console.log({ source });
+      if (source) console.log(source);
     } else if (event.type === "contextmenu") {
       // Toggle value and update source
       dispatch({ type: Actions.ToggleModule, module });

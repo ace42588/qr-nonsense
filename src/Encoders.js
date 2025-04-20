@@ -154,7 +154,7 @@ class Encoder {
       mode,
       characterCount,
       segments,
-      segmentBits,
+      bits,
       bitMap
     };
     return encoded;
