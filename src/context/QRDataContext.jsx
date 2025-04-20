@@ -121,7 +121,6 @@ const initialData = {
   calculatedVersion: 1,
   dataMask: -1,
   calculatedDataMask: 0,
-  chunks: [],
   segments: [],
   codewords: [],
   matrix: null,

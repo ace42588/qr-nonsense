@@ -1,40 +1,31 @@
-import React from "react";
+import { useRef, useEffect, useState } from "react";
+import { Actions } from "../Constants";
+import { useQRData, useQRDataDispatch } from "../context/QRDataContext";
 import "./styles.css";
 
-function SegmentDisplay({ bitStream }) {
-  if (bitStream) {
-    let { segments } = bitStream;
+export default function SegmentDisplay({ bitStream }) {
+  const { segments, bitMap } = useQRData();
+  const dispatch = useQRDataDispatch();
 
-    const handleSegmentClick = (segment) => {
-      const newMatrix = matrix.map((row) =>
-        row.map((module) => {
-          if (module.segment === segment) {
-            module.highlight();
-          }
-          return module;
-        })
-      );
-      setMatrix(newMatrix); // Update the matrix state to trigger a re-render
-    };
+  const handleSegmentClick = (segment) => {
+    console.debug({ segment });
+  };
 
-    return (
-      <div className="segment-display">
-        <h3>Segments</h3>
-        <div className="segment-container">
-          {segments.map((segment, index) => (
-            <button
-              key={index}
-              className="segment-button"
-              onClick={() => handleSegmentClick(segment)}
-              title={`Segment ${index + 1}`}
-            >
-              {segment.toString()}
-            </button>
-          ))}
-        </div>
+  return (
+    <div className="segment-display">
+      <h3>Segments</h3>
+      <div className="segment-container">
+        {segments.map((segment, index) => (
+          <button
+            key={index}
+            className="segment-button"
+            onClick={() => handleSegmentClick(segment)}
+            title={`Segment ${index + 1}`}
+          >
+            {segment.text}
+          </button>
+        ))}
       </div>
-    );
-  }
+    </div>
+  );
 }
-
-export default SegmentDisplay;
