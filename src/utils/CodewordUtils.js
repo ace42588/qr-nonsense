@@ -70,7 +70,7 @@ export function getRequiredDataCodewords(version, errorCorrectionLevel) {
   );
 }
 
-export function getCodewordsForBlock(
+function getCodewordsForBlock(
   dataCodewordsPerBlock,
   ecCodewordsPerBlock,
   numProcessedCodewords,

@@ -1,7 +1,8 @@
 import { createContext, useContext, useReducer } from "react";
 import { Actions } from "../Constants";
 import { BitUtils } from "../utils/BitUtils";
-import { QRUtils, generateQRCodeMatrix } from "../utils/QRUtils";
+import { getVersion, generateQRCodeMatrix } from "../utils/QRUtils";
+import { getCodewords } from "../utils/CodewordUtils";
 import { getEncoder } from "../Encoders";
 
 export const QRDataContext = createContext(null);
@@ -75,6 +76,9 @@ function dataReducer(state, action) {
       );
       return { ...state, ...newQRData, errorCorrectionLevel };
     }
+    case Actions.HighlightCodeword: {
+      
+    }
   }
 }
 
@@ -96,12 +100,12 @@ function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
     };
   }, init);
 
-  const calculatedVersion = QRUtils.getVersion(
+  const calculatedVersion = getVersion(
     encoded.bitMap.size,
     version,
     errorCorrectionLevel
   );
-  const codewords = QRUtils.getCodewords(
+  const codewords = getCodewords(
     encodedInputs,
     calculatedVersion,
     errorCorrectionLevel
