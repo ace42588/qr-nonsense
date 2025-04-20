@@ -13,7 +13,7 @@ const Encodings = ["JSON", "Alphanumeric", "PER"];
 
 export default function MerchForm() {
   const [input, setInput] = useState( sampleInput );
-  const [encoding, setEncoding] = useState("JSON");
+  const [encoding, setEncoding] = useState("PER");
   const dispatch = useContext(QRDataDispatchContext);
   
   const updateQRData = useCallback(

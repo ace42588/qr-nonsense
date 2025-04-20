@@ -12,7 +12,7 @@ function getId() {
 
 // ~24k bits possible
 export function getBits(value, length, source) {
-  if (value && length) {
+  if (!!value && length) {
     value = BitUtils.toPaddedBinary(value, length);
   }
   switch (typeof value) {
@@ -32,7 +32,7 @@ export function getBits(value, length, source) {
         throw new Error(
           `Invalid byte value for getBits(): ${value.toString()}`
         );
-      return Array.from({ length: 8 }).map((_, idx) => ({
+      return Array.from({ length }).map((_, idx) => ({
         value: (value >> (7 - idx)) & 1,
         id: getId(),
       }));
