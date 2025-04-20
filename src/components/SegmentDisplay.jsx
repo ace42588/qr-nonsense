@@ -8,9 +8,6 @@ export default function SegmentDisplay({ bitStream }) {
   const dispatch = useQRDataDispatch();
 
   const handleSegmentClick = (segment) => {
-    console.debug({ segment });
-    const bitIds = segmentMap.get(segment.id);
-    console.debug(bitIds);
     dispatch({
       type: Actions.Highlight,
       payload: segment
@@ -23,7 +20,7 @@ export default function SegmentDisplay({ bitStream }) {
       <div className="segment-container">
         {segments.map((segment, index) => (
           <button
-            key={index}
+            key={segment.id}
             className="segment-button"
             onClick={() => handleSegmentClick(segment)}
             title={`Segment ${index + 1}`}

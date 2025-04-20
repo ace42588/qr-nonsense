@@ -17,7 +17,7 @@ function getCodeword(bits, type) {
   if (!bits || bits.length !== 8)
     throw new Error(`Invalid bits for getCodeword(): ${bits}`);
   return {
-    type: "Codeword",
+    type: "codeword",
     id: getId(),
     type,
     bits,

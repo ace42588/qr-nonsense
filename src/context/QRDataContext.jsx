@@ -1,9 +1,7 @@
 import { createContext, useContext, useReducer } from "react";
 import { Actions } from "../Constants";
 import { BitUtils } from "../utils/BitUtils";
-import { getVersion, generateQRCodeMatrix } from "../utils/QRUtils";
-import { getCodewords } from "../utils/CodewordUtils";
-import { getEncoder } from "../Encoders";
+import { getQRDataFromInputs } from "../utils/QRUtils";
 
 export const QRDataContext = createContext(null);
 export const QRDataDispatchContext = createContext(null);
@@ -77,54 +75,18 @@ function dataReducer(state, action) {
       return { ...state, ...newQRData, errorCorrectionLevel };
     }
     case Actions.Highlight: {
-      const {payload: {type, id}} = action;
-      console.debug({type, id});
+      const {
+        payload: { type, id },
+      } = action;
+      console.debug({ type, id });
+      const map = state[`${type}Map`];
+      if (type === "segment")
+
+      const objectToUpdate = map.get(id);
+      console.debug(objectToUpdate);
+      return state;
     }
   }
-}
-
-function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
-  if (!inputs) return {};
-  const init = {
-    segments: [],
-    segmentMap: [],
-    bitMap: [],
-  };
-  const encodedInputs = inputs.map(({ data, mode, encoding }) =>
-    getEncoder(mode).encode(data, encoding)
-  );
-  const encoded = encodedInputs.reduce((acc, curr) => {
-    return {
-      segments: [...acc.segments, ...curr.segments],
-      segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
-      bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
-    };
-  }, init);
-
-  const calculatedVersion = getVersion(
-    encoded.bitMap.size,
-    version,
-    errorCorrectionLevel
-  );
-  const codewords = getCodewords(
-    encodedInputs,
-    calculatedVersion,
-    errorCorrectionLevel
-  );
-  const { matrix, dataMask: calculatedDataMask } = generateQRCodeMatrix({
-    version: calculatedVersion,
-    errorCorrectionLevel,
-    dataMask,
-    codewords,
-  });
-  return {
-    ...encoded,
-    encodedInputs,
-    calculatedVersion,
-    codewords,
-    matrix,
-    calculatedDataMask,
-  };
 }
 
 const initialData = {

@@ -12,7 +12,7 @@ function getId() {
 
 function getBit(value) {
   return {
-    type: "Bit",
+    type: "bit",
     value,
     id: getId(),
   };
