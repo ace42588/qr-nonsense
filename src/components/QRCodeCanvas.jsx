@@ -6,7 +6,7 @@ import { useQRData, useQRDataDispatch } from "../context/QRDataContext";
 
 export default function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const { matrix } = useQRData();
+  const { matrix, bitMap } = useQRData();
   const dispatch = useQRDataDispatch();
 
   useEffect(() => {
@@ -63,6 +63,9 @@ export default function QRCodeCanvas() {
 
     if (event.type === "click") {
       console.log(module.bit);
+      console.log(bitMap);
+      const source = bitMap.get(module.bit.id);
+      if (source) console.log({ source });
     } else if (event.type === "contextmenu") {
       // Toggle value and update source
       dispatch({ type: Actions.ToggleModule, module });
