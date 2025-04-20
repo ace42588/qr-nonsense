@@ -1,4 +1,4 @@
-import { DATA_MASKS, EC_INFO, CodewordLength } from "../Constants";
+import { PAD_BYTES, DATA_MASKS, EC_INFO, CodewordLength } from "../Constants";
 import { ReedSolomonEncoder } from "../reedsolomon/index.js";
 import { BitUtils, getBits } from "./BitUtils";
 import { gerVersionInfo } from "./QRUtils";
@@ -84,10 +84,20 @@ function getDataCodewordsForBlock(
       i * CodewordLength,
       i * CodewordLength + CodewordLength
     );
-    if (bits.length < 8) {
+    let cwBits;
+    if (bits.length === 8) {
+      
+    }
+    if (bits.length = 0) {
+      // add padding byte if we are out of data
+      const byte = PAD_BYTES[i%2];
+      const bits = byte.toString(2);
+      
+    } else if (bits.length < 8) {
+      // add fill bits to the codeword
       const length = CodewordLength - bits.length;
       const fill = Array.from({length}).fill(0);
-      return getCodeword(bits, "Data", )
+      return getCodeword([...bits, ...fill], "Data (filled)");
     }
     return getCodeword(bits, "Data");
   });
