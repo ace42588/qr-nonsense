@@ -7,10 +7,10 @@ export default function SegmentDisplay({ bitStream }) {
   const { segments, segmentMap, bitMap } = useQRData();
   const dispatch = useQRDataDispatch();
 
-  const handleSegmentClick = (segment) => {
+  const handleSegmentClick = (segmentId) => {
     dispatch({
       type: Actions.HighlightModules,
-      segment
+      segment: {id: segmentId}
     });
   };
 
@@ -21,11 +21,11 @@ export default function SegmentDisplay({ bitStream }) {
         {segments.map(({id, text, isHighlighted}, index) => (
           <button
             key={id}
-            className="segment-button"
-            onClick={() => handleSegmentClick(segment)}
+            className={isHighlighted ? "segment-button-highlighted": "segment-button" }
+            onClick={() => handleSegmentClick(id)}
             title={`Segment ${index + 1}`}
           >
-            {segment.text}
+            {text}
           </button>
         ))}
       </div>

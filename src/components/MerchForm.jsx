@@ -12,14 +12,16 @@ import { Actions } from "../Constants";
 const Encodings = ["JSON", "Alphanumeric", "PER"];
 
 export default function MerchForm() {
-  const [input, setInput] = useState( sampleInput );
+  const [input, setInput] = useState(sampleInput);
   const [encoding, setEncoding] = useState("PER");
   const dispatch = useContext(QRDataDispatchContext);
-  
+
   const updateQRData = useCallback(
     (inputValue = input, encodingType = encoding) => {
       const order = parseInput(inputValue);
+      if (!order) return;
       const output = encodeOrder(order, encodingType);
+      if (!output) return;
       dispatch({
         type: Actions.ChangeInput,
         inputs: [output],
@@ -186,15 +188,20 @@ const buildHeader = (txn, confId, platform) => {
 };
 
 const parseInput = (raw) => {
-  let safe = raw.replace(/(?<!\\)\\?(\n|\r\n)/g, '');
+  let safe = raw.replace(/(?<!\\)\\?(\n|\r\n)/g, "");
+  let parsedInput = null;
   //console.debug("parseInput", { raw, safe });
-  let {
-    txn: transactionId,
-    cc: conferenceCode,
-    p: platform,
-    i: items,
-  } = JSON.parse(safe);
-  let parsedInput = { transactionId, conferenceCode, platform, items };
+  try {
+    let {
+      txn: transactionId,
+      cc: conferenceCode,
+      p: platform,
+      i: items,
+    } = JSON.parse(safe);
+    parsedInput = { transactionId, conferenceCode, platform, items };
+  } catch (e) {
+    console.debug("parseInput", `Error parsing ${raw}`);
+  }
 
   return parsedInput;
 };
