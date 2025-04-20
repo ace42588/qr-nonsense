@@ -78,27 +78,26 @@ function dataReducer(state, action) {
   }
 }
 
-
 function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
   if (!inputs) return {};
+  const init = {
+    segments: [],
+    segmentMap: [],
+    bitMap: [],
+  };
   const encodedInputs = inputs.map(({ data, mode, encoding }) =>
     getEncoder(mode).encode(data, encoding)
   );
   const encoded = encodedInputs.reduce((acc, curr) => {
     return {
-      segments: 
-      bitMap: new Map([...acc.bitMap, ...curr.bitMap])
-    }
-  })
-  const bitMaps = encodedInputs.map(({bitMap}) => bitMap);
-  const bitMap = bitMaps.reduce((map, current) => new Map([...map, ...current]));
-  
-  const segments = encodedInputs.flatMap(({segment}) => segment);
-  const segmentMaps = encodedInputs.map(({ segmentMap }) => segmentMap);
-  const segmentMap = segmentMaps.reduce((map, current) => new Map([...map, ...current]));
-  
+      segments: [...acc.segments, ...curr.segments],
+      segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
+      bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
+    };
+  }, init);
+
   const calculatedVersion = QRUtils.getVersion(
-    bitMap.size,
+    encoded.bitMap.size,
     version,
     errorCorrectionLevel
   );
@@ -114,14 +113,12 @@ function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
     codewords,
   });
   return {
+    ...encoded,
     encodedInputs,
-    segments,
     calculatedVersion,
     codewords,
     matrix,
     calculatedDataMask,
-    bitMap,
-    segmentMap
   };
 }
 

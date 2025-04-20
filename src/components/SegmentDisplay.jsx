@@ -4,11 +4,13 @@ import { useQRData, useQRDataDispatch } from "../context/QRDataContext";
 import "./styles.css";
 
 export default function SegmentDisplay({ bitStream }) {
-  const { segments, bitMap } = useQRData();
+  const { segments, segmentMap, bitMap } = useQRData();
   const dispatch = useQRDataDispatch();
 
   const handleSegmentClick = (segment) => {
     console.debug({ segment });
+    const bitIds = segmentMap.get(segment.id);
+    console.debug(bitIds);
   };
 
   return (

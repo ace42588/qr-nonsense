@@ -21,7 +21,6 @@ function validateLength(data, min, max, type) {
 
 function makeSegment(value, text, inputMode) {
   return {
-    type: "Segment",
     id: getId(),
     value,
     text,

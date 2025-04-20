@@ -8,6 +8,7 @@ export const Actions = {
   UpdateDataMask: "SET_DATAMASK",
   ChangeVersion: "UPDATE_VERSION",
   ChangeErrorCorretionLevel: "UPDATE_ECL",
+  
 };
 
 export const MODE = {

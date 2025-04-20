@@ -8,7 +8,7 @@ let lastCodewordId = 0;
 function getId() {
   if (lastCodewordId >= 0xffff) lastCodewordId = 0;
 
-  return lastCodewordId++;
+  return `codeword-${lastCodewordId++}`;
 }
 
 function getCodeword(bits, type) {
