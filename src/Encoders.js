@@ -21,6 +21,7 @@ function validateLength(data, min, max, type) {
 
 function makeSegment(value, text, inputMode) {
   return {
+    type: "Segment",
     id: getId(),
     value,
     text,
@@ -135,8 +136,10 @@ class Encoder {
     
     const modeBits = getBits(mode.value, mode.length);
     modeBits.forEach(({id}) => bitMap.set(id, mode));
+    mode.bitIds = modeBits.map(({ id }) => id);
     const charCountBits = getBits(characterCount.value, characterCount.length);
     charCountBits.forEach(({id}) => bitMap.set(id, characterCount));
+    characterCount.bitIds = charCountBits.map(({ id }) => id);
     segments.forEach((segment) => {
       const bits = getBits(segment.value, segment.length);
       bits.forEach(({id}) => bitMap.set(id, segment));

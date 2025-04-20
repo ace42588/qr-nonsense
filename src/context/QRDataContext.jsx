@@ -85,6 +85,8 @@ function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
     Encoders(mode).encode(data, encoding)
   );
   console.debug("getQRDataFromInputs", {chunks});
+  const bitMaps = chunks.map(({bitMap}) => bitMap);
+  const 
   const segments = chunks.flatMap(({ segments }) => segments);
   const calculatedVersion = QRUtils.getVersion(
     chunks,
@@ -109,6 +111,7 @@ function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
     codewords,
     matrix,
     calculatedDataMask,
+    bitMaps
   };
 }
 
