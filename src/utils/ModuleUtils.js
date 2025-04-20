@@ -27,9 +27,9 @@ function makeNonDataModule(value, source, x, y) {
     source,
   };
   const module = makeModule({ bit, x, y, isMasked: false });
-  module
+  module;
   module.nonData = true;
-  return {...module, nonData: true, source};
+  return { ...module, nonData: true, source };
 }
 
 function getAlignmentPatternPositions(version) {
@@ -80,9 +80,10 @@ function computeBCH(bits, length) {
 }
 
 export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
-  const source = "FormatInfo";
+  const source = { name: "FormatInfo" };
   const size = matrix.length;
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
+  source.value = formatInfo;
   //console.debug("addFormatInfoModules", {formatInfo});
   const bits = formatInfo.toString(2);
   const values = `${bits}${bits}`;
@@ -140,7 +141,7 @@ export function addNonDataModules(
   const size = matrix.length;
 
   function addAlignmentPatterns() {
-    const source = "AlignmentPattern";
+    const source = { name: "AlignmentPattern" };
     if (version === 1) return [];
 
     function shouldDrawAlignmentPattern(x, y) {
@@ -184,7 +185,7 @@ export function addNonDataModules(
   }
 
   function addFinderPatterns() {
-    const source = "FinderPattern";
+    const source = { name: "FinderPattern" };
     function addPattern(startX, startY) {
       for (let y = 0; y < 7; y++) {
         for (let x = 0; x < 7; x++) {
@@ -205,7 +206,7 @@ export function addNonDataModules(
   }
 
   function addSeparators() {
-    const source = "Separator";
+    const source = { name: "Separator" };
 
     for (let i = 0; i < 8; i++) {
       // Top-left separator
@@ -221,9 +222,9 @@ export function addNonDataModules(
   }
 
   function addTimingPatterns() {
-    const source = "TimingPattern";
+    const source = { name: "TimingPattern" };
     for (let i = 8; i < size - 8; i++) {
-      const value = (i % 2 === 0) ? 1 : 0;
+      const value = i % 2 === 0 ? 1 : 0;
       matrix[6][i] = makeNonDataModule(value, source, i, 6);
       matrix[i][6] = makeNonDataModule(value, source, 6, i);
     }
@@ -238,8 +239,9 @@ export function addNonDataModules(
       return (versionBits + errorCorrectionBits).padStart(18, "0");
     }
     if (version < 7) return;
-    const source = "VersionInfo";
+    const source = { name: "VersionInfo" };
     const versionString = getVersionString();
+    source.value = versionString;
 
     for (let i = 0; i < 6; i++) {
       for (let j = 0; j < 3; j++) {
@@ -261,7 +263,7 @@ export function addNonDataModules(
       }
     }
   }
-  
+
   addFinderPatterns();
   addSeparators();
   addAlignmentPatterns();
