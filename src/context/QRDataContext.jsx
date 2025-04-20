@@ -83,6 +83,7 @@ function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
   const chunks = inputs.map(({ data, mode, encoding }, idx) =>
     Encoders(mode).encode(data, idx, encoding)
   );
+  console.debug("getQRDataFromInputs", {chunks});
   const segments = chunks.flatMap(({ segments }) => segments);
   const calculatedVersion = QRUtils.getVersion(
     chunks,

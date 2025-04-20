@@ -119,7 +119,14 @@ class Encoder {
    */
   encode(data, chunkId, encoding) {
     const segments = [...createSegments(data, this.mode, encoding)];
-    console.debug("encode", {segments});
+    const segmentBits = segments.flatMap((segment) => {
+      const { length, value } = segment;
+      const bits = getBits(value, length);
+      segment.bitIds = bits.map(({ id }) => id);
+      return bits;
+    });
+    segments.bitIds = segmentBits.map(({ id }) => id);
+    console.debug("encode", { segments });
     const mode = {
       value: this.mode.bits,
       text: this.mode.name,
@@ -131,11 +138,12 @@ class Encoder {
       value: segments.length,
       length: Encoder.computeIndicatorLength(segments.length, this.mode),
     };
+    const charCountBits = getBits(characterCount.value, characterCount.length);
+    characterCount.bitIds = charCountBits.map(({ id }) => id);
     return {
       mode,
       characterCount,
       segments,
-      bitIds: segments.map(({ id }) => id),
     };
   }
 }
