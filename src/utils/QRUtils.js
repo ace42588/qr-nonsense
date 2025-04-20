@@ -1,51 +1,10 @@
 import { DATA_MASKS, EC_INFO, CodewordLength } from "../Constants";
-import { BitUtils } from "./BitUtils";
 import {
   addFormatInfoModules,
   addNonDataModules,
   makeModule,
 } from "./ModuleUtils";
-import {
-  getCodewordsForBlock,
-  getRequiredDataCodewords,
-} from "./CodewordUtils";
 import { calculatePenalty } from "./calculatePenalty";
-import { finalizeEncoding } from "../Encoders";
-
-function getBlocks(encodedData, errorCorrectionLevel, version) {
-  const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
-    errorCorrectionLevel,
-    version
-  );
-  let lastBlockId = 0;
-  let numProcessedCodewords = 0;
-
-  // ecBlocks is an { numBlocks, dataCodewordsPerBlock }[] used to map
-  // the specifics of how to split up codewords for error correction.
-  // The capacity of a block can vary within a QR code version.
-
-  return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }, idx) => {
-    const blocksForType = Array.from(
-      { length: numBlocks },
-      (_, blockNumber) => {
-        const blockId = lastBlockId + blockNumber;
-        const blockCodewords = getCodewordsForBlock(
-          dataCodewordsPerBlock,
-          ecCodewordsPerBlock,
-          numProcessedCodewords,
-          encodedData
-        );
-        numProcessedCodewords += dataCodewordsPerBlock;
-        return {
-          codewords: blockCodewords,
-          id: blockId,
-        };
-      }
-    );
-    lastBlockId = lastBlockId + blocksForType.length;
-    return blocksForType;
-  });
-}
 
 function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   // Try each version until one is found that fits the data.
@@ -72,45 +31,15 @@ export function gerVersionInfo(errorCorrectionLevel, version) {
   return versionInfo;
 }
 
-export const QRUtils = {
-  getCodewords(encodedInputs, version, errorCorrectionLevel) {
-    const requiredDataCodewords = getRequiredDataCodewords(
-      version,
-      errorCorrectionLevel
-    );
-    const encodedData = finalizeEncoding(encodedInputs, requiredDataCodewords);
-    const qrBlocks = getBlocks(encodedData, errorCorrectionLevel, version);
-    //console.debug("getCodewords", { qrBlocks });
-    const totalCodewords = qrBlocks.reduce(
-      (total, { codewords }) => total + codewords.length,
-      0
-    );
-    const orderedCodewords = Array.from(
-      { length: totalCodewords },
-      (_, idx) => {
-        const blockIdx = idx % qrBlocks.length;
-        const cwIdx = Math.floor(idx / qrBlocks.length);
-        const { codewords: bCodewords } = qrBlocks[blockIdx];
-        if (cwIdx < bCodewords.length) {
-          const codeword = bCodewords[cwIdx];
-          codeword.qrPosition = idx;
-          return codeword;
-        }
-      }
-    );
-    //console.debug("QRUtils.getCodewords", { orderedCodewords });
-    return orderedCodewords;
-  },
-  getVersion(numBits, inputVersion, errorCorrectionLevel) {
-    let version = parseInt(inputVersion) || -1;
-    if (1 <= version && version <= 40) {
-      return version;
-    } else if (version == -1) {
-      return getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
-    }
-    throw new Error(`Invalid version: ${inputVersion.toString()}`);
-  },
-};
+export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
+  let version = parseInt(inputVersion) || -1;
+  if (1 <= version && version <= 40) {
+    return version;
+  } else if (version == -1) {
+    return getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
+  }
+  throw new Error(`Invalid version: ${inputVersion.toString()}`);
+}
 
 export function generateQRCodeMatrix({
   version,
