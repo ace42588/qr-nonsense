@@ -263,13 +263,13 @@ export function finalizeEncoding(encodedInputs, requiredDataCodewords) {
   const numTermBits = getTerminatorLength(requiredDataCodewords, bits.length);
   const termBits = getBits(0, numTermBits);
   bits = [...bits, ...termBits];
-  //console.debug("finalizeEncoding", { termBits, bits });
+  console.debug("finalizeEncoding", { termBits, bits });
   // add filler bits to complete the last codeword
   const remainder = bits.length % CodewordLength;
   const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
   const fillBits = getBits(0, numFillBits);
   bits = [...bits, ...fillBits];
-  //console.debug("finalizeEncoding", { remainder, numFillBits, fillBits, bits });
+  console.debug("finalizeEncoding", { remainder, numFillBits, fillBits, bits });
   // add padding to fill the capacity
   const numPadBytes =
     requiredDataCodewords - Math.ceil(bits.length / CodewordLength);
@@ -278,7 +278,7 @@ export function finalizeEncoding(encodedInputs, requiredDataCodewords) {
     return getBits(byte, 8);
   });
   bits = [...bits, ...padBytes.flat()];
-  //console.debug("finalizeEncoding", { padBytes, bits });
+  console.debug("finalizeEncoding", { padBytes, bits });
   return bits;
 }
 
