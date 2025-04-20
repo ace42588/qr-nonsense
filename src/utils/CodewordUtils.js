@@ -97,8 +97,8 @@ function getCodewordsForBlock(
 
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
-  const dataBytes = Array.from(dataCodewords, ({ bits }, idx) =>
-    bits.reduce((num, { value }, idx) => num | (value << idx), 0)
+  const dataBytes = Array.from(dataCodewords, ({ bits }) =>
+    bits.reduce((byte, { value }, idx) => (byte << 1) | value, 0)
   );
   console.debug("getEcCodewords", { dataBytes });
   const ecBytes = encoder.encode(dataBytes);
