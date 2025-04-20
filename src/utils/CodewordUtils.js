@@ -63,9 +63,9 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const dataBytes = Array.from(dataCodewords, ({ bits }) =>
     bits.reduce((num, { value }, idx) => num | (value << idx), 0)
   );
-  console.debug("getEcCodewords", { dataBytes });
+  //console.debug("getEcCodewords", { dataBytes });
   const ecBytes = encoder.encode(dataBytes);
-  console.debug("getEcCodewords", { ecBytes });
+  //console.debug("getEcCodewords", { ecBytes });
   return Array.from(ecBytes, (b, idx) => {
     //return new ECCodeword(b, eccId, blockId);
     return getCodeword(getBits(b, 8), "Error Correction");

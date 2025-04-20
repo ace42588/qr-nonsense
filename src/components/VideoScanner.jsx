@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import jsQR from "jsqr";
 import "./styles.css";
 
-import Encoders from "../Encoders";
+import { getEncoder } from "../Encoders";
 
 function VideoScanner({
   setBitStream,
@@ -19,7 +19,7 @@ function VideoScanner({
     const { errorCorrectionLevel, dataMask } = formatInfo;
 
     chunks.forEach(({ type, encoding, ...data }) =>
-      Encoders(type).encode(Object.values(data)[0], encoding)
+      getEncoder(type).encode(Object.values(data)[0], encoding)
     );
     setVersion(version);
     setDataMask(dataMask);

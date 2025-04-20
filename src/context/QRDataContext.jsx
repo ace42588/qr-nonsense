@@ -2,7 +2,7 @@ import { createContext, useContext, useReducer } from "react";
 import { Actions } from "../Constants";
 import { BitUtils } from "../utils/BitUtils";
 import { QRUtils, generateQRCodeMatrix } from "../utils/QRUtils";
-import Encoders from "../Encoders";
+import { getEncoder } from "../Encoders";
 
 export const QRDataContext = createContext(null);
 export const QRDataDispatchContext = createContext(null);
@@ -82,7 +82,7 @@ function dataReducer(state, action) {
 function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
   if (!inputs) return {};
   const encodedInputs = inputs.map(({ data, mode, encoding }) =>
-    Encoders(mode).encode(data, encoding)
+    getEncoder(mode).encode(data, encoding)
   );
   const maps = encodedInputs.map(({bitMap}) => bitMap);
   const bitMap = maps.reduce((map, current) => new Map([...map, ...current]));
