@@ -61,14 +61,14 @@ export default function QRCodeCanvas() {
     const module = matrix[yIndex]?.[xIndex];
     if (!module) return;
 
-    if (event.type === "click") {
-      console.log(module.bit);
-      const source = bitMap.get(module.bit.id);
-      if (source) console.log(source);
-    } else if (event.type === "contextmenu") {
-      // Toggle value and update source
-      dispatch({ type: Actions.ToggleModule, module });
-    }
+    let type =
+      event.type === "contextmenu"
+        ? Actions.ToggleModule
+        : Actions.HighlightSegment;
+    dispatch({
+      type,
+      module,
+    });
   };
 
   return (

@@ -10,6 +10,7 @@ export const Actions = {
   ChangeErrorCorretionLevel: "UPDATE_ECL",
   HighlightSegment: "HIGHLIGHT_SEGMENT",
   HighlightModules: "HIGHLIGHT_MODULES",
+  ToggleModule: "TOGGLE_MODULE"
 };
 
 export const MODE = {

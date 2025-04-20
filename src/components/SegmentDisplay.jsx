@@ -9,8 +9,8 @@ export default function SegmentDisplay({ bitStream }) {
 
   const handleSegmentClick = (segment) => {
     dispatch({
-      type: Actions.Highlight,
-      payload: segment
+      type: Actions.HighlightModules,
+      segment
     });
   };
 

@@ -74,17 +74,23 @@ function dataReducer(state, action) {
       );
       return { ...state, ...newQRData, errorCorrectionLevel };
     }
-    case Actions.Highlight: {
+    case Actions.HighlightModules: {
       const {
         payload: { type, id },
       } = action;
-      console.debug({ type, id });
-      const map = state[`${type}Map`];
-      if (type === "segment")
-
-      const objectToUpdate = map.get(id);
-      console.debug(objectToUpdate);
+      console.debug(Actions.HighlightModules, { type, id });
+      const modulesToUpdate = state.segmentMap.get(id);
+      console.debug(modulesToUpdate);
+      const newMatrix = state.matrix.map((row) =>
+        [...row].map((module) => {
+          console.debug(Actions.HighlightModules, { module });
+          return module;
+        })
+      );
       return state;
+    }
+    default: {
+      console.error("dataReducer", `Unrecognized action: ${action.type}`);
     }
   }
 }
