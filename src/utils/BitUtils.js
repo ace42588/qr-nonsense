@@ -59,14 +59,7 @@ export const BitUtils = {
     const chunkBits = chunks.flatMap((chunk) => {
       //console.debug("getBitsFromChunks", { chunk });
       const { mode, characterCount, segments } = chunk;
-      const charCountBits = getBits(characterCount.value, characterCount.length);
-      const segmentBits = segments.flatMap((segment) => {
-        const { length, value } = segment;
-        const bits = getBits(value, length);
-        segment.bitIds = bits.map(({ id }) => id);
-        return bits;
-      });
-      const bits = [...modeBits, ...charCountBits, ...segmentBits];
+      const bits = [...mode.bits, ...charCount.bits, ...segment.bits];
       return bits;
     });
     // Add terminator bits, based on version capacity
