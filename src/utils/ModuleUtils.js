@@ -129,7 +129,7 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   }
 
   // Add the dark module
-  matrix[size - 8][8] = makeNonDataModule(1, "Datk Module", 8, size - 8);
+  matrix[size - 8][8] = makeNonDataModule(1, "Dark Module", 8, size - 8);
 }
 
 export function addNonDataModules(
