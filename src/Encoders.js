@@ -1,7 +1,6 @@
-import { MODE, AlphaNumCharMap } from "./Constants";
+import { MODE, AlphaNumCharMap, CodewordLength, PAD_BYTES } from "./Constants";
 import { getBits } from "./utils/BitUtils";
-import { getRequiredDataCodewords } from "./utils/CodewordUtils"
-import { NumericSegment, AlphanumericSegment, ByteSegment } from "./Segments";
+import { getRequiredDataCodewords } from "./utils/CodewordUtils";
 
 let lastSegmentId = 0;
 
@@ -132,31 +131,31 @@ class Encoder {
       value: segments.length,
       length: Encoder.computeIndicatorLength(segments.length, this.mode),
     };
-    
+
     const bitMap = new Map();
-    
+
     const modeBits = getBits(mode.value, mode.length);
-    modeBits.forEach(({id}) => bitMap.set(id, mode));
+    modeBits.forEach(({ id }) => bitMap.set(id, mode));
     //mode.bitIds = modeBits.map(({ id }) => id);
     const charCountBits = getBits(characterCount.value, characterCount.length);
-    charCountBits.forEach(({id}) => bitMap.set(id, characterCount));
+    charCountBits.forEach(({ id }) => bitMap.set(id, characterCount));
     //characterCount.bitIds = charCountBits.map(({ id }) => id);
     const segmentBits = segments.flatMap((segment) => {
       const bits = getBits(segment.value, segment.length);
-      bits.forEach(({id}) => bitMap.set(id, segment));
+      bits.forEach(({ id }) => bitMap.set(id, segment));
       return bits;
-    })
+    });
     const bits = [...modeBits, ...charCountBits, ...segmentBits];
     //mode.bitIds = modeBits.map(({ id }) => id);
     //characterCount.bitIds = charCountBits.map(({ id }) => id);
     //segments.bitIds = segmentBits.map(({ id }) => id);
-    
+
     const encoded = {
       mode,
       characterCount,
       segments,
       bits,
-      bitMap
+      bitMap,
     };
     return encoded;
   }
@@ -248,8 +247,13 @@ const encoders = {
   },
 };
 
+function getTerminatorLength(capacityBytes, totalDataBits) {
+  const capacityBits = capacityBytes * CodewordLength;
+  return Math.min(4, Math.max(0, capacityBits - totalDataBits));
+}
+
 export function finalizeEncoding(encodedInputs, version, errorCorrectionLevel) {
-  //console.debug("getCodewordsForBlock", { encodedInputs });
+  //console.debug("finalizeEncoding", { encodedInputs });
   const requiredDataCodewords = getRequiredDataCodewords(
     version,
     errorCorrectionLevel
@@ -259,13 +263,13 @@ export function finalizeEncoding(encodedInputs, version, errorCorrectionLevel) {
   const numTermBits = getTerminatorLength(requiredDataCodewords, bits.length);
   const termBits = getBits(0, numTermBits);
   bits = [...bits, ...termBits];
-  //console.debug("getCodewordsForBlock", { termBits, bits });
+  //console.debug("finalizeEncoding", { termBits, bits });
   // add filler bits to complete the last codeword
   const remainder = bits.length % CodewordLength;
   const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
   const fillBits = getBits(0, numFillBits);
   bits = [...bits, ...fillBits];
-  //console.debug("getCodewordsForBlock", { remainder, numFillBits, fillBits, bits });
+  //console.debug("finalizeEncoding", { remainder, numFillBits, fillBits, bits });
   // add padding to fill the capacity
   const numPadBytes =
     requiredDataCodewords - Math.ceil(bits.length / CodewordLength);
@@ -273,10 +277,12 @@ export function finalizeEncoding(encodedInputs, version, errorCorrectionLevel) {
     const byte = PAD_BYTES[i % 2];
     return getBits(byte, 8);
   });
-  //console.debug("getCodewordsForBlock", { padBytes, bits });
+  bits = [...bits, ...padBytes.flat()];
+  //console.debug("finalizeEncoding", { padBytes, bits });
+  return bits;
 }
 
-export default function GetEncoder(mode) {
+export function getEncoder(mode) {
   if (!mode) throw new Error("Mode is required.");
 
   const selected = encoders[mode.toLowerCase()];

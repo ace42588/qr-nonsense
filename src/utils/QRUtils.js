@@ -7,6 +7,7 @@ import {
 } from "./ModuleUtils";
 import { getCodewordsForBlock } from "./CodewordUtils";
 import { calculatePenalty } from "./calculatePenalty";
+import { finalizeEncoding } from "./Encoders";
 
 function getBlocks(encodedInputs, errorCorrectionLevel, version) {
   const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
@@ -72,7 +73,8 @@ export function gerVersionInfo(errorCorrectionLevel, version) {
 
 export const QRUtils = {
   getCodewords(encodedInputs, version, errorCorrectionLevel) {
-    const qrBlocks = getBlocks(encodedInputs, errorCorrectionLevel, version);
+    const encodedData = finalizeEncoding(encodedInputs, version, errorCorrectionLevel);
+    const qrBlocks = getBlocks(encodedData, errorCorrectionLevel, version);
     //console.debug("getCodewords", { qrBlocks });
     const totalCodewords = qrBlocks.reduce(
       (total, { codewords }) => total + codewords.length,
