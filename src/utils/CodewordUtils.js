@@ -12,7 +12,7 @@ function getId() {
 }
 
 function getCodeword(bits, type) {
-  //console.debug("getCodeword", { bits, type });
+  console.debug("getCodeword", { bits, type });
   if (!bits || bits.length !== 8)
     throw new Error(`Invalid bits for getCodeword(): ${bits}`);
   return {
@@ -77,7 +77,7 @@ function getDataCodewordsForBlock(
     // add padding byte if we are out of data
     if (end > dataBits.length) {
       const byte = PAD_BYTES[i % 2];
-      const bits = byte.toString(2);
+      const bits = byte.toString(2).split("");
       return getCodeword(bits, "Padding");
     }
     const bits = dataBits.slice(start, end);
