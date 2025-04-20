@@ -7,7 +7,7 @@ let lastBitId = 0;
 function getId() {
   if (lastBitId >= 0xffff) lastBitId = 0;
 
-  return lastBitId++;
+  return `bit-${lastBitId++}`;
 }
 
 // ~24k bits possible

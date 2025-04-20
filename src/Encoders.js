@@ -8,7 +8,7 @@ let lastSegmentId = 0;
 function getId() {
   if (lastSegmentId >= 0xffff) lastSegmentId = 0;
 
-  return lastSegmentId++;
+  return `segment-${lastSegmentId++}`;
 }
 
 function validateLength(data, min, max, type) {
