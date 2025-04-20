@@ -46,14 +46,8 @@ function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   // Try each version until one is found that fits the data.
   for (let version = 1; version <= 40; version++) {
     const { capacity } = gerVersionInfo(errorCorrectionLevel, version);
-    // A terminator of up to 4 bits can be added.
-    // ...but is calculated based on the capacity. This is unneeded.
-    //const terminatorLength = getTerminatorLength(capacity, totalDataBits);
-    //const totalBitsWithTerminator = totalDataBits + terminatorLength;
-
     // The total bits must be rounded up to the next whole 8-bit codeword.
     const requiredBytes = Math.ceil(totalDataBits / CodewordLength);
-
     if (requiredBytes <= capacity) {
       return version;
     }
