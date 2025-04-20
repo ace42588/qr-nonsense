@@ -26,6 +26,7 @@ function makeSegment(value, text, inputMode) {
     value,
     text,
     inputMode,
+    isHighlighted: false,
     length: 8,
   };
 }

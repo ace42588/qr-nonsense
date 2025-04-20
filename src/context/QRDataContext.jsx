@@ -92,8 +92,24 @@ function dataReducer(state, action) {
         matrix: newMatrix,
       };
     }
+    case Actions.HighlightSegment: {
+      const { bit } = action;
+      const segmentToUpdate = state.bitMap.get(bit.id);
+      const newSegments = state.segments.map((segment) => {
+        let { id, isHighlighted } = segment;
+        const newSegment = { ...segment };
+        if (id === segmentToUpdate.id)
+          newSegment.isHighlighted = !isHighlighted;
+        return newSegment;
+      });
+      return {
+        ...state,
+        segments: newSegments,
+      };
+    }
     default: {
       console.error("dataReducer", `Unrecognized action: ${action.type}`);
+      return state;
     }
   }
 }
