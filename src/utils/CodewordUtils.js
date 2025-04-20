@@ -84,6 +84,11 @@ function getDataCodewordsForBlock(
       i * CodewordLength,
       i * CodewordLength + CodewordLength
     );
+    if (bits.length < 8) {
+      const length = CodewordLength - bits.length;
+      const fill = Array.from({length}).fill(0);
+      return getCodeword(bits, "Data", )
+    }
     return getCodeword(bits, "Data");
   });
   //console.debug("getDataCodewordsForBlock", { dataCodewords });
