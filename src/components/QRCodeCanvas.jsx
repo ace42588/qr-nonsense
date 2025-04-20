@@ -57,6 +57,12 @@ export default function QRCodeCanvas() {
 
     const module = matrix[yIndex]?.[xIndex];
     if (!module) return;
+    
+    console.debug(module);
+    if (module.bit.id){ 
+      const source = bitMap.get(module.bit.id);
+      console.debug(source);
+    } 
 
     let type =
       event.type === "contextmenu"
