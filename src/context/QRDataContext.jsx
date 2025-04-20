@@ -84,9 +84,10 @@ function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
   const encodedInputs = inputs.map(({ data, mode, encoding }) =>
     getEncoder(mode).encode(data, encoding)
   );
-  const maps = encodedInputs.map(({bitMap}) => bitMap);
+  const maps = encodedInputs.map(({bitMap, segmentMap}) => bitMap);
   const bitMap = maps.reduce((map, current) => new Map([...map, ...current]));
   const segments = encodedInputs.flatMap(({ segments }) => segments);
+  const segmentMap = maps.reduce((map, current) => new Map([...map, ...current]));
   const calculatedVersion = QRUtils.getVersion(
     bitMap.size,
     version,
@@ -110,7 +111,8 @@ function getQRDataFromInputs(inputs, errorCorrectionLevel, version, dataMask) {
     codewords,
     matrix,
     calculatedDataMask,
-    bitMap
+    bitMap,
+    segmentMap
   };
 }
 

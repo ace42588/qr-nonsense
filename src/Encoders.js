@@ -133,6 +133,7 @@ class Encoder {
     };
 
     const bitMap = new Map();
+    const segmentMap = new Map();
 
     const modeBits = getBits(mode.value, mode.length);
     modeBits.forEach(({ id }) => bitMap.set(id, mode));
@@ -142,6 +143,7 @@ class Encoder {
     //characterCount.bitIds = charCountBits.map(({ id }) => id);
     const segmentBits = segments.flatMap((segment) => {
       const bits = getBits(segment.value, segment.length);
+      segmentMap.set(segment.id, bits.map(({id}) => id));
       bits.forEach(({ id }) => bitMap.set(id, segment));
       return bits;
     });
@@ -154,6 +156,7 @@ class Encoder {
       mode,
       characterCount,
       segments,
+      segmentMap,
       bits,
       bitMap,
     };
