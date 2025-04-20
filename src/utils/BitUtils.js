@@ -10,6 +10,14 @@ function getId() {
   return `bit-${lastBitId++}`;
 }
 
+function getBit(value) {
+  return {
+    type: "Bit",
+    value,
+    id: getId(),
+  };
+}
+
 // ~24k bits possible
 export function getBits(value, length, source) {
   if (!!value && length) {
@@ -22,20 +30,16 @@ export function getBits(value, length, source) {
         throw new Error(
           `Invalid string value for getBits(): ${JSON.stringify(value)}`
         );
-      return [...value].map((bit, idx) => ({
-        value: parseInt(bit),
-        id: getId(),
-      }));
+      return [...value].map((bit) => getBit(parseInt(bit)));
     }
     case "number": {
       if (value < 0 || value > 255)
         throw new Error(
           `Invalid byte value for getBits(): ${value.toString()}`
         );
-      return Array.from({ length }).map((_, idx) => ({
-        value: (value >> (7 - idx)) & 1,
-        id: getId(),
-      }));
+      return Array.from({ length }).map((_, idx) =>
+        getBit((value >> (7 - idx)) & 1)
+      );
     }
     default: {
       throw new Error(`Invalid value for getBits(): ${JSON.stringify(value)}`);
@@ -56,16 +60,18 @@ export const BitUtils = {
 
   getBitsFromChunks(chunks, requiredDataCodewords) {
     //console.debug("getBitsFromChunks", { chunks });
-    const chunkBits = chunks.flatMap(({bits}) => bits);
+    const chunkBits = chunks.flatMap(({ bits }) => bits);
     // Add terminator bits, based on version capacity
-    const terminatorLength = getTerminatorLength(requiredDataCodewords, chunkBits);
+    const terminatorLength = getTerminatorLength(
+      requiredDataCodewords,
+      chunkBits
+    );
     const termBits = getBits(0, length);
     const bits = [...chunkBits, ...termBits];
     //console.debug("getBitsFromChunks", { bits });
     return bits;
   },
 };
-
 
 function getTerminatorLength(capacityBytes, totalDataBits) {
   const capacityBits = capacityBytes * CodewordLength;

@@ -76,8 +76,9 @@ function dataReducer(state, action) {
       );
       return { ...state, ...newQRData, errorCorrectionLevel };
     }
-    case Actions.HighlightCodeword: {
-      
+    case Actions.Highlight: {
+      const {payload: {type, id}} = action;
+      console.debug({type, id});
     }
   }
 }

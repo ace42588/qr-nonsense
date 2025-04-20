@@ -11,6 +11,10 @@ export default function SegmentDisplay({ bitStream }) {
     console.debug({ segment });
     const bitIds = segmentMap.get(segment.id);
     console.debug(bitIds);
+    dispatch({
+      type: Actions.Highlight,
+      payload: segment
+    });
   };
 
   return (
