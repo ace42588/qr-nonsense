@@ -75,20 +75,18 @@ function dataReducer(state, action) {
       return { ...state, ...newQRData, errorCorrectionLevel };
     }
     case Actions.HighlightModules: {
-      const {
-        segment
-      } = action;
-      const modulesToUpdate = state.segmentMap.get(id);
-      const newMatrix = state.matrix.map((row) => {
-        return row.map((module) => {
+      const { segment } = action;
+      const modulesToUpdate = state.segmentMap.get(segment.id);
+      const newMatrix = state.matrix.map((row) =>
+        row.map((module) => {
           let { bit, isHighlighted } = module;
           const newModule = { ...module };
           if (bit.id && modulesToUpdate.some((id) => id === bit.id)) {
             newModule.isHighlighted = !isHighlighted;
           }
           return newModule;
-        });
-      });
+        })
+      );
       return {
         ...state,
         matrix: newMatrix,
