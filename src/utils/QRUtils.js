@@ -14,6 +14,7 @@ function getBlocks(encodedInputs, errorCorrectionLevel, version) {
     version
   );
   let lastBlockId = 0;
+  let numProcessedCodewords = 0;
 
   // ecBlocks is an { numBlocks, dataCodewordsPerBlock }[] used to map
   // the specifics of how to split up codewords for error correction.
@@ -27,10 +28,12 @@ function getBlocks(encodedInputs, errorCorrectionLevel, version) {
         const blockCodewords = getCodewordsForBlock(
           dataCodewordsPerBlock,
           ecCodewordsPerBlock,
+          numProcessedCodewords,
           encodedInputs,
           version,
           errorCorrectionLevel
         );
+        numProcessedCodewords += dataCodewordsPerBlock;
         return {
           codewords: blockCodewords,
           id: blockId,

@@ -42,6 +42,7 @@ function getTerminatorLength(capacityBytes, totalDataBits) {
 export function getCodewordsForBlock(
   dataCodewordsPerBlock,
   ecCodewordsPerBlock,
+   numProcessedCodewords,
   encodedInputs,
   version,
   errorCorrectionLevel
