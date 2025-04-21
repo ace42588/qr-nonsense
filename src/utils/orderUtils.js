@@ -56,11 +56,11 @@ function standardizeOrder(order, fieldNames) {
     platformKey,
     conferenceKey,
     transactionKey,
-    orderKey,
+    itemsKey,
     variantKey,
     quantityKey,
   } = fieldNames;
-  const items = order[orderKey].map((item) => ({
+  const items = order[itemsKey].map((item) => ({
     variant: item[variantKey],
     quantity: item[quantityKey],
   }));

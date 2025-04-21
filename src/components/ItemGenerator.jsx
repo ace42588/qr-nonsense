@@ -1,5 +1,6 @@
 // ItemGenerator.js
 import React, { useState } from "react";
+import { useSchemaContext } from "../context/SchemaContext";
 
 export default function ItemGenerator({ onGenerate, fieldNames }) {
   const [count, setCount] = useState(5);
