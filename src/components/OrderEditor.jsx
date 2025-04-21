@@ -15,6 +15,11 @@ import { Actions } from "../Constants";
 const Encodings = ["JSON", "Alphanumeric", "PER"];
 
 export default function DynamicOrderEditor() {
+  const mandatoryFieldNames = {
+    platform: "p",
+    conferenceCode: "cc",
+    transactionId: "txn",
+  }
   const [orderSchema, setOrderSchema] = useState([
     { label: "Platform", name: "p", type: "string", value: "A" },
     { label: "Conference Code", name: "cc", type: "number", value: "133" },

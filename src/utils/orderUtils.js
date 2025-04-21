@@ -2,7 +2,7 @@ import * as BitPacked from "./BitPacked"
 
 export const encodeOrder = (order, encoding, itemFieldNames) => {
   console.debug("encodeOrder", { order, encoding, itemFieldNames });
-  let { transactionId, conferenceCode, platform, items } = order;
+  const { orderKey, variantKey, quantityKey } = itemFieldNames;
   let encodedOrder = {};
   switch (encoding) {
     case "Alphanumeric": {
@@ -10,7 +10,7 @@ export const encodeOrder = (order, encoding, itemFieldNames) => {
       // FIELD_SEPARATOR = "%";
       // QTY_SEPARATOR = ":";
       // TERMINATOR = "/";
-      const encodedItems = items.reduce(
+      const encodedItems = order[orderKey].reduce(
         (str, { v, q }) => `${str}${v}:${q}/`,
         ""
       );
@@ -27,15 +27,9 @@ export const encodeOrder = (order, encoding, itemFieldNames) => {
       break;
     }
     default: {
-      const obj = {
-        txn: transactionId,
-        cc: conferenceCode,
-        p: platform,
-        i: items,
-      };
       encodedOrder.encoding = "utf-8";
       encodedOrder.mode = "byte";
-      encodedOrder.data = JSON.stringify(obj);
+      encodedOrder.data = JSON.stringify(order);
     }
   }
   return encodedOrder;
