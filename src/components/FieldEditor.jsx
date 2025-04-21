@@ -8,30 +8,32 @@ export default function FieldEditor({
   onRemove,
 }) {
   const handleChange = (key, value) => onChange(path, key, value);
-  const mandatoryFieldLabels = ["Platform", "Conference Code", "Transaction ID", "Items", "Variant", "Quantity"];
+  const mandatoryFieldLabels = [
+    "Platform",
+    "Conference Code",
+    "Transaction ID",
+    "Items",
+    "Variant",
+    "Quantity",
+  ];
 
   return (
     <div className="border p-2 mb-2 rounded relative bg-white">
       {!["Platform", "Conference Code", "Transaction ID"].includes(
-          field.label
-        ) && (<button
-        className="absolute top-1 right-1 text-red-500 text-sm"
-        onClick={() => {
-          const mandatoryLabels = [
-            "Platform",
-            "Conference Code",
-            "Transaction ID",
-          ];
-          if (!mandatoryLabels.includes(field.label)) onRemove(path);
-        }}
-      >
-        ✖
-      </button>)}
+        field.label
+      ) && (
+        <button
+          className="absolute top-1 right-1 text-red-500 text-sm"
+          onClick={() => {
+            if (!mandatoryFieldLabels.includes(field.label)) onRemove(path);
+          }}
+        >
+          ✖
+        </button>
+      )}
 
       <div className="flex gap-2 mb-2">
-        {["Platform", "Conference Code", "Transaction ID"].includes(
-          field.label
-        ) ? (
+        {mandatoryFieldLabels.includes(field.label) ? (
           <div className="p-1 flex-1 bg-gray-100 text-gray-700 rounded border border-gray-300">
             {field.label}
           </div>

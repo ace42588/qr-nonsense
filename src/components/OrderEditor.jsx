@@ -7,13 +7,11 @@ import {
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
-  OrderEncodingSelector
+  OrderEncodingSelector,
 } from "./Selectors";
 import { QRDataDispatchContext } from "../context/QRDataContext";
 import { encodeOrder, parseOrderJson } from "../utils/orderUtils";
 import { Actions } from "../Constants";
-
-const Encodings = ["JSON", "Alphanumeric", "PER"];
 
 export default function DynamicOrderEditor() {
   const [orderSchema, setOrderSchema] = useState([
@@ -26,19 +24,13 @@ export default function DynamicOrderEditor() {
       type: "array",
       children: [
         { label: "Variant", name: "v", type: "number", value: "" },
-        { label: "Quantity", name: "q", type: "number", value: "" }
-      ]
-    }
+        { label: "Quantity", name: "q", type: "number", value: "" },
+      ],
+    },
   ]);
   const [encoding, setEncoding] = useState("PER");
   const dispatch = useContext(QRDataDispatchContext);
-  
-  const itemFieldNames = {
-    orderKey: "i",
-    variantKey: "v",
-    quantityKey: "q",
-  };
-  
+
   const requiredFieldNames = orderSchema.reduce((acc, field) => {
     if (field.label === "Platform") acc.platformKey = field.name;
     if (field.label === "Conference Code") acc.conferenceKey = field.name;
@@ -48,14 +40,13 @@ export default function DynamicOrderEditor() {
     if (field.label === "Quantity") acc.quantityKey = field.name;
     return acc;
   }, {});
-  
 
   const variantKey = requiredFieldNames.variantKey;
   const quantityKey = requiredFieldNames.quantityKey;
   const [items, setItems] = useState([
-    { [requiredFieldNames.variantKey]: 5432, [requiredFieldNames.quantityKey]: 1 },
-    { [requiredFieldNames.variantKey]: 6666, [requiredFieldNames.quantityKey]: 3 },
-    { [requiredFieldNames.variantKey]: 1234, [requiredFieldNames.quantityKey]: 2 },
+    { [variantKey]: 5432, [quantityKey]: 1 },
+    { [variantKey]: 6666, [quantityKey]: 3 },
+    { [variantKey]: 1234, [quantityKey]: 2 },
   ]);
 
   const finalOutput = buildFinalOrder(orderSchema, items, requiredFieldNames);
@@ -69,13 +60,10 @@ export default function DynamicOrderEditor() {
       const order = buildFinalOrder(
         orderSchemaValue,
         itemsValue,
-        itemFieldNames
+        requiredFieldNames
       );
       if (!order) return;
-      const output = encodeOrder(order, encodingType, {
-        ...itemFieldNames,
-        ...requiredFieldNames,
-      });
+      const output = encodeOrder(order, encodingType, requiredFieldNames);
       if (!output) return;
       dispatch({
         type: Actions.ChangeInput,
@@ -101,7 +89,7 @@ export default function DynamicOrderEditor() {
         <DataMaskSelector />
       </div>
       <div className="row">
-        <OrderEncodingSelector encoding={encoding} setEncoding={setEncoding}/>
+        <OrderEncodingSelector encoding={encoding} setEncoding={setEncoding} />
       </div>
 
       <div className="border p-4 rounded">
@@ -114,9 +102,9 @@ export default function DynamicOrderEditor() {
         <ItemsEditor
           items={items}
           setItems={setItems}
-          fieldNames={itemFieldNames}
+          fieldNames={requiredFieldNames}
         />
-        <ItemGenerator onGenerate={setItems} fieldNames={itemFieldNames} />
+        <ItemGenerator onGenerate={setItems} fieldNames={requiredFieldNames} />
       </div>
 
       <div className="border p-4 rounded bg-gray-100">
