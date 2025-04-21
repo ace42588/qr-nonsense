@@ -1,39 +1,26 @@
+// FieldEditor.js
 import React from "react";
+import { useSchemaContext } from "../context/SchemaContext";
 
-export default function FieldEditor({
-  field,
-  path,
-  onChange,
-  onAddChild,
-  onRemove,
-}) {
+export default function FieldEditor({ field, path, onChange, onAddChild, onRemove }) {
+  const { requiredFieldNames } = useSchemaContext();
   const handleChange = (key, value) => onChange(path, key, value);
-  const mandatoryFieldLabels = [
-    "Platform",
-    "Conference Code",
-    "Transaction ID",
-    "Items",
-    "Variant",
-    "Quantity",
-  ];
+
+  const isRequired = Object.values(requiredFieldNames).includes(field.name);
 
   return (
     <div className="border p-2 mb-2 rounded relative bg-white">
-      {!["Platform", "Conference Code", "Transaction ID"].includes(
-        field.label
-      ) && (
+      {!isRequired && (
         <button
           className="absolute top-1 right-1 text-red-500 text-sm"
-          onClick={() => {
-            if (!mandatoryFieldLabels.includes(field.label)) onRemove(path);
-          }}
+          onClick={() => onRemove(path)}
         >
           ✖
         </button>
       )}
 
       <div className="flex gap-2 mb-2">
-        {mandatoryFieldLabels.includes(field.label) ? (
+        {isRequired ? (
           <div className="p-1 flex-1 bg-gray-100 text-gray-700 rounded border border-gray-300">
             {field.label}
           </div>
@@ -63,14 +50,14 @@ export default function FieldEditor({
         </select>
       </div>
 
-      {field.type === "string" || field.type === "number" ? (
+      {(field.type === "string" || field.type === "number") && (
         <input
           className="border p-1 w-full"
           placeholder="Value"
           value={field.value}
           onChange={(e) => handleChange("value", e.target.value)}
         />
-      ) : null}
+      )}
 
       {(field.type === "object" || field.type === "array") && (
         <div className="ml-4 mt-2">
