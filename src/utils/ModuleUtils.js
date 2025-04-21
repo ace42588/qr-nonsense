@@ -49,13 +49,11 @@ function getAlignmentPatternPositions(version) {
 }
 
 function getBitsFromFormatInfo(ecLevel, mask) {
-  console.debug("getBitsFromFormatInfo", { ecLevel, mask });
   if (mask === -1) return 0x4000;
   const info = FORMAT_INFO_TABLE.filter(
     ({ formatInfo: { errorCorrectionLevel, dataMask } }) =>
       errorCorrectionLevel == ecLevel && mask == dataMask
   )[0];
-  console.debug("getBitsFromFormatInfo", info);
   if (!info || !info.bits) throw new Error("Format information not found");
   return info.bits;
 }
@@ -83,10 +81,9 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const size = matrix.length;
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
   source.value = formatInfo;
-  console.debug("addFormatInfoModules", { formatInfo });
   const bits = formatInfo.toString(2);
   const values = `${bits}`;
-  console.debug("addFormatInfoModules", { values });
+
   // Horizontal
   [
     { x: 0, y: 8 },
