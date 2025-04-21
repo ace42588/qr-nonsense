@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import SchemaEditor from "./SchemaEditor";
 import ItemsEditor from "./ItemsEditor";
 import ItemGenerator from "./ItemGenerator";
-import { schemaToObject } from "./utils/schemaUtils";
+import { schemaToObject } from "../utils/schemaUtils";
 
 export default function DynamicOrderEditor() {
   const [orderSchema, setOrderSchema] = useState([]);

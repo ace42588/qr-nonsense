@@ -1,7 +1,7 @@
 // SchemaEditor.js
 import React from "react";
 import FieldEditor from "./FieldEditor";
-import { insertAtPath, updateAtPath, removeAtPath } from "./utils/schemaUtils";
+import { insertAtPath, updateAtPath, removeAtPath } from "../utils/schemaUtils";
 
 export default function SchemaEditor({ schema, setSchema }) {
   const updateSchema = (fn) => {

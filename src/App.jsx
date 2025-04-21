@@ -9,7 +9,8 @@ import {
 } from "./components/Selectors";
 import InputForm from "./components/InputForm";
 import MerchForm from "./components/MerchForm";
-import SchemaBuilder from "./components/SchemaBuilder"
+import SchemaBuilder from "./components/SchemaBuilder";
+import DynamicOrderEditor from "./components/OrderEditor";
 import VideoScanner from "./components/VideoScanner";
 import { QRDataProvider } from "./context/QRDataContext";
 
@@ -20,7 +21,7 @@ export default function App() {
 
   const selectUI = () => {
     if (inputMode === "merch") {
-      return <SchemaBuilder />;
+      return <DynamicOrderEditor />;
     } else if (inputMode === "scan") {
       return <VideoScanner />;
     }
