@@ -16,6 +16,20 @@ import { Actions } from "../Constants";
 const Encodings = ["JSON", "Alphanumeric", "PER"];
 
 export default function DynamicOrderEditor() {
+  const [orderSchema, setOrderSchema] = useState([
+    { label: "Platform", name: "p", type: "string", value: "A" },
+    { label: "Conference Code", name: "cc", type: "number", value: "133" },
+    { label: "Transaction ID", name: "txn", type: "string", value: "99999" },
+    {
+      label: "Items",
+      name: "i",
+      type: "array",
+      children: [
+        { label: "Variant", name: "v", type: "number", value: "" },
+        { label: "Quantity", name: "q", type: "number", value: "" }
+      ]
+    }
+  ]);
   const itemFieldNames = {
     orderKey: "i",
     variantKey: "v",
