@@ -2,7 +2,7 @@ import * as BitPacked from "./BitPacked";
 
 export const encodeOrder = (order, encoding, fieldNames) => {
   console.debug("encodeOrder", { order, encoding, fieldNames });
-  const standardOrder = standardizeOrder(order, fieldNames);
+  const stdOrder = standardizeOrder(order, fieldNames);
   let encodedOrder = {};
   switch (encoding) {
     case "Alphanumeric": {
@@ -11,11 +11,11 @@ export const encodeOrder = (order, encoding, fieldNames) => {
       // FIELD_SEPARATOR = "%";
       // QTY_SEPARATOR = ":";
       // TERMINATOR = "/";
-      const encodedItems = order[orderKey].reduce(
-        (str, item) => `${str}${item[variantKey]}:${item[quantityKey]}/`,
+      const encodedItems = stdOrder.items.reduce(
+        (str, { variant, quantity }) => `${str}${variant}:${quantity}/`,
         ""
       );
-      delete order[orderKey];
+      delete order.items;
 
       let data = `$1`;
       Object.values(order).forEach((v) => (data = `${data}%${v}`));
@@ -25,12 +25,9 @@ export const encodeOrder = (order, encoding, fieldNames) => {
       break;
     }
     case "PER": {
-      const standardOrder = standardizeOrder(order, fieldNames);
-      let hex = BitPacked.encode(standardOrder);
-
       encodedOrder.encoding = "hex";
       encodedOrder.mode = "byte";
-      encodedOrder.data = hex;
+      encodedOrder.data = BitPacked.encode(stdOrder);
       break;
     }
     default: {

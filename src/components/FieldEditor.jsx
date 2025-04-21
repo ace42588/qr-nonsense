@@ -42,12 +42,6 @@ export default function FieldEditor({
         )}
         <input
           className="border p-1 flex-1"
-          placeholder="Label"
-          value={field.label}
-          onChange={(e) => handleChange("label", e.target.value)}
-        />
-        <input
-          className="border p-1 flex-1"
           placeholder="Field name"
           value={field.name}
           onChange={(e) => handleChange("name", e.target.value)}

@@ -78,7 +78,7 @@ export default function DynamicOrderEditor() {
   }, [updateQRData]);
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="input-form">
       <div className="row">
         <ErrorCorrectionSelector />
       </div>
