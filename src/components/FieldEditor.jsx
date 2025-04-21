@@ -8,6 +8,7 @@ export default function FieldEditor({
   onRemove,
 }) {
   const handleChange = (key, value) => onChange(path, key, value);
+  const mandatoryFieldLabels = ["Platform", "Conference Code", "Transaction ID", "Items", "Variant", "Quantity"];
 
   return (
     <div className="border p-2 mb-2 rounded relative bg-white">

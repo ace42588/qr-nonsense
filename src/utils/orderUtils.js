@@ -7,6 +7,7 @@ export const encodeOrder = (order, encoding, fieldNames) => {
   let encodedOrder = {};
   switch (encoding) {
     case "Alphanumeric": {
+      const { orderKey } = fieldNames;
       encodedOrder.mode = "alphanumeric";
       // ENCAPSULATOR = "$";
       // FIELD_SEPARATOR = "%";
@@ -16,7 +17,7 @@ export const encodeOrder = (order, encoding, fieldNames) => {
         (str, { variant, quantity }) => `${str}${variant}:${quantity}/`,
         ""
       );
-      delete order.items;
+      delete order[orderKey];
 
       let data = `$1`;
       Object.values(order).forEach((v) => (data = `${data}%${v}`));
