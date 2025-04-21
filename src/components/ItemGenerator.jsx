@@ -10,11 +10,15 @@ export default function ItemGenerator({ onGenerate, fieldNames }) {
 
   const generateItems = () => {
     const rand = (len, chars) =>
-      Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+      Array.from(
+        { length: len },
+        () => chars[Math.floor(Math.random() * chars.length)]
+      ).join("");
 
     const generated = Array.from({ length: count }, () => ({
       [fieldNames.variantKey]: rand(variantLength, charset),
-      [fieldNames.quantityKey]: Math.floor(Math.random() * (maxQty - minQty + 1)) + minQty
+      [fieldNames.quantityKey]:
+        Math.floor(Math.random() * (maxQty - minQty + 1)) + minQty,
     }));
 
     onGenerate(generated);
@@ -24,6 +28,9 @@ export default function ItemGenerator({ onGenerate, fieldNames }) {
     <div className="mt-4 space-y-2">
       <h3 className="font-semibold">Auto-generate Items</h3>
       <div className="flex flex-wrap gap-2">
+        <div className="p-1 flex-1 bg-gray-100 text-gray-700 rounded border border-gray-300">
+          Count
+        </div>
         <input
           className="border p-1 rounded w-20"
           type="number"
@@ -31,6 +38,9 @@ export default function ItemGenerator({ onGenerate, fieldNames }) {
           onChange={(e) => setCount(Number(e.target.value))}
           placeholder="Count"
         />
+        <div className="p-1 flex-1 bg-gray-100 text-gray-700 rounded border border-gray-300">
+          Variant Len
+        </div>
         <input
           className="border p-1 rounded w-20"
           type="number"
@@ -38,12 +48,18 @@ export default function ItemGenerator({ onGenerate, fieldNames }) {
           onChange={(e) => setVariantLength(Number(e.target.value))}
           placeholder="Variant Len"
         />
+        <div className="p-1 flex-1 bg-gray-100 text-gray-700 rounded border border-gray-300">
+          Charset
+        </div>
         <input
           className="border p-1 rounded w-24"
           value={charset}
           onChange={(e) => setCharset(e.target.value)}
           placeholder="Charset"
         />
+        <div className="p-1 flex-1 bg-gray-100 text-gray-700 rounded border border-gray-300">
+          Min Qty
+        </div>
         <input
           className="border p-1 rounded w-20"
           type="number"
@@ -51,6 +67,9 @@ export default function ItemGenerator({ onGenerate, fieldNames }) {
           onChange={(e) => setMinQty(Number(e.target.value))}
           placeholder="Min Qty"
         />
+        <div className="p-1 flex-1 bg-gray-100 text-gray-700 rounded border border-gray-300">
+          Max Qty
+        </div>
         <input
           className="border p-1 rounded w-20"
           type="number"

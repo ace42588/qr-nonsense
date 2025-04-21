@@ -126,7 +126,9 @@ export default function DynamicOrderEditor() {
 }
 
 function buildFinalOrder(orderSchema, items, fieldNames) {
+  console.debug("buildFinalOrder", { orderSchema, items, fieldNames });
   const obj = schemaToObject(orderSchema);
+  console.debug("buildFinalOrder", { obj });
   obj[fieldNames.orderKey] = items.map((item) => ({
     [fieldNames.variantKey]: item.variant,
     [fieldNames.quantityKey]: item.quantity,
