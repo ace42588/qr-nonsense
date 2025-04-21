@@ -88,8 +88,7 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const bits = formatInfo.toString(2);
   const values = `${bits}${bits}`;
   console.debug("addFormatInfoModules", {values});
-  const positions = [
-    // Horizontal
+  const horizontal = [
     { x: 0, y: 8 },
     { x: 1, y: 8 },
     { x: 2, y: 8 },
@@ -105,7 +104,8 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
     { x: size - 3, y: 8 },
     { x: size - 2, y: 8 },
     { x: size - 1, y: 8 },
-    // Vertical
+    ];
+  const vertical = [
     { x: 8, y: size - 1 },
     { x: 8, y: size - 2 },
     { x: 8, y: size - 3 },
@@ -123,7 +123,7 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
     { x: 8, y: 0 },
   ];
   // Tile the format bits
-  for (let i = 0; i < values.length; i++) {
+  for (let i = 0; i < positions.length; i++) {
     const { x, y } = positions[i];
     matrix[y][x] = makeNonDataModule(values[i], source, x, y);
   }
