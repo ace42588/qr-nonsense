@@ -4,6 +4,7 @@ export default function SchemaBuilder() {
   const [schema, setSchema] = useState([]);
 
   const addField = (parentPath = []) => {
+    console.debug("addField");
     const field = {
       label: "",
       name: "",
