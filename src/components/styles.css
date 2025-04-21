@@ -71,7 +71,7 @@ canvas {
 
 .modeIndicator-button {
   padding: 10px 15px;
-  background-color: #3498db;
+  background-color: #BEB625;
   color: white;
   border: none;
   border-radius: 4px;
@@ -81,7 +81,7 @@ canvas {
 
 .characterCountIndicator-button {
   padding: 10px 15px;
-  background-color: #3498db;
+  background-color: #25BE45;
   color: white;
   border: none;
   border-radius: 4px;
@@ -115,6 +115,12 @@ canvas {
 }
 
 @media (min-width: 768px) {
+  .modeIndicator-button {
+    padding: 15px 20px;
+  }
+  .characterCountIndicator-button {
+    padding: 15px 20px;
+  }
   .segment-button {
     padding: 15px 20px;
   }
