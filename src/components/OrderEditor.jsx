@@ -19,7 +19,7 @@ export default function DynamicOrderEditor() {
     platform: "p",
     conferenceCode: "cc",
     transactionId: "txn",
-  }
+  };
   const [orderSchema, setOrderSchema] = useState([
     { label: "Platform", name: "p", type: "string", value: "A" },
     { label: "Conference Code", name: "cc", type: "number", value: "133" },
@@ -39,6 +39,13 @@ export default function DynamicOrderEditor() {
     quantityKey: "q",
   };
 
+  const requiredFieldNames = orderSchema.reduce((acc, field) => {
+    if (field.label === "Platform") acc.platformKey = field.name;
+    if (field.label === "Conference Code") acc.conferenceKey = field.name;
+    if (field.label === "Transaction ID") acc.transactionKey = field.name;
+    return acc;
+  }, {});
+
   const finalOutput = buildFinalOrder(orderSchema, items, itemFieldNames);
 
   const updateQRData = useCallback(
@@ -53,7 +60,10 @@ export default function DynamicOrderEditor() {
         itemFieldNames
       );
       if (!order) return;
-      const output = encodeOrder(order, encodingType, itemFieldNames);
+      const output = encodeOrder(order, encodingType, {
+        ...itemFieldNames,
+        ...requiredFieldNames,
+      });
       if (!output) return;
       dispatch({
         type: Actions.ChangeInput,
