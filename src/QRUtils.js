@@ -1,4 +1,4 @@
-import { DATA_MASKS, EC_INFO, CodewordLength } from "../Constants";
+import { DATA_MASKS, EC_INFO, CodewordLength } from "./Constants";
 import {
   addFormatInfoModules,
   addNonDataModules,

@@ -1,4 +1,4 @@
-import { PAD_BYTES, CodewordLength } from "../Constants";
+import { PAD_BYTES, CodewordLength } from "./Constants";
 
 let lastBitId = 0;
 

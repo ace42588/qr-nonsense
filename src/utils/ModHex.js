@@ -2,7 +2,7 @@
 const modhexBase = "CBDEFGHIJKLNRTUV".split("");
 
 // Convert a MODHEX encoded Strings to hex
-export function modHexDecode(input, encoding = "hex") {
+export function decode(input, encoding = "hex") {
   // strip whitespaces and string cleanup - all non matching characters are 0x00 (c in modhex)
   const modhex = input
     .replace(/\s*/g, "")
@@ -31,7 +31,7 @@ export function modHexDecode(input, encoding = "hex") {
 }
 
 // Convert hex Strings to MODHEX
-export function modHexEncode(input) {
+export function encode(input) {
   // hex encoded input string
   let hexInput = "";
 

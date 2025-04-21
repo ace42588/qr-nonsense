@@ -1,4 +1,4 @@
-import { CodewordLength } from "../Constants";
+import { CodewordLength } from "./Constants";
 import { ReedSolomonEncoder } from "./reedsolomon/index.js";
 import { getBits } from "./BitUtils";
 import { gerVersionInfo } from "./QRUtils";

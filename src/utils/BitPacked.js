@@ -50,5 +50,5 @@ export function encode(order) {
     return acc.concat(curr.toString(16));
   }, hex);
 
-  return { data: hex };
+  return hex;
 }
