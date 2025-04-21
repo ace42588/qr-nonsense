@@ -8,7 +8,8 @@ import {
 } from "./Selectors";
 import { QRDataDispatchContext } from "../context/QRDataContext";
 import { Actions } from "../Constants";
-import * as BitPacked from "../utils/BitPacked"
+
+import { encodeOrder, parseOrderJson } from "../utils/orderUtils";
 
 const Encodings = ["JSON", "Alphanumeric", "PER"];
 
@@ -19,7 +20,7 @@ export default function MerchForm() {
 
   const updateQRData = useCallback(
     (inputValue = input, encodingType = encoding) => {
-      const order = parseInput(inputValue);
+      const order = parseOrderJson(inputValue);
       if (!order) return;
       const output = encodeOrder(order, encodingType);
       if (!output) return;
@@ -82,7 +83,7 @@ export default function MerchForm() {
         <button
           onClick={(e) => {
             e.preventDefault();
-            const order = parseInput(input);
+            const order = parseOrderJson(input);
             const output = encodeOrder(order, encoding);
             dispatch({
               type: Actions.ChangeInput,
@@ -96,66 +97,6 @@ export default function MerchForm() {
     </form>
   );
 }
-
-const encodeOrder = (order, encoding) => {
-  //console.debug("encodeOrder", { order, encoding });
-  let { transactionId, conferenceCode, platform, items } = order;
-  let encodedOrder = {};
-  switch (encoding) {
-    case "Alphanumeric": {
-      // ENCAPSULATOR = "$";
-      // FIELD_SEPARATOR = "%";
-      // QTY_SEPARATOR = ":";
-      // TERMINATOR = "/";
-      const encodedItems = items.reduce(
-        (str, { v, q }) => `${str}${v}:${q}/`,
-        ""
-      );
-      encodedOrder.mode = "alphanumeric";
-      encodedOrder.data = `$1${platform}%${conferenceCode}%${transactionId}%${encodedItems}$`;
-      break;
-    }
-    case "PER": {
-      let hex = BitPacked.encode(order);
-
-      encodedOrder.encoding = "hex";
-      encodedOrder.mode = "byte";
-      encodedOrder.data = hex;
-      break;
-    }
-    default: {
-      const obj = {
-        txn: transactionId,
-        cc: conferenceCode,
-        p: platform,
-        i: items,
-      };
-      encodedOrder.encoding = "utf-8";
-      encodedOrder.mode = "byte";
-      encodedOrder.data = JSON.stringify(obj);
-    }
-  }
-  return encodedOrder;
-};
-
-const parseInput = (raw) => {
-  let safe = raw.replace(/(?<!\\)\\?(\n|\r\n)/g, "");
-  let parsedInput = null;
-  //console.debug("parseInput", { raw, safe });
-  try {
-    let {
-      txn: transactionId,
-      cc: conferenceCode,
-      p: platform,
-      i: items,
-    } = JSON.parse(safe);
-    parsedInput = { transactionId, conferenceCode, platform, items };
-  } catch (e) {
-    console.debug("parseInput", `Error parsing ${raw}`);
-  }
-
-  return parsedInput;
-};
 
 const sampleOrder = {
   p: "A",

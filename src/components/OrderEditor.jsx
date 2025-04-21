@@ -1,33 +1,87 @@
-// Entry point component for editing full order structure
-import React, { useState } from "react";
+import { useState, useContext, useEffect, useCallback } from "react";
 import SchemaEditor from "./SchemaEditor";
 import ItemsEditor from "./ItemsEditor";
 import ItemGenerator from "./ItemGenerator";
 import { schemaToObject } from "../utils/schemaUtils";
+import {
+  ErrorCorrectionSelector,
+  VersionSelector,
+  DataMaskSelector,
+} from "./Selectors";
+import { QRDataDispatchContext } from "../context/QRDataContext";
+import { encodeOrder, parseOrderJson } from "../utils/orderUtils";
+import { Actions } from "../Constants";
+
+const Encodings = ["JSON", "Alphanumeric", "PER"];
 
 export default function DynamicOrderEditor() {
   const [orderSchema, setOrderSchema] = useState([
     { label: "Platform", name: "p", type: "string", value: "A" },
     { label: "Conference Code", name: "cc", type: "number", value: "133" },
-    { label: "Transaction ID", name: "txn", type: "string", value: "99999" }
+    { label: "Transaction ID", name: "txn", type: "string", value: "99999" },
   ]);
   const [items, setItems] = useState([
     { variant: 5432, quantity: 1 },
     { variant: 6666, quantity: 3 },
-    { variant: 1234, quantity: 2 }
+    { variant: 1234, quantity: 2 },
   ]);
+  const [encoding, setEncoding] = useState("PER");
+  const dispatch = useContext(QRDataDispatchContext);
+
+  const updateQRData = useCallback(
+    (inputValue = finalOutput, encodingType = encoding) => {
+      const order = parseOrderJson(inputValue);
+      if (!order) return;
+      const output = encodeOrder(order, encodingType);
+      if (!output) return;
+      dispatch({
+        type: Actions.ChangeInput,
+        inputs: [output],
+      });
+    },
+    [dispatch, finalOutput, encoding]
+  );
+
+  useEffect(() => {
+    updateQRData();
+  }, [updateQRData]);
 
   const itemFieldNames = {
     orderKey: "i",
     variantKey: "v",
-    quantityKey: "q"
+    quantityKey: "q",
   };
 
   const finalOutput = buildFinalOrder(orderSchema, items, itemFieldNames);
 
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-2xl font-bold">Dynamic Order Editor</h1>
+      <div className="row">
+        <ErrorCorrectionSelector />
+      </div>
+      <div className="row">
+        <VersionSelector />
+      </div>
+      <div className="row">
+        <DataMaskSelector />
+      </div>
+                <label htmlFor="encoding">Encoding:</label>
+          <select
+            id="encoding"
+            value={encoding}
+            onChange={(e) => {
+              console.debug("handleChangeEncoding");
+              const newEncoding = e.target.value;
+              setEncoding(newEncoding);
+              updateQRData(input, newEncoding);
+            }}
+          >
+            {Encodings.map((encoding, idx) => (
+              <option key={encoding} value={encoding}>
+                {encoding}
+              </option>
+            ))}
+          </select>
 
       <div className="border p-4 rounded">
         <h2 className="text-xl font-semibold mb-2">Order Fields</h2>
@@ -58,7 +112,7 @@ function buildFinalOrder(orderSchema, items, fieldNames) {
   const obj = schemaToObject(orderSchema);
   obj[fieldNames.orderKey] = items.map((item) => ({
     [fieldNames.variantKey]: item.variant,
-    [fieldNames.quantityKey]: item.quantity
+    [fieldNames.quantityKey]: item.quantity,
   }));
   return obj;
 }
