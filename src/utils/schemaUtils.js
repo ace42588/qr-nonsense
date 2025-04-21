@@ -38,6 +38,7 @@ export function schemaToObject(schema) {
   for (const field of schema) {
     const { name, type, value, children } = field;
     if (!name) continue;
+
     if (type === "string") {
       result[name] = value;
     } else if (type === "number") {
@@ -45,7 +46,13 @@ export function schemaToObject(schema) {
     } else if (type === "object") {
       result[name] = schemaToObject(children || []);
     } else if (type === "array") {
-      result[name] = [schemaToObject(children || [])];
+      // Check if children are objects
+      if ((children || []).every(c => c.type === "object")) {
+        result[name] = children.map(item => schemaToObject(item.children || []));
+      } else {
+        // fallback: single object describing structure
+        result[name] = [schemaToObject(children || [])];
+      }
     }
   }
   return result;

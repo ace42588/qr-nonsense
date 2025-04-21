@@ -32,7 +32,7 @@ const defaultSchema = [
 
 export default function DynamicOrderEditor() {
   const [schema, setSchema] = useState(defaultSchema);
-    const [encoding, setEncoding] = useState("PER");
+  const [encoding, setEncoding] = useState("PER");
   const dispatch = useContext(QRDataDispatchContext);
 
   const getFieldNames = (schema) => {
@@ -40,8 +40,10 @@ export default function DynamicOrderEditor() {
     const walk = (fields) => {
       for (const field of fields) {
         if (field.label === "Platform") result.platformKey = field.name;
-        if (field.label === "Conference Code") result.conferenceKey = field.name;
-        if (field.label === "Transaction ID") result.transactionKey = field.name;
+        if (field.label === "Conference Code")
+          result.conferenceKey = field.name;
+        if (field.label === "Transaction ID")
+          result.transactionKey = field.name;
         if (field.label === "Items") result.itemsKey = field.name;
         if (field.label === "Variant") result.variantKey = field.name;
         if (field.label === "Quantity") result.quantityKey = field.name;
@@ -54,14 +56,14 @@ export default function DynamicOrderEditor() {
 
   const requiredFieldNames = getFieldNames(schema);
   const data = schemaToObject(schema);
-  
-    const updateQRData = useCallback(
-    (
-      orderSchemaValue = schema,
-      dataValue = data,
-      encodingType = encoding
-    ) => {
-      console.debug("updateQRData", {orderSchemaValue, })
+
+  const updateQRData = useCallback(
+    (orderSchemaValue = schema, dataValue = data, encodingType = encoding) => {
+      console.debug("updateQRData", {
+        orderSchemaValue,
+        dataValue,
+        encodingType,
+      });
       const output = encodeOrder(data, encodingType, requiredFieldNames);
       if (!output) return;
       dispatch({

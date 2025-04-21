@@ -17,16 +17,48 @@ export default function ItemGenerator() {
     ).join("");
 
   const generateItems = () => {
-    const newItems = Array.from({ length: count }, () => ({
-      [requiredFieldNames.variantKey]: generateVariant(),
-      [requiredFieldNames.quantityKey]:
-        Math.floor(Math.random() * (maxQty - minQty + 1)) + minQty,
-    }));
+    const variantFieldType = (() => {
+      const itemsField = schema.find((f) => f.label === "Items");
+      if (!itemsField || !Array.isArray(itemsField.children)) return "string";
+      const variantField = itemsField.children.find(
+        (c) => c.label === "Variant"
+      );
+      return variantField?.type || "string";
+    })();
+
+    const newItems = Array.from({ length: count }, () => {
+      const variantValue =
+        variantFieldType === "number"
+          ? parseInt(generateVariant(), 10)
+          : generateVariant();
+
+      return {
+        [requiredFieldNames.variantKey]: variantValue,
+        [requiredFieldNames.quantityKey]:
+          Math.floor(Math.random() * (maxQty - minQty + 1)) + minQty,
+      };
+    });
 
     setSchema((prev) => {
       const clone = structuredClone(prev);
       const itemsField = clone.find((f) => f.label === "Items");
-      if (itemsField) itemsField.children = newItems;
+      if (itemsField) {
+        itemsField.children = newItems.map((item) => ({
+          type: "object",
+          children: [
+            {
+              name: requiredFieldNames.variantKey,
+              type: variantFieldType,
+              value: item[requiredFieldNames.variantKey],
+            },
+            {
+              name: requiredFieldNames.quantityKey,
+              type: "number",
+              value: item[requiredFieldNames.quantityKey],
+            },
+          ],
+        }));
+      }
       return clone;
     });
   };
