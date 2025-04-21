@@ -34,6 +34,24 @@ gradient.addColorStop(1, "white");
 sourceCtx.fillStyle = gradient;
 sourceCtx.fillRect(0, 0, WIDTH, HEIGHT);
 
+const targetCanvas = createCanvas(WIDTH, HEIGHT);
+attach(targetCanvas);
+const targetCtx = targetCanvas.getContext("2d");
+
+let PIXELS_PER_DOT = 10;
+const sourceImageData = sourceCtx.getImageData(0, 0, WIDTH, HEIGHT);
+
+const positionToDataIndex = (x, y, width) => {
+  width = width || WIDTH;
+  // data is arranged as [R, G, B, A, R, G, B, A, ...]
+  return (y * width + x) * 4;
+};
+
+// re-maps a value from its original range [minA, maxA] to the range [minB, maxB]
+const map = (value, minA, maxA, minB, maxB) => {
+  return ((value - minA) / (maxA - minA)) * (maxB - minB) + minB;
+};
+
 const rotationCanvas = createCanvas(WIDTH, HEIGHT);
 attach(rotationCanvas);
 const rotationCtx = rotationCanvas.getContext("2d");
