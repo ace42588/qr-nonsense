@@ -1,7 +1,7 @@
 import * as BitPacked from "./BitPacked"
 
-export const encodeOrder = (order, encoding) => {
-  //console.debug("encodeOrder", { order, encoding });
+export const encodeOrder = (order, encoding, itemFieldNames) => {
+  console.debug("encodeOrder", { order, encoding, itemFieldNames });
   let { transactionId, conferenceCode, platform, items } = order;
   let encodedOrder = {};
   switch (encoding) {

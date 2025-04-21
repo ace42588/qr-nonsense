@@ -28,24 +28,6 @@ export default function DynamicOrderEditor() {
   const [encoding, setEncoding] = useState("PER");
   const dispatch = useContext(QRDataDispatchContext);
 
-  const updateQRData = useCallback(
-    (inputValue = finalOutput, encodingType = encoding) => {
-      const order = parseOrderJson(inputValue);
-      if (!order) return;
-      const output = encodeOrder(order, encodingType);
-      if (!output) return;
-      dispatch({
-        type: Actions.ChangeInput,
-        inputs: [output],
-      });
-    },
-    [dispatch, finalOutput, encoding]
-  );
-
-  useEffect(() => {
-    updateQRData();
-  }, [updateQRData]);
-
   const itemFieldNames = {
     orderKey: "i",
     variantKey: "v",
@@ -53,6 +35,32 @@ export default function DynamicOrderEditor() {
   };
 
   const finalOutput = buildFinalOrder(orderSchema, items, itemFieldNames);
+
+  const updateQRData = useCallback(
+    (
+      orderSchemaValue = orderSchema,
+      itemsValue = items,
+      encodingType = encoding
+    ) => {
+      const order = buildFinalOrder(
+        orderSchemaValue,
+        itemsValue,
+        itemFieldNames
+      );
+      if (!order) return;
+      const output = encodeOrder(order, encodingType, itemFieldNames);
+      if (!output) return;
+      dispatch({
+        type: Actions.ChangeInput,
+        inputs: [output],
+      });
+    },
+    [dispatch, orderSchema, items, encoding]
+  );
+
+  useEffect(() => {
+    updateQRData();
+  }, [updateQRData]);
 
   return (
     <div className="p-4 space-y-6">
@@ -65,23 +73,23 @@ export default function DynamicOrderEditor() {
       <div className="row">
         <DataMaskSelector />
       </div>
-                <label htmlFor="encoding">Encoding:</label>
-          <select
-            id="encoding"
-            value={encoding}
-            onChange={(e) => {
-              console.debug("handleChangeEncoding");
-              const newEncoding = e.target.value;
-              setEncoding(newEncoding);
-              updateQRData(input, newEncoding);
-            }}
-          >
-            {Encodings.map((encoding, idx) => (
-              <option key={encoding} value={encoding}>
-                {encoding}
-              </option>
-            ))}
-          </select>
+      <label htmlFor="encoding">Encoding:</label>
+      <select
+        id="encoding"
+        value={encoding}
+        onChange={(e) => {
+          console.debug("handleChangeEncoding");
+          const newEncoding = e.target.value;
+          setEncoding(newEncoding);
+          updateQRData(orderSchema, items, newEncoding);
+        }}
+      >
+        {Encodings.map((encoding, idx) => (
+          <option key={encoding} value={encoding}>
+            {encoding}
+          </option>
+        ))}
+      </select>
 
       <div className="border p-4 rounded">
         <h2 className="text-xl font-semibold mb-2">Order Fields</h2>
