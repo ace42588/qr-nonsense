@@ -49,11 +49,13 @@ function getAlignmentPatternPositions(version) {
 }
 
 function getBitsFromFormatInfo(ecLevel, mask) {
-  if (mask === -1) return 0x7fff;
+  console.debug("getBitsFromFormatInfo", { ecLevel, mask });
+  if (mask === -1) return 0x4000;
   const info = FORMAT_INFO_TABLE.filter(
     ({ formatInfo: { errorCorrectionLevel, dataMask } }) =>
-      errorCorrectionLevel === ecLevel && mask === dataMask
-  );
+      errorCorrectionLevel == ecLevel && mask == dataMask
+  )[0];
+  console.debug("getBitsFromFormatInfo", info);
   if (!info || !info.bits) throw new Error("Format information not found");
   return info.bits;
 }
