@@ -7,6 +7,7 @@ import {
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
+  OrderEncodingSelector
 } from "./Selectors";
 import { QRDataDispatchContext } from "../context/QRDataContext";
 import { encodeOrder, parseOrderJson } from "../utils/orderUtils";
@@ -82,23 +83,9 @@ export default function DynamicOrderEditor() {
       <div className="row">
         <DataMaskSelector />
       </div>
-      <label htmlFor="encoding">Encoding:</label>
-      <select
-        id="encoding"
-        value={encoding}
-        onChange={(e) => {
-          console.debug("handleChangeEncoding");
-          const newEncoding = e.target.value;
-          setEncoding(newEncoding);
-          updateQRData(orderSchema, items, newEncoding);
-        }}
-      >
-        {Encodings.map((encoding, idx) => (
-          <option key={encoding} value={encoding}>
-            {encoding}
-          </option>
-        ))}
-      </select>
+      <div className="row">
+        <OrderEncodingSelector encoding={encoding} setEncoding={encoding}/>
+      </div>
 
       <div className="border p-4 rounded">
         <h2 className="text-xl font-semibold mb-2">Order Fields</h2>
@@ -126,12 +113,7 @@ export default function DynamicOrderEditor() {
 }
 
 function buildFinalOrder(orderSchema, items, fieldNames) {
-  console.debug("buildFinalOrder", { orderSchema, items, fieldNames });
   const obj = schemaToObject(orderSchema);
-  console.debug("buildFinalOrder", { obj });
-  obj[fieldNames.orderKey] = items.map((item) => ({
-    [fieldNames.variantKey]: item.variant,
-    [fieldNames.quantityKey]: item.quantity,
-  }));
+  obj[fieldNames.orderKey] = items;
   return obj;
 }

@@ -9,7 +9,6 @@ import {
 } from "./components/Selectors";
 import InputForm from "./components/InputForm";
 import MerchForm from "./components/MerchForm";
-import SchemaBuilder from "./components/SchemaBuilder";
 import DynamicOrderEditor from "./components/OrderEditor";
 import VideoScanner from "./components/VideoScanner";
 import { QRDataProvider } from "./context/QRDataContext";
