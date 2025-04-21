@@ -17,10 +17,12 @@ export const encodeOrder = (order, encoding, itemFieldNames) => {
       );
       delete order[orderKey];
       
-      const data = `$1`;
-      for
+      let data = `$1`;
+      Object.values(order).forEach((v) => data = `${data}%${v}`);
+      data = `${data}%${encodedItems}$`;
+      
 
-      encodedOrder.data = `$1${platform}%${conferenceCode}%${transactionId}%${encodedItems}$`;
+      encodedOrder.data = data;
       break;
     }
     case "PER": {
