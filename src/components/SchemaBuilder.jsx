@@ -110,13 +110,22 @@ function FieldEditor({ field, path, onChange, onAddChild }) {
 
 // Utility functions
 function insertAtPath(schema, path, field) {
-  const lastKey = path.pop();
-  let obj = schema;
-  for (const key of path) obj = obj[key];
-  if (!obj[lastKey]) obj[lastKey] = [];
-  obj[lastKey].push(field);
-  return schema;
+  const newSchema = structuredClone(schema);
+
+  if (path.length === 0) return [...newSchema, field];
+
+  const lastKey = path[path.length - 1];
+  const parent = path.slice(0, -1).reduce((acc, key) => acc[key], newSchema);
+
+  if (!Array.isArray(parent[lastKey])) {
+    parent[lastKey] = [];
+  }
+
+  parent[lastKey].push(field);
+
+  return newSchema;
 }
+
 
 function updateAtPath(schema, path, updater) {
   const last = path[path.length - 1];
