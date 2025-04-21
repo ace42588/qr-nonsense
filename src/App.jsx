@@ -13,7 +13,7 @@ import SchemaBuilder from "./components/SchemaBuilder";
 import DynamicOrderEditor from "./components/OrderEditor";
 import VideoScanner from "./components/VideoScanner";
 import { QRDataProvider } from "./context/QRDataContext";
-import {QRMetaInfo}
+import QRMetaInfo from "./components/QRInfo";
 
 import "./styles/App.css";
 
@@ -45,6 +45,9 @@ export default function App() {
           <div className="column">
             <div className="row">
               <QRCodeCanvas />
+            </div>
+            <div className="row">
+              <QRMetaInfo />
             </div>
           </div>
         </div>

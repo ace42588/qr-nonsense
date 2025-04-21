@@ -1,4 +1,5 @@
 import * as BitPacked from "./BitPacked";
+import * as Modhex from "./ModHex";
 
 export const encodeOrder = (order, encoding, fieldNames) => {
   console.debug("encodeOrder", { order, encoding, fieldNames });

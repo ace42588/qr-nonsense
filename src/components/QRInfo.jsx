@@ -1,7 +1,10 @@
+import React from "react";
 import { useQRData } from "../context/QRDataContext";
 
 export default function QRMetaInfo() {
   const { calculatedVersion, calculatedDataMask } = useQRData();
+  
+  console.debug("QRMetaInfo",{calculatedVersion, calculatedDataMask })
 
   return (
     <div className="qr-meta-info">
