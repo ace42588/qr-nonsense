@@ -144,7 +144,7 @@ function generateQRCodeMatrix({
       return makeModule({ ...current, isMasked });
     });
     addFormatInfoModules(masked, errorCorrectionLevel, maskIndex);
-    return
+    return masked;
   }
 
   function addCodewords(matrix) {
