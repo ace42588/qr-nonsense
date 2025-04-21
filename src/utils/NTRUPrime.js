@@ -1,12 +1,13 @@
 const limit = 1024;
-const M = 256
+//const M = 256
 
-function encode(R, M) {
+function encode(R, M = 256) {
   if (M.length === 0) return [];
   let S = [];
 
   if (M.length === 1) {
-    let r = R[0], m = M[0];
+    let r = R[0],
+      m = M[0];
     while (m > 1) {
       S.push(r % 256);
       r = Math.floor(r / 256);
@@ -15,7 +16,8 @@ function encode(R, M) {
     return S;
   }
 
-  let R2 = [], M2 = [];
+  let R2 = [],
+    M2 = [];
 
   for (let i = 0; i < M.length - 1; i += 2) {
     let m = M[i] * M[i + 1];
@@ -37,7 +39,7 @@ function encode(R, M) {
   return S.concat(encode(R2, M2));
 }
 
-function decode(S, M) {
+function decode(S, M = 256) {
   if (M.length === 0) return [];
 
   if (M.length === 1) {
@@ -49,11 +51,13 @@ function decode(S, M) {
   }
 
   let k = 0;
-  let bottom = [], M2 = [];
+  let bottom = [],
+    M2 = [];
 
   for (let i = 0; i < M.length - 1; i += 2) {
     let m = M[i] * M[i + 1];
-    let r = 0, t = 1;
+    let r = 0,
+      t = 1;
     while (m >= limit) {
       r += S[k] * t;
       t *= 256;

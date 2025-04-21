@@ -3,6 +3,8 @@
 import React from "react";
 
 export default function ItemsEditor({ items, setItems, fieldNames }) {
+  console.debug("ItemsEditor", { items, setItems, fieldNames });
+  
   const handleItemChange = (index, key, value) => {
     setItems((prev) => {
       const next = [...prev];

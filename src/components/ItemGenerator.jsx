@@ -13,8 +13,8 @@ export default function ItemGenerator({ onGenerate, fieldNames }) {
       Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 
     const generated = Array.from({ length: count }, () => ({
-      variant: rand(variantLength, charset),
-      quantity: Math.floor(Math.random() * (maxQty - minQty + 1)) + minQty
+      [fieldNames.variantKey]: rand(variantLength, charset),
+      [fieldNames.quantityKey]: Math.floor(Math.random() * (maxQty - minQty + 1)) + minQty
     }));
 
     onGenerate(generated);
