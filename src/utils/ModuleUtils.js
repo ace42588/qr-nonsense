@@ -49,16 +49,13 @@ function getAlignmentPatternPositions(version) {
 }
 
 function getBitsFromFormatInfo(ecLevel, mask) {
-  if (mask === -1) return 0x77c4;
-  for (const entry of FORMAT_INFO_TABLE) {
-    if (
-      entry.formatInfo.errorCorrectionLevel === ecLevel &&
-      entry.formatInfo.dataMask === mask
-    ) {
-      return entry.bits;
-    }
-  }
-  throw new Error("Format information not found");
+  if (mask === -1) return 0x7fff;
+  const info = FORMAT_INFO_TABLE.filter(
+    ({ formatInfo: { errorCorrectionLevel, dataMask } }) =>
+      errorCorrectionLevel === ecLevel && mask === dataMask
+  );
+  if (!info || !info.bits) throw new Error("Format information not found");
+  return info.bits;
 }
 
 function computeBCH(bits, length) {
@@ -84,11 +81,12 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const size = matrix.length;
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
   source.value = formatInfo;
-  console.debug("addFormatInfoModules", {formatInfo});
+  console.debug("addFormatInfoModules", { formatInfo });
   const bits = formatInfo.toString(2);
-  const values = `${bits}${bits}`;
-  console.debug("addFormatInfoModules", {values});
-  const horizontal = [
+  const values = `${bits}`;
+  console.debug("addFormatInfoModules", { values });
+  // Horizontal
+  [
     { x: 0, y: 8 },
     { x: 1, y: 8 },
     { x: 2, y: 8 },
@@ -104,8 +102,12 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
     { x: size - 3, y: 8 },
     { x: size - 2, y: 8 },
     { x: size - 1, y: 8 },
-    ];
-  const vertical = [
+  ].forEach(
+    ({ x, y }, idx) =>
+      (matrix[y][x] = makeNonDataModule(values[idx], source, x, y))
+  );
+  // Vertical
+  [
     { x: 8, y: size - 1 },
     { x: 8, y: size - 2 },
     { x: 8, y: size - 3 },
@@ -121,12 +123,10 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
     { x: 8, y: 2 },
     { x: 8, y: 1 },
     { x: 8, y: 0 },
-  ];
-  // Tile the format bits
-  for (let i = 0; i < positions.length; i++) {
-    const { x, y } = positions[i];
-    matrix[y][x] = makeNonDataModule(values[i], source, x, y);
-  }
+  ].forEach(
+    ({ x, y }, idx) =>
+      (matrix[y][x] = makeNonDataModule(values[idx], source, x, y))
+  );
 
   // Add the dark module
   matrix[size - 8][8] = makeNonDataModule(1, "Dark Module", 8, size - 8);
