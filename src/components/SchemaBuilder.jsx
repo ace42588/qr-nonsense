@@ -110,7 +110,6 @@ function FieldEditor({ field, path, onChange, onAddChild }) {
 
 // Utility functions
 function insertAtPath(schema, path, field) {
-  console.debug("insertAtPath", {schema, path, field});
   const lastKey = path.pop();
   let obj = schema;
   for (const key of path) obj = obj[key];
