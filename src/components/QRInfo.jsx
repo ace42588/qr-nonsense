@@ -1,4 +1,3 @@
-import React from "react";
 import { useQRData } from "../context/QRDataContext";
 
 export default function QRMetaInfo() {
