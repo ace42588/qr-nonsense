@@ -15,10 +15,10 @@ import { Actions } from "../Constants";
 const Encodings = ["JSON", "Alphanumeric", "PER"];
 
 export default function DynamicOrderEditor() {
-  const mandatoryFieldNames = {
-    platform: "p",
-    conferenceCode: "cc",
-    transactionId: "txn",
+  const itemFieldNames = {
+    orderKey: "i",
+    variantKey: "v",
+    quantityKey: "q",
   };
   const [orderSchema, setOrderSchema] = useState([
     { label: "Platform", name: "p", type: "string", value: "A" },
@@ -26,18 +26,12 @@ export default function DynamicOrderEditor() {
     { label: "Transaction ID", name: "txn", type: "string", value: "99999" },
   ]);
   const [items, setItems] = useState([
-    { variant: 5432, quantity: 1 },
-    { variant: 6666, quantity: 3 },
-    { variant: 1234, quantity: 2 },
+    { [itemFieldNames.variantKey]: 5432, [itemFieldNames.quantityKey]: 1 },
+    { [itemFieldNames.variantKey]: 6666, [itemFieldNames.quantityKey]: 3 },
+    { [itemFieldNames.variantKey]: 1234, [itemFieldNames.quantityKey]: 2 },
   ]);
   const [encoding, setEncoding] = useState("PER");
   const dispatch = useContext(QRDataDispatchContext);
-
-  const itemFieldNames = {
-    orderKey: "i",
-    variantKey: "v",
-    quantityKey: "q",
-  };
 
   const requiredFieldNames = orderSchema.reduce((acc, field) => {
     if (field.label === "Platform") acc.platformKey = field.name;
