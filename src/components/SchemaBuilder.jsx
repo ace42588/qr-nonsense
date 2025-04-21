@@ -4,7 +4,6 @@ export default function SchemaBuilder() {
   const [schema, setSchema] = useState([]);
 
   const addField = (parentPath = []) => {
-    console.debug("addField");
     const field = {
       label: "",
       name: "",
@@ -13,6 +12,10 @@ export default function SchemaBuilder() {
       children: [],
     };
     updateSchema((s) => insertAtPath(s, parentPath, field));
+  };
+
+  const removeField = (path) => {
+    updateSchema((s) => removeAtPath(s, path));
   };
 
   const updateField = (path, key, val) => {
@@ -33,6 +36,7 @@ export default function SchemaBuilder() {
           path={[i]}
           onChange={updateField}
           onAddChild={addField}
+          onRemove={removeField}
         />
       ))}
       <button onClick={() => addField()} className="mt-4 text-blue-600">
@@ -40,15 +44,21 @@ export default function SchemaBuilder() {
       </button>
 
       <pre className="mt-4 bg-gray-100 p-2 whitespace-pre-wrap text-sm">
-        {JSON.stringify(schema, null, 2)}
+        {JSON.stringify(schemaToObject(schema), null, 2)}
       </pre>
     </div>
   );
 }
 
-function FieldEditor({ field, path, onChange, onAddChild }) {
+function FieldEditor({ field, path, onChange, onAddChild, onRemove }) {
   return (
     <div className="border p-2 mb-2 rounded">
+      <button
+        className="absolute top-1 right-1 text-red-500 text-sm"
+        onClick={() => onRemove(path)}
+      >
+        ✖
+      </button>
       <div className="flex gap-2 mb-2">
         <input
           className="border p-1"
@@ -93,6 +103,7 @@ function FieldEditor({ field, path, onChange, onAddChild }) {
                 path={[...path, "children", i]}
                 onChange={onChange}
                 onAddChild={onAddChild}
+                onRemove={onRemove}
               />
             ))}
             <button
@@ -126,10 +137,51 @@ function insertAtPath(schema, path, field) {
   return newSchema;
 }
 
-
 function updateAtPath(schema, path, updater) {
   const last = path[path.length - 1];
   const obj = path.slice(0, -1).reduce((acc, k) => acc[k], schema);
   obj[last] = updater(obj[last]);
   return schema;
+}
+
+function removeAtPath(schema, path) {
+  const clone = structuredClone(schema);
+
+  if (path.length === 1) {
+    // Top-level field
+    clone.splice(path[0], 1);
+    return clone;
+  }
+
+  const index = path[path.length - 1];
+  const parent = path.slice(0, -1).reduce((acc, key) => acc[key], clone);
+
+  if (Array.isArray(parent)) {
+    parent.splice(index, 1);
+  }
+
+  return clone;
+}
+
+function schemaToObject(schema) {
+  const result = {};
+
+  for (const field of schema) {
+    const { name, type, value, children } = field;
+
+    if (!name) continue;
+
+    if (type === "string") {
+      result[name] = value;
+    } else if (type === "number") {
+      result[name] = parseFloat(value);
+    } else if (type === "object") {
+      result[name] = schemaToObject(children || []);
+    } else if (type === "array") {
+      // Represent as array of 1 item with the shape defined by children
+      result[name] = [schemaToObject(children || [])];
+    }
+  }
+
+  return result;
 }
