@@ -143,7 +143,6 @@ function generateQRCodeMatrix({
       //console.debug("applyMask", {current});
       return makeModule({ ...current, isMasked });
     });
-    addFormatInfoModules(masked, errorCorrectionLevel, maskIndex);
     return masked;
   }
 

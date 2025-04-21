@@ -49,7 +49,7 @@ function getAlignmentPatternPositions(version) {
 }
 
 function getBitsFromFormatInfo(ecLevel, mask) {
-  if (mask === -1) return 0x1111;
+  if (mask === -1) return 0x77c4;
   for (const entry of FORMAT_INFO_TABLE) {
     if (
       entry.formatInfo.errorCorrectionLevel === ecLevel &&
@@ -84,10 +84,10 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const size = matrix.length;
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
   source.value = formatInfo;
-  //console.debug("addFormatInfoModules", {formatInfo});
+  console.debug("addFormatInfoModules", {formatInfo});
   const bits = formatInfo.toString(2);
   const values = `${bits}${bits}`;
-  //console.debug("addFormatInfoModules", {values});
+  console.debug("addFormatInfoModules", {values});
   const positions = [
     // Horizontal
     { x: 0, y: 8 },
