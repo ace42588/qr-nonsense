@@ -120,18 +120,24 @@ class Encoder {
    * @returns {object} An object with header and segments.
    */
   encode(data, inputEncoding) {
-    const segments = [...createSegments(data, this.mode, inputEncoding)];
+    let segments = [...createSegments(data, this.mode, inputEncoding)];
     const mode = {
-      type: "Mode Indicator",
+      id: getId(),
+      type: "modeIndicator",
       value: this.mode.bits,
       text: this.mode.name,
+      isHighlighted: false,
       length: 4,
     };
     const characterCount = {
-      type: "Character Count Indicator",
+      id: getId(),
+      type: "characterCountIndicator",
       value: data.length,
+      text: data.length,
       length: Encoder.computeIndicatorLength(segments.length, this.mode),
+      isHighlighted: false,
     };
+    segments = [mode, characterCount, ...segments];
 
     const bitMap = new Map();
     const segmentMap = new Map();
@@ -148,7 +154,7 @@ class Encoder {
       bits.forEach(({ id }) => bitMap.set(id, segment));
       return bits;
     });
-    const bits = [...modeBits, ...charCountBits, ...segmentBits];
+    const bits = [...segmentBits];
     //mode.bitIds = modeBits.map(({ id }) => id);
     //characterCount.bitIds = charCountBits.map(({ id }) => id);
     //segments.bitIds = segmentBits.map(({ id }) => id);
