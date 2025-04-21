@@ -35,12 +35,12 @@ export function encode(order) {
   let hex = "";
   let headerBytes = buildHeader(transactionId, conferenceCode, platform);
   let itemsBytes = new Uint8Array(items.length * 3);
-  items.forEach(({ v, q }, j) => {
+  items.forEach(({ variant, quantity }, j) => {
     let idx = j * 3;
-    const variantNum = parseInt(v);
+    const variantNum = parseInt(variant);
     itemsBytes[idx] = variantNum & 0xff;
     itemsBytes[++idx] = (variantNum >> 8) & 0xff;
-    itemsBytes[++idx] = parseInt(q) & 0xff;
+    itemsBytes[++idx] = parseInt(quantity) & 0xff;
   });
 
   hex = headerBytes.reduce((acc, curr) => {

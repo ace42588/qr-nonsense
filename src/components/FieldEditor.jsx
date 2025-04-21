@@ -11,7 +11,9 @@ export default function FieldEditor({
 
   return (
     <div className="border p-2 mb-2 rounded relative bg-white">
-      <button
+      {!["Platform", "Conference Code", "Transaction ID"].includes(
+          field.label
+        ) && (<button
         className="absolute top-1 right-1 text-red-500 text-sm"
         onClick={() => {
           const mandatoryLabels = [
@@ -23,7 +25,7 @@ export default function FieldEditor({
         }}
       >
         ✖
-      </button>
+      </button>)}
 
       <div className="flex gap-2 mb-2">
         {["Platform", "Conference Code", "Transaction ID"].includes(
