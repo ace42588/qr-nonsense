@@ -30,32 +30,35 @@ export default function DynamicOrderEditor() {
       ]
     }
   ]);
+  const [encoding, setEncoding] = useState("PER");
+  const dispatch = useContext(QRDataDispatchContext);
+  
   const itemFieldNames = {
     orderKey: "i",
     variantKey: "v",
     quantityKey: "q",
   };
-  const [orderSchema, setOrderSchema] = useState([
-    { label: "Platform", name: "p", type: "string", value: "A" },
-    { label: "Conference Code", name: "cc", type: "number", value: "133" },
-    { label: "Transaction ID", name: "txn", type: "string", value: "99999" },
-  ]);
-  const [items, setItems] = useState([
-    { [itemFieldNames.variantKey]: 5432, [itemFieldNames.quantityKey]: 1 },
-    { [itemFieldNames.variantKey]: 6666, [itemFieldNames.quantityKey]: 3 },
-    { [itemFieldNames.variantKey]: 1234, [itemFieldNames.quantityKey]: 2 },
-  ]);
-  const [encoding, setEncoding] = useState("PER");
-  const dispatch = useContext(QRDataDispatchContext);
-
+  
   const requiredFieldNames = orderSchema.reduce((acc, field) => {
     if (field.label === "Platform") acc.platformKey = field.name;
     if (field.label === "Conference Code") acc.conferenceKey = field.name;
     if (field.label === "Transaction ID") acc.transactionKey = field.name;
+    if (field.label === "Items") acc.itemsKey = field.name;
+    if (field.label === "Variant") acc.variantKey = field.name;
+    if (field.label === "Quantity") acc.quantityKey = field.name;
     return acc;
   }, {});
+  
 
-  const finalOutput = buildFinalOrder(orderSchema, items, itemFieldNames);
+  const variantKey = requiredFieldNames.variantKey;
+  const quantityKey = requiredFieldNames.quantityKey;
+  const [items, setItems] = useState([
+    { [requiredFieldNames.variantKey]: 5432, [requiredFieldNames.quantityKey]: 1 },
+    { [requiredFieldNames.variantKey]: 6666, [requiredFieldNames.quantityKey]: 3 },
+    { [requiredFieldNames.variantKey]: 1234, [requiredFieldNames.quantityKey]: 2 },
+  ]);
+
+  const finalOutput = buildFinalOrder(orderSchema, items, requiredFieldNames);
 
   const updateQRData = useCallback(
     (
