@@ -84,7 +84,7 @@ export default function DynamicOrderEditor() {
         <DataMaskSelector />
       </div>
       <div className="row">
-        <OrderEncodingSelector encoding={encoding} setEncoding={encoding}/>
+        <OrderEncodingSelector encoding={encoding} setEncoding={setEncoding}/>
       </div>
 
       <div className="border p-4 rounded">

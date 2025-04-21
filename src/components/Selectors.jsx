@@ -146,12 +146,11 @@ export function DataMaskSelector() {
   );
 }
 
-const Encodings = ["JSON", "Alphanumeric", "PER", "PER-MODHEX"];
+const Encodings = ["JSON", "Alphanumeric", "PER", "PER-ModHex"];
 export function OrderEncodingSelector({ encoding, setEncoding, onChange }) {
   const handleChange = (e) => {
     const newEncoding = e.target.value;
     setEncoding(newEncoding);
-    onChange(newEncoding);
   };
 
   return (

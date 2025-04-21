@@ -48,10 +48,10 @@ export default function App() {
             <div className="row">
               <QRMetaInfo />
             </div>
+            <div className="row">
+              <SegmentDisplay />
+            </div>
           </div>
-        </div>
-        <div className="row">
-          <SegmentDisplay />
         </div>
       </QRDataProvider>
     </div>

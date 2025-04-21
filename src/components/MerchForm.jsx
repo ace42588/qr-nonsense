@@ -11,8 +11,6 @@ import { Actions } from "../Constants";
 
 import { encodeOrder, parseOrderJson } from "../utils/orderUtils";
 
-const Encodings = ["JSON", "Alphanumeric", "PER"];
-
 export default function MerchForm() {
   const [input, setInput] = useState(sampleInput);
   const [encoding, setEncoding] = useState("PER");
@@ -49,23 +47,10 @@ export default function MerchForm() {
       </div>
       <div className="row">
         <div key={0} className="input-group">
-          <label htmlFor="encoding">Encoding:</label>
-          <select
-            id="encoding"
-            value={encoding}
-            onChange={(e) => {
-              console.debug("handleChangeEncoding");
-              const newEncoding = e.target.value;
-              setEncoding(newEncoding);
-              updateQRData(input, newEncoding);
-            }}
-          >
-            {Encodings.map((encoding, idx) => (
-              <option key={encoding} value={encoding}>
-                {encoding}
-              </option>
-            ))}
-          </select>
+          <OrderEncodingSelector
+            encoding={encoding}
+            setEncoding={setEncoding}
+          />
           {}
           <textarea
             type="text"

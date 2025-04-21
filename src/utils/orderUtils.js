@@ -26,8 +26,18 @@ export const encodeOrder = (order, encoding, fieldNames) => {
       break;
     }
     case "PER": {
+      const data = BitPacked.encode(stdOrder);
+      console.debug("PER-ModHex", {data});
       encodedOrder.encoding = "hex";
       encodedOrder.mode = "byte";
+      encodedOrder.data = BitPacked.encode(stdOrder);
+      break;
+    }
+    case "PER-ModHex": {
+      const data = BitPacked.encode(stdOrder);
+      console.debug("PER-ModHex", {data});
+      encodedOrder.encoding = "modHex";
+      encodedOrder.mode = "alphanumeric";
       encodedOrder.data = BitPacked.encode(stdOrder);
       break;
     }
