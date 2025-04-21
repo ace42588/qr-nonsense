@@ -6,6 +6,7 @@ export const encodeOrder = (order, encoding, itemFieldNames) => {
   let encodedOrder = {};
   switch (encoding) {
     case "Alphanumeric": {
+       encodedOrder.mode = "alphanumeric";
       // ENCAPSULATOR = "$";
       // FIELD_SEPARATOR = "%";
       // QTY_SEPARATOR = ":";
@@ -14,7 +15,11 @@ export const encodeOrder = (order, encoding, itemFieldNames) => {
         (str, { v, q }) => `${str}${v}:${q}/`,
         ""
       );
-      encodedOrder.mode = "alphanumeric";
+      delete order[orderKey];
+      
+      const data = `$1`;
+      for
+
       encodedOrder.data = `$1${platform}%${conferenceCode}%${transactionId}%${encodedItems}$`;
       break;
     }
