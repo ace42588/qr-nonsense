@@ -10,22 +10,25 @@ export default function SegmentDisplay({ bitStream }) {
   const handleSegmentClick = (segmentId) => {
     dispatch({
       type: Actions.HighlightModules,
-      segment: {id: segmentId}
+      segment: { id: segmentId },
     });
+  };
+
+  const getClassName = (type, isHighlighted) => {
+    return `${type}-button${isHighlighted ? "-highlighted" : ""}`;
   };
 
   return (
     <div className="segment-display">
       <h3>Segments</h3>
       <div className="segment-container">
-        {segments.map(({id, type, text, isHighlighted}, index) => (
+        {segments.map(({ id, type, text, isHighlighted }, index) => (
           <button
             key={id}
-            className={isHighlighted ? "segment-button-highlighted": "segment-button" }
+            className={getClassName(type, isHighlighted)}
             onClick={() => handleSegmentClick(id)}
-            title={`Segment ${index + 1}`}
+            title={`Segment ${id}`}
           >
-            {type !== "segment"}
             {text}
           </button>
         ))}
