@@ -61,6 +61,7 @@ export default function DynamicOrderEditor() {
       dataValue = data,
       encodingType = encoding
     ) => {
+      console.debug("updateQRData", {orderSchemaValue, })
       const output = encodeOrder(data, encodingType, requiredFieldNames);
       if (!output) return;
       dispatch({
@@ -80,6 +81,7 @@ export default function DynamicOrderEditor() {
       <div className="p-4 space-y-6">
         <h2 className="text-xl font-semibold">Schema Builder</h2>
         <SchemaEditor />
+        <ItemGenerator />
         <div className="border p-4 mt-4 rounded bg-gray-100">
           <h2 className="text-lg font-semibold mb-2">Output</h2>
           <pre className="text-sm whitespace-pre-wrap">

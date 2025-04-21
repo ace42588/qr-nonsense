@@ -2,27 +2,33 @@
 import React, { useState } from "react";
 import { useSchemaContext } from "../context/SchemaContext";
 
-export default function ItemGenerator({ onGenerate, fieldNames }) {
+export default function ItemGenerator() {
+  const { schema, setSchema, requiredFieldNames } = useSchemaContext();
+
   const [count, setCount] = useState(5);
   const [variantLength, setVariantLength] = useState(4);
   const [charset, setCharset] = useState("0123456789");
   const [minQty, setMinQty] = useState(1);
   const [maxQty, setMaxQty] = useState(5);
 
-  const generateItems = () => {
-    const rand = (len, chars) =>
-      Array.from(
-        { length: len },
-        () => chars[Math.floor(Math.random() * chars.length)]
-      ).join("");
+  const generateVariant = () =>
+    Array.from({ length: variantLength }, () =>
+      charset.charAt(Math.floor(Math.random() * charset.length))
+    ).join("");
 
-    const generated = Array.from({ length: count }, () => ({
-      [fieldNames.variantKey]: rand(variantLength, charset),
-      [fieldNames.quantityKey]:
+  const generateItems = () => {
+    const newItems = Array.from({ length: count }, () => ({
+      [requiredFieldNames.variantKey]: generateVariant(),
+      [requiredFieldNames.quantityKey]:
         Math.floor(Math.random() * (maxQty - minQty + 1)) + minQty,
     }));
 
-    onGenerate(generated);
+    setSchema((prev) => {
+      const clone = structuredClone(prev);
+      const itemsField = clone.find((f) => f.label === "Items");
+      if (itemsField) itemsField.children = newItems;
+      return clone;
+    });
   };
 
   return (
