@@ -10,10 +10,12 @@ import {
   OrderEncodingSelector,
 } from "./Selectors";
 import { QRDataDispatchContext } from "../context/QRDataContext";
-import { encodeOrder, parseOrderJson } from "../utils/orderUtils";
+import { encodeOrder } from "../utils/orderUtils";
 import { Actions } from "../Constants";
 
 export default function DynamicOrderEditor() {
+  const [encoding, setEncoding] = useState("PER");
+  const dispatch = useContext(QRDataDispatchContext);
   const [orderSchema, setOrderSchema] = useState([
     { label: "Platform", name: "p", type: "string", value: "A" },
     { label: "Conference Code", name: "cc", type: "number", value: "133" },
@@ -28,26 +30,34 @@ export default function DynamicOrderEditor() {
       ],
     },
   ]);
-  const [encoding, setEncoding] = useState("PER");
-  const dispatch = useContext(QRDataDispatchContext);
 
-  const requiredFieldNames = orderSchema.reduce((acc, field) => {
-    if (field.label === "Platform") acc.platformKey = field.name;
-    if (field.label === "Conference Code") acc.conferenceKey = field.name;
-    if (field.label === "Transaction ID") acc.transactionKey = field.name;
-    if (field.label === "Items") acc.itemsKey = field.name;
-    if (field.label === "Variant") acc.variantKey = field.name;
-    if (field.label === "Quantity") acc.quantityKey = field.name;
-    return acc;
-  }, {});
+  const requiredFieldNames = {};
+  function traverseFields(fields) {
+    for (const field of fields) {
+      if (field.label === "Platform")
+        requiredFieldNames.platformKey = field.name;
+      if (field.label === "Conference Code")
+        requiredFieldNames.conferenceKey = field.name;
+      if (field.label === "Transaction ID")
+        requiredFieldNames.transactionKey = field.name;
+      if (field.label === "Items") requiredFieldNames.itemsKey = field.name;
+      if (field.label === "Variant") requiredFieldNames.variantKey = field.name;
+      if (field.label === "Quantity")
+        requiredFieldNames.quantityKey = field.name;
+      if (Array.isArray(field.children)) traverseFields(field.children);
+    }
+  }
+  traverseFields(orderSchema);
 
   const variantKey = requiredFieldNames.variantKey;
   const quantityKey = requiredFieldNames.quantityKey;
+  console.debug("DynamicOrderEditor",{variantKey,quantityKey});
   const [items, setItems] = useState([
     { [variantKey]: 5432, [quantityKey]: 1 },
     { [variantKey]: 6666, [quantityKey]: 3 },
     { [variantKey]: 1234, [quantityKey]: 2 },
   ]);
+    console.debug("DynamicOrderEditor",{items});
 
   const finalOutput = buildFinalOrder(orderSchema, items, requiredFieldNames);
 
