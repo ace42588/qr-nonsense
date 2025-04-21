@@ -3,7 +3,7 @@ import {
   FINDER_PATTERN,
   FORMAT_INFO_TABLE,
   VERSION_INFO,
-} from "../Constants";
+} from "./Constants";
 
 export function makeModule({ bit, x, y, isMasked }) {
   //console.debug("makeModule", arguments);

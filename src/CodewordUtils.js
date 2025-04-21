@@ -1,8 +1,8 @@
 import { CodewordLength } from "../Constants";
-import { ReedSolomonEncoder } from "../reedsolomon/index.js";
+import { ReedSolomonEncoder } from "./reedsolomon/index.js";
 import { getBits } from "./BitUtils";
 import { gerVersionInfo } from "./QRUtils";
-import { finalizeEncoding } from "../Encoders";
+import { finalizeEncoding } from "./Encoders";
 
 let lastCodewordId = 0;
 
