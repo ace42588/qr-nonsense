@@ -6,13 +6,21 @@ import ItemGenerator from "./ItemGenerator";
 import { schemaToObject } from "../utils/schemaUtils";
 
 export default function DynamicOrderEditor() {
-  const [orderSchema, setOrderSchema] = useState([]);
-  const [items, setItems] = useState([]);
+  const [orderSchema, setOrderSchema] = useState([
+    { label: "Platform", name: "p", type: "string", value: "A" },
+    { label: "Conference Code", name: "cc", type: "number", value: "133" },
+    { label: "Transaction ID", name: "txn", type: "string", value: "99999" }
+  ]);
+  const [items, setItems] = useState([
+    { variant: 5432, quantity: 1 },
+    { variant: 6666, quantity: 3 },
+    { variant: 1234, quantity: 2 }
+  ]);
 
   const itemFieldNames = {
-    orderKey: "items",
-    variantKey: "variant",
-    quantityKey: "quantity"
+    orderKey: "i",
+    variantKey: "v",
+    quantityKey: "q"
   };
 
   const finalOutput = buildFinalOrder(orderSchema, items, itemFieldNames);
@@ -33,7 +41,7 @@ export default function DynamicOrderEditor() {
           setItems={setItems}
           fieldNames={itemFieldNames}
         />
-        <ItemGenerator onGenerate={setItems} />
+        <ItemGenerator onGenerate={setItems} fieldNames={itemFieldNames} />
       </div>
 
       <div className="border p-4 rounded bg-gray-100">
