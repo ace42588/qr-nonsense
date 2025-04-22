@@ -60,7 +60,12 @@ export const encodeOrder = (order, encoding, fieldNames) => {
     }
     case "PER-NTRU": {
       let data = BitPacked.encode(stdOrder);
-      console.debug("PER-NTRU", { data });
+      const bytes = [];
+      for (let i = 0; i < data.length; i += 2) {
+        const hex = data.substring(i, i + 2);
+        bytes.push(parseInt(data.substring(i, i + 2), 16));
+      }
+      console.debug("PER-NTRU", { bytes });
       const ntru = NTRU.encode(parseInt(data, 16));
       console.debug("PER-ModHex", { data, ntru });
       encodedOrder.encoding = "ntru";

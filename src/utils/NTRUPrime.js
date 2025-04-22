@@ -1,6 +1,11 @@
 const limit = 1024;
 //const M = 256
 
+// const len = 256
+const len = 10;
+// const maxNum = 255;
+const maxNum = 9;
+
 export function encode(R, M = 256) {
   if (M.length === 0) return [];
   let S = [];
@@ -9,9 +14,9 @@ export function encode(R, M = 256) {
     let r = R[0],
       m = M[0];
     while (m > 1) {
-      S.push(r % 256);
-      r = Math.floor(r / 256);
-      m = Math.floor((m + 255) / 256);
+      S.push(r % len);
+      r = Math.floor(r / len);
+      m = Math.floor((m + maxNum) / len);
     }
     return S;
   }
@@ -23,9 +28,9 @@ export function encode(R, M = 256) {
     let m = M[i] * M[i + 1];
     let r = R[i] + M[i] * R[i + 1];
     while (m >= limit) {
-      S.push(r % 256);
-      r = Math.floor(r / 256);
-      m = Math.floor((m + 255) / 256);
+      S.push(r % len);
+      r = Math.floor(r / len);
+      m = Math.floor((m + maxNum) / len);
     }
     R2.push(r);
     M2.push(m);
@@ -45,7 +50,7 @@ export function decode(S, M = 256) {
   if (M.length === 1) {
     let value = 0;
     for (let i = S.length - 1; i >= 0; i--) {
-      value = value * 256 + S[i];
+      value = value * len + S[i];
     }
     return [value % M[0]];
   }
@@ -60,9 +65,9 @@ export function decode(S, M = 256) {
       t = 1;
     while (m >= limit) {
       r += S[k] * t;
-      t *= 256;
+      t *= len;
       k += 1;
-      m = Math.floor((m + 255) / 256);
+      m = Math.floor((m + maxNum) / len);
     }
     bottom.push([r, t]);
     M2.push(m);
