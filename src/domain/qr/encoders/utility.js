@@ -81,6 +81,11 @@ function createMaps(segment) {
   const segmentMap = new Map();
   
   const modeBits = getBits(mode.value, mode.length);
+  const charCountBits = getBits(characterCount.value, characterCount.length);
+  const codonBits = codons.flatMap((c) => {
+    const bits = getBits(c.value, c.length);
+    return bits;
+  });
   
   const segmentBits = segment.flatMap((obj) => {
       const bits = getBits(obj.value, obj.length);
