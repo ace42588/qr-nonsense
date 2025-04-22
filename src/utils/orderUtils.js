@@ -65,12 +65,13 @@ export const encodeOrder = (order, encoding, fieldNames) => {
         const hex = data.substring(i, i + 2);
         bytes.push(parseInt(data.substring(i, i + 2), 16));
       }
-      console.debug("PER-NTRU", { bytes });
-      const ntru = NTRU.encode(parseInt(data, 16));
-      console.debug("PER-ModHex", { data, ntru });
+      const moduli = bytes.map(() => 256);
+      console.debug("PER-NTRU", { bytes, moduli });
+      const encoded = NTRU.encode(bytes, moduli);
+      console.debug("PER-ModHex", { data, encoded });
       encodedOrder.encoding = "ntru";
       encodedOrder.mode = "alphanumeric";
-      encodedOrder.data = ntru;
+      encodedOrder.data = encoded.join("");
       break;
     }
     default: {

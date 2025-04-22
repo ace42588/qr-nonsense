@@ -6,38 +6,45 @@ const len = 10;
 // const maxNum = 255;
 const maxNum = 9;
 
-export function encode(R, M = 256) {
+
+/**
+ * Encode a list of base-256 digits into a compact stream of decimal digits.
+ * 
+ * @param {number[]} R - List of integers representing base-256 input bytes.
+ * @param {number[]} M - List of moduli (usually [256, 256, ..., 256]).
+ * @returns {number[]} - List of decimal digits (0–9).
+ */
+
+export function encode(R, M) {
   if (M.length === 0) return [];
-  let S = [];
+
+  const S = [];
 
   if (M.length === 1) {
-    let r = R[0],
-      m = M[0];
+    let r = R[0], m = M[0];
     while (m > 1) {
-      S.push(r % len);
-      r = Math.floor(r / len);
-      m = Math.floor((m + maxNum) / len);
+      S.push(r % 10);
+      r = Math.floor(r / 10);
+      m = Math.floor((m + 9) / 10);
     }
     return S;
   }
 
-  let R2 = [],
-    M2 = [];
-
+  const R2 = [], M2 = [];
   for (let i = 0; i < M.length - 1; i += 2) {
     let m = M[i] * M[i + 1];
     let r = R[i] + M[i] * R[i + 1];
     while (m >= limit) {
-      S.push(r % len);
-      r = Math.floor(r / len);
-      m = Math.floor((m + maxNum) / len);
+      S.push(r % 10);
+      r = Math.floor(r / 10);
+      m = Math.floor((m + 9) / 10);
     }
     R2.push(r);
     M2.push(m);
   }
 
   if (M.length % 2 === 1) {
-    R2.push(R[R.length - 1]);
+    R2.push(R[M.length - 1]);
     M2.push(M[M.length - 1]);
   }
 
