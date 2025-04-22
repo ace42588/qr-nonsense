@@ -47,8 +47,10 @@ export function schemaToObject(schema) {
       result[name] = schemaToObject(children || []);
     } else if (type === "array") {
       // Check if children are objects
-      if ((children || []).every(c => c.type === "object")) {
-        result[name] = children.map(item => schemaToObject(item.children || []));
+      if ((children || []).every((c) => c.type === "object")) {
+        result[name] = children.map((item) =>
+          schemaToObject(item.children || [])
+        );
       } else {
         // fallback: single object describing structure
         result[name] = [schemaToObject(children || [])];
