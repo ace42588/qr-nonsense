@@ -13,5 +13,5 @@ function encoder(data) {
   };
 }
 
-const itrFn = (data, mode) => createNonByte(data, mode, encoder);
+const itrFn = (data) => createNonByte(data, mode, encoder);
 const encodeNumeric = (input) => encodeSegment(input, mode, itrFn);

@@ -1,7 +1,6 @@
 import encodeNumeric from "./numeric";
 import encodeAlphanumeric from "./alphanumeric";
 import encodeByte from "./byte";
-import encodeSegment from "./utility.js"
 
 export function encodeInput(mode, input, options = {}) {
   switch (mode) {
@@ -15,5 +14,4 @@ export function encodeInput(mode, input, options = {}) {
     default:
       throw new Error(`Unsupported QR encoding mode: ${mode}`);
   }
-  encodeSegment()
 }

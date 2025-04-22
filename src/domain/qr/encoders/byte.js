@@ -8,7 +8,7 @@ const createByte = (value, text, inputEncoding = "utf-8") => {
   return { ...codon, inputEncoding };
 };
 
-export function* encodeByte(data, options) {
+export function* iteratorFunc(data, options) {
   let { inputEncoding } = options;
 
   switch (inputEncoding) {
@@ -30,5 +30,5 @@ export function* encodeByte(data, options) {
   }
 }
 
-const itrFn = (data, mode) => createNonByte(data, mode, encoder);
-const encodeAlphanumeric = (input) => encodeSegment(input, mode, itrFn);
+const encodeAlphanumeric = (input, options) =>
+  encodeSegment(input, mode, (data) => iteratorFunc(data, options));

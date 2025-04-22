@@ -77,7 +77,7 @@ function createMaps(segment) {
 }
 
 export function encodeSegment(data, inputMode, codonItrFn) {
-  const codons = [...codonItrFn(data, inputMode)];
+  const codons = [...codonItrFn(data)];
   const mode = createModeIndicator(inputMode);
   const characterCount = createCharacterCountIndicator(data, codons, inputMode);
   const segment = { mode, characterCount, ...codons };
@@ -95,39 +95,36 @@ export function encodeSegment(data, inputMode, codonItrFn) {
 }
 
 export function* createNonByte(input, mode, encoderFn) {
-    const groups = input.match(mode.groupingRegex);
-    if (!groups) {
-      throw new Error(`Invalid input for ${mode.name} encoder: ${input}`);
-    }
-    for (let i = 0; i < groups.length; i++) {
-      //yield new SegmentClass(groups[i], i, parentId);
-      const { value, length } = encoderFn(groups[i]);
-      yield createCodon(value, groups[i], mode.name, length);
-    }
+  const groups = input.match(mode.groupingRegex);
+  if (!groups) {
+    throw new Error(`Invalid input for ${mode.name} encoder: ${input}`);
+  }
+  for (let i = 0; i < groups.length; i++) {
+    //yield new SegmentClass(groups[i], i, parentId);
+    const { value, length } = encoderFn(groups[i]);
+    yield createCodon(value, groups[i], mode.name, length);
+  }
 }
 
-export function finalizeEncoding(encodedInputs, requiredDataCodewords) {
-  //console.debug("finalizeEncoding", { encodedInputs });
-  let bits = encodedInputs.flatMap(({ bits }) => bits);
+export function finalizeEncoding(segments, requiredDataCodewords) {
+  let bits = segments.flatMap(({ bitMap }) => [...bitMap.keys]);
   // Add terminator bits, based on version capacity
   const numTermBits = getTerminatorLength(requiredDataCodewords, bits.length);
   const termBits = getBits(0, numTermBits);
   bits = [...bits, ...termBits];
-  //console.debug("finalizeEncoding", { termBits, bits });
+
   // add filler bits to complete the last codeword
   const remainder = bits.length % CodewordLength;
   const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
   const fillBits = getBits(0, numFillBits);
   bits = [...bits, ...fillBits];
-  //console.debug("finalizeEncoding", { remainder, numFillBits, fillBits, bits });
+
   // add padding to fill the capacity
   const numPadBytes =
     requiredDataCodewords - Math.ceil(bits.length / CodewordLength);
-  const padBytes = Array.from({ length: numPadBytes }, (_, i) => {
-    const byte = PAD_BYTES[i % 2];
-    return getBits(byte, 8);
-  });
-  bits = [...bits, ...padBytes.flat()];
-  //console.debug("finalizeEncoding", { padBytes, bits });
-  return bits;
+  const padBytes = Array.from({ length: numPadBytes }, (_, i) =>
+    getBits(PAD_BYTES[i % 2], 8)
+  );
+
+  return [...bits, ...padBytes.flat()];
 }
