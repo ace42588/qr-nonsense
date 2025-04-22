@@ -74,7 +74,7 @@ function createCharacterCountIndicator(data, codons, mode) {
     };
 }
 
-function createBitMaps(segment) {
+function createMaps(segment) {
   const segmentBits = segment.flatMap((obj) => {
       const bits = getBits(obj.value, obj.length);
     obj.bits = bits
