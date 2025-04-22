@@ -1,4 +1,4 @@
-import { MODE, AlphaNumCharMap, CodewordLength, PAD_BYTES } from "./Constants";
+import { CodewordLength, PAD_BYTES } from "./Constants";
 import { getBits } from "./BitUtils";
 
 let lastSegmentId = 0;
@@ -36,7 +36,7 @@ function getTerminatorLength(capacityBytes, totalDataBits) {
   return Math.min(4, Math.max(0, capacityBits - totalDataBits));
 }
 
-function createCodon(value, text, inputMode, length) {
+export function createCodon(value, text, inputMode, length) {
   return {
     type: "codon",
     value,
