@@ -1,6 +1,5 @@
 import { MODE, AlphaNumCharMap, CodewordLength, PAD_BYTES } from "./Constants";
 import { getBits } from "./BitUtils";
-import { getRequiredDataCodewords } from "./CodewordUtils";
 
 let lastSegmentId = 0;
 
