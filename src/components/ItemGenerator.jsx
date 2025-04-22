@@ -18,46 +18,27 @@ export default function ItemGenerator() {
 
   const generateItems = () => {
     const variantFieldType = (() => {
-      const itemsField = schema.find((f) => f.label === "Items");
+      const itemsField = schema.find(f => f.label === "Items");
       if (!itemsField || !Array.isArray(itemsField.children)) return "string";
-      const variantField = itemsField.children.find(
-        (c) => c.label === "Variant"
-      );
+      const variantField = itemsField.children.find(c => c.label === "Variant");
       return variantField?.type || "string";
     })();
 
-    const newItems = Array.from({ length: count }, () => {
-      const variantValue =
+    const newItems = Array.from({ length: count }, () => ({
+      [requiredFieldNames.variantKey]:
         variantFieldType === "number"
           ? parseInt(generateVariant(), 10)
-          : generateVariant();
+          : generateVariant(),
+      [requiredFieldNames.quantityKey]:
+        Math.floor(Math.random() * (maxQty - minQty + 1)) + minQty,
+    }));
 
-      return {
-        type: "object",
-        children: [
-          {
-            name: requiredFieldNames.variantKey,
-            type: variantFieldType,
-            value: variantValue,
-          },
-          {
-            name: requiredFieldNames.quantityKey,
-            type: "number",
-            value: Math.floor(Math.random() * (maxQty - minQty + 1)) + minQty,
-          },
-        ],
-      };
-    });
-
-    setSchema((prev) => {
-      const clone = structuredClone(prev);
-      const itemsField = clone.find((f) => f.label === "Items");
-      if (itemsField) {
-        itemsField.children = newItems;
-      }
-      return clone;
-    });
+    setData((prev) => ({
+      ...prev,
+      [requiredFieldNames.itemsKey]: newItems.map(item => item)
+    }));
   };
+  
   return (
     <div className="mt-4 space-y-2">
       <h3 className="font-semibold">Auto-generate Items</h3>

@@ -30,11 +30,27 @@ const defaultSchema = [
   },
 ];
 
+const extractInitialData = (schema) => {
+  const obj = {};
+  for (const field of schema) {
+    if (!field.name) continue;
+    if (field.type === "string" || field.type === "number") {
+      obj[field.name] = field.type === "number" ? parseFloat(field.value) : field.value;
+    } else if (field.type === "object") {
+      obj[field.name] = extractInitialData(field.children || []);
+    } else if (field.type === "array") {
+      obj[field.name] = [extractInitialData(field.children || [])];
+    }
+  }
+  return obj;
+};
+
 export default function DynamicOrderEditor() {
   const [schema, setSchema] = useState(defaultSchema);
+  const [data, setData] = useState(() => extractInitialData(defaultSchema));
   const [encoding, setEncoding] = useState("PER");
   const dispatch = useContext(QRDataDispatchContext);
-
+  
   const getFieldNames = (schema) => {
     const result = {};
     const walk = (fields) => {
@@ -55,7 +71,7 @@ export default function DynamicOrderEditor() {
   };
 
   const requiredFieldNames = getFieldNames(schema);
-  const data = schemaToObject(schema);
+  
 
   const updateQRData = useCallback(
     (orderSchemaValue = schema, dataValue = data, encodingType = encoding) => {
@@ -79,7 +95,7 @@ export default function DynamicOrderEditor() {
   }, [updateQRData]);
 
   return (
-    <SchemaContext.Provider value={{ schema, setSchema, requiredFieldNames }}>
+    <SchemaContext.Provider value={{ schema, setSchema, data, setData, requiredFieldNames }}>
       <div className="p-4 space-y-6">
         <h2 className="text-xl font-semibold">Schema Builder</h2>
         <SchemaEditor />
