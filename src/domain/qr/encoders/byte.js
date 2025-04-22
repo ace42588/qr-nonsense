@@ -29,3 +29,6 @@ export function* encodeByte(data, options) {
     }
   }
 }
+
+const itrFn = (data, mode) => createNonByte(data, mode, encoder);
+const encodeAlphanumeric = (input) => encodeSegment(input, mode, itrFn);

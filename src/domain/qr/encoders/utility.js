@@ -76,7 +76,8 @@ function createMaps(segment) {
   return { bitMap, segmentMap };
 }
 
-export function encodeSegment(data, inputMode, codons) {
+export function encodeSegment(data, inputMode, codonItrFn) {
+  const codons = [...codonItrFn(data, inputMode)];
   const mode = createModeIndicator(inputMode);
   const characterCount = createCharacterCountIndicator(data, codons, inputMode);
   const segment = { mode, characterCount, ...codons };
@@ -88,13 +89,12 @@ export function encodeSegment(data, inputMode, codons) {
     mode,
     characterCount,
     segmentMap,
-    bits,
     bitMap,
   };
   return encoded;
 }
 
-export function* createNonByte(input, mode,  encoderFn) {
+export function* createNonByte(input, mode, encoderFn) {
     const groups = input.match(mode.groupingRegex);
     if (!groups) {
       throw new Error(`Invalid input for ${mode.name} encoder: ${input}`);

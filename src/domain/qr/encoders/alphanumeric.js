@@ -15,4 +15,5 @@ function encoder(data) {
   return { value, length };
 }
 
-const encodeAlphanumeric = (input) => createNonByte(input, mode, encoder);
+const itrFn = (data, mode) => createNonByte(data, mode, encoder);
+const encodeAlphanumeric = (input) => encodeSegment(input, mode, itrFn);
