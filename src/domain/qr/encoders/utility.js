@@ -48,26 +48,44 @@ function getTerminatorLength(capacityBytes, totalDataBits) {
   return Math.min(4, Math.max(0, capacityBits - totalDataBits));
 }
 
+function createCodon(value, text, inputMode, length) {
+  return {
+    type: "segment",
+    value,
+    text,
+    inputMode,
+    length: length || 8,
+  };
+}
 
-function encode(data, inputEncoding) {
-    let segments = [...createSegments(data, this.mode, inputEncoding)];
-    const mode = {
-      id: getId(),
-      type: "modeIndicator",
-      value: this.mode.bits,
-      text: this.mode.name,
-      isHighlighted: false,
-      length: 4,
-    };
+function createModeIndicator(mode) {
+  return {
+    type: "modeIndicator",
+    value: mode.bits,
+    text: mode.name,
+    length: 4,
+  };
+}
+
+function createCharacterCountIndicator() {
+  
+}
+
+function getSegmentBits(segment) {
+  
+}
+
+function encodeSegment(data, inputMode, codons) {
+    let segments = [...codons];
+    const mode = createModeIndicator(inputMode);
     const characterCount = {
       id: getId(),
       type: "characterCountIndicator",
       value: data.length,
       text: data.length,
-      length: Encoder.computeIndicatorLength(segments.length, this.mode),
-      isHighlighted: false,
+      length: computeIndicatorLength(codons.length, this.mode),
     };
-    segments = [mode, characterCount, ...segments];
+    const segment = [mode, characterCount, ...codons];
 
     const bitMap = new Map();
     const segmentMap = new Map();
