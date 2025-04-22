@@ -13,7 +13,6 @@ export const initialData = {
   matrix: null,
 };
 
-
 export function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
@@ -141,6 +140,20 @@ export function qrReducer(state, action) {
       return { ...state, calculatedVersion: action.payload };
     case "SET_SEGMENTS":
       return { ...state, segments: action.payload };
+    case "TOGGLE_HIGHLIGHT": // 🆕 toggle highlighting for a segment
+      return {
+        ...state,
+        segments: state.segments.map((s) =>
+          s.id === action.payload
+            ? { ...s, isHighlighted: !s.isHighlighted }
+            : s
+        ),
+      };
+    case "CLEAR_HIGHLIGHTS": // 🆕 reset all highlighting
+      return {
+        ...state,
+        segments: state.segments.map((s) => ({ ...s, isHighlighted: false })),
+      };
     case "SET_CODEWORDS":
       return { ...state, codewords: action.payload };
     default:

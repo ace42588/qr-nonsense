@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer } from "react";
+import { createContext, useCallback, useContext, useReducer } from "react";
 import { dataReducer, initialData } from "./qrReducer";
 
 const QRDataContext = createContext();
@@ -18,3 +18,21 @@ export function QRDataProvider({ children }) {
 
 export const useQRData = () => useContext(QRDataContext);
 export const useQRDataDispatch = () => useContext(QRDataDispatchContext);
+
+export const useQRSegments = () => {
+  const dispatch = useQRDataDispatch();
+
+  const setSegments = useCallback((segments) => {
+    dispatch({ type: "SET_SEGMENTS", payload: segments });
+  }, [dispatch]);
+
+  const toggleSegmentHighlight = useCallback((segmentId) => {
+    dispatch({ type: "TOGGLE_HIGHLIGHT", payload: segmentId });
+  }, [dispatch]);
+
+  const clearHighlights = useCallback(() => {
+    dispatch({ type: "CLEAR_HIGHLIGHTS" });
+  }, [dispatch]);
+
+  return { setSegments, toggleSegmentHighlight, clearHighlights };
+};

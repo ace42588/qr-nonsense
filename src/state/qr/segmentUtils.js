@@ -7,7 +7,7 @@ function getNextSegmentId() {
   return `segment-${lastSegmentId++}`;
 }
 
-function createSegment({ text, mode, rawBits }) {
+function createSegment({ text, mode, rawBits, moduleIndices = [] }) {
   const id = getNextSegmentId();
   const bits = rawBits.map((bit, idx) => ({
     bit,
@@ -19,6 +19,7 @@ function createSegment({ text, mode, rawBits }) {
     text,
     mode,
     bits,
+    moduleIndices,
     isHighlighted: false,
   };
 }
