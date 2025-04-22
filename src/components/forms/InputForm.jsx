@@ -3,7 +3,7 @@ import "../styles/styles.css"; // Import your component-specific styles
 
 import {ErrorCorrectionSelector, VersionSelector, DataMaskSelector} from "../selectors/Selectors";
 
-import { QRDataDispatchContext } from "../../state";
+import { useQRDataDispatch } from "../../state";
 import { Actions } from "../../domain/qr/Constants";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes

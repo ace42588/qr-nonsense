@@ -1,6 +1,4 @@
-import { BitPacked from "./BitPacked";
-import * as ModHex from "./ModHex";
-import * as NTRU from "./NTRUPrime";
+import { BitPacked, ModHex, NTRU } from "../domain/encoders";
 
 export const encodeOrder = (order, encoding, fieldNames) => {
   console.debug("encodeOrder", { order, encoding, fieldNames });

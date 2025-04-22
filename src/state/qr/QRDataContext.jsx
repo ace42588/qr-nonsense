@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useReducer } from "react";
 import { dataReducer, initialData } from "./qrReducer";
 
+//QRDataDispatchContext
 const QRDataContext = createContext();
 const QRDataDispatchContext = createContext();
 

@@ -6,7 +6,7 @@ import {
   VersionSelector,
   DataMaskSelector,
 } from "../selectors/Selectors";
-import { QRDataDispatchContext } from "../../state";
+import { useQRDataDispatch } from "../../state";
 import { Actions } from "../../domain/qr/Constants";
 
 import { encodeOrder, parseOrderJson } from "../../utils/orderUtils";
@@ -14,7 +14,7 @@ import { encodeOrder, parseOrderJson } from "../../utils/orderUtils";
 export default function MerchForm() {
   const [input, setInput] = useState(sampleInput);
   const [encoding, setEncoding] = useState("PER");
-  const dispatch = useContext(QRDataDispatchContext);
+  const dispatch = useQRDataDispatch();
 
   const updateQRData = useCallback(
     (inputValue = input, encodingType = encoding) => {

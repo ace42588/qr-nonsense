@@ -8,10 +8,10 @@ import {
   VersionSelector,
   DataMaskSelector,
   OrderEncodingSelector,
-} from "./Selectors";
-import { QRDataDispatchContext, SchemaContext } from "../../state";
+} from "../selectors/Selectors";
+import { useQRDataDispatch, SchemaContext } from "../../state";
 import { encodeOrder } from "../../utils/orderUtils";
-import { Actions } from "../Constants";
+import { Actions } from "../../domain/qr/Constants";
 
 const defaultSchema = [
   { label: "Platform", name: "p", type: "string", value: "A" },
@@ -48,7 +48,7 @@ export default function DynamicOrderEditor() {
   const [schema, setSchema] = useState(defaultSchema);
   const [data, setData] = useState(() => extractInitialData(defaultSchema));
   const [encoding, setEncoding] = useState("PER");
-  const dispatch = useContext(QRDataDispatchContext);
+  const dispatch = useQRDataDispatch();
 
   const getFieldNames = (schema) => {
     const result = {};
