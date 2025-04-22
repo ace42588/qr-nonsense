@@ -1,5 +1,6 @@
 import * as BitPacked from "./BitPacked";
 import * as ModHex from "./ModHex";
+import * as NTRU from "./NTRUPrime";
 
 export const encodeOrder = (order, encoding, fieldNames) => {
   console.debug("encodeOrder", { order, encoding, fieldNames });
@@ -7,7 +8,11 @@ export const encodeOrder = (order, encoding, fieldNames) => {
   let encodedOrder = {};
   switch (encoding) {
     case "Alphanumeric": {
-      console.debug("encodeOrder, Alphanumeric", {order, stdOrder, fieldNames});
+      console.debug("encodeOrder, Alphanumeric", {
+        order,
+        stdOrder,
+        fieldNames,
+      });
       const { itemsKey } = fieldNames;
       encodedOrder.mode = "alphanumeric";
       // ENCAPSULATOR = "$";
@@ -18,20 +23,24 @@ export const encodeOrder = (order, encoding, fieldNames) => {
         (str, { variant, quantity }) => `${str}${variant}:${quantity}/`,
         ""
       );
-      
-      console.debug("encodeOrder, Alphanumeric", {order, stdOrder, encodedItems});
+      delete stdOrder.items;
+      console.debug("encodeOrder, Alphanumeric", {
+        order,
+        stdOrder,
+        encodedItems,
+      });
 
       let data = `$1`;
       Object.values(stdOrder).forEach((v) => (data = `${data}%${v}`));
       data = `${data}%${encodedItems}$`;
-      
-      console.debug("encodeOrder, Alphanumeric", {data});
+
+      console.debug("encodeOrder, Alphanumeric", { data });
       encodedOrder.data = data;
       break;
     }
     case "PER": {
       const data = BitPacked.encode(stdOrder);
-      console.debug("PER-ModHex", {data});
+      console.debug("PER-ModHex", { data });
       encodedOrder.encoding = "hex";
       encodedOrder.mode = "byte";
       encodedOrder.data = BitPacked.encode(stdOrder);
@@ -39,13 +48,23 @@ export const encodeOrder = (order, encoding, fieldNames) => {
     }
     case "PER-ModHex": {
       let data = BitPacked.encode(stdOrder);
-      if ((data%2) === 1) data
-      console.debug("PER-ModHex", {data});
+      if (data % 2 === 1) data = "0" + data;
+      console.debug("PER-ModHex", { data });
       const modhex = ModHex.encode(data);
-      console.debug("PER-ModHex", {data, modhex});
+      console.debug("PER-ModHex", { data, modhex });
       encodedOrder.encoding = "modHex";
       encodedOrder.mode = "alphanumeric";
       encodedOrder.data = modhex;
+      break;
+    }
+    case "PER-NTRU": {
+      let data = BitPacked.encode(stdOrder);
+      console.debug("PER-NTRU", { data });
+      const ntru = NTRU.encode(data);
+      console.debug("PER-ModHex", { data, ntru });
+      encodedOrder.encoding = "ntru";
+      encodedOrder.mode = "alphanumeric";
+      encodedOrder.data = ntru;
       break;
     }
     default: {
@@ -81,7 +100,7 @@ function standardizeOrder(order, fieldNames) {
   delete stdOrder[conferenceKey];
   delete stdOrder[transactionKey];
   delete stdOrder[itemsKey];
-  
+
   return stdOrder;
 }
 
