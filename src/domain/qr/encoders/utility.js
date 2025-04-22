@@ -26,3 +26,16 @@ function makeSegment(value, text, inputMode) {
     length: 8,
   };
 }
+
+function computeIndicatorLength(charCount, mode) {
+    if (!mode.thresholds) {
+      throw new Error(
+        `Mode ${mode.toString()} does not support a character count indicator.`
+      );
+    }
+    const { thresholds } = mode;
+    for (const { max, length } of thresholds) {
+      if (charCount < max) return length;
+    }
+    return thresholds[thresholds.length - 1].length;
+  }
