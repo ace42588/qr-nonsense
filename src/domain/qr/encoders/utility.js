@@ -60,35 +60,33 @@ function createCodon(value, text, inputMode, length) {
 
 function createModeIndicator(mode) {
   return {
-    type: "modeIndicator",
     value: mode.bits,
     text: mode.name,
     length: 4,
   };
 }
 
-function createCharacterCountIndicator() {
-  
+function createCharacterCountIndicator(data, codons, mode) {
+  return {
+      value: data.length,
+      text: data.length,
+      length: computeIndicatorLength(codons.length, mode),
+    };
 }
 
-function getSegmentBits(segment) {
-  
+function createBitMaps(segment) {
+  const segmentBits = segment.flatMap((obj) => {
+      const bits = getBits(obj.value, obj.length);
+    obj.bits = bits
+      return bits;
+    });
 }
 
 function encodeSegment(data, inputMode, codons) {
-    let segments = [...codons];
     const mode = createModeIndicator(inputMode);
-    const characterCount = {
-      id: getId(),
-      type: "characterCountIndicator",
-      value: data.length,
-      text: data.length,
-      length: computeIndicatorLength(codons.length, this.mode),
-    };
-    const segment = [mode, characterCount, ...codons];
+    const characterCount = createCharacterCountIndicator(data, codons, inputMode);
+    const segment = { mode, characterCount, codons};
 
-    const bitMap = new Map();
-    const segmentMap = new Map();
 
     const modeBits = getBits(mode.value, mode.length);
     modeBits.forEach(({ id }) => bitMap.set(id, mode));
