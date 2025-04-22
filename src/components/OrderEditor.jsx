@@ -35,7 +35,8 @@ const extractInitialData = (schema) => {
   for (const field of schema) {
     if (!field.name) continue;
     if (field.type === "string" || field.type === "number") {
-      obj[field.name] = field.type === "number" ? parseFloat(field.value) : field.value;
+      obj[field.name] =
+        field.type === "number" ? parseFloat(field.value) : field.value;
     } else if (field.type === "object") {
       obj[field.name] = extractInitialData(field.children || []);
     } else if (field.type === "array") {
@@ -50,7 +51,7 @@ export default function DynamicOrderEditor() {
   const [data, setData] = useState(() => extractInitialData(defaultSchema));
   const [encoding, setEncoding] = useState("PER");
   const dispatch = useContext(QRDataDispatchContext);
-  
+
   const getFieldNames = (schema) => {
     const result = {};
     const walk = (fields) => {
@@ -71,7 +72,6 @@ export default function DynamicOrderEditor() {
   };
 
   const requiredFieldNames = getFieldNames(schema);
-  
 
   const updateQRData = useCallback(
     (orderSchemaValue = schema, dataValue = data, encodingType = encoding) => {
@@ -95,9 +95,25 @@ export default function DynamicOrderEditor() {
   }, [updateQRData]);
 
   return (
-    <SchemaContext.Provider value={{ schema, setSchema, data, setData, requiredFieldNames }}>
-      <div className="p-4 space-y-6">
-        <h2 className="text-xl font-semibold">Schema Builder</h2>
+    <SchemaContext.Provider
+      value={{ schema, setSchema, data, setData, requiredFieldNames }}
+    >
+      <div className="input-form">
+        <div className="row">
+          <ErrorCorrectionSelector />
+        </div>
+        <div className="row">
+          <VersionSelector />
+        </div>
+        <div className="row">
+          <DataMaskSelector />
+        </div>
+        <div>
+          <OrderEncodingSelector
+            encoding={encoding}
+            setEncoding={setEncoding}
+          />
+        </div>
         <SchemaEditor />
         <ItemGenerator />
         <div className="border p-4 mt-4 rounded bg-gray-100">

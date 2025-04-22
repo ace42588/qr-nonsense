@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useSchemaContext } from "../context/SchemaContext";
 
 export default function ItemGenerator() {
-  const { schema, setSchema, requiredFieldNames } = useSchemaContext();
+  const { schema, setData, requiredFieldNames } = useSchemaContext();
 
   const [count, setCount] = useState(5);
   const [variantLength, setVariantLength] = useState(4);
@@ -18,9 +18,11 @@ export default function ItemGenerator() {
 
   const generateItems = () => {
     const variantFieldType = (() => {
-      const itemsField = schema.find(f => f.label === "Items");
+      const itemsField = schema.find((f) => f.label === "Items");
       if (!itemsField || !Array.isArray(itemsField.children)) return "string";
-      const variantField = itemsField.children.find(c => c.label === "Variant");
+      const variantField = itemsField.children.find(
+        (c) => c.label === "Variant"
+      );
       return variantField?.type || "string";
     })();
 
@@ -35,10 +37,10 @@ export default function ItemGenerator() {
 
     setData((prev) => ({
       ...prev,
-      [requiredFieldNames.itemsKey]: newItems.map(item => item)
+      [requiredFieldNames.itemsKey]: newItems.map((item) => item),
     }));
   };
-  
+
   return (
     <div className="mt-4 space-y-2">
       <h3 className="font-semibold">Auto-generate Items</h3>

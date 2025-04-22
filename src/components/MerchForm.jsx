@@ -45,12 +45,11 @@ export default function MerchForm() {
       <div className="row">
         <DataMaskSelector />
       </div>
+      <div>
+        <OrderEncodingSelector encoding={encoding} setEncoding={setEncoding} />
+      </div>
       <div className="row">
         <div key={0} className="input-group">
-          <OrderEncodingSelector
-            encoding={encoding}
-            setEncoding={setEncoding}
-          />
           {}
           <textarea
             type="text"

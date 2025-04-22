@@ -7,6 +7,7 @@ export const encodeOrder = (order, encoding, fieldNames) => {
   let encodedOrder = {};
   switch (encoding) {
     case "Alphanumeric": {
+      console.debug("encodeOrder, Alphanumeric", {order, stdOrder, fieldNames});
       const { orderKey } = fieldNames;
       encodedOrder.mode = "alphanumeric";
       // ENCAPSULATOR = "$";
@@ -64,6 +65,8 @@ function standardizeOrder(order, fieldNames) {
     variant: item[variantKey],
     quantity: item[quantityKey],
   }));
+  
+  delete order[itemsKey];
   return {
     ...order,
     transactionId: order[transactionKey],
