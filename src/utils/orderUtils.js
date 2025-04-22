@@ -1,4 +1,4 @@
-import * as BitPacked from "./BitPacked";
+import { BitPacked from "./BitPacked";
 import * as ModHex from "./ModHex";
 import * as NTRU from "./NTRUPrime";
 

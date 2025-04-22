@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect, useCallback } from "react";
-import "./styles/styles.css"; // Import your component-specific styles
+import "../styles/styles.css"; // Import your component-specific styles
 
 import {ErrorCorrectionSelector, VersionSelector, DataMaskSelector} from "../selectors/Selectors";
 

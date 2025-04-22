@@ -2,18 +2,16 @@ import { useState, useContext, useEffect, useCallback } from "react";
 import SchemaEditor from "./SchemaEditor";
 import ItemsEditor from "./ItemsEditor";
 import ItemGenerator from "./ItemGenerator";
-import { schemaToObject } from "../utils/schemaUtils";
+import { schemaToObject } from "../../utils/schemaUtils";
 import {
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
   OrderEncodingSelector,
 } from "./Selectors";
-import { QRDataDispatchContext } from "../context/QRDataContext";
-import { encodeOrder } from "../utils/orderUtils";
+import { QRDataDispatchContext, SchemaContext } from "../../state";
+import { encodeOrder } from "../../utils/orderUtils";
 import { Actions } from "../Constants";
-
-import { SchemaContext } from "../context/SchemaContext";
 
 const defaultSchema = [
   { label: "Platform", name: "p", type: "string", value: "A" },

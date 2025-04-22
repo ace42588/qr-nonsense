@@ -4,9 +4,9 @@ import {
   addNonDataModules,
   makeModule,
 } from "./ModuleUtils";
-import { calculatePenalty } from "./utils/calculatePenalty";
+import { calculatePenalty } from "./calculatePenalty";
 import { getCodewords } from "./CodewordUtils";
-import { getEncoder } from "./Encoders";
+import { getEncoder } from "./encoders/Encoders";
 
 function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   // Try each version until one is found that fits the data.

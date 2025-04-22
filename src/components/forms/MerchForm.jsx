@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect, useCallback } from "react";
-import "./styles/styles.css";
+import "../styles/styles.css";
 
 import {
   ErrorCorrectionSelector,
