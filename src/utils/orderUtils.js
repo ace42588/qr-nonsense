@@ -8,7 +8,7 @@ export const encodeOrder = (order, encoding, fieldNames) => {
   switch (encoding) {
     case "Alphanumeric": {
       console.debug("encodeOrder, Alphanumeric", {order, stdOrder, fieldNames});
-      const { orderKey } = fieldNames;
+      const { itemsKey } = fieldNames;
       encodedOrder.mode = "alphanumeric";
       // ENCAPSULATOR = "$";
       // FIELD_SEPARATOR = "%";
@@ -18,12 +18,15 @@ export const encodeOrder = (order, encoding, fieldNames) => {
         (str, { variant, quantity }) => `${str}${variant}:${quantity}/`,
         ""
       );
-      delete order[orderKey];
+      delete order[itemsKey];
+      
+      console.debug("encodeOrder, Alphanumeric", {order, stdOrder, encodedItems});
 
       let data = `$1`;
       Object.values(order).forEach((v) => (data = `${data}%${v}`));
       data = `${data}%${encodedItems}$`;
-
+      
+      console.debug("encodeOrder, Alphanumeric", {data});
       encodedOrder.data = data;
       break;
     }
@@ -65,15 +68,19 @@ function standardizeOrder(order, fieldNames) {
     variant: item[variantKey],
     quantity: item[quantityKey],
   }));
-  
-  delete order[itemsKey];
-  return {
+  const stdOrder = {
     ...order,
     transactionId: order[transactionKey],
     conferenceCode: order[conferenceKey],
     platform: order[platformKey],
     items,
   };
+  delete stdOrder[platformKey];
+  delete stdOrder[conferenceKey];
+  delete stdOrder[transactionKey];
+  delete stdOrder[itemsKey];
+  
+  return stdOrder;
 }
 
 export const parseOrderJson = (raw) => {
