@@ -1,3 +1,5 @@
+import { encodeSegment, validateLength } from "./utility.js";
+
 if (inputEncoding === "hex") {
       for (let i = 0; i < input.length; i += 2) {
         const hex = input.substring(i, i + 2);

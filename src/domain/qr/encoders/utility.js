@@ -10,24 +10,12 @@ function getId() {
   return `segment-${lastSegmentId++}`;
 }
 
-function validateLength(data, min, max, type) {
+export function validateLength(data, min, max, type) {
   if (data.length < min || data.length > max) {
     throw new Error(
       `${type} segment must have between ${min} and ${max} characters.`
     );
   }
-}
-
-function makeSegment(value, text, inputMode) {
-  return {
-    type: "segment",
-    id: getId(),
-    value,
-    text,
-    inputMode,
-    isHighlighted: false,
-    length: 8,
-  };
 }
 
 function computeIndicatorLength(charCount, mode) {
@@ -88,7 +76,7 @@ function createMaps(segment) {
   return { bitMap, segmentMap };
 }
 
-function encodeSegment(data, inputMode, codons) {
+export function encodeSegment(data, inputMode, codons) {
   const mode = createModeIndicator(inputMode);
   const characterCount = createCharacterCountIndicator(data, codons, inputMode);
   const segment = { mode, characterCount, ...codons };
