@@ -1,20 +1,20 @@
 import { useState, useReducer } from "react";
-import QRCodeCanvas from "./components/QRCodeCanvas";
-import SegmentDisplay from "./components/SegmentDisplay";
+import QRCodeCanvas from "../components/qr/QRCodeCanvas";
+import SegmentDisplay from "../components/qr/SegmentDisplay";
 import {
   ModeSelector,
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
-} from "./components/Selectors";
-import InputForm from "./components/InputForm";
-import MerchForm from "./components/MerchForm";
-import DynamicOrderEditor from "./components/OrderEditor";
-import VideoScanner from "./components/VideoScanner";
-import { QRDataProvider } from "./context/QRDataContext";
-import QRMetaInfo from "./components/QRInfo";
+} from "../components/selectors/Selectors";
+import InputForm from "../components/forms/InputForm";
+import MerchForm from "../components/forms/MerchForm";
+import DynamicOrderEditor from "../components/forms/OrderEditor";
+import VideoScanner from "../components/scanner/VideoScanner";
+import { QRDataProvider } from "../state/qr/QRDataContext";
+import QRMetaInfo from "../components/qr/QRInfo";
 
-import "./styles/App.css";
+import "../assets/styles/App.css";
 
 export default function App() {
   const [inputMode, setInputMode] = useState("merch"); // Default to merch mode

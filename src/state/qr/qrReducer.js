@@ -1,5 +1,5 @@
-import { Actions } from "../Constants";
-import { getQRDataFromInputs } from "../QRUtils";
+import { Actions } from "../../domain/qrConstants";
+import { getQRDataFromInputs } from "../../domain/QRUtils";
 
 export const initialData = {
   encodedInputs: [],
