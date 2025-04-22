@@ -1,7 +1,7 @@
 const limit = 1024;
 //const M = 256
 
-function encode(R, M = 256) {
+export function encode(R, M = 256) {
   if (M.length === 0) return [];
   let S = [];
 
@@ -39,7 +39,7 @@ function encode(R, M = 256) {
   return S.concat(encode(R2, M2));
 }
 
-function decode(S, M = 256) {
+export function decode(S, M = 256) {
   if (M.length === 0) return [];
 
   if (M.length === 1) {

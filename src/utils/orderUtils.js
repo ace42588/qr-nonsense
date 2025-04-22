@@ -48,7 +48,8 @@ export const encodeOrder = (order, encoding, fieldNames) => {
     }
     case "PER-ModHex": {
       let data = BitPacked.encode(stdOrder);
-      if (data % 2 === 1) data = "0" + data;
+      console.debug("PER-ModHex", { data });
+      if (data % 2 === 1) data = `0${data}`;
       console.debug("PER-ModHex", { data });
       const modhex = ModHex.encode(data);
       console.debug("PER-ModHex", { data, modhex });
@@ -60,7 +61,7 @@ export const encodeOrder = (order, encoding, fieldNames) => {
     case "PER-NTRU": {
       let data = BitPacked.encode(stdOrder);
       console.debug("PER-NTRU", { data });
-      const ntru = NTRU.encode(data);
+      const ntru = NTRU.encode(parseInt(data, 16));
       console.debug("PER-ModHex", { data, ntru });
       encodedOrder.encoding = "ntru";
       encodedOrder.mode = "alphanumeric";
