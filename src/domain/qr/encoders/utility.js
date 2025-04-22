@@ -94,6 +94,18 @@ export function encodeSegment(data, inputMode, codons) {
   return encoded;
 }
 
+export function* createNonByte(input, mode, encoderFn) {
+    const groups = input.match(mode.groupingRegex);
+    if (!groups) {
+      throw new Error(`Invalid input for ${mode.name} encoder: ${input}`);
+    }
+    for (let i = 0; i < groups.length; i++) {
+      //yield new SegmentClass(groups[i], i, parentId);
+      const { value, length } = encoderFn(groups[i]);
+      yield { ...makeSegment(groups[i], groups[i], mode.name), value, length };
+    }
+}
+
 export function finalizeEncoding(encodedInputs, requiredDataCodewords) {
   //console.debug("finalizeEncoding", { encodedInputs });
   let bits = encodedInputs.flatMap(({ bits }) => bits);
