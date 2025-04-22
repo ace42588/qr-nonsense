@@ -18,24 +18,20 @@ export default function ItemGenerator() {
 
   const generateItems = () => {
     const variantFieldType = (() => {
-      const itemsField = schema.find((f) => f.label === "Items");
+      const itemsField = schema.find(f => f.label === "Items");
       if (!itemsField || !Array.isArray(itemsField.children)) return "string";
-      const variantField = itemsField.children.find(
-        (c) => c.label === "Variant"
-      );
+      const variantField = itemsField.children.find(c => c.label === "Variant");
       return variantField?.type || "string";
     })();
 
     const newItems = Array.from({ length: count }, () => {
-      const variantValue =
-        variantFieldType === "number"
-          ? parseInt(generateVariant(), 10)
-          : generateVariant();
+      const variantValue = variantFieldType === "number"
+        ? parseInt(generateVariant(), 10)
+        : generateVariant();
 
       return {
         [requiredFieldNames.variantKey]: variantValue,
-        [requiredFieldNames.quantityKey]:
-          Math.floor(Math.random() * (maxQty - minQty + 1)) + minQty,
+        [requiredFieldNames.quantityKey]: Math.floor(Math.random() * (maxQty - minQty + 1)) + minQty,
       };
     });
 
@@ -43,7 +39,7 @@ export default function ItemGenerator() {
       const clone = structuredClone(prev);
       const itemsField = clone.find((f) => f.label === "Items");
       if (itemsField) {
-        itemsField.children = newItems.map((item) => ({
+        itemsField.children = newItems.map(item => ({
           type: "object",
           children: [
             {
@@ -55,14 +51,14 @@ export default function ItemGenerator() {
               name: requiredFieldNames.quantityKey,
               type: "number",
               value: item[requiredFieldNames.quantityKey],
-            },
-          ],
+            }
+          ]
         }));
       }
       return clone;
     });
   };
-
+  
   return (
     <div className="mt-4 space-y-2">
       <h3 className="font-semibold">Auto-generate Items</h3>
@@ -73,7 +69,7 @@ export default function ItemGenerator() {
         <input
           className="border p-1 rounded w-20"
           type="number"
-          value={count}
+          value={Number.isFinite(count) ? count : ""}
           onChange={(e) => setCount(Number(e.target.value))}
           placeholder="Count"
         />
@@ -83,7 +79,7 @@ export default function ItemGenerator() {
         <input
           className="border p-1 rounded w-20"
           type="number"
-          value={variantLength}
+          value={Number.isFinite(variantLength) ? variantLength : ""}
           onChange={(e) => setVariantLength(Number(e.target.value))}
           placeholder="Variant Len"
         />
@@ -102,7 +98,7 @@ export default function ItemGenerator() {
         <input
           className="border p-1 rounded w-20"
           type="number"
-          value={minQty}
+          value={Number.isFinite(minQty) ? minQty : ""}
           onChange={(e) => setMinQty(Number(e.target.value))}
           placeholder="Min Qty"
         />
@@ -112,7 +108,7 @@ export default function ItemGenerator() {
         <input
           className="border p-1 rounded w-20"
           type="number"
-          value={maxQty}
+          value={Number.isFinite(maxQty) ? maxQty : ""}
           onChange={(e) => setMaxQty(Number(e.target.value))}
           placeholder="Max Qty"
         />
