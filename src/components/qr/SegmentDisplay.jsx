@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
-import { Actions } from "../Constants";
-import { useQRData, useQRDataDispatch } from "../context/QRDataContext";
-import "./styles.css";
+import { Actions } from "../../domain/qr/Constants";;
+import { useQRData, useQRDataDispatch } from "../../state";
+import "../styles/styles.css";
 
 export default function SegmentDisplay({ bitStream }) {
   const { segments, segmentMap, bitMap } = useQRData();

@@ -1,6 +1,6 @@
 // ItemGenerator.js
 import React, { useState } from "react";
-import { useSchemaContext } from "../context/SchemaContext";
+import { useSchemaContext } from "../../state";
 
 export default function ItemGenerator() {
   const { schema, setData, requiredFieldNames } = useSchemaContext();

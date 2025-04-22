@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQRDataDispatch } from "../context/QRDataContext";
+import { useQRDataDispatch } from "../../state";
 import { Actions } from "../Constants";
 
 export function ModeSelector({ mode, setMode }) {

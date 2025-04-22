@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useState } from "react";
 import jsQR from "jsqr";
-import "./styles.css";
+import "../styles/styles.css";
 
-import { getEncoder } from "../Encoders";
+import { getEncoder } from "../../domain/qr/encoders/Encoders";
 
 function VideoScanner({
   setBitStream,

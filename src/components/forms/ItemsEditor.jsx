@@ -1,6 +1,6 @@
 // ItemsEditor.js
 import React from "react";
-import { updateAtPath } from "../utils/schemaUtils";
+import { updateAtPath } from "../../utils/schemaUtils";
 
 export default function ItemsEditor({
   items,

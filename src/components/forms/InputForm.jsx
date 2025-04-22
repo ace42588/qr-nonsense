@@ -1,10 +1,10 @@
 import { useState, useContext, useEffect, useCallback } from "react";
-import "./styles.css"; // Import your component-specific styles
+import "./styles/styles.css"; // Import your component-specific styles
 
-import {ErrorCorrectionSelector, VersionSelector, DataMaskSelector} from "./Selectors";
+import {ErrorCorrectionSelector, VersionSelector, DataMaskSelector} from "../selectors/Selectors";
 
-import { QRDataDispatchContext } from "../context/QRDataContext";
-import { Actions } from "../Constants";
+import { QRDataDispatchContext } from "../../state";
+import { Actions } from "../../domain/qr/Constants";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 

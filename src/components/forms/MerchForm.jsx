@@ -1,15 +1,15 @@
 import { useState, useContext, useEffect, useCallback } from "react";
-import "./styles.css";
+import "./styles/styles.css";
 
 import {
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
-} from "./Selectors";
-import { QRDataDispatchContext } from "../context/QRDataContext";
-import { Actions } from "../Constants";
+} from "../selectors/Selectors";
+import { QRDataDispatchContext } from "../../state";
+import { Actions } from "../../domain/qr/Constants";
 
-import { encodeOrder, parseOrderJson } from "../utils/orderUtils";
+import { encodeOrder, parseOrderJson } from "../../utils/orderUtils";
 
 export default function MerchForm() {
   const [input, setInput] = useState(sampleInput);
