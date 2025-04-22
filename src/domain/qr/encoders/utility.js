@@ -50,7 +50,7 @@ function getTerminatorLength(capacityBytes, totalDataBits) {
 
 function createCodon(value, text, inputMode, length) {
   return {
-    type: "segment",
+    type: "codon",
     value,
     text,
     inputMode,
@@ -60,6 +60,7 @@ function createCodon(value, text, inputMode, length) {
 
 function createModeIndicator(mode) {
   return {
+    type: "modeIndicator",
     value: mode.bits,
     text: mode.name,
     length: 4,
@@ -68,6 +69,7 @@ function createModeIndicator(mode) {
 
 function createCharacterCountIndicator(data, codons, mode) {
   return {
+    type: "characterCountIndicator",
       value: data.length,
       text: data.length,
       length: computeIndicatorLength(codons.length, mode),
@@ -75,29 +77,26 @@ function createCharacterCountIndicator(data, codons, mode) {
 }
 
 function createMaps(segment) {
-  const { mode, characterCount, codons } = segment;
   
   const bitMap = new Map();
   const segmentMap = new Map();
+  const segmentBits = [];
+  
+  for (const elem of segment) {
+    const bits = getBits(elem);
+    
+  }
   
   const modeBits = getBits(mode.value, mode.length);
   const charCountBits = getBits(characterCount.value, characterCount.length);
-  const codonBits = codons.flatMap((c) => {
-    const bits = getBits(c.value, c.length);
-    return bits;
-  });
+  const codonBits = codons.map((c) => getBits(c.value, c.length));
   
-  const segmentBits = segment.flatMap((obj) => {
-      const bits = getBits(obj.value, obj.length);
-    obj.bits = bits
-      return bits;
-    });
 }
 
 function encodeSegment(data, inputMode, codons) {
     const mode = createModeIndicator(inputMode);
     const characterCount = createCharacterCountIndicator(data, codons, inputMode);
-    const segment = { mode, characterCount, codons};
+    const segment = { mode, characterCount, ...codons};
 
 
     const modeBits = getBits(mode.value, mode.length);
