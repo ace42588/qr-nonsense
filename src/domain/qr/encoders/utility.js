@@ -70,63 +70,41 @@ function createModeIndicator(mode) {
 function createCharacterCountIndicator(data, codons, mode) {
   return {
     type: "characterCountIndicator",
-      value: data.length,
-      text: data.length,
-      length: computeIndicatorLength(codons.length, mode),
-    };
+    value: data.length,
+    text: data.length,
+    length: computeIndicatorLength(codons.length, mode),
+  };
 }
 
 function createMaps(segment) {
-  
   const bitMap = new Map();
   const segmentMap = new Map();
-  const segmentBits = [];
-  
+
   for (const elem of segment) {
     const bits = getBits(elem);
-    
+    segmentMap.set(elem, bits);
+    bits.forEach((b) => bitMap.set(b, elem));
   }
-  
-  const modeBits = getBits(mode.value, mode.length);
-  const charCountBits = getBits(characterCount.value, characterCount.length);
-  const codonBits = codons.map((c) => getBits(c.value, c.length));
-  
+  return { bitMap, segmentMap };
 }
 
 function encodeSegment(data, inputMode, codons) {
-    const mode = createModeIndicator(inputMode);
-    const characterCount = createCharacterCountIndicator(data, codons, inputMode);
-    const segment = { mode, characterCount, ...codons};
+  const mode = createModeIndicator(inputMode);
+  const characterCount = createCharacterCountIndicator(data, codons, inputMode);
+  const segment = { mode, characterCount, ...codons };
 
+  const { bitMap, segmentMap } = createMaps(segment);
+  const bits = [...bitMap.keys()];
 
-    const modeBits = getBits(mode.value, mode.length);
-    modeBits.forEach(({ id }) => bitMap.set(id, mode));
-    //mode.bitIds = modeBits.map(({ id }) => id);
-    const charCountBits = getBits(characterCount.value, characterCount.length);
-    charCountBits.forEach(({ id }) => bitMap.set(id, characterCount));
-    //characterCount.bitIds = charCountBits.map(({ id }) => id);
-    const segmentBits = segments.flatMap((segment) => {
-      const bits = getBits(segment.value, segment.length);
-      segmentMap.set(segment.id, bits.map(({id}) => id));
-      bits.forEach(({ id }) => bitMap.set(id, segment));
-      return bits;
-    });
-    const bits = [...segmentBits];
-    //mode.bitIds = modeBits.map(({ id }) => id);
-    //characterCount.bitIds = charCountBits.map(({ id }) => id);
-    //segments.bitIds = segmentBits.map(({ id }) => id);
-
-    const encoded = {
-      mode,
-      characterCount,
-      segments,
-      segmentMap,
-      bits,
-      bitMap,
-    };
-    return encoded;
-  }
-
+  const encoded = {
+    mode,
+    characterCount,
+    segmentMap,
+    bits,
+    bitMap,
+  };
+  return encoded;
+}
 
 export function finalizeEncoding(encodedInputs, requiredDataCodewords) {
   //console.debug("finalizeEncoding", { encodedInputs });
