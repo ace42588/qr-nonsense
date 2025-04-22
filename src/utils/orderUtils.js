@@ -1,5 +1,5 @@
 import * as BitPacked from "./BitPacked";
-import * as Modhex from "./ModHex";
+import * as ModHex from "./ModHex";
 
 export const encodeOrder = (order, encoding, fieldNames) => {
   console.debug("encodeOrder", { order, encoding, fieldNames });
@@ -18,12 +18,11 @@ export const encodeOrder = (order, encoding, fieldNames) => {
         (str, { variant, quantity }) => `${str}${variant}:${quantity}/`,
         ""
       );
-      delete order[itemsKey];
       
       console.debug("encodeOrder, Alphanumeric", {order, stdOrder, encodedItems});
 
       let data = `$1`;
-      Object.values(order).forEach((v) => (data = `${data}%${v}`));
+      Object.values(stdOrder).forEach((v) => (data = `${data}%${v}`));
       data = `${data}%${encodedItems}$`;
       
       console.debug("encodeOrder, Alphanumeric", {data});
@@ -39,11 +38,14 @@ export const encodeOrder = (order, encoding, fieldNames) => {
       break;
     }
     case "PER-ModHex": {
-      const data = BitPacked.encode(stdOrder);
+      let data = BitPacked.encode(stdOrder);
+      if ((data%2) === 1) data
       console.debug("PER-ModHex", {data});
+      const modhex = ModHex.encode(data);
+      console.debug("PER-ModHex", {data, modhex});
       encodedOrder.encoding = "modHex";
       encodedOrder.mode = "alphanumeric";
-      encodedOrder.data = BitPacked.encode(stdOrder);
+      encodedOrder.data = modhex;
       break;
     }
     default: {
