@@ -94,7 +94,7 @@ export function encodeSegment(data, inputMode, codons) {
   return encoded;
 }
 
-export function* createNonByte(input, mode, encoderFn) {
+export function* createNonByte(input, mode,  encoderFn) {
     const groups = input.match(mode.groupingRegex);
     if (!groups) {
       throw new Error(`Invalid input for ${mode.name} encoder: ${input}`);
@@ -102,7 +102,7 @@ export function* createNonByte(input, mode, encoderFn) {
     for (let i = 0; i < groups.length; i++) {
       //yield new SegmentClass(groups[i], i, parentId);
       const { value, length } = encoderFn(groups[i]);
-      yield { ...makeSegment(groups[i], groups[i], mode.name), value, length };
+      yield createCodon(value, groups[i], mode.name, length);
     }
 }
 

@@ -3,8 +3,6 @@ import encodeAlphanumeric from "./alphanumeric";
 import encodeByte from "./byte";
 import encodeSegment from "./utility.js"
 
-
-
 export function encodeInput(mode, input, options = {}) {
   switch (mode) {
     case "numeric":
@@ -17,4 +15,5 @@ export function encodeInput(mode, input, options = {}) {
     default:
       throw new Error(`Unsupported QR encoding mode: ${mode}`);
   }
+  encodeSegment()
 }

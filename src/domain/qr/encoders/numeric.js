@@ -1,6 +1,9 @@
-import { encodeSegment, validateLength } from "./utility.js";
+import { encodeSegment, validateLength, createNonByte } from "./utility.js";
+import { MODE } from "./Constants";
 
-function encodeNumeric(data) {
+const mode = MODE.Numeric;
+
+function encoder(data) {
   validateLength(data, 1, 3, "Numeric");
   const value = parseInt(data, 10);
   const length = value.toString().length * 3 + 1;
@@ -10,3 +13,4 @@ function encodeNumeric(data) {
   };
 }
 
+const encodeAlphanumeric = (input) => createNonByte(input, mode, encoder);

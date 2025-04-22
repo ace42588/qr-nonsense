@@ -1,7 +1,9 @@
-import { encodeSegment, validateLength } from "./utility.js";
-import { AlphaNumCharMap } from "./Constants";
+import { encodeSegment, validateLength, createNonByte } from "./utility.js";
+import { AlphaNumCharMap, MODE } from "./Constants";
 
-function encodeAlphanumeric(data) {
+const mode = MODE.Alphanumeric;
+
+function encoder(data) {
   validateLength(data, 1, 2, "Alphanumeric");
   let value = AlphaNumCharMap.indexOf(data[0]);
   let length = 6;
@@ -12,3 +14,5 @@ function encodeAlphanumeric(data) {
   }
   return { value, length };
 }
+
+const encodeAlphanumeric = (input) => createNonByte(input, mode, encoder);
