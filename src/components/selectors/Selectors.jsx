@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQRDataDispatch } from "../../state";
-import { Actions } from "../Constants";
+import { Actions } from "../../domain/qr/Constants";
 
 export function ModeSelector({ mode, setMode }) {
   return (
