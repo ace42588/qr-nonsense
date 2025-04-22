@@ -75,6 +75,13 @@ function createCharacterCountIndicator(data, codons, mode) {
 }
 
 function createMaps(segment) {
+  const { mode, characterCount, codons } = segment;
+  
+  const bitMap = new Map();
+  const segmentMap = new Map();
+  
+  const modeBits = getBits(mode.value, mode.length);
+  
   const segmentBits = segment.flatMap((obj) => {
       const bits = getBits(obj.value, obj.length);
     obj.bits = bits
