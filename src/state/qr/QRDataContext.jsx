@@ -1,10 +1,8 @@
 import { createContext, useContext, useReducer } from "react";
-import { qrReducer, initial}
-import { Actions } from "../Constants";
-import { getQRDataFromInputs } from "../QRUtils";
+import { dataReducer, initialData } from "./qrReducer";
 
-export const QRDataContext = createContext(null);
-export const QRDataDispatchContext = createContext(null);
+const QRDataContext = createContext();
+const QRDataDispatchContext = createContext();
 
 export function QRDataProvider({ children }) {
   const [state, dispatch] = useReducer(dataReducer, initialData);
@@ -18,126 +16,5 @@ export function QRDataProvider({ children }) {
   );
 }
 
-export function useQRData() {
-  return useContext(QRDataContext);
-}
-
-export function useQRDataDispatch() {
-  return useContext(QRDataDispatchContext);
-}
-
-function dataReducer(state, action) {
-  switch (action.type) {
-    case Actions.ChangeInput: {
-      const { inputs } = action;
-      const newQRData = getQRDataFromInputs(
-        inputs,
-        state.errorCorrectionLevel,
-        state.version,
-        state.dataMask
-      );
-      const newState = {
-        ...state,
-        ...newQRData,
-        inputs,
-      };
-      console.log({ newState });
-      return newState;
-    }
-    case Actions.ChangeDataMask: {
-      const { dataMask } = action;
-      const newQRData = getQRDataFromInputs(
-        state.inputs,
-        state.errorCorrectionLevel,
-        state.version,
-        dataMask
-      );
-      return { ...state, ...newQRData, dataMask };
-    }
-    case Actions.ChangeVersion: {
-      const { version } = action;
-      const newQRData = getQRDataFromInputs(
-        state.inputs,
-        state.errorCorrectionLevel,
-        version,
-        state.dataMask
-      );
-      return { ...state, ...newQRData, version };
-    }
-    case Actions.ChangeErrorCorretionLevel: {
-      const { errorCorrectionLevel } = action;
-      const newQRData = getQRDataFromInputs(
-        state.inputs,
-        errorCorrectionLevel,
-        state.version,
-        state.dataMask
-      );
-      return { ...state, ...newQRData, errorCorrectionLevel };
-    }
-    case Actions.HighlightModules: {
-      const { segment } = action;
-      const modulesToUpdate = state.segmentMap.get(segment.id);
-      const newMatrix = state.matrix.map((row) =>
-        row.map((module) => {
-          let { bit, isHighlighted } = module;
-          const newModule = { ...module };
-          if (bit.id && modulesToUpdate.some((id) => id === bit.id)) {
-            newModule.isHighlighted = !isHighlighted;
-          }
-          return newModule;
-        })
-      );
-      return {
-        ...state,
-        matrix: newMatrix,
-      };
-    }
-    case Actions.HighlightSegment: {
-      const { module } = action;
-      const { bit, nonData } = module;
-      if (nonData) {
-        const {
-          source: { name },
-        } = module;
-        const newMatrix = state.matrix.map((row) =>
-          row.map((module) => {
-            const newModule = { ...module };
-            if (module.source && module.source.name === name)
-              newModule.isHighlighted = !module.isHighlighted;
-            return newModule;
-          })
-        );
-        return { ...state, matrix: newMatrix };
-      }
-      const segmentToUpdate = state.bitMap.get(bit.id);
-      if (!segmentToUpdate) return state;
-      const newSegments = state.segments.map((segment) => {
-        let { id, isHighlighted } = segment;
-        const newSegment = { ...segment };
-        if (id === segmentToUpdate.id)
-          newSegment.isHighlighted = !isHighlighted;
-        return newSegment;
-      });
-      return {
-        ...state,
-        segments: newSegments,
-      };
-    }
-    default: {
-      console.error("dataReducer", `Unrecognized action: ${action.type}`);
-      return state;
-    }
-  }
-}
-
-const initialData = {
-  encodedInputs: [],
-  errorCorrectionLevel: 0,
-  version: -1,
-  calculatedVersion: 1,
-  dataMask: -1,
-  calculatedDataMask: 0,
-  segments: [],
-  codewords: [],
-  matrix: null,
-};
+export const useQRData = () => useContext(QRDataContext);
+export const useQRDataDispatch = () => useContext(QRDataDispatchContext);
