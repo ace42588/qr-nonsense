@@ -1,11 +1,11 @@
 // SchemaEditor.js
 import React from "react";
-import { useSchemaContext } from "../../state";
+import { useSchema } from "../../state";
 import FieldEditor from "./FieldEditor";
 import { insertAtPath, updateAtPath, removeAtPath } from "../../utils/schemaUtils";
 
 export default function SchemaEditor() {
-  const { schema, setSchema } = useSchemaContext();
+  const { schema, setSchema } = useSchema();
 
   const updateSchema = (fn) => {
     setSchema((prev) => structuredClone(fn(prev)));

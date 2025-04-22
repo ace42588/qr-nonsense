@@ -9,7 +9,7 @@ import {
   DataMaskSelector,
   OrderEncodingSelector,
 } from "../selectors/Selectors";
-import { useQRDataDispatch, SchemaContext } from "../../state";
+import { useQRDataDispatch } from "../../state";
 import { encodeOrder } from "../../utils/orderUtils";
 import { Actions } from "../../domain/qr/Constants";
 
