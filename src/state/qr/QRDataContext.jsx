@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer } from "react";
+import { qrReducer, initial}
 import { Actions } from "../Constants";
 import { getQRDataFromInputs } from "../QRUtils";
 
