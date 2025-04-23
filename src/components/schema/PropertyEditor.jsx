@@ -25,6 +25,7 @@ export function PropertyEditor({
   onDelete,
   parentType,
   nextId,
+  addBlankProperty,
 }) {
   const [enumEditValue, setEnumEditValue] = useState("");
 
@@ -64,7 +65,7 @@ export function PropertyEditor({
       onChange({ ...schema, [field]: parser(value) });
     }
   };
-
+  /*
   // Add blank nested property for object type
   const addBlankProperty = () => {
     let newKey = "newField";
@@ -76,6 +77,11 @@ export function PropertyEditor({
       ...arr,
       { id: nextId(), key: newKey, schema: { type: "string" } },
     ];
+    onChange({ ...schema, properties: newProps });
+  };
+  */
+  const handleAddProperty = () => {
+    const newProps = addBlankProperty(schema.properties);
     onChange({ ...schema, properties: newProps });
   };
 
@@ -281,7 +287,7 @@ export function PropertyEditor({
       {isObjectType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button onClick={addBlankProperty} style={{ fontSize: 12 }}>
+            <button onClick={handleAddProperty} style={{ fontSize: 12 }}>
               Add Property
             </button>
           </div>

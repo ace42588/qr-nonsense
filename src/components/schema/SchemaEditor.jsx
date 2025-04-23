@@ -126,6 +126,7 @@ export function RecursiveSchemaEditor({
     }
   }
 
+  /*
   // Add top-level blank property
   const addBlankProperty = () => {
     //let newKey = "newField";
@@ -148,29 +149,30 @@ export function RecursiveSchemaEditor({
     });
     setLabel("");
   };
-  
-    // Add blank nested property for object type
-  const addBlankProperty = (propertiesArr) => {
+  */
+
+  // Add blank nested property for object type
+  const addBlankProperty = (propertiesArr, displayName) => {
     let newKey = "newField";
     let counter = 1;
     const arr = Array.isArray(propertiesArr) ? propertiesArr : [];
     while (arr.some((prop) => prop.key === newKey))
       newKey = `newField${counter++}`;
-    const newProps = [
-      ...arr,
-      { id: nextId(), key: newKey, schema: { type: "string" } },
-    ];
-    onChange({ ...schema, properties: newProps });
+    return [...arr, { id: nextId(), key: newKey, schema: { type: "string" } }];
   };
 
   // Add blank item for array type
-  const addBlankItem = () => {
-    let items = schema.items;
+  const addBlankItem = (items) => {
     if (Array.isArray(items)) items = [...items, { type: "string" }];
     else if (items && Object.keys(items).length)
       items = [items, { type: "string" }];
     else items = { type: "string" };
-    onChange({ ...schema, items });
+    return { ...schema, items };
+  };
+
+  const handleAddProperty = () => {
+    const newProps = addBlankProperty(schema.properties);
+    setSchema({ ...schema, properties: newProps });
   };
 
   return (
@@ -248,6 +250,7 @@ export function RecursiveSchemaEditor({
                     }}
                     parentType="object"
                     nextId={nextId}
+                    addBlankProperty={addBlankProperty}
                   />
                 ))}
             </div>
@@ -260,7 +263,7 @@ export function RecursiveSchemaEditor({
                 width: 120,
               }}
             />
-            <button onClick={addBlankProperty}>Add Property</button>
+            <button onClick={handleAddProperty}>Add Property</button>
           </>
         ))}
     </div>
