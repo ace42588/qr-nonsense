@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import '../styles/MultiSelectDropdown.css';
 import downArrowSvg from "../../assets/img/down-arrow.svg";
-console.debug({downArrowSvg});
-
 
 export function MultiSelectDropdown({ options, label, value = [], onChange }) {
   const [isOpen, setIsOpen] = useState(false);

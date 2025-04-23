@@ -4,6 +4,7 @@ import { addBlankItem } from "./schemaUtils";
 import { ConstraintsEditor } from "./ConstraintsEditor";
 
 export function PropertyEditor({
+  displayName,
   propertyKey,
   onKeyChange,
   schema,
@@ -13,7 +14,6 @@ export function PropertyEditor({
   nextId,
   addBlankProperty,
 }) {
-  console.debug("PropertyEditor",{addBlankProperty})
   const [enumEditValue, setEnumEditValue] = useState("");
   const [label, setLabel] = useState("newField");
 
@@ -23,36 +23,6 @@ export function PropertyEditor({
     : schema.type
     ? [schema.type]
     : [];
-
-  // Enum controls
-  const handleEnumAdd = () => {
-    if (!enumEditValue) return;
-    const values = (schema.enum || []).concat(enumEditValue);
-    setEnumEditValue("");
-    onChange({ ...schema, enum: values });
-  };
-  const handleEnumRemove = (idx) => {
-    const arr = [...schema.enum];
-    arr.splice(idx, 1);
-    onChange({ ...schema, enum: arr.length ? arr : undefined });
-  };
-  const handleEnumEdit = (idx, value) => {
-    const arr = [...schema.enum];
-    arr[idx] = value;
-    onChange({ ...schema, enum: arr });
-  };
-
-  // Type-specific constraints, cleaned up
-  const handleConstraint = (field, value, parser = (v) => v) => {
-    if (value === "" || value === undefined || value === null) {
-      // Remove from schema
-      const copy = { ...schema };
-      delete copy[field];
-      onChange(copy);
-    } else {
-      onChange({ ...schema, [field]: parser(value) });
-    }
-  };
 
   const handleAddProperty = () => {
     console.debug("handleAddProperty", typeof addBlankProperty);
@@ -85,7 +55,10 @@ export function PropertyEditor({
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <label>{displayName}</label>
         {hasPropertykey && (
+          
+          <label>{displayName}
           <input
             value={propertyKey}
             onChange={(e) => onKeyChange(e.target.value)}
