@@ -95,8 +95,9 @@ export function PropertyEditor({
               Add Property
             </button>
           </div>
-          {Object.entries(schema.properties || {}).map((prop) => (
-            <PropertyEditor
+          {Object.entries(schema.properties || {}).map((prop) => {
+             console.debug("");
+            (<PropertyEditor
               key={prop.id}
               propertyKey={prop.key}
               onKeyChange={(newKey) => {
@@ -119,7 +120,7 @@ export function PropertyEditor({
               parentType="object"
               nextId={nextId}
             />
-          ))}
+          )})}
         </div>
       )}
       {isArrayType && (
