@@ -4,7 +4,7 @@ import "../styles/styles.css";
 
 import { getEncoder } from "../../domain/qr/encoders/Encoders";
 
-function VideoScanner({
+export function VideoScanner({
   setBitStream,
   setVersion,
   setDataMask,

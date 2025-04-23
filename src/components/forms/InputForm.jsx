@@ -79,7 +79,7 @@ const parseInput = (input) => {
   return parsedInput;
 };
 
-function InputForm({ setBitStream,
+export function InputForm({ setBitStream,
   version,
   setVersion,
   dataMask,
@@ -90,7 +90,7 @@ function InputForm({ setBitStream,
   const [inputs, setInputs] = useState([{ type: "byte", value: "" }]);
   
   const [encoding, setEncoding] = useState("JSON");
-  const dispatch = useContext(QRDataDispatchContext);
+  const dispatch = useQRDataDispatch();
   
   const updateQRData = useCallback(
     (inputValue = inputs, encodingType = encoding) => {

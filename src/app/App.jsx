@@ -1,20 +1,16 @@
-import { useState, useReducer } from "react";
-import { QRMetaInfo, QRCodeCanvas, SegmentDisplay } from "../components";
+import { useState } from "react";
 import {
+  QRMetaInfo,
+  QRCodeCanvas,
+  SegmentDisplay,
   ModeSelector,
-  ErrorCorrectionSelector,
-  VersionSelector,
-  DataMaskSelector,
-} from "../components/selectors";
-
-import {
+  VideoScanner,
   InputForm,
   DynamicOrderEditor,
   MerchForm,
   SchemaEditor,
-} from "../components/forms";
+} from "../components";
 
-import VideoScanner from "../components/scanner/VideoScanner";
 import { QRDataProvider } from "../state";
 
 import "../assets/styles/App.css";
@@ -24,7 +20,20 @@ export default function App() {
 
   const selectUI = () => {
     if (inputMode === "merch") {
-      return <DynamicOrderEditor />;
+      return (
+        <RecursiveSchemaEditor
+          value={{
+            type: "object",
+            properties: {
+              myField: { type: ["string", "null"], label: "My Field" },
+            },
+          }}
+          onChange={(schema) => {
+            // Do something with the schema
+            console.log("Schema changed:", schema);
+          }}
+        />
+      );
     } else if (inputMode === "scan") {
       return <VideoScanner />;
     }
