@@ -1,16 +1,18 @@
 // SchemaEditor.js
 import React from "react";
-import { useSchema } from "../../state";
+import { useSchema, useSchemaContext } from "../../state";
 import FieldEditor from "./FieldEditor";
-import { insertAtPath, updateAtPath, removeAtPath } from "../../utils/schemaUtils";
+import {
+  insertAtPath,
+  updateAtPath,
+  removeAtPath,
+} from "../../utils/schemaUtils";
 
 export default function SchemaEditor() {
-  const { schema, fields } = useSchema();
-  console.debug(useSchema());
-
-  const updateSchema = (fn) => {
-    setSchema((prev) => structuredClone(fn(prev)));
-  };
+  const { schema, fields } = useSchemaContext();
+  const { updateSchema } = useSchema();
+  console.debug("useSchemaContext()", useSchemaContext());
+  console.debug("useSchema()", useSchema());
 
   const addField = (path = []) => {
     const field = {
@@ -18,7 +20,7 @@ export default function SchemaEditor() {
       name: "",
       type: "string",
       value: "",
-      children: []
+      children: [],
     };
     updateSchema((s) => insertAtPath(s, path, field));
   };
@@ -33,7 +35,7 @@ export default function SchemaEditor() {
 
   return (
     <div>
-      {schema.map((field, i) => (
+      {fields.map((field, i) => (
         <FieldEditor
           key={i}
           field={field}
