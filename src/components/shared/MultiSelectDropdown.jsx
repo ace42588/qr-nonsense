@@ -82,6 +82,7 @@ export function MultiSelectDropdown({ options, label, value = [], onChange }) {
           </div>
 
           {/* Select All */}
+          {/*
           <div className="multi-select-dropdown-select-all">
             <input
               type="checkbox"
@@ -93,6 +94,7 @@ export function MultiSelectDropdown({ options, label, value = [], onChange }) {
               Select All
             </label>
           </div>
+          */}
 
           {/* Options */}
           {filteredOptions.map((option) => (

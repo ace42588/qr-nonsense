@@ -27,14 +27,14 @@ export function PropertyEditor({
   const handleAddProperty = () => {
     console.debug("handleAddProperty", typeof addBlankProperty);
     const newProps = addBlankProperty(schema.properties, nextId, label);
-    console.debug("handleAddProperty", {newProps});
+    console.debug("handleAddProperty", { newProps });
     onChange({ ...schema, properties: newProps });
     setLabel("");
   };
 
   const handleAddItem = () => {
     const newItems = addBlankItem(schema.items);
-    console.debug("handleAddItem", {newItems});
+    console.debug("handleAddItem", { newItems });
     onChange({ ...schema, items: newItems });
   };
 
@@ -54,21 +54,22 @@ export function PropertyEditor({
         background: "#fafaff",
       }}
     >
+      <h2>{displayName}</h2>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <label>{displayName}</label>
         {hasPropertykey && (
-          
-          <label>{displayName}
-          <input
-            value={propertyKey}
-            onChange={(e) => onKeyChange(e.target.value)}
-            style={{
-              fontWeight: "bold",
-              fontSize: 14,
-              width: 120,
-            }}
-            placeholder="Field name"
-          />
+          <div className="container">
+            <label>Property</label>
+            <input
+              value={propertyKey}
+              onChange={(e) => onKeyChange(e.target.value)}
+              style={{
+                fontWeight: "bold",
+                fontSize: 14,
+                width: 120,
+              }}
+              placeholder="Field name"
+            />
+          </div>
         )}
         <TypeSelector
           value={schema.type}
@@ -80,7 +81,7 @@ export function PropertyEditor({
       </div>
 
       <ConstraintsEditor schema={schema} onChange={onChange} />
-      
+
       {/* Recursively render for nested objects */}
       {isObjectType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>

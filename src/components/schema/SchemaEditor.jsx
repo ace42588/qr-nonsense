@@ -158,6 +158,7 @@ export function RecursiveSchemaEditor({
                     parentType="object"
                     nextId={nextId}
                     addBlankProperty={addBlankProperty}
+                    displayName={prop.displayName}
                   />
                 ))}
             </div>

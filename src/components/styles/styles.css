@@ -138,3 +138,11 @@ canvas {
   max-width: 640px;
   border-radius: 8px;
 }
+
+label {
+  height: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 15px;
+  display: block;
+}
