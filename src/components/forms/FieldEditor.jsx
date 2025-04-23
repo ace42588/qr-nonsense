@@ -1,6 +1,6 @@
 // FieldEditor.js
 import React from "react";
-import { useSchema, useSchemaFields } from "../../state";
+import { useSchema, useSchemaContext } from "../../state";
 
 export default function FieldEditor({
   field,
