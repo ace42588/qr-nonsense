@@ -96,8 +96,8 @@ export function PropertyEditor({
             </button>
           </div>
           {Object.entries(schema.properties || {}).map((prop) => {
-             console.debug("");
-            (<PropertyEditor
+            console.debug("Object", { prop });
+            <PropertyEditor
               key={prop.id}
               propertyKey={prop.key}
               onKeyChange={(newKey) => {
@@ -119,8 +119,8 @@ export function PropertyEditor({
               }}
               parentType="object"
               nextId={nextId}
-            />
-          )})}
+            />;
+          })}
         </div>
       )}
       {isArrayType && (
@@ -131,26 +131,29 @@ export function PropertyEditor({
             </button>
           </div>
           {Array.isArray(schema.items) ? (
-            schema.items.map((item, idx) => (
-              <PropertyEditor
-                key={idx}
-                propertyKey={`[${idx}]`}
-                onKeyChange={() => {}}
-                schema={item}
-                onChange={(newItem) => {
-                  const arr = [...schema.items];
-                  arr[idx] = newItem;
-                  onChange({ ...schema, items: arr });
-                }}
-                onDelete={() => {
-                  const arr = [...schema.items];
-                  arr.splice(idx, 1);
-                  onChange({ ...schema, items: arr });
-                }}
-                parentType="array"
-                nextId={nextId}
-              />
-            ))
+            schema.items.map((item, idx) => {
+              console.debug("Array", { item, idx });
+              return (
+                <PropertyEditor
+                  key={idx}
+                  propertyKey={`[${idx}]`}
+                  onKeyChange={() => {}}
+                  schema={item}
+                  onChange={(newItem) => {
+                    const arr = [...schema.items];
+                    arr[idx] = newItem;
+                    onChange({ ...schema, items: arr });
+                  }}
+                  onDelete={() => {
+                    const arr = [...schema.items];
+                    arr.splice(idx, 1);
+                    onChange({ ...schema, items: arr });
+                  }}
+                  parentType="array"
+                  nextId={nextId}
+                />
+              );
+            })
           ) : schema.items && Object.keys(schema.items).length > 0 ? (
             <PropertyEditor
               onKeyChange={() => {}}
