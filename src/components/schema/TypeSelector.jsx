@@ -1,3 +1,5 @@
+import {MultiSelectDropdown} from "../shared/MultiSelectDropdown";
+
 const JSON_SCHEMA_PRIMITIVES = [
   "string",
   "number",
@@ -14,15 +16,26 @@ export function TypeSelector({ value, onChange }) {
     <select
       multiple
       value={types}
-      onChange={e => {
-        const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
+      onChange={(e) => {
+        const selected = Array.from(e.target.selectedOptions).map(
+          (opt) => opt.value
+        );
         onChange(selected.length === 1 ? selected[0] : selected);
       }}
-      style={{ minWidth: 120, height: 24 * JSON_SCHEMA_PRIMITIVES.length / 2, verticalAlign: "middle" }}
+      style={{
+        minWidth: 120,
+        height: (24 * JSON_SCHEMA_PRIMITIVES.length) / 2,
+        verticalAlign: "middle",
+      }}
     >
-      {JSON_SCHEMA_PRIMITIVES.map(type => (
-        <option key={type} value={type}>{type}</option>
+      {JSON_SCHEMA_PRIMITIVES.map((type) => (
+        <option key={type} value={type}>
+          {type}
+        </option>
       ))}
     </select>
   );
 }
+
+export function NewTypeSelector({ value, onChange }) {
+  ({ options, label, value = [], onChange })
