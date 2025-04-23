@@ -1,3 +1,13 @@
+const JSON_SCHEMA_PRIMITIVES = [
+  "string",
+  "number",
+  "integer",
+  "boolean",
+  "object",
+  "array",
+  "null",
+];
+
 export function TypeSelector({ value, onChange }) {
   const types = Array.isArray(value) ? value : value ? [value] : [];
 
