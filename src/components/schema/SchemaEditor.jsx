@@ -25,7 +25,7 @@ function inferType(val) {
 export function RecursiveSchemaEditor({
   value,
   onChange,
-  title = "JSON Schema Editor",
+  title = "Schema Editor",
 }) {
   const nextId = useIdCounter();
   const [schema, setSchema] = useState(() => {
@@ -130,7 +130,7 @@ export function RecursiveSchemaEditor({
                   <PropertyEditor
                     key={prop.id}
                     propertyKey={prop.key}
-                    onKeyChange={(newKey) => {
+                    onKeyChange={(newKey = "") => {
                       setSchema((s) => ({
                         ...s,
                         properties: s.properties.map((p) =>

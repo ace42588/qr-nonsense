@@ -139,10 +139,26 @@ canvas {
   border-radius: 8px;
 }
 
-label {
+.input-label {
   height: 10px;
   font-size: 12px;
   font-weight: 500;
   margin-bottom: 15px;
   display: block;
+}
+
+.input-container {
+  position: relative;
+  width: 316px;
+}
+
+.input-header {
+  /* border: 1px solid #ccc; */
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #e1e8f0;
 }

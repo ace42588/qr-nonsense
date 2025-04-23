@@ -57,8 +57,8 @@ export function PropertyEditor({
       <h2>{displayName}</h2>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         {hasPropertykey && (
-          <div className="container">
-            <label>Property</label>
+          <div className="input-container">
+            <label className="input-label">Property</label>
             <input
               value={propertyKey}
               onChange={(e) => onKeyChange(e.target.value)}
@@ -67,7 +67,7 @@ export function PropertyEditor({
                 fontSize: 14,
                 width: 120,
               }}
-              placeholder="Field name"
+              placeholder="Property"
             />
           </div>
         )}
