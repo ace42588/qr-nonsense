@@ -117,7 +117,3 @@ export default function QRCodeCanvas() {
     </div>
   );
 }
-
-const highlighted = new Set(
-  segments.flatMap(seg => seg.isHighlighted ? seg.moduleIndices : [])
-);

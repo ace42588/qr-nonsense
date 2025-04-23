@@ -9,8 +9,8 @@ export default function FieldEditor({
   onAddChild,
   onRemove,
 }) {
-  const { requiredFieldNames } = useSchemaContext();
   const { updateField } = useSchema();
+  const { requiredFieldNames } = useSchemaContext();
   
   function handleChange(i, changes) {
     updateField(i, changes);

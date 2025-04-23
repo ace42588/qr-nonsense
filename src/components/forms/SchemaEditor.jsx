@@ -9,28 +9,23 @@ import {
 } from "../../utils/schemaUtils";
 
 export default function SchemaEditor() {
-  const { schema, fields } = useSchemaContext();
-  const { updateSchema } = useSchema();
+  const { fields } = useSchemaContext();
+  const { setFields, updateField } = useSchema();
   console.debug("useSchemaContext()", useSchemaContext());
   console.debug("useSchema()", useSchema());
 
-  const addField = (path = []) => {
-    const field = {
-      label: "",
-      name: "",
-      type: "string",
-      value: "",
-      children: [],
-    };
-    updateSchema((s) => insertAtPath(s, path, field));
+  const addField = () => {
+    setFields([...fields, { label: "", name: "", type: "string", value: "" }]);
   };
 
-  const updateField = (path, key, val) => {
-    updateSchema((s) => updateAtPath(s, path, (f) => ({ ...f, [key]: val })));
+  const handleChange = (path, key, val) => {
+    updateField(path[0], { [key]: val });
   };
 
   const removeField = (path) => {
-    updateSchema((s) => removeAtPath(s, path));
+    const updated = fields.slice();
+    updated.splice(path[0], 1);
+    setFields(updated);
   };
 
   return (

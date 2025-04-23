@@ -1,9 +1,8 @@
-// ItemGenerator.js
 import React, { useState } from "react";
-import { useSchema, useSchemaContext } from "../../state";
+import { useSchemaContext } from "../../state";
 
 export default function ItemGenerator() {
-  const { schema, setData, requiredFieldNames } = useSchemaContext();
+  const { fields: schema, requiredFieldNames, setData } = useSchemaContext();
 
   const [count, setCount] = useState(5);
   const [variantLength, setVariantLength] = useState(4);
@@ -17,14 +16,9 @@ export default function ItemGenerator() {
     ).join("");
 
   const generateItems = () => {
-    const variantFieldType = (() => {
-      const itemsField = schema.find((f) => f.label === "Items");
-      if (!itemsField || !Array.isArray(itemsField.children)) return "string";
-      const variantField = itemsField.children.find(
-        (c) => c.label === "Variant"
-      );
-      return variantField?.type || "string";
-    })();
+    const itemsField = schema.find((f) => f.label === "Items");
+    const variantField = itemsField?.children?.find((c) => c.label === "Variant");
+    const variantFieldType = variantField?.type || "string";
 
     const newItems = Array.from({ length: count }, () => ({
       [requiredFieldNames.variantKey]:
@@ -37,7 +31,7 @@ export default function ItemGenerator() {
 
     setData((prev) => ({
       ...prev,
-      [requiredFieldNames.itemsKey]: newItems.map((item) => item),
+      [requiredFieldNames.itemsKey]: newItems,
     }));
   };
 
