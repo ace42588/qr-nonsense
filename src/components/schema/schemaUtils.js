@@ -30,3 +30,51 @@ export function clean(obj) {
   }
   return out;
 }
+
+// Convert properties {foo: {...}, bar: {...}} <-> [{id, key, schema}]
+export function objectToArray(obj, nextId) {
+  return Object.entries(obj || {}).map(([key, schema]) => ({
+    id: nextId(),
+    key,
+    schema:
+      schema.type === "object"
+        ? {
+            ...schema,
+            properties: objectToArray(schema.properties, nextId),
+          }
+        : schema.type === "array" &&
+          schema.items &&
+          schema.items.type === "object"
+        ? {
+            ...schema,
+            items: {
+              ...schema.items,
+              properties: objectToArray(schema.items.properties, nextId),
+            },
+          }
+        : schema,
+  }));
+}
+export function arrayToObject(arr) {
+  const obj = {};
+  arr.forEach(({ key, schema }) => {
+    obj[key] = {
+      ...schema,
+      ...(schema.type === "object" && Array.isArray(schema.properties)
+        ? { properties: arrayToObject(schema.properties) }
+        : {}),
+      ...(schema.type === "array" &&
+      schema.items &&
+      schema.items.type === "object" &&
+      Array.isArray(schema.items.properties)
+        ? {
+            items: {
+              ...schema.items,
+              properties: arrayToObject(schema.items.properties),
+            },
+          }
+        : {}),
+    };
+  });
+  return obj;
+}

@@ -12,6 +12,7 @@ export function PropertyEditor({
   nextId,
   addBlankProperty,
 }) {
+  console.debug("PropertyEditor",{addBlankProperty})
   const [enumEditValue, setEnumEditValue] = useState("");
   const [label, setLabel] = useState("newField");
 
@@ -53,9 +54,11 @@ export function PropertyEditor({
   };
 
   const handleAddProperty = () => {
-    const newProps = addBlankProperty(schema.properties, nextId);
+    console.debug("handleAddProperty", typeof addBlankProperty);
+    const newProps = addBlankProperty(schema.properties, nextId, label);
     console.debug("handleAddProperty", {newProps});
     onChange({ ...schema, properties: newProps });
+    setLabel("");
   };
 
   const handleAddItem = () => {
@@ -292,6 +295,7 @@ export function PropertyEditor({
               }}
               parentType="object"
               nextId={nextId}
+              addBlankProperty={addBlankProperty}
             />
           ))}
         </div>
@@ -323,6 +327,7 @@ export function PropertyEditor({
                 }}
                 parentType="array"
                 nextId={nextId}
+                addBlankProperty={addBlankProperty}
               />
             ))
           ) : schema.items && Object.keys(schema.items).length > 0 ? (
@@ -333,6 +338,7 @@ export function PropertyEditor({
               onDelete={() => onChange({ ...schema, items: {} })}
               parentType="array"
               nextId={nextId}
+              addBlankProperty={addBlankProperty}
             />
           ) : null}
         </div>

@@ -1,7 +1,7 @@
 // Collapsible, Nested JSON Schema Editor with Editable Keys and Multi-type Dropdowns
 import React, { useEffect, useRef, useState } from "react";
 import { PropertyEditor } from "./PropertyEditor";
-import { addBlankProperty } from "./schemaUtils";
+import { addBlankProperty, arrayToObject, objectToArray } from "./schemaUtils";
 
 function useIdCounter() {
   const counter = useRef(0);
@@ -10,54 +10,6 @@ function useIdCounter() {
     return "id" + counter.current;
   };
   return nextId;
-}
-
-// Convert properties {foo: {...}, bar: {...}} <-> [{id, key, schema}]
-function objectToArray(obj, nextId) {
-  return Object.entries(obj || {}).map(([key, schema]) => ({
-    id: nextId(),
-    key,
-    schema:
-      schema.type === "object"
-        ? {
-            ...schema,
-            properties: objectToArray(schema.properties, nextId),
-          }
-        : schema.type === "array" &&
-          schema.items &&
-          schema.items.type === "object"
-        ? {
-            ...schema,
-            items: {
-              ...schema.items,
-              properties: objectToArray(schema.items.properties, nextId),
-            },
-          }
-        : schema,
-  }));
-}
-function arrayToObject(arr) {
-  const obj = {};
-  arr.forEach(({ key, schema }) => {
-    obj[key] = {
-      ...schema,
-      ...(schema.type === "object" && Array.isArray(schema.properties)
-        ? { properties: arrayToObject(schema.properties) }
-        : {}),
-      ...(schema.type === "array" &&
-      schema.items &&
-      schema.items.type === "object" &&
-      Array.isArray(schema.items.properties)
-        ? {
-            items: {
-              ...schema.items,
-              properties: arrayToObject(schema.items.properties),
-            },
-          }
-        : {}),
-    };
-  });
-  return obj;
 }
 
 function inferType(val) {
@@ -126,40 +78,6 @@ export function RecursiveSchemaEditor({
       setError("Invalid JSON");
     }
   }
-
-  /*
-  // Add top-level blank property
-  const addBlankProperty = () => {
-    //let newKey = "newField";
-    const newKey = label;
-    let counter = 1;
-    const arr = Array.isArray(schema.properties) ? schema.properties : [];
-    while (arr.some((prop) => prop.key === newKey))
-      newKey = `newField${counter++}`;
-    setSchema({
-      ...schema,
-      properties: [
-        ...arr,
-        {
-          displayName: label,
-          id: nextId(),
-          key: newKey,
-          schema: { type: "string" },
-        },
-      ],
-    });
-    setLabel("");
-  };
-  */
-
-  // Add blank item for array type
-  const addBlankItem = (items) => {
-    if (Array.isArray(items)) items = [...items, { type: "string" }];
-    else if (items && Object.keys(items).length)
-      items = [items, { type: "string" }];
-    else items = { type: "string" };
-    return { ...schema, items };
-  };
 
   const handleAddProperty = () => {
     const newProps = addBlankProperty(schema.properties, nextId, label);
