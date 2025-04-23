@@ -55,26 +55,43 @@ export function objectToArray(obj, nextId) {
         : schema,
   }));
 }
+
 export function arrayToObject(arr) {
+  if (!Array.isArray(arr)) return {};
   const obj = {};
   arr.forEach(({ key, schema }) => {
-    obj[key] = {
-      ...schema,
-      ...(schema.type === "object" && Array.isArray(schema.properties)
-        ? { properties: arrayToObject(schema.properties) }
-        : {}),
-      ...(schema.type === "array" &&
+    if (!key) return;
+    let value = { ...schema };
+    // Recursively convert nested object properties
+    if (
+      (Array.isArray(schema.type) ? schema.type.includes("object") : schema.type === "object") &&
+      Array.isArray(schema.properties)
+    ) {
+      value = { ...value, properties: arrayToObject(schema.properties) };
+    }
+    // Recursively handle arrays-of-objects
+    if (
+      (Array.isArray(schema.type) ? schema.type.includes("array") : schema.type === "array") &&
       schema.items &&
-      schema.items.type === "object" &&
+      schema.items.type &&
+      (Array.isArray(schema.items.type) ? schema.items.type.includes("object") : schema.items.type === "object") &&
       Array.isArray(schema.items.properties)
-        ? {
-            items: {
-              ...schema.items,
-              properties: arrayToObject(schema.items.properties),
-            },
-          }
-        : {}),
-    };
+    ) {
+      value = {
+        ...value,
+        items: {
+          ...schema.items,
+          properties: arrayToObject(schema.items.properties)
+        }
+      };
+    }
+    // Remove internal editor fields
+    delete value.id;
+    delete value.key;
+    delete value.displayName;
+    console.debug("arrayToObject", {value});
+    if (Array.isArray(value.type) && value.type.length === 1) value.type = value.type[0];
+    obj[key] = value;
   });
   return obj;
 }
