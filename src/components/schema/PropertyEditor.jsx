@@ -97,7 +97,7 @@ export function PropertyEditor({
           </div>
           {Object.entries(schema.properties || {}).map((prop) => {
             console.debug("Object", { prop });
-            <PropertyEditor
+            return (<PropertyEditor
               key={prop.id}
               propertyKey={prop.key}
               onKeyChange={(newKey) => {
@@ -119,7 +119,7 @@ export function PropertyEditor({
               }}
               parentType="object"
               nextId={nextId}
-            />;
+            />);
           })}
         </div>
       )}
