@@ -16,23 +16,19 @@ export function SchemaProvider({ children }) {
   );
 }
 
-export const useSchemaContext = () => useContext(SchemaContext);
+export const useSchema = () => useContext(SchemaContext);
 export const useSchemaDispatch = () => useContext(SchemaDispatchContext);
 
-export const useSchema = () => {
+export const useSchemaFields = () => {
   const dispatch = useSchemaDispatch();
-
-  const setSchema = useCallback((schema) => {
-    dispatch({ type: "SET_SCHEMA", payload: schema });
-  }, [dispatch]);
 
   const setFields = useCallback((fields) => {
     dispatch({ type: "SET_FIELDS", payload: fields });
   }, [dispatch]);
 
-  const updateFields = useCallback((field) => {
-    dispatch({ type: "UPDATE_FIELD", payload: field });
+  const updateField = useCallback((index, changes) => {
+    dispatch({ type: "UPDATE_FIELD", index, payload: changes });
   }, [dispatch]);
 
-  return { setSchema, setFields, updateFields };
+  return { setFields, updateField };
 };

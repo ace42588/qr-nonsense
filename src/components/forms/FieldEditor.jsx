@@ -1,9 +1,22 @@
 // FieldEditor.js
 import React from "react";
-import { useSchema, useSchemaContext } from "../../state";
+import { useSchema, useSchemaFields } from "../../state";
 
-export default function FieldEditor({ field, path, onChange, onAddChild, onRemove }) {
+export default function FieldEditor({
+  field,
+  path,
+  onChange,
+  onAddChild,
+  onRemove,
+}) {
   const { requiredFieldNames } = useSchemaContext();
+
+  const { fields } = useSchema();
+  const { updateField } = useSchemaFields();
+
+  function handleChange(i, changes) {
+    updateField(i, changes);
+  }
   const handleChange = (key, value) => onChange(path, key, value);
 
   const isRequired = Object.values(requiredFieldNames).includes(field.name);
