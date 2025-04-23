@@ -1,6 +1,6 @@
 // schemaUtils.js
 export function addBlankProperty(propertiesArr, nextId, displayName) {
-  let newKey = "newField";
+  let newKey = displayName || "newField";
   let counter = 1;
   const arr = Array.isArray(propertiesArr) ? propertiesArr : [];
   while (arr.some(prop => prop.key === newKey)) newKey = `newField${counter++}`;

@@ -13,6 +13,7 @@ export function PropertyEditor({
   addBlankProperty,
 }) {
   const [enumEditValue, setEnumEditValue] = useState("");
+  const [label, setLabel] = useState("newField");
 
   // Normalize type to array for checks
   const types = Array.isArray(schema.type)
@@ -53,13 +54,15 @@ export function PropertyEditor({
 
   const handleAddProperty = () => {
     const newProps = addBlankProperty(schema.properties, nextId);
+    console.debug("handleAddProperty", {newProps});
     onChange({ ...schema, properties: newProps });
   };
-  
+
   const handleAddItem = () => {
     const newItems = addBlankItem(schema.items);
-    onChange({ ...schema, newItems });
-  }
+    console.debug("handleAddItem", {newItems});
+    onChange({ ...schema, items: newItems });
+  };
 
   // UI for nested properties or items
   const isObjectType = types.includes("object");
@@ -253,6 +256,15 @@ export function PropertyEditor({
       {isObjectType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              style={{
+                fontWeight: "bold",
+                fontSize: 14,
+                width: 120,
+              }}
+            />
             <button onClick={handleAddProperty} style={{ fontSize: 12 }}>
               Add Property
             </button>
@@ -288,7 +300,7 @@ export function PropertyEditor({
       {isArrayType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button onClick={addBlankItem} style={{ fontSize: 12 }}>
+            <button onClick={handleAddItem} style={{ fontSize: 12 }}>
               Add Item Schema
             </button>
           </div>
