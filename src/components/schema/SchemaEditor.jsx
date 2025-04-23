@@ -92,6 +92,7 @@ export function RecursiveSchemaEditor({
     )
   );
   const [error, setError] = useState("");
+  const [label, setLabel] = useState("MyProp");
 
   // Update raw code view whenever schema changes
   useEffect(() => {
@@ -124,7 +125,8 @@ export function RecursiveSchemaEditor({
 
   // Add top-level blank property
   const addBlankProperty = () => {
-    let newKey = "newField";
+    //let newKey = "newField";
+    const newKey = label;
     let counter = 1;
     const arr = Array.isArray(schema.properties) ? schema.properties : [];
     while (arr.some((prop) => prop.key === newKey))
@@ -133,9 +135,10 @@ export function RecursiveSchemaEditor({
       ...schema,
       properties: [
         ...arr,
-        { id: nextId(), key: newKey, schema: { type: "string" } },
+        { displayName: label, id: nextId(), key: newKey, schema: { type: "string" } },
       ],
     });
+    setLabel("");
   };
 
   return (
@@ -216,6 +219,15 @@ export function RecursiveSchemaEditor({
                   />
                 ))}
             </div>
+            <input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              style={{
+                fontWeight: "bold",
+                fontSize: 14,
+                width: 120,
+              }}
+            />
             <button onClick={addBlankProperty}>Add Property</button>
           </>
         ))}
