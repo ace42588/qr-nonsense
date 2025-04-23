@@ -1,4 +1,4 @@
-import { TypeSelector } from "./TypeSelector";
+import { TypeSelector, NewTypeSelector } from "./TypeSelector";
 
 export function PropertyEditor({
   propertyKey,
@@ -59,7 +59,7 @@ export function PropertyEditor({
             width: 120
           }}
         />
-        <TypeSelector
+        <NewTypeSelector
           value={schema.type}
           onChange={type => onChange({ ...schema, type })}
         />

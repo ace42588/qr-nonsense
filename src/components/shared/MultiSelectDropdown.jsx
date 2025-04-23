@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import '../styles/MultiSelectDropdown.css';
 
 export function MultiSelectDropdown({ options, label, value = [], onChange }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,7 +61,7 @@ export function MultiSelectDropdown({ options, label, value = [], onChange }) {
             : "Please select"}
         </span>
         <img
-          src={require("../assets/img/down-arrow.svg").default}
+          src={"../assets/img/down-arrow.svg"}
           className="multi-select-dropdown-arrow"
           alt="Arrow"
         />
