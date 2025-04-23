@@ -6,7 +6,8 @@ function inferType(val) {
   if (Array.isArray(val)) return "array";
   if (val === null) return "null";
   if (typeof val === "object") return "object";
-  if (typeof val === "number") return Number.isInteger(val) ? "integer" : "number";
+  if (typeof val === "number")
+    return Number.isInteger(val) ? "integer" : "number";
   if (typeof val === "boolean") return "boolean";
   return "string";
 }
@@ -16,67 +17,120 @@ export function RecursiveSchemaEditor({
   onChange,
   title = "JSON Schema Editor",
 }) {
-  const [schema, setSchema] = useState(value || { type: "object", properties: {} });
+  const [schema, setSchema] = useState(
+    value || { type: "object", properties: {} }
+  );
   const [collapsed, setCollapsed] = useState(false);
+  const [codeView, setCodeView] = useState(false);
+  const [raw, setRaw] = useState(JSON.stringify(schema, null, 2));
+  const [error, setError] = useState("");
 
-  const updateSchema = (newSchema) => {
+  // Synchronize raw code with schema
+  React.useEffect(() => setRaw(JSON.stringify(schema, null, 2)), [schema]);
+
+  function updateSchema(newSchema) {
     setSchema(newSchema);
     if (onChange) onChange(newSchema);
-  };
+  }
 
-  const updateProperty = (oldKey, newKey, newSubSchema) => {
-    const newProps = { ...schema.properties };
-    delete newProps[oldKey];
-    newProps[newKey] = newSubSchema;
-    updateSchema({ ...schema, properties: newProps });
-  };
+  function handleRawChange(txt) {
+    setRaw(txt);
+    try {
+      const obj = JSON.parse(txt);
+      setSchema(obj);
+      setError("");
+      if (onChange) onChange(obj);
+    } catch {
+      setError("Invalid JSON");
+    }
+  }
 
-  const deleteProperty = (key) => {
-    const newProps = { ...schema.properties };
-    delete newProps[key];
-    updateSchema({ ...schema, properties: newProps });
-  };
-
+  // Add top-level blank property
   const addBlankProperty = () => {
     let newKey = "newField";
     let counter = 1;
-    while (schema.properties.hasOwnProperty(newKey)) {
-      newKey = `newField${counter++}`;
-    }
+    const props = schema.properties || {};
+    while (props.hasOwnProperty(newKey)) newKey = `newField${counter++}`;
     updateSchema({
       ...schema,
       properties: {
-        ...schema.properties,
+        ...props,
         [newKey]: { type: "string" },
       },
     });
   };
 
   return (
-    <div style={{ border: "1px solid #aaa", borderRadius: 8, padding: 16, maxWidth: 800 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+    <div
+      style={{
+        border: "1px solid #aaa",
+        borderRadius: 8,
+        padding: 16,
+        maxWidth: 900,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 8,
+        }}
+      >
         <strong>{title}</strong>
-        <button onClick={() => setCollapsed(!collapsed)}>
-          {collapsed ? "Expand" : "Collapse"}
-        </button>
+        <div>
+          <button
+            onClick={() => setCodeView((v) => !v)}
+            style={{ marginRight: 8 }}
+          >
+            {codeView ? "Form View" : "Code Editor"}
+          </button>
+          <button onClick={() => setCollapsed((v) => !v)}>
+            {collapsed ? "Expand" : "Collapse"}
+          </button>
+        </div>
       </div>
-      {!collapsed && (
-        <>
-          <div>
-            {Object.entries(schema.properties || {}).map(([key, subschema]) => (
-              <PropertyEditor
-                key={key}
-                propertyKey={key}
-                schema={subschema}
-                onKeyChange={(newKey) => updateProperty(key, newKey, subschema)}
-                onChange={(newSub) => updateProperty(key, key, newSub)}
-                onDelete={() => deleteProperty(key)}
-              />
-            ))}
-          </div>
-          <button onClick={addBlankProperty}>Add Property</button>
-        </>
-      )}
+      {!collapsed &&
+        (codeView ? (
+          <>
+            <textarea
+              value={raw}
+              onChange={(e) => handleRawChange(e.target.value)}
+              style={{ width: "100%", height: 350, fontFamily: "monospace" }}
+              spellCheck={false}
+            />
+            {error && <div style={{ color: "red" }}>{error}</div>}
+          </>
+        ) : (
+          <>
+            <div>
+              {schema.properties &&
+                Object.entries(schema.properties).map(([key, subschema]) => (
+                  <PropertyEditor
+                    key={key}
+                    propertyKey={key}
+                    onKeyChange={(newKey) => {
+                      const newProps = { ...schema.properties };
+                      delete newProps[key];
+                      newProps[newKey] = subschema;
+                      updateSchema({ ...schema, properties: newProps });
+                    }}
+                    schema={subschema}
+                    onChange={(newSub) => {
+                      const newProps = { ...schema.properties, [key]: newSub };
+                      updateSchema({ ...schema, properties: newProps });
+                    }}
+                    onDelete={() => {
+                      const newProps = { ...schema.properties };
+                      delete newProps[key];
+                      updateSchema({ ...schema, properties: newProps });
+                    }}
+                    parentType="object"
+                  />
+                ))}
+            </div>
+            <button onClick={addBlankProperty}>Add Property</button>
+          </>
+        ))}
     </div>
   );
 }
