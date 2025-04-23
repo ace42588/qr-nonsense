@@ -1,18 +1,19 @@
 import { useState, useReducer } from "react";
-import QRCodeCanvas from "../components/qr/QRCodeCanvas";
-import SegmentDisplay from "../components/qr/SegmentDisplay";
+import { QRMetaInfo, QRCodeCanvas, SegmentDisplay } from "../components/qr";
 import {
   ModeSelector,
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
-} from "../components/selectors/Selectors";
-import InputForm from "../components/forms/InputForm";
-import MerchForm from "../components/forms/MerchForm";
-import DynamicOrderEditor from "../components/forms/OrderEditor";
-import VideoScanner from "../components/scanner/VideoScanner";
+} from "../components/selectors";
+import {
+  InputForm,
+  DynamicOrderEditor,
+  MerchForm,
+  SchemaEditor,
+} from "../components/forms";
+import VideoScanner from "../components";
 import { QRDataProvider } from "../state";
-import QRMetaInfo from "../components/qr/QRInfo";
 
 import "../assets/styles/App.css";
 
