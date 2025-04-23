@@ -8,7 +8,7 @@ import {
   InputForm,
   DynamicOrderEditor,
   MerchForm,
-  SchemaEditor,
+  RecursiveSchemaEditor,
 } from "../components";
 
 import { QRDataProvider } from "../state";
