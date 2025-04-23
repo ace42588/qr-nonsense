@@ -9,7 +9,7 @@ import {
   DataMaskSelector,
   OrderEncodingSelector,
 } from "../selectors/Selectors";
-import { useQRDataDispatch } from "../../state";
+import { useQRDataDispatch, SchemaProvider } from "../../state";
 import { encodeOrder } from "../../utils/orderUtils";
 import { Actions } from "../../domain/qr/Constants";
 
@@ -93,9 +93,7 @@ export default function DynamicOrderEditor() {
   }, [updateQRData]);
 
   return (
-    <SchemaContext.Provider
-      value={{ schema, setSchema, data, setData, requiredFieldNames }}
-    >
+    <SchemaProvider>
       <div className="input-form">
         <div className="row">
           <ErrorCorrectionSelector />
@@ -121,6 +119,6 @@ export default function DynamicOrderEditor() {
           </pre>
         </div>
       </div>
-    </SchemaContext.Provider>
+    </SchemaProvider>
   );
 }

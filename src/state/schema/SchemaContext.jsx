@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer } from "react";
+import { createContext, useCallback, useContext, useReducer } from "react";
 import { schemaReducer, initialSchemaState } from "./schemaReducer";
 
 const SchemaContext = createContext();
@@ -16,5 +16,23 @@ export function SchemaProvider({ children }) {
   );
 }
 
-export const useSchema = () => useContext(SchemaContext);
+export const useSchemaContext = () => useContext(SchemaContext);
 export const useSchemaDispatch = () => useContext(SchemaDispatchContext);
+
+export const useSchema = () => {
+  const dispatch = useSchemaDispatch();
+
+  const setSchema = useCallback((schema) => {
+    dispatch({ type: "SET_SCHEMA", payload: schema });
+  }, [dispatch]);
+
+  const setFields = useCallback((fields) => {
+    dispatch({ type: "SET_FIELDS", payload: fields });
+  }, [dispatch]);
+
+  const updateFields = useCallback((field) => {
+    dispatch({ type: "UPDATE_FIELD", payload: field });
+  }, [dispatch]);
+
+  return { setSchema, setFields, updateFields };
+};

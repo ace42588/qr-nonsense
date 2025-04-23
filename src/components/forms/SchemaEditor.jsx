@@ -5,7 +5,8 @@ import FieldEditor from "./FieldEditor";
 import { insertAtPath, updateAtPath, removeAtPath } from "../../utils/schemaUtils";
 
 export default function SchemaEditor() {
-  const { schema, setSchema } = useSchema();
+  const { schema, fields } = useSchema();
+  console.debug(useSchema());
 
   const updateSchema = (fn) => {
     setSchema((prev) => structuredClone(fn(prev)));

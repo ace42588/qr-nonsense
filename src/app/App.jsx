@@ -11,7 +11,7 @@ import InputForm from "../components/forms/InputForm";
 import MerchForm from "../components/forms/MerchForm";
 import DynamicOrderEditor from "../components/forms/OrderEditor";
 import VideoScanner from "../components/scanner/VideoScanner";
-import { QRDataProvider } from "../state/qr/QRDataContext";
+import { QRDataProvider } from "../state";
 import QRMetaInfo from "../components/qr/QRInfo";
 
 import "../assets/styles/App.css";
