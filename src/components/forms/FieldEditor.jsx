@@ -10,15 +10,11 @@ export default function FieldEditor({
   onRemove,
 }) {
   const { requiredFieldNames } = useSchemaContext();
-
-  const { fields } = useSchema();
-  const { updateField } = useSchemaFields();
-
+  const { updateField } = useSchema();
+  
   function handleChange(i, changes) {
     updateField(i, changes);
   }
-  const handleChange = (key, value) => onChange(path, key, value);
-
   const isRequired = Object.values(requiredFieldNames).includes(field.name);
 
   return (
