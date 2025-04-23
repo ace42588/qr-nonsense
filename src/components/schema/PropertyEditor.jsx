@@ -155,7 +155,9 @@ export function PropertyEditor({
               onChange={(e) =>
                 handleConstraint(
                   "maxLength",
-                  e.target.value === "" ? undefined : parseInt(e.target.value, 10)
+                  e.target.value === ""
+                    ? undefined
+                    : parseInt(e.target.value, 10)
                 )
               }
               style={{ width: 60, marginLeft: 4 }}
@@ -183,15 +185,12 @@ export function PropertyEditor({
               type="number"
               value={schema.minimum ?? ""}
               onChange={(e) =>
-                onChange({
-                  ...schema,
-                  minimum:
-                    e.target.value === ""
-                      ? undefined
-                      : parseFloat(e.target.value),
-                })
+                handleConstraint(
+                  "minimum",
+                  e.target.value === "" ? undefined : parseFloat(e.target.value)
+                )
               }
-              style={{ width: 60 }}
+              style={{ width: 60, marginLeft: 4 }}
             />
           </label>
           <label>
@@ -200,15 +199,12 @@ export function PropertyEditor({
               type="number"
               value={schema.maximum ?? ""}
               onChange={(e) =>
-                onChange({
-                  ...schema,
-                  maximum:
-                    e.target.value === ""
-                      ? undefined
-                      : parseFloat(e.target.value),
-                })
+                handleConstraint(
+                  "maximum",
+                  e.target.value === "" ? undefined : parseFloat(e.target.value)
+                )
               }
-              style={{ width: 60 }}
+              style={{ width: 60, marginLeft: 4 }}
             />
           </label>
           <label>
@@ -218,48 +214,68 @@ export function PropertyEditor({
               step="any"
               value={schema.multipleOf ?? ""}
               onChange={(e) =>
-                onChange({
-                  ...schema,
-                  multipleOf:
-                    e.target.value === ""
-                      ? undefined
-                      : parseFloat(e.target.value),
-                })
+                handleConstraint(
+                  "multipleOf",
+                  e.target.value === "" ? undefined : parseFloat(e.target.value)
+                )
               }
-              style={{ width: 60 }}
+              style={{ width: 60, marginLeft: 4 }}
             />
           </label>
         </div>
       )}
 
-      {schema.enum && (
-        <div style={{ marginTop: 4 }}>
-          <label>
-            Enum values (comma-separated):&nbsp;
-            <input
-              type="text"
-              value={schema.enum.join(",")}
-              onChange={(e) =>
-                onChange({
-                  ...schema,
-                  enum: e.target.value.split(",").map((s) => s.trim()),
-                })
-              }
-              style={{ width: 180 }}
-            />
-            <button onClick={() => onChange({ ...schema, enum: undefined })}>
-              x
-            </button>
-          </label>
-        </div>
-      )}
-      <button
-        style={{ fontSize: 12, marginLeft: 4 }}
-        onClick={() => onChange({ ...schema, enum: [""] })}
-        disabled={!!schema.enum}
-      >
-        Add Enum
-      </button>
+      {/* Enum controls */}
+      <div style={{ marginTop: 4 }}>
+        {schema.enum ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div>
+              <strong>Enum:</strong>
+              <button
+                onClick={() => onChange({ ...schema, enum: undefined })}
+                style={{ marginLeft: 6 }}
+              >
+                Remove Enum
+              </button>
+            </div>
+            <div>
+              {schema.enum.map((val, idx) => (
+                <span key={idx} style={{ marginRight: 8 }}>
+                  <input
+                    type="text"
+                    value={val}
+                    onChange={(e) => handleEnumEdit(idx, e.target.value)}
+                    style={{ width: 100 }}
+                  />
+                  <button onClick={() => handleEnumRemove(idx)}>✖</button>
+                </span>
+              ))}
+            </div>
+            <div>
+              <input
+                type="text"
+                value={enumEditValue}
+                onChange={(e) => setEnumEditValue(e.target.value)}
+                style={{ width: 100, marginRight: 4 }}
+                placeholder="New value"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleEnumAdd();
+                }}
+              />
+              <button onClick={handleEnumAdd} disabled={!enumEditValue}>
+                Add Value
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            style={{ fontSize: 12 }}
+            onClick={() => onChange({ ...schema, enum: [""] })}
+          >
+            Add Enum
+          </button>
+        )}
+      </div>
 
       {/* Recursively render for nested objects */}
       {isObjectType && (
@@ -269,39 +285,34 @@ export function PropertyEditor({
               Add Property
             </button>
           </div>
-          {Array.isArray(schema.properties) &&
-            schema.properties.map((prop) => {
-              console.debug("Object", { prop });
-              return (
-                <PropertyEditor
-                  key={prop.id}
-                  propertyKey={prop.key}
-                  onKeyChange={(newKey) => {
-                    const arr = schema.properties.map((p) =>
-                      p.id === prop.id ? { ...p, key: newKey } : p
-                    );
-                    onChange({ ...schema, properties: arr });
-                  }}
-                  schema={prop.schema}
-                  onChange={(newSub) => {
-                    const arr = schema.properties.map((p) =>
-                      p.id === prop.id ? { ...p, schema: newSub } : p
-                    );
-                    onChange({ ...schema, properties: arr });
-                  }}
-                  onDelete={() => {
-                    const arr = schema.properties.filter(
-                      (p) => p.id !== prop.id
-                    );
-                    onChange({ ...schema, properties: arr });
-                  }}
-                  parentType="object"
-                  nextId={nextId}
-                />
-              );
-            })}
+          {(schema.properties || []).map((prop) => (
+            <PropertyEditor
+              key={prop.id}
+              propertyKey={prop.key}
+              onKeyChange={(newKey) => {
+                const arr = schema.properties.map((p) =>
+                  p.id === prop.id ? { ...p, key: newKey } : p
+                );
+                onChange({ ...schema, properties: arr });
+              }}
+              schema={prop.schema}
+              onChange={(newSub) => {
+                const arr = schema.properties.map((p) =>
+                  p.id === prop.id ? { ...p, schema: newSub } : p
+                );
+                onChange({ ...schema, properties: arr });
+              }}
+              onDelete={() => {
+                const arr = schema.properties.filter((p) => p.id !== prop.id);
+                onChange({ ...schema, properties: arr });
+              }}
+              parentType="object"
+              nextId={nextId}
+            />
+          ))}
         </div>
       )}
+
       {isArrayType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -310,29 +321,26 @@ export function PropertyEditor({
             </button>
           </div>
           {Array.isArray(schema.items) ? (
-            schema.items.map((item, idx) => {
-              console.debug("Array", { item, idx });
-              return (
-                <PropertyEditor
-                  key={idx}
-                  propertyKey={`[${idx}]`}
-                  onKeyChange={() => {}}
-                  schema={item}
-                  onChange={(newItem) => {
-                    const arr = [...schema.items];
-                    arr[idx] = newItem;
-                    onChange({ ...schema, items: arr });
-                  }}
-                  onDelete={() => {
-                    const arr = [...schema.items];
-                    arr.splice(idx, 1);
-                    onChange({ ...schema, items: arr });
-                  }}
-                  parentType="array"
-                  nextId={nextId}
-                />
-              );
-            })
+            schema.items.map((item, idx) => (
+              <PropertyEditor
+                key={idx}
+                propertyKey={`[${idx}]`}
+                onKeyChange={() => {}}
+                schema={item}
+                onChange={(newItem) => {
+                  const arr = [...schema.items];
+                  arr[idx] = newItem;
+                  onChange({ ...schema, items: arr });
+                }}
+                onDelete={() => {
+                  const arr = [...schema.items];
+                  arr.splice(idx, 1);
+                  onChange({ ...schema, items: arr });
+                }}
+                parentType="array"
+                nextId={nextId}
+              />
+            ))
           ) : schema.items && Object.keys(schema.items).length > 0 ? (
             <PropertyEditor
               onKeyChange={() => {}}
