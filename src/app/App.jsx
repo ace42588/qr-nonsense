@@ -1,21 +1,19 @@
 import { useState, useReducer } from "react";
-import * as Forms from "../components/forms";
-console.debug(Forms);
-//import { QRMetaInfo, QRCodeCanvas, SegmentDisplay } from "../components/qr";
+import { QRMetaInfo, QRCodeCanvas, SegmentDisplay } from "../components";
 import {
   ModeSelector,
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
 } from "../components/selectors";
-/*
+
 import {
   InputForm,
   DynamicOrderEditor,
   MerchForm,
   SchemaEditor,
 } from "../components/forms";
-*/
+
 import VideoScanner from "../components/scanner/VideoScanner";
 import { QRDataProvider } from "../state";
 

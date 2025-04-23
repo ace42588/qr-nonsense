@@ -13,7 +13,7 @@ function CodeEditor({ value, onChange }) {
 }
 
 // Main component
-export default function SchemaEditor({
+export function SchemaEditor({
   schema = {},
   metaSchema = { required: [] },
   onSchemaChange,

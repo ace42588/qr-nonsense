@@ -1,14 +1,14 @@
 // SchemaEditor.js
 import React from "react";
 import { useSchema, useSchemaContext } from "../../state";
-import FieldEditor from "./FieldEditor";
+import { FieldEditor } from "./FieldEditor";
 import {
   insertAtPath,
   updateAtPath,
   removeAtPath,
 } from "../../utils/schemaUtils";
 
-export default function SchemaEditor() {
+export function SchemaEditor() {
   const { fields } = useSchemaContext();
   const { setFields, updateField } = useSchema();
   console.debug("useSchemaContext()", useSchemaContext());

@@ -2,7 +2,7 @@
 import React from "react";
 import { useSchema, useSchemaContext } from "../../state";
 
-export default function FieldEditor({
+export function FieldEditor({
   field,
   path,
   onChange,

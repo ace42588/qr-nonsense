@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect, useCallback } from "react";
-import SchemaEditor from "./SchemaEditor";
-import ItemsEditor from "./ItemsEditor";
-import ItemGenerator from "./ItemGenerator";
+import {SchemaEditor} from "./SchemaEditor";
+import {ItemsEditor} from "./ItemsEditor";
+import {ItemGenerator} from "./ItemGenerator";
 import { schemaToObject } from "../../utils/schemaUtils";
 import {
   ErrorCorrectionSelector,
@@ -44,7 +44,7 @@ const extractInitialData = (schema) => {
   return obj;
 };
 
-export default function DynamicOrderEditor() {
+export function DynamicOrderEditor() {
   const [schema, setSchema] = useState(defaultSchema);
   const [data, setData] = useState(() => extractInitialData(defaultSchema));
   const [encoding, setEncoding] = useState("PER");

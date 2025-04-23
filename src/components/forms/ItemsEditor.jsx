@@ -2,7 +2,7 @@
 import React from "react";
 import { updateAtPath } from "../../utils/schemaUtils";
 
-export default function ItemsEditor({
+export function ItemsEditor({
   items,
   setItems,
   fieldNames,

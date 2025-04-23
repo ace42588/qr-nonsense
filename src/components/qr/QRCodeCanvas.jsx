@@ -4,7 +4,7 @@ import "../styles/styles.css";
 import { Actions } from "../../domain/qr/Constants";
 import { useQRData, useQRDataDispatch } from "../../state";
 
-export default function QRCodeCanvas() {
+export function QRCodeCanvas() {
   const canvasRef = useRef(null);
   const { matrix, bitMap, ecCodewords } = useQRData();
   const dispatch = useQRDataDispatch();

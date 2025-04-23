@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useSchemaContext } from "../../state";
 
-export default function ItemGenerator() {
+export function ItemGenerator() {
   const { fields: schema, requiredFieldNames, setData } = useSchemaContext();
 
   const [count, setCount] = useState(5);

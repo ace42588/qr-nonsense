@@ -1,7 +1,7 @@
 import React from "react";
 import { useQRData } from "../../state";
 
-export default function QRMetaInfo() {
+export function QRMetaInfo() {
   const { calculatedVersion, calculatedDataMask } = useQRData();
   
   console.debug("QRMetaInfo",{calculatedVersion, calculatedDataMask })

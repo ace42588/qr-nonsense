@@ -3,7 +3,7 @@ import { Actions } from "../../domain/qr/Constants";;
 import { useQRData, useQRDataDispatch } from "../../state";
 import "../styles/styles.css";
 
-export default function SegmentDisplay({ bitStream }) {
+export function SegmentDisplay({ bitStream }) {
   const { segments, segmentMap, bitMap } = useQRData();
   const dispatch = useQRDataDispatch();
 
