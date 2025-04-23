@@ -1,6 +1,21 @@
+const defaultSchema = [
+  { label: "Platform", name: "p", type: "string", value: "A" },
+  { label: "Conference Code", name: "cc", type: "number", value: "133" },
+  { label: "Transaction ID", name: "txn", type: "string", value: "99999" },
+  {
+    label: "Items",
+    name: "i",
+    type: "array",
+    children: [
+      { label: "Variant", name: "v", type: "number", value: "5432" },
+      { label: "Quantity", name: "q", type: "number", value: "1" },
+    ],
+  },
+];
+
 export const initialSchemaState = {
   schema: {},
-  fields: [],
+  fields: defaultSchema,
 };
 
 export function schemaReducer(state, action) {

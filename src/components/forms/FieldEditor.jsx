@@ -11,6 +11,8 @@ export default function FieldEditor({
 }) {
   const { updateField } = useSchema();
   const { requiredFieldNames } = useSchemaContext();
+  console.debug("useSchema()", useSchema());
+  console.debug("useSchemaContext()", useSchemaContext());
   
   function handleChange(i, changes) {
     updateField(i, changes);
