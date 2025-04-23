@@ -1,6 +1,7 @@
 // Collapsible, Nested JSON Schema Editor with Editable Keys and Multi-type Dropdowns
 import React, { useEffect, useRef, useState } from "react";
 import { PropertyEditor } from "./PropertyEditor";
+import { addBlankProperty } from "./schemaUtils";
 
 function useIdCounter() {
   const counter = useRef(0);
@@ -151,16 +152,6 @@ export function RecursiveSchemaEditor({
   };
   */
 
-  // Add blank nested property for object type
-  const addBlankProperty = (propertiesArr, displayName) => {
-    let newKey = "newField";
-    let counter = 1;
-    const arr = Array.isArray(propertiesArr) ? propertiesArr : [];
-    while (arr.some((prop) => prop.key === newKey))
-      newKey = `newField${counter++}`;
-    return [...arr, { id: nextId(), key: newKey, schema: { type: "string" } }];
-  };
-
   // Add blank item for array type
   const addBlankItem = (items) => {
     if (Array.isArray(items)) items = [...items, { type: "string" }];
@@ -171,8 +162,9 @@ export function RecursiveSchemaEditor({
   };
 
   const handleAddProperty = () => {
-    const newProps = addBlankProperty(schema.properties);
+    const newProps = addBlankProperty(schema.properties, nextId, label);
     setSchema({ ...schema, properties: newProps });
+    setLabel("");
   };
 
   return (

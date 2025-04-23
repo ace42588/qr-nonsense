@@ -1,21 +1,6 @@
 import { useState } from "react";
 import { TypeSelector } from "./TypeSelector";
-
-// Helper: Remove keys with undefined/null/empty string values (for clean JSON output)
-function clean(obj) {
-  const out = {};
-  for (const [k, v] of Object.entries(obj)) {
-    if (
-      v !== undefined &&
-      v !== null &&
-      !(typeof v === "string" && v === "") &&
-      !(Array.isArray(v) && v.length === 0)
-    ) {
-      out[k] = v;
-    }
-  }
-  return out;
-}
+import { addBlankItem, clean } from "./schemaUtils";
 
 export function PropertyEditor({
   propertyKey,
@@ -65,35 +50,16 @@ export function PropertyEditor({
       onChange({ ...schema, [field]: parser(value) });
     }
   };
-  /*
-  // Add blank nested property for object type
-  const addBlankProperty = () => {
-    let newKey = "newField";
-    let counter = 1;
-    const arr = Array.isArray(schema.properties) ? schema.properties : [];
-    while (arr.some((prop) => prop.key === newKey))
-      newKey = `newField${counter++}`;
-    const newProps = [
-      ...arr,
-      { id: nextId(), key: newKey, schema: { type: "string" } },
-    ];
-    onChange({ ...schema, properties: newProps });
-  };
-  */
-  const handleAddProperty = () => {
-    const newProps = addBlankProperty(schema.properties);
-    onChange({ ...schema, properties: newProps });
-  };
 
-  // Add blank item for array type
-  const addBlankItem = () => {
-    let items = schema.items;
-    if (Array.isArray(items)) items = [...items, { type: "string" }];
-    else if (items && Object.keys(items).length)
-      items = [items, { type: "string" }];
-    else items = { type: "string" };
-    onChange({ ...schema, items });
+  const handleAddProperty = () => {
+    const newProps = addBlankProperty(schema.properties, nextId);
+    onChange({ ...schema, properties: newProps });
   };
+  
+  const handleAddItem = () => {
+    const newItems = addBlankItem(schema.items);
+    onChange({ ...schema, newItems });
+  }
 
   // UI for nested properties or items
   const isObjectType = types.includes("object");
