@@ -1,5 +1,5 @@
 // Collapsible, Nested JSON Schema Editor with Editable Keys and Multi-type Dropdowns
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { PropertyEditor } from "./PropertyEditor";
 
 function useIdCounter() {
@@ -9,6 +9,54 @@ function useIdCounter() {
     return "id" + counter.current;
   };
   return nextId;
+}
+
+// Convert properties {foo: {...}, bar: {...}} <-> [{id, key, schema}]
+function objectToArray(obj, nextId) {
+  return Object.entries(obj || {}).map(([key, schema]) => ({
+    id: nextId(),
+    key,
+    schema:
+      schema.type === "object"
+        ? {
+            ...schema,
+            properties: objectToArray(schema.properties, nextId),
+          }
+        : schema.type === "array" &&
+          schema.items &&
+          schema.items.type === "object"
+        ? {
+            ...schema,
+            items: {
+              ...schema.items,
+              properties: objectToArray(schema.items.properties, nextId),
+            },
+          }
+        : schema,
+  }));
+}
+function arrayToObject(arr) {
+  const obj = {};
+  arr.forEach(({ key, schema }) => {
+    obj[key] = {
+      ...schema,
+      ...(schema.type === "object" && Array.isArray(schema.properties)
+        ? { properties: arrayToObject(schema.properties) }
+        : {}),
+      ...(schema.type === "array" &&
+      schema.items &&
+      schema.items.type === "object" &&
+      Array.isArray(schema.items.properties)
+        ? {
+            items: {
+              ...schema.items,
+              properties: arrayToObject(schema.items.properties),
+            },
+          }
+        : {}),
+    };
+  });
+  return obj;
 }
 
 function inferType(val) {
@@ -27,29 +75,48 @@ export function RecursiveSchemaEditor({
   title = "JSON Schema Editor",
 }) {
   const nextId = useIdCounter();
-  const [schema, setSchema] = useState(
-    value || { type: "object", properties: {} }
-  );
+  const [schema, setSchema] = useState(() => {
+    const initial = value || { type: "object", properties: {} };
+    return {
+      ...initial,
+      properties: objectToArray(initial.properties, nextId),
+    };
+  });
   const [collapsed, setCollapsed] = useState(false);
   const [codeView, setCodeView] = useState(false);
-  const [raw, setRaw] = useState(JSON.stringify(schema, null, 2));
+  const [raw, setRaw] = useState(() =>
+    JSON.stringify(
+      { ...schema, properties: arrayToObject(schema.properties) },
+      null,
+      2
+    )
+  );
   const [error, setError] = useState("");
 
-  // Synchronize raw code with schema
-  React.useEffect(() => setRaw(JSON.stringify(schema, null, 2)), [schema]);
-
-  function updateSchema(newSchema) {
-    setSchema(newSchema);
-    if (onChange) onChange(newSchema);
-  }
+  // Update raw code view whenever schema changes
+  useEffect(() => {
+    setRaw(
+      JSON.stringify(
+        { ...schema, properties: arrayToObject(schema.properties) },
+        null,
+        2
+      )
+    );
+    // propagate up
+    if (onChange)
+      onChange({ ...schema, properties: arrayToObject(schema.properties) });
+    // eslint-disable-next-line
+  }, [schema]);
 
   function handleRawChange(txt) {
     setRaw(txt);
     try {
       const obj = JSON.parse(txt);
-      setSchema(obj);
+      setSchema({
+        ...obj,
+        properties: objectToArray(obj.properties, nextId),
+      });
       setError("");
-      if (onChange) onChange(obj);
     } catch {
       setError("Invalid JSON");
     }
@@ -59,14 +126,15 @@ export function RecursiveSchemaEditor({
   const addBlankProperty = () => {
     let newKey = "newField";
     let counter = 1;
-    const props = schema.properties || {};
-    while (props.hasOwnProperty(newKey)) newKey = `newField${counter++}`;
-    updateSchema({
+    const arr = Array.isArray(schema.properties) ? schema.properties : [];
+    while (arr.some((prop) => prop.key === newKey))
+      newKey = `newField${counter++}`;
+    setSchema({
       ...schema,
-      properties: {
-        ...props,
-        [newKey]: { type: "string" },
-      },
+      properties: [
+        ...arr,
+        { id: nextId(), key: newKey, schema: { type: "string" } },
+      ],
     });
   };
 
@@ -113,26 +181,35 @@ export function RecursiveSchemaEditor({
         ) : (
           <>
             <div>
-              {schema.properties &&
-                Object.entries(schema.properties).map(([key, subschema]) => (
+              {Array.isArray(schema.properties) &&
+                schema.properties.map((prop) => (
                   <PropertyEditor
-                    key={key}
-                    propertyKey={key}
+                    key={prop.id}
+                    propertyKey={prop.key}
                     onKeyChange={(newKey) => {
-                      const newProps = { ...schema.properties };
-                      delete newProps[key];
-                      newProps[newKey] = subschema;
-                      updateSchema({ ...schema, properties: newProps });
+                      setSchema((s) => ({
+                        ...s,
+                        properties: s.properties.map((p) =>
+                          p.id === prop.id ? { ...p, key: newKey } : p
+                        ),
+                      }));
                     }}
-                    schema={subschema}
+                    schema={prop.schema}
                     onChange={(newSub) => {
-                      const newProps = { ...schema.properties, [key]: newSub };
-                      updateSchema({ ...schema, properties: newProps });
+                      setSchema((s) => ({
+                        ...s,
+                        properties: s.properties.map((p) =>
+                          p.id === prop.id ? { ...p, schema: newSub } : p
+                        ),
+                      }));
                     }}
                     onDelete={() => {
-                      const newProps = { ...schema.properties };
-                      delete newProps[key];
-                      updateSchema({ ...schema, properties: newProps });
+                      setSchema((s) => ({
+                        ...s,
+                        properties: s.properties.filter(
+                          (p) => p.id !== prop.id
+                        ),
+                      }));
                     }}
                     parentType="object"
                     nextId={nextId}

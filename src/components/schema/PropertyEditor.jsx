@@ -9,6 +9,13 @@ export function PropertyEditor({
   parentType,
   nextId
 }) {
+  console.debug("PropertyEditor",{propertyKey,
+  onKeyChange,
+  schema,
+  onChange,
+  onDelete,
+  parentType,
+  nextId});
   // Add blank nested property for object type
   const addBlankProperty = () => {
     let newKey = "newField";
