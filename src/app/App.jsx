@@ -43,7 +43,7 @@ export default function App() {
                     },
                   },
                 },
-                uniqueItems: false,
+                //uniqueItems: true,
               },
             },
           }}
