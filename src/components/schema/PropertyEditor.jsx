@@ -54,7 +54,7 @@ export function PropertyEditor({
     ? schema.type.includes("array")
     : schema.type === "array";
 
-  const hasPropertykey = propertyKey || false;
+  const hasPropertykey = !!propertyKey;
 
   return (
     <div
@@ -95,32 +95,37 @@ export function PropertyEditor({
               Add Property
             </button>
           </div>
-          {Object.entries(schema.properties || {}).map((prop) => {
-            console.debug("Object", { prop });
-            return (<PropertyEditor
-              key={prop.id}
-              propertyKey={prop.key}
-              onKeyChange={(newKey) => {
-                const arr = schema.properties.map((p) =>
-                  p.id === prop.id ? { ...p, key: newKey } : p
-                );
-                onChange({ ...schema, properties: arr });
-              }}
-              schema={prop.schema}
-              onChange={(newSub) => {
-                const arr = schema.properties.map((p) =>
-                  p.id === prop.id ? { ...p, schema: newSub } : p
-                );
-                onChange({ ...schema, properties: arr });
-              }}
-              onDelete={() => {
-                const arr = schema.properties.filter((p) => p.id !== prop.id);
-                onChange({ ...schema, properties: arr });
-              }}
-              parentType="object"
-              nextId={nextId}
-            />);
-          })}
+          {Array.isArray(schema.properties) &&
+            schema.properties.map((prop) => {
+              console.debug("Object", { prop });
+              return (
+                <PropertyEditor
+                  key={prop.id}
+                  propertyKey={prop.key}
+                  onKeyChange={(newKey) => {
+                    const arr = schema.properties.map((p) =>
+                      p.id === prop.id ? { ...p, key: newKey } : p
+                    );
+                    onChange({ ...schema, properties: arr });
+                  }}
+                  schema={prop.schema}
+                  onChange={(newSub) => {
+                    const arr = schema.properties.map((p) =>
+                      p.id === prop.id ? { ...p, schema: newSub } : p
+                    );
+                    onChange({ ...schema, properties: arr });
+                  }}
+                  onDelete={() => {
+                    const arr = schema.properties.filter(
+                      (p) => p.id !== prop.id
+                    );
+                    onChange({ ...schema, properties: arr });
+                  }}
+                  parentType="object"
+                  nextId={nextId}
+                />
+              );
+            })}
         </div>
       )}
       {isArrayType && (
