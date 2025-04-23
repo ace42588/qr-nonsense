@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import '../styles/MultiSelectDropdown.css';
+import downArrowSvg from "../../assets/img/down-arrow.svg";
+console.debug({downArrowSvg});
+
 
 export function MultiSelectDropdown({ options, label, value = [], onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState(value);
   const [searchText, setSearchText] = useState("");
 
-  const dropdownRef = useRef < HTMLDivElement > null;
+  const dropdownRef = useRef(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -61,7 +64,7 @@ export function MultiSelectDropdown({ options, label, value = [], onChange }) {
             : "Please select"}
         </span>
         <img
-          src={"../assets/img/down-arrow.svg"}
+          src={downArrowSvg}
           className="multi-select-dropdown-arrow"
           alt="Arrow"
         />
