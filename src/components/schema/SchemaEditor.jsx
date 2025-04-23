@@ -110,9 +110,12 @@ export function RecursiveSchemaEditor({
   }, [schema]);
 
   function handleRawChange(txt) {
+    const excludedKeys = ["id", "displayName"];
     setRaw(txt);
     try {
-      const obj = JSON.parse(txt);
+      const obj = JSON.parse(txt, ({ key, value }) =>
+        excludedKeys.some((e) => e === key) ? undefined : value
+      );
       setSchema({
         ...obj,
         properties: objectToArray(obj.properties, nextId),
@@ -135,7 +138,12 @@ export function RecursiveSchemaEditor({
       ...schema,
       properties: [
         ...arr,
-        { displayName: label, id: nextId(), key: newKey, schema: { type: "string" } },
+        {
+          displayName: label,
+          id: nextId(),
+          key: newKey,
+          schema: { type: "string" },
+        },
       ],
     });
     setLabel("");
