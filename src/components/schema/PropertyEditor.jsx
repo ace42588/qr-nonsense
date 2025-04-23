@@ -6,21 +6,20 @@ export function PropertyEditor({
   schema,
   onChange,
   onDelete,
-  parentType
+  parentType,
+  nextId
 }) {
   // Add blank nested property for object type
   const addBlankProperty = () => {
     let newKey = "newField";
     let counter = 1;
-    const props = schema.properties || {};
-    while (props.hasOwnProperty(newKey)) newKey = `newField${counter++}`;
-    onChange({
-      ...schema,
-      properties: {
-        ...props,
-        [newKey]: { type: "string" }
-      }
-    });
+    const arr = Array.isArray(schema.properties) ? schema.properties : [];
+    while (arr.some(prop => prop.key === newKey)) newKey = `newField${counter++}`;
+    const newProps = [
+      ...arr,
+      { id: nextId(), key: newKey, schema: { type: "string" } }
+    ];
+    onChange({ ...schema, properties: newProps });
   };
 
   // Add blank item for array type
@@ -72,27 +71,29 @@ export function PropertyEditor({
             <span style={{ fontWeight: 500 }}>Properties</span>
             <button onClick={addBlankProperty} style={{ fontSize: 12 }}>Add Property</button>
           </div>
-          {Object.entries(schema.properties || {}).map(([k, v]) => (
+          {Object.entries(schema.properties || {}).map(prop => (
             <PropertyEditor
-              key={k}
-              propertyKey={k}
+              key={prop.id}
+              propertyKey={prop.key}
               onKeyChange={newKey => {
-                const newProps = { ...schema.properties };
-                delete newProps[k];
-                newProps[newKey] = v;
-                onChange({ ...schema, properties: newProps });
+                const arr = schema.properties.map(p =>
+                  p.id === prop.id ? { ...p, key: newKey } : p
+                );
+                onChange({ ...schema, properties: arr });
               }}
-              schema={v}
+              schema={prop.schema}
               onChange={newSub => {
-                const newProps = { ...schema.properties, [k]: newSub };
-                onChange({ ...schema, properties: newProps });
+                const arr = schema.properties.map(p =>
+                  p.id === prop.id ? { ...p, schema: newSub } : p
+                );
+                onChange({ ...schema, properties: arr });
               }}
               onDelete={() => {
-                const newProps = { ...schema.properties };
-                delete newProps[k];
-                onChange({ ...schema, properties: newProps });
+                const arr = schema.properties.filter(p => p.id !== prop.id);
+                onChange({ ...schema, properties: arr });
               }}
               parentType="object"
+              nextId={nextId}
             />
           ))}
         </div>
@@ -121,6 +122,7 @@ export function PropertyEditor({
                     onChange({ ...schema, items: arr });
                   }}
                   parentType="array"
+                  nextId={nextId}
                 />
               ))
             : schema.items && Object.keys(schema.items).length > 0 ? (
@@ -131,6 +133,7 @@ export function PropertyEditor({
                   onChange={newItem => onChange({ ...schema, items: newItem })}
                   onDelete={() => onChange({ ...schema, items: {} })}
                   parentType="array"
+                  nextId={nextId}
                 />
               ) : null}
         </div>
