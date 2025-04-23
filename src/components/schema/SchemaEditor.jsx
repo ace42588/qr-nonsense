@@ -148,6 +148,30 @@ export function RecursiveSchemaEditor({
     });
     setLabel("");
   };
+  
+    // Add blank nested property for object type
+  const addBlankProperty = (propertiesArr) => {
+    let newKey = "newField";
+    let counter = 1;
+    const arr = Array.isArray(propertiesArr) ? propertiesArr : [];
+    while (arr.some((prop) => prop.key === newKey))
+      newKey = `newField${counter++}`;
+    const newProps = [
+      ...arr,
+      { id: nextId(), key: newKey, schema: { type: "string" } },
+    ];
+    onChange({ ...schema, properties: newProps });
+  };
+
+  // Add blank item for array type
+  const addBlankItem = () => {
+    let items = schema.items;
+    if (Array.isArray(items)) items = [...items, { type: "string" }];
+    else if (items && Object.keys(items).length)
+      items = [items, { type: "string" }];
+    else items = { type: "string" };
+    onChange({ ...schema, items });
+  };
 
   return (
     <div
