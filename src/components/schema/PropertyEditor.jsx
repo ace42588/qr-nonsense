@@ -9,15 +9,7 @@ export function PropertyEditor({
   parentType,
   nextId,
 }) {
-  console.debug("PropertyEditor", {
-    propertyKey,
-    onKeyChange,
-    schema,
-    onChange,
-    onDelete,
-    parentType,
-    nextId,
-  });
+
   // Add blank nested property for object type
   const addBlankProperty = () => {
     let newKey = "newField";
@@ -29,9 +21,7 @@ export function PropertyEditor({
       ...arr,
       { id: nextId(), key: newKey, schema: { type: "string" } },
     ];
-    const newSchema = { ...schema, properties: newProps };
-    console.debug("addBlankProperty", { newSchema });
-    onChange(newSchema);
+    onChange({ ...schema, properties: newProps });
   };
 
   // Add blank item for array type
@@ -41,9 +31,7 @@ export function PropertyEditor({
     else if (items && Object.keys(items).length)
       items = [items, { type: "string" }];
     else items = { type: "string" };
-    const newSchema = { ...schema, items };
-    console.debug("addBlankItem", { newSchema });
-    onChange(newSchema);
+    onChange({ ...schema, items });
   };
 
   // UI for nested properties or items
