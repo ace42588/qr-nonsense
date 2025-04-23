@@ -1,4 +1,4 @@
-import { TypeSelector, NewTypeSelector } from "./TypeSelector";
+import { TypeSelector } from "./TypeSelector";
 
 export function PropertyEditor({
   propertyKey,
@@ -45,6 +45,8 @@ export function PropertyEditor({
   const isArrayType = Array.isArray(schema.type)
     ? schema.type.includes("array")
     : schema.type === "array";
+  
+  const hasPropertykey = propertyKey || false;
 
   return (
     <div style={{
@@ -56,7 +58,7 @@ export function PropertyEditor({
       background: "#fafaff"
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <input
+        {hasPropertykey && (<input
           value={propertyKey}
           onChange={e => onKeyChange(e.target.value)}
           style={{
@@ -64,8 +66,8 @@ export function PropertyEditor({
             fontSize: 14,
             width: 120
           }}
-        />
-        <NewTypeSelector
+        />)}
+        <TypeSelector
           value={schema.type}
           onChange={type => onChange({ ...schema, type })}
         />
@@ -75,7 +77,6 @@ export function PropertyEditor({
       {isObjectType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontWeight: 500 }}>Properties</span>
             <button onClick={addBlankProperty} style={{ fontSize: 12 }}>Add Property</button>
           </div>
           {Object.entries(schema.properties || {}).map(prop => (
@@ -108,7 +109,6 @@ export function PropertyEditor({
       {isArrayType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontWeight: 500 }}>Items</span>
             <button onClick={addBlankItem} style={{ fontSize: 12 }}>Add Item Schema</button>
           </div>
           {Array.isArray(schema.items)
@@ -134,7 +134,6 @@ export function PropertyEditor({
               ))
             : schema.items && Object.keys(schema.items).length > 0 ? (
                 <PropertyEditor
-                  propertyKey="items"
                   onKeyChange={() => {}}
                   schema={schema.items}
                   onChange={newItem => onChange({ ...schema, items: newItem })}

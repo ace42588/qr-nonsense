@@ -22,14 +22,7 @@ export default function App() {
     if (inputMode === "merch") {
       return (
         <RecursiveSchemaEditor
-          value={{
-            type: "object",
-            properties: {
-              myField: { type: ["string", "null"], label: "My Field" },
-            },
-          }}
           onChange={(schema) => {
-            // Do something with the schema
             console.log("Schema changed:", schema);
           }}
         />
