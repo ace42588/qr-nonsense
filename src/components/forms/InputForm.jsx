@@ -35,9 +35,10 @@ export function InputForm() {
   };
 
   const handleModeChange = (index, event) => {
-    const newMode = event.target.value;
-    console.debug("handleModeChange", { index, newMode });
     const newInputs = [...inputs];
+    const newMode = newInputs[index].mode;
+    event.target.value;
+    console.debug("handleModeChange", { index, event });
     newInputs[index].mode = newMode;
     if (newMode === "byte") {
       newInputs[index].encoding = "";
@@ -45,14 +46,6 @@ export function InputForm() {
       delete newInputs[index].encoding;
     }
     setInputs(newInputs);
-  };
-
-  const handleCheckboxChange = (input) => {
-    if (input.encoding === "utf-8") {
-      input.encoding = "";
-    } else {
-      input.encoding = "utf-8";
-    }
   };
 
   const handleAddInput = () => {
@@ -89,17 +82,6 @@ export function InputForm() {
                   mode={input.mode}
                   onChange={(e) => handleModeChange(index, e)}
                 />
-                {input.mode === "byte" && (
-                  <>
-                    <label htmlFor={`checkbox-${index}`}>Force UTF-8</label>
-                    <input
-                      id={`checkbox-${index}`}
-                      type="checkbox"
-                      value={inputs.encoding === "utf-8"}
-                      onChange={() => handleCheckboxChange(input)}
-                    />
-                  </>
-                )}
               </div>
               <input
                 type="text"

@@ -10,10 +10,6 @@
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
-.input-form div {
-  display: flex;
-  flex-direction: column;
-}
 
 .input-form input,
 .input-form select {
@@ -161,4 +157,15 @@ canvas {
   justify-content: space-between;
   align-items: center;
   background: #e1e8f0;
+}
+
+.label-select-row {
+  display: flex;
+  align-items: center;      /* Vertically centers label and select */
+  gap: 0.5rem;              /* Space between label and select */
+}
+
+/* Optional: ensure the label has no right margin if using gap */
+.label-select-row label {
+  margin-right: 0;
 }
