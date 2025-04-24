@@ -15,7 +15,7 @@ export function VideoScanner({
   const [scanning, setScanning] = useState(true);
 
   const processQRCodeData = ({ chunks, version, formatInfo }) => {
-    console.log({ chunks, version, formatInfo });
+    console.log("VideoScanner", { chunks, version, formatInfo });
     const { errorCorrectionLevel, dataMask } = formatInfo;
 
     chunks.forEach(({ type, encoding, ...data }) =>
