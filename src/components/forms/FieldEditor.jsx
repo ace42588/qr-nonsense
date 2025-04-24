@@ -1,4 +1,3 @@
-// FieldEditor.js
 import React from "react";
 import { useSchema, useSchemaContext } from "../../state";
 

@@ -5,11 +5,21 @@ import {
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
-} from "../selectors/Selectors";
+  OrderEncodingSelector
+} from "../selectors";
 import { useQRDataDispatch } from "../../state";
 import { Actions } from "../../domain/qr/Constants";
 
 import { encodeOrder, parseOrderJson } from "../../utils/orderUtils";
+
+const fieldNames = {
+    platformKey: "p",
+    conferenceKey: "cc",
+    transactionKey: "txn",
+    itemsKey: "i",
+    variantKey: "v",
+    quantityKey: "q",
+  }
 
 export function MerchForm() {
   const [input, setInput] = useState(sampleInput);
@@ -20,7 +30,7 @@ export function MerchForm() {
     (inputValue = input, encodingType = encoding) => {
       const order = parseOrderJson(inputValue);
       if (!order) return;
-      const output = encodeOrder(order, encodingType);
+      const output = encodeOrder(order, encodingType, fieldNames);
       if (!output) return;
       dispatch({
         type: Actions.ChangeInput,

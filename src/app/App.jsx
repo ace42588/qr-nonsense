@@ -20,7 +20,7 @@ export default function App() {
 
   const selectUI = () => {
     if (inputMode === "merch") {
-      return <DynamicOrderEditor />;
+      return <MerchForm />;
     } else if (inputMode === "scan") {
       return <VideoScanner />;
     }
