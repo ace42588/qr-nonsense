@@ -34,15 +34,11 @@ export function InputForm() {
     setInputs(newInputs);
   };
 
-  const handleModeChange = (index, event) => {
+  const handleModeChange = (index, mode) => {
     console.debug("handleModeChange", { index, event });
+    const { value, encoding } = mode;
     const newInputs = [...inputs];
-    let newMode = newInputs[index].mode;
-    const { target } = event;
-
-    if (target.value) newInputs[index].mode = target.value;
-    if (target.checked) newInputs[index].mode.encoding = "utf-8";
-
+    newInputs[index].mode = { mode: value, encoding };
     setInputs(newInputs);
   };
 
