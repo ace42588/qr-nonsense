@@ -166,8 +166,9 @@ canvas {
   justify-content: space-between;
 }
 
-.input-button-row button {
-  
+.input-button-row input {
+  min-width: 200px;
+  max-width: 
 }
 
 .input-button-row button {
