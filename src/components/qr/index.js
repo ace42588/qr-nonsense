@@ -1,3 +1,4 @@
-export * from "./QRCodeCanvas"
-export * from "./QRInfo"
-export * from "./SegmentDisplay"
+export * from "./QRCodeCanvas";
+export * from "./QRInfo";
+export * from "./QRInfoInput";
+export * from "./SegmentDisplay";

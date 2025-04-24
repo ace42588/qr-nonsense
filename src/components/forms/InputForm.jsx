@@ -1,5 +1,6 @@
 import { useState, useContext, useEffect, useCallback } from "react";
 import "../styles/styles.css"; // Import your component-specific styles
+import { QRInfoInput } from "../qr/QRInfoInput";
 import {
   ErrorCorrectionSelector,
   VersionSelector,
@@ -10,15 +11,7 @@ import { useQRDataDispatch } from "../../state";
 import { parseInput } from "./inputUtils";
 import { Actions } from "../../domain/qr/Constants";
 
-export function InputForm({
-  setBitStream,
-  version,
-  setVersion,
-  dataMask,
-  setDataMask,
-  errorCorrectionLevel,
-  setErrorCorrectionLevel,
-}) {
+export function InputForm() {
   const [inputs, setInputs] = useState([
     { mode: "byte", data: "Hello world!" },
   ]);
@@ -80,11 +73,7 @@ export function InputForm({
     <div className="input-form">
       <div className="row">
         <ErrorCorrectionSelector />
-      </div>
-      <div className="row">
         <VersionSelector />
-      </div>
-      <div className="row">
         <DataMaskSelector />
       </div>
       <div className="row">

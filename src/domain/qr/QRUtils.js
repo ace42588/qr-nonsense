@@ -56,42 +56,46 @@ export function getQRDataFromInputs(
     segmentMap: [],
     bitMap: [],
   };
-  const encodedInputs = inputs.map(({ data, mode, encoding }) =>
-    getEncoder(mode).encode(data, encoding)
-  );
-  const encoded = encodedInputs.reduce((acc, curr) => {
-    return {
-      segments: [...acc.segments, ...curr.segments],
-      segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
-      bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
-    };
-  }, init);
+  try {
+    const encodedInputs = inputs.map(({ data, mode, encoding }) =>
+      getEncoder(mode).encode(data, encoding)
+    );
+    const encoded = encodedInputs.reduce((acc, curr) => {
+      return {
+        segments: [...acc.segments, ...curr.segments],
+        segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
+        bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
+      };
+    }, init);
 
-  const calculatedVersion = getVersion(
-    encoded.bitMap.size,
-    version,
-    errorCorrectionLevel
-  );
-  const codewords = getCodewords(
-    encodedInputs,
-    calculatedVersion,
-    errorCorrectionLevel
-  );
-  const { matrix, dataMask: calculatedDataMask } = generateQRCodeMatrix({
-    version: calculatedVersion,
-    errorCorrectionLevel,
-    dataMask,
-    codewords,
-  });
-  return {
-    ...encoded,
-    ecCodewords: codewords.filter((cw) => cw.type === "errorCorrection"),
-    encodedInputs,
-    calculatedVersion,
-    codewords,
-    matrix,
-    calculatedDataMask,
-  };
+    const calculatedVersion = getVersion(
+      encoded.bitMap.size,
+      version,
+      errorCorrectionLevel
+    );
+    const codewords = getCodewords(
+      encodedInputs,
+      calculatedVersion,
+      errorCorrectionLevel
+    );
+    const { matrix, dataMask: calculatedDataMask } = generateQRCodeMatrix({
+      version: calculatedVersion,
+      errorCorrectionLevel,
+      dataMask,
+      codewords,
+    });
+    return {
+      ...encoded,
+      ecCodewords: codewords.filter((cw) => cw.type === "errorCorrection"),
+      encodedInputs,
+      calculatedVersion,
+      codewords,
+      matrix,
+      calculatedDataMask,
+    };
+  } catch (e) {
+    return { error: e };
+  }
 }
 
 function generateQRCodeMatrix({
