@@ -62,7 +62,7 @@ export function parseInput(input) {
     }
   }
   
-  console.debug("parsedInput", parsedInput);
+  console.debug("parsedInput: returning", parsedInput);
 
   return parsedInput;
 }

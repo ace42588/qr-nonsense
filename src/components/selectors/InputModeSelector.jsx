@@ -16,7 +16,7 @@ export function InputModeSelector({ mode, encoding, onChange }) {
         value={mode}
         onChange={(e) => {
           console.debug("InputModeSelector", { e });
-          onChange({ mode, encoding });
+          onChange({ mode: e.target.value, encoding });
         }}
       >
         {modes.map((m, idx) => (
