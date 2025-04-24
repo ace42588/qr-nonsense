@@ -26,13 +26,7 @@ export function PropertyEditor({
     ? [schema.type]
     : [];
 
-  required = Array.isArray(required)
-    ? schema.required
-    : schema.required
-    ? [schema.required]
-    : [];
-
-  console.debug("PropertyEditor", { required });
+  required = Array.isArray(required) ? required : required ? [required] : [];
 
   const handleAddProperty = () => {
     console.debug("handleAddProperty", typeof addBlankProperty);
@@ -94,9 +88,7 @@ export function PropertyEditor({
           </button>
         )}
       </div>
-
       <ConstraintsEditor schema={schema} onChange={onChange} />
-
       {/* Recursively render for nested objects */}
       {isObjectType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
@@ -124,7 +116,7 @@ export function PropertyEditor({
               parentType="object"
               nextId={nextId}
               addBlankProperty={addBlankProperty}
-              required={required}
+              required={prop.required}
             />
           ))}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -143,39 +135,44 @@ export function PropertyEditor({
           </div>
         </div>
       )}
-
+      {console.debug(schema.items)}
       {isArrayType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           {Array.isArray(schema.items) ? (
-            schema.items.map((item, idx) => (
-              <>
-                <PropertyEditor
-                  key={idx}
-                  propertyKey={`[${idx}]`}
-                  onKeyChange={() => {}}
-                  schema={item}
-                  onChange={(newItem) => {
-                    const arr = [...schema.items];
-                    arr[idx] = newItem;
-                    onChange({ ...schema, items: arr });
-                  }}
-                  onDelete={() => {
-                    const arr = [...schema.items];
-                    arr.splice(idx, 1);
-                    onChange({ ...schema, items: arr });
-                  }}
-                  parentType="array"
-                  nextId={nextId}
-                  addBlankProperty={addBlankProperty}
-                  required={required}
-                />
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <button onClick={handleAddItem} style={{ fontSize: 12 }}>
-                    Add Item Schema
-                  </button>
-                </div>
-              </>
-            ))
+            schema.items.map((item, idx) => {
+              console.debug({ item });
+              return (
+                <>
+                  <PropertyEditor
+                    key={idx}
+                    propertyKey={`[${idx}]`}
+                    onKeyChange={() => {}}
+                    schema={item}
+                    onChange={(newItem) => {
+                      const arr = [...schema.items];
+                      arr[idx] = newItem;
+                      onChange({ ...schema, items: arr });
+                    }}
+                    onDelete={() => {
+                      const arr = [...schema.items];
+                      arr.splice(idx, 1);
+                      onChange({ ...schema, items: arr });
+                    }}
+                    parentType="array"
+                    nextId={nextId}
+                    addBlankProperty={addBlankProperty}
+                    required={item.required}
+                  />
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <button onClick={handleAddItem} style={{ fontSize: 12 }}>
+                      Add Item Schema
+                    </button>
+                  </div>
+                </>
+              );
+            })
           ) : schema.items && Object.keys(schema.items).length > 0 ? (
             <PropertyEditor
               onKeyChange={() => {}}
@@ -185,7 +182,6 @@ export function PropertyEditor({
               parentType="array"
               nextId={nextId}
               addBlankProperty={addBlankProperty}
-              required={required}
             />
           ) : null}
         </div>
