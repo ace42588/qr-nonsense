@@ -35,10 +35,11 @@ export function InputForm() {
   };
 
   const handleModeChange = (index, mode) => {
-    console.debug("handleModeChange", { index, event });
+    console.debug("handleModeChange", { index, event, mode });
     const { value, encoding } = mode;
     const newInputs = [...inputs];
-    newInputs[index].mode = { mode: value, encoding };
+    const input = newInputs[index];
+    newInputs[index] = {...input, mode: value, encoding}
     setInputs(newInputs);
   };
 

@@ -13,7 +13,10 @@ export function InputModeSelector({ mode, onChange }) {
       <select
         id="inputMode"
         value={mode}
-        onChange={(e) => onChange({ value: e.target.value })}
+        onChange={(e) => {
+          console.debug("InputModeSelector", {e})
+          onChange({ value: e.target.value })
+        }}
       >
         {modes.map((m, idx) => (
           <option key={m} value={m}>

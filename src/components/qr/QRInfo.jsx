@@ -3,8 +3,6 @@ import { useQRData } from "../../state";
 
 export function QRMetaInfo() {
   const { calculatedVersion, calculatedDataMask } = useQRData();
-  
-  console.debug("QRMetaInfo",{calculatedVersion, calculatedDataMask })
 
   return (
     <div className="qr-meta-info">
