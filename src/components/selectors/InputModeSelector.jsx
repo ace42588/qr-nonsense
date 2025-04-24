@@ -7,7 +7,7 @@ const modes = [
 ];
 
 export function InputModeSelector({ mode, encoding, onChange }) {
-  console.debug("InputModeSelector", { mode });
+  //console.debug("InputModeSelector", { mode });
   return (
     <div className="label-select-row">
       <label htmlFor="inputMode">Input Mode:</label>

@@ -15,7 +15,7 @@ export function InputForm() {
   const updateQRData = useCallback(
     (inputValue = inputs) => {
       const parsed = inputs.map((i) => parseInput(i));
-      console.debug("updateQRData", { inputValue });
+      //console.debug("updateQRData", { inputValue });
       dispatch({
         type: Actions.ChangeInput,
         inputs: parsed,

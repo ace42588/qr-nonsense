@@ -1,10 +1,10 @@
 const isBinary = (str) =>
-  /^(?:0b)?(?:[01]{8}(?:\s+[01]{8})+|(?:[01]{8})+)$/i.test(str);
+  /^(?:0b)?(?:[01]{1,}(?:\s+[01]{1,})+|(?:[01]{1,})+)$/i.test(str);
 const isHex = (str) =>
   /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(str);
 
 export function parseInput(input) {
-  console.debug("parseInput",{input});
+  //console.debug("parseInput",{input});
   if (!input || !input.data || !input.mode) return {};
   let { mode, data, encoding } = input;
 
@@ -24,7 +24,7 @@ export function parseInput(input) {
       parsedInput.data = match ? match.join("") : "";
       break;
     }
-    case "byte": {
+    default: { // defualt to byte
       if (encoding === "utf-8") {
         console.debug("parsedInput", "Forcing UTF-8 interpretation for input");
         break;
@@ -34,12 +34,6 @@ export function parseInput(input) {
         let hex = "";
         let bin = data.replace(/^0b/i, "");
         bin = bin.replace(/\s+/g, "");
-
-        if (bin.length % 8 !== 0) {
-          throw new Error(
-            "Invalid binary string: length must be byte aligned."
-          );
-        }
 
         for (let i = 0; i < bin.length; i += 4) {
           let val = parseInt(bin.substring(i, i + 4), 2);
@@ -65,10 +59,6 @@ export function parseInput(input) {
         );
         parsedInput.encoding = "utf-8";
       }
-    }
-    default: {
-      console.error("parsedInput", "Fell through to default case");
-      parsedInput.data = data;
     }
   }
   
