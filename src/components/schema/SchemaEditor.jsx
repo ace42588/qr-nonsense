@@ -45,7 +45,7 @@ export function RecursiveSchemaEditor({
     )
   );
   const [error, setError] = useState("");
-  const [label, setLabel] = useState("MyProp");
+  const [propName, setLabel] = useState("MyProp");
 
   console.debug("RecursiveSchemaEditor", { schema });
 
@@ -160,18 +160,12 @@ export function RecursiveSchemaEditor({
                     parentType="object"
                     nextId={nextId}
                     addBlankProperty={addBlankProperty}
-                    displayName={prop.displayName}
                   />
                 ))}
             </div>
             <input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              style={{
-                fontWeight: "bold",
-                fontSize: 14,
-                width: 120,
-              }}
             />
             <button onClick={handleAddProperty}>Add Property</button>
           </>

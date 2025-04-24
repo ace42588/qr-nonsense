@@ -61,7 +61,6 @@ export function PropertyEditor({
         background: "#fafaff",
       }}
     >
-      <h2>{displayName}</h2>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         {hasPropertykey && (
           <div className="input-container">
@@ -141,7 +140,7 @@ export function PropertyEditor({
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           {Array.isArray(schema.items) ? (
             schema.items.map((item, idx) => (
-              <div>
+              <>
                 <PropertyEditor
                   key={idx}
                   propertyKey={`[${idx}]`}
@@ -166,7 +165,7 @@ export function PropertyEditor({
                     Add Item Schema
                   </button>
                 </div>
-              </div>
+              </>
             ))
           ) : schema.items && Object.keys(schema.items).length > 0 ? (
             <PropertyEditor
