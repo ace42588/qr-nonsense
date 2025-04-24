@@ -140,7 +140,7 @@ export function qrReducer(state, action) {
       return { ...state, calculatedVersion: action.payload };
     case "SET_SEGMENTS":
       return { ...state, segments: action.payload };
-    case "TOGGLE_HIGHLIGHT": // 🆕 toggle highlighting for a segment
+    case "TOGGLE_HIGHLIGHT":
       return {
         ...state,
         segments: state.segments.map((s) =>
@@ -149,7 +149,7 @@ export function qrReducer(state, action) {
             : s
         ),
       };
-    case "CLEAR_HIGHLIGHTS": // 🆕 reset all highlighting
+    case "CLEAR_HIGHLIGHTS":
       return {
         ...state,
         segments: state.segments.map((s) => ({ ...s, isHighlighted: false })),
