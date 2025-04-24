@@ -5,8 +5,8 @@ const defaultFieldNames = {
   conferenceKey: "conferenceCode",
   transactionKey: "transactionId",
   itemsKey: "items",
-  variantKey: "v",
-  quantityKey: "q",
+  variantKey: "variant",
+  quantityKey: "quantity",
 };
 
 export const encodeOrder = (
@@ -15,7 +15,8 @@ export const encodeOrder = (
   fieldNames = defaultFieldNames
 ) => {
   console.debug("encodeOrder", { order, encoding, fieldNames });
-  const stdOrder = standardizeOrder(order, fieldNames);
+  //const stdOrder = standardizeOrder(order, fieldNames);
+  const stdOrder = order;
   console.debug("encodeOrder", { stdOrder });
   let encodedOrder = {};
   switch (encoding) {
@@ -96,6 +97,7 @@ export const encodeOrder = (
 };
 
 function standardizeOrder(order, fieldNames = defaultFieldNames) {
+  console.debug("standardizeOrder", { order, fieldNames });
   const {
     platformKey,
     conferenceKey,
@@ -108,6 +110,7 @@ function standardizeOrder(order, fieldNames = defaultFieldNames) {
     variant: item[variantKey],
     quantity: item[quantityKey],
   }));
+  console.debug("standardizeOrder", { items });
   const stdOrder = {
     ...order,
     transactionId: order[transactionKey],
@@ -115,10 +118,12 @@ function standardizeOrder(order, fieldNames = defaultFieldNames) {
     platform: order[platformKey],
     items,
   };
+  console.debug("standardizeOrder", { stdOrder });
   delete stdOrder[platformKey];
   delete stdOrder[conferenceKey];
   delete stdOrder[transactionKey];
   delete stdOrder[itemsKey];
+  console.debug("standardizeOrder", { stdOrder });
 
   return stdOrder;
 }
@@ -134,8 +139,12 @@ export const parseOrderJson = (raw) => {
       p: platform,
       i: items,
     } = JSON.parse(safe);
-    parsedInput = { transactionId, conferenceCode, platform, items: items.map(({q,v}) => ({})) };
-    parsedInput.items = 
+    parsedInput = {
+      transactionId,
+      conferenceCode,
+      platform,
+      items: items.map(({ q, v }) => ({ quantity: q, variant: v })),
+    };
   } catch (e) {
     console.debug("parseInput", `Error parsing ${raw}`);
   }
