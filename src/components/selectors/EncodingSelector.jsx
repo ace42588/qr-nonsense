@@ -6,7 +6,7 @@ export function OrderEncodingSelector({ encoding, setEncoding, onChange }) {
   };
 
   return (
-    <div className="order-encoding-selector">
+    <div className="label-select-row">
       <label htmlFor="encoding">Encoding:</label>
       <select id="encoding" value={encoding} onChange={handleChange}>
         {Encodings.map((encoding, idx) => (

@@ -2,9 +2,9 @@
 .input-form {
   gap: 10px;
   width: 100%;
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
+  max-width: 600px;
+  margin: 10px auto;
+  padding: 10px;
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
@@ -136,7 +136,12 @@ canvas {
 }
 
 .input-group {
-  
+  padding: 2px;
+  margin: 2px;
+}
+
+.input-group textarea {
+  width: 100%;
 }
 
 .input-label {
@@ -168,6 +173,7 @@ canvas {
   align-items: center;      /* Vertically centers label and select */
   gap: 0.5rem;              /* Space between label and select */
   justify-content: space-between;
+  margin: 4px auto;
 }
 
 .input-button-row input {
@@ -185,6 +191,7 @@ canvas {
   align-items: center;      /* Vertically centers label and select */
   gap: 0.5rem;              /* Space between label and select */
   justify-content: space-between;
+   margin: 4px auto;
 }
 
 /* Optional: ensure the label has no right margin if using gap */
@@ -204,6 +211,7 @@ canvas {
   align-items: center;      /* Vertically centers label and select */
   gap: 0.5rem;              /* Space between label and select */
   justify-content: space-between;
+  margin: 4px auto;
 }
 
 /* Optional: ensure the label has no right margin if using gap */
