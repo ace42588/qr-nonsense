@@ -1,4 +1,6 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useCallback, useRef, useEffect, useState } from "react";
+import { useQRDataDispatch } from "../../state";
+import { Actions } from "../../domain/qr/Constants";
 import jsQR from "jsqr";
 import "../styles/styles.css";
 
@@ -13,6 +15,25 @@ export function VideoScanner({
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [scanning, setScanning] = useState(true);
+  const dispatch = useQRDataDispatch();
+
+  const updateQRData = useCallback(
+    ({ chunks, version, formatInfo }) => {
+      console.debug("updateQRData", { chunks });
+      dispatch({
+        type: Actions.ChangeInput,
+        inputs: chunks.map(({ type, text, data }) => ({
+          mode: type,
+          data: text || data,
+        })),
+      });
+    },
+    [dispatch]
+  );
+
+  useEffect(() => {
+    updateQRData();
+  }, [updateQRData]);
 
   const processQRCodeData = ({ chunks, version, formatInfo }) => {
     console.log("VideoScanner", { chunks, version, formatInfo });
@@ -44,13 +65,12 @@ export function VideoScanner({
         console.debug("VideoScanner", { stream });
         video.srcObject = stream;
         video.setAttribute("playsinline", true);
-        await video.play();
+        video.play().catch((e) => console.debug(e));
         requestAnimationFrame(scanQR);
       });
 
     function scanQR() {
       if (video.readyState === video.HAVE_ENOUGH_DATA && scanning) {
-        console.debug("scanQR")
         canvasElement.height = video.videoHeight;
         canvasElement.width = video.videoWidth;
         canvas.drawImage(
