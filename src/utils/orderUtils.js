@@ -9,9 +9,14 @@ const defaultFieldNames = {
   quantityKey: "q",
 };
 
-export const encodeOrder = (order, encoding, fieldNames) => {
+export const encodeOrder = (
+  order,
+  encoding,
+  fieldNames = defaultFieldNames
+) => {
   console.debug("encodeOrder", { order, encoding, fieldNames });
   const stdOrder = standardizeOrder(order, fieldNames);
+  console.debug("encodeOrder", { stdOrder });
   let encodedOrder = {};
   switch (encoding) {
     case "Alphanumeric": {
@@ -129,10 +134,11 @@ export const parseOrderJson = (raw) => {
       p: platform,
       i: items,
     } = JSON.parse(safe);
-    parsedInput = { transactionId, conferenceCode, platform, items };
+    parsedInput = { transactionId, conferenceCode, platform, items: items.map(({q,v}) => ({})) };
+    parsedInput.items = 
   } catch (e) {
     console.debug("parseInput", `Error parsing ${raw}`);
   }
-
+  console.debug("parsedOrderJson", { parsedInput });
   return parsedInput;
 };
