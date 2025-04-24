@@ -102,7 +102,7 @@ export function VideoScanner({
       {scanning && (
         <>
           <video ref={videoRef} width="640" height="480" />
-          <canvas ref={canvasRef} style={{ display: "none" }} />
+          <canvas ref={canvasRef}  />
         </>
       )}
     </div>
