@@ -14,7 +14,7 @@ export function PropertyEditor({
   addBlankProperty,
   required,
 }) {
-  console.debug("PropertyEditor", { propertyKey, required, schema });
+  console.debug("PropertyEditor", { parentType, propertyKey, required, schema });
   const [enumEditValue, setEnumEditValue] = useState("");
   const [propName, setPropName] = useState("newField");
 
@@ -88,7 +88,6 @@ export function PropertyEditor({
       </div>
       {/*<ConstraintsEditor schema={schema} onChange={onChange} />*/}
       {/* Recursively render for nested objects */}
-      {console.debug("schema.properties", schema.properties)}
       {isObjectType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           {(schema.properties || []).map((prop) => (
@@ -134,7 +133,6 @@ export function PropertyEditor({
           </div>
         </div>
       )}
-      {console.debug("schema.items", schema.items)}
       {isArrayType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           {Array.isArray(schema.items) ? (
@@ -158,7 +156,7 @@ export function PropertyEditor({
                   parentType="array"
                   nextId={nextId}
                   addBlankProperty={addBlankProperty}
-                  required={schema.items.required}
+                  required={item.required}
                 />
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <button onClick={handleAddItem} style={{ fontSize: 12 }}>
@@ -176,6 +174,7 @@ export function PropertyEditor({
               parentType="array"
               nextId={nextId}
               addBlankProperty={addBlankProperty}
+              required={schema.items.required}
             />
           ) : null}
         </div>
