@@ -45,7 +45,7 @@ export function RecursiveSchemaEditor({
     )
   );
   const [error, setError] = useState("");
-  const [propName, setLabel] = useState("MyProp");
+  const [propName, setPropName] = useState("MyProp");
 
   console.debug("RecursiveSchemaEditor", { schema });
 
@@ -79,9 +79,9 @@ export function RecursiveSchemaEditor({
   }
 
   const handleAddProperty = () => {
-    const newProps = addBlankProperty(schema.properties, nextId, label);
+    const newProps = addBlankProperty(schema.properties, nextId, propName);
     setSchema({ ...schema, properties: newProps });
-    setLabel("");
+    setPropName("");
   };
 
   return (
@@ -160,12 +160,13 @@ export function RecursiveSchemaEditor({
                     parentType="object"
                     nextId={nextId}
                     addBlankProperty={addBlankProperty}
+                    required={schema.required}
                   />
                 ))}
             </div>
             <input
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
+              value={propName}
+              onChange={(e) => setPropName(e.target.value)}
             />
             <button onClick={handleAddProperty}>Add Property</button>
           </>

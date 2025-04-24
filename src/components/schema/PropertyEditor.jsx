@@ -13,7 +13,9 @@ export function PropertyEditor({
   parentType,
   nextId,
   addBlankProperty,
+  required,
 }) {
+  console.debug("PropertyEditor", { required });
   const [enumEditValue, setEnumEditValue] = useState("");
   const [label, setLabel] = useState("newField");
 
@@ -23,12 +25,14 @@ export function PropertyEditor({
     : schema.type
     ? [schema.type]
     : [];
-  
-  const required = Array.isArray(schema.required)
-  ? schema.required
-  : schema.required
-  ? [schema.required]
-  : [];
+
+  required = Array.isArray(required)
+    ? schema.required
+    : schema.required
+    ? [schema.required]
+    : [];
+
+  console.debug("PropertyEditor", { required });
 
   const handleAddProperty = () => {
     console.debug("handleAddProperty", typeof addBlankProperty);
@@ -82,9 +86,12 @@ export function PropertyEditor({
           onChange={(type) => onChange({ ...schema, type })}
         />
         {isRemovable && (
-          <button onClick={onDelete} style={{ color: "red", marginLeft: "auto" }}>
-          ✖
-        </button>
+          <button
+            onClick={onDelete}
+            style={{ color: "red", marginLeft: "auto" }}
+          >
+            ✖
+          </button>
         )}
       </div>
 
@@ -117,6 +124,7 @@ export function PropertyEditor({
               parentType="object"
               nextId={nextId}
               addBlankProperty={addBlankProperty}
+              required={required}
             />
           ))}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -159,6 +167,7 @@ export function PropertyEditor({
                   parentType="array"
                   nextId={nextId}
                   addBlankProperty={addBlankProperty}
+                  required={required}
                 />
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <button onClick={handleAddItem} style={{ fontSize: 12 }}>
@@ -176,6 +185,7 @@ export function PropertyEditor({
               parentType="array"
               nextId={nextId}
               addBlankProperty={addBlankProperty}
+              required={required}
             />
           ) : null}
         </div>

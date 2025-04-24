@@ -89,7 +89,6 @@ export function arrayToObject(arr) {
     delete value.id;
     delete value.key;
     delete value.displayName;
-    console.debug("arrayToObject", {value});
     if (Array.isArray(value.type) && value.type.length === 1) value.type = value.type[0];
     obj[key] = value;
   });
