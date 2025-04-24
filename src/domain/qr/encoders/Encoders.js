@@ -149,7 +149,10 @@ class Encoder {
     //characterCount.bitIds = charCountBits.map(({ id }) => id);
     const segmentBits = segments.flatMap((segment) => {
       const bits = getBits(segment.value, segment.length);
-      segmentMap.set(segment.id, bits.map(({id}) => id));
+      segmentMap.set(
+        segment.id,
+        bits.map(({ id }) => id)
+      );
       bits.forEach(({ id }) => bitMap.set(id, segment));
       return bits;
     });
@@ -251,8 +254,10 @@ const encoders = {
   numeric: new NumericEncoder(),
   alphanumeric: new AlphanumericEncoder(),
   byte: new ByteEncoder(),
-  kanji: () => {
-    throw new Error("Kanji mode not implemented");
+  kanji: {
+    encode: () => {
+      throw new Error("Kanji mode not implemented");
+    },
   },
 };
 

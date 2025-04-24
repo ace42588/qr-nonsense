@@ -1,4 +1,10 @@
-const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
+const modes = [
+  "numeric",
+  "alphanumeric",
+  "byte",
+  //"kanji",
+  "eci",
+];
 
 export function InputModeSelector({ mode, onChange }) {
   return (
