@@ -1,12 +1,7 @@
 import { useState, useContext, useEffect, useCallback } from "react";
 import "../styles/styles.css"; // Import your component-specific styles
 import { QRInfoInput } from "../qr/QRInfoInput";
-import {
-  ErrorCorrectionSelector,
-  VersionSelector,
-  DataMaskSelector,
-  InputModeSelector,
-} from "../selectors";
+import { InputModeSelector } from "../selectors";
 import { useQRDataDispatch } from "../../state";
 import { parseInput } from "./inputUtils";
 import { Actions } from "../../domain/qr/Constants";
@@ -71,44 +66,58 @@ export function InputForm() {
 
   return (
     <div className="input-form">
+      <QRInfoInput />
       <div className="row">
-        <ErrorCorrectionSelector />
-        <VersionSelector />
-        <DataMaskSelector />
-      </div>
-      <div className="row">
-        {inputs.map((input, index) => (
-          <div key={index} className="input-group">
-            <InputModeSelector
-              mode={input.mode}
-              onChange={(e) => handleModeChange(index, e)}
-            />
-            <input
-              type="text"
-              value={input.data}
-              onChange={(e) => handleInputChange(index, e)}
-              placeholder={`Input ${index + 1}`}
-            />
-            {input.type === "byte" && (
-              <label>
-                Force bytes
-                <input
-                  type="checkbox"
-                  value={inputs.encoding === "utf-8"}
-                  onChange={() => handleCheckboxChange(input)}
+        <div
+          style={{
+            border: "1px solid #aaa",
+            borderRadius: 8,
+            padding: 16,
+            maxWidth: 900,
+          }}
+        >
+          {inputs.map((input, index) => (
+            <div key={index} className="input-group">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: 8,
+                }}
+              >
+                <InputModeSelector
+                  mode={input.mode}
+                  onChange={(e) => handleModeChange(index, e)}
                 />
-              </label>
-            )}
-            <button type="button" onClick={() => handleRemoveInput(index)}>
-              ✖
-            </button>
-          </div>
-        ))}
-      </div>
-      <div className="row">
-        <button type="button" onClick={handleAddInput}>
-          Add Input
-        </button>
+                {input.mode === "byte" && (
+                  <>
+                    <label htmlFor={`checkbox-${index}`}>Force UTF-8</label>
+                    <input
+                      id={`checkbox-${index}`}
+                      type="checkbox"
+                      value={inputs.encoding === "utf-8"}
+                      onChange={() => handleCheckboxChange(input)}
+                    />
+                  </>
+                )}
+              </div>
+              <input
+                type="text"
+                value={input.data}
+                onChange={(e) => handleInputChange(index, e)}
+                placeholder={`Input ${index + 1}`}
+              />
+              <button type="button" onClick={() => handleRemoveInput(index)}>
+                ✖
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="row">
+          <button type="button" onClick={handleAddInput}>
+            Add Input
+          </button>
+        </div>
       </div>
     </div>
   );

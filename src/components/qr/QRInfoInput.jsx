@@ -9,9 +9,18 @@ import {
 export function QRInfoInput() {
   return (
     <div className="row">
-      <ErrorCorrectionSelector />
-      <VersionSelector />
-      <DataMaskSelector />
+      <div
+        style={{
+          border: "1px solid #aaa",
+          borderRadius: 8,
+          padding: 16,
+          maxWidth: 900,
+        }}
+      >
+        <ErrorCorrectionSelector />
+        <VersionSelector />
+        <DataMaskSelector />
+      </div>
     </div>
   );
 }
