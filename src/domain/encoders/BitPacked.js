@@ -31,6 +31,7 @@ const buildHeader = (txn, confId, platform) => {
 };
 
 export function encode(order) {
+  console.debug("BitPacked:encode",{order})
   let { transactionId, conferenceCode, platform, items } = order;
   let hex = "";
   let headerBytes = buildHeader(transactionId, conferenceCode, platform);

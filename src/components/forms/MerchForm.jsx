@@ -12,15 +12,6 @@ import { Actions } from "../../domain/qr/Constants";
 
 import { encodeOrder, parseOrderJson } from "../../utils/orderUtils";
 
-const fieldNames = {
-    platformKey: "p",
-    conferenceKey: "cc",
-    transactionKey: "txn",
-    itemsKey: "i",
-    variantKey: "v",
-    quantityKey: "q",
-  }
-
 export function MerchForm() {
   const [input, setInput] = useState(sampleInput);
   const [encoding, setEncoding] = useState("PER");
@@ -30,7 +21,7 @@ export function MerchForm() {
     (inputValue = input, encodingType = encoding) => {
       const order = parseOrderJson(inputValue);
       if (!order) return;
-      const output = encodeOrder(order, encodingType, fieldNames);
+      const output = encodeOrder(order, encodingType);
       if (!output) return;
       dispatch({
         type: Actions.ChangeInput,

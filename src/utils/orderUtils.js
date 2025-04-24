@@ -1,5 +1,14 @@
 import { BitPacked, ModHex, NTRU } from "../domain/encoders";
 
+const defaultFieldNames = {
+  platformKey: "platform",
+  conferenceKey: "conferenceCode",
+  transactionKey: "transactionId",
+  itemsKey: "items",
+  variantKey: "v",
+  quantityKey: "q",
+};
+
 export const encodeOrder = (order, encoding, fieldNames) => {
   console.debug("encodeOrder", { order, encoding, fieldNames });
   const stdOrder = standardizeOrder(order, fieldNames);
@@ -81,7 +90,7 @@ export const encodeOrder = (order, encoding, fieldNames) => {
   return encodedOrder;
 };
 
-function standardizeOrder(order, fieldNames) {
+function standardizeOrder(order, fieldNames = defaultFieldNames) {
   const {
     platformKey,
     conferenceKey,
