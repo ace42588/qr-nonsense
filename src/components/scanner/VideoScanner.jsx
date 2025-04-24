@@ -41,14 +41,16 @@ export function VideoScanner({
         },
       })
       .then((stream) => {
+        console.debug("VideoScanner", { stream });
         video.srcObject = stream;
         video.setAttribute("playsinline", true);
-        video.play();
+        await video.play();
         requestAnimationFrame(scanQR);
       });
 
     function scanQR() {
       if (video.readyState === video.HAVE_ENOUGH_DATA && scanning) {
+        console.debug("scanQR")
         canvasElement.height = video.videoHeight;
         canvasElement.width = video.videoWidth;
         canvas.drawImage(
@@ -102,7 +104,7 @@ export function VideoScanner({
       {scanning && (
         <>
           <video ref={videoRef} width="640" height="480" />
-          <canvas ref={canvasRef}  />
+          <canvas ref={canvasRef} />
         </>
       )}
     </div>
