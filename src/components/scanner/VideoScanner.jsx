@@ -19,7 +19,7 @@ export function VideoScanner({
 
   const updateQRData = useCallback(
     ({ chunks, version, formatInfo }) => {
-      console.debug("updateQRData", { chunks });
+      console.debug("updateQRData", { chunks, version, formatInfo });
       dispatch({
         type: Actions.ChangeInput,
         inputs: chunks.map(({ type, text, data }) => ({
@@ -30,22 +30,6 @@ export function VideoScanner({
     },
     [dispatch]
   );
-
-  useEffect(() => {
-    updateQRData();
-  }, [updateQRData]);
-
-  const processQRCodeData = ({ chunks, version, formatInfo }) => {
-    console.log("VideoScanner", { chunks, version, formatInfo });
-    const { errorCorrectionLevel, dataMask } = formatInfo;
-
-    chunks.forEach(({ type, encoding, ...data }) =>
-      getEncoder(type).encode(Object.values(data)[0], encoding)
-    );
-    setVersion(version);
-    setDataMask(dataMask);
-    setErrorCorrectionLevel(errorCorrectionLevel);
-  };
 
   useEffect(() => {
     if (!scanning) return;
@@ -90,7 +74,8 @@ export function VideoScanner({
 
         if (code && code.data !== "") {
           setScanning(false); // Stop scanning when a QR code is found
-          processQRCodeData(code);
+          updateQRData(code);
+          
         } else {
           requestAnimationFrame(scanQR);
         }
@@ -107,7 +92,7 @@ export function VideoScanner({
       }
       setScanning(false);
     };
-  }, [scanning, processQRCodeData]);
+  }, [scanning, updateQRData]);
 
   return (
     <div
