@@ -13,7 +13,7 @@ export function VersionSelector() {
   const [version, setVersion] = useState(-1);
   const dispatch = useQRDataDispatch();
   return (
-    <div className="version-selector">
+    <div className="label-select-row">
       <label htmlFor="qr-version">QR Code Version:</label>
       <select
         id="qr-version"

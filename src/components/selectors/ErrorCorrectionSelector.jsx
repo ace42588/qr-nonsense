@@ -13,7 +13,7 @@ export function ErrorCorrectionSelector() {
   const [ecLevel, setEcLevel] = useState(0);
   const dispatch = useQRDataDispatch();
   return (
-    <div className="error-correction-selector">
+    <div className="label-select-row">
       <label htmlFor="ec-level">Error Correction Level:</label>
       <select
         id="ec-level"

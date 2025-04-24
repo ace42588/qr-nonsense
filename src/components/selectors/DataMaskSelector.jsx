@@ -18,7 +18,7 @@ export function DataMaskSelector() {
   const [dataMask, setDataMask] = useState(-1);
   const dispatch = useQRDataDispatch();
   return (
-    <div className="data-mask-selector">
+    <div className="label-select-row">
       <label htmlFor="data-mask">Data Mask:</label>
       <select
         id="data-mask"

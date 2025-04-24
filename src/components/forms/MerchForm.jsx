@@ -1,11 +1,12 @@
 import { useState, useContext, useEffect, useCallback } from "react";
+import { QRInfoInput } from "../qr/QRInfoInput";
 import "../styles/styles.css";
 
 import {
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
-  OrderEncodingSelector
+  OrderEncodingSelector,
 } from "../selectors";
 import { useQRDataDispatch } from "../../state";
 import { Actions } from "../../domain/qr/Constants";
@@ -36,32 +37,33 @@ export function MerchForm() {
   }, [updateQRData]);
 
   return (
-    <form className="input-form">
+    <div className="input-form">
+      <QRInfoInput />
       <div className="row">
-        <ErrorCorrectionSelector />
-      </div>
-      <div className="row">
-        <VersionSelector />
-      </div>
-      <div className="row">
-        <DataMaskSelector />
-      </div>
-      <div>
+        <div
+          style={{
+            border: "1px solid #aaa",
+            borderRadius: 8,
+            padding: 16,
+            maxWidth: 900,
+          }}
+        >
+          <div key={0} className="input-group">
+            {}
+            <textarea
+              type="text"
+              rows={16}
+              value={input}
+              onChange={(e) => {
+                const newInput = e.target.value;
+                setInput(newInput);
+                updateQRData(newInput, encoding);
+              }}
+            />
+          </div>
+          <div>
         <OrderEncodingSelector encoding={encoding} setEncoding={setEncoding} />
       </div>
-      <div className="row">
-        <div key={0} className="input-group">
-          {}
-          <textarea
-            type="text"
-            rows={16}
-            value={input}
-            onChange={(e) => {
-              const newInput = e.target.value;
-              setInput(newInput);
-              updateQRData(newInput, encoding);
-            }}
-          />
         </div>
       </div>
       <div className="row">
@@ -79,7 +81,7 @@ export function MerchForm() {
           Generate QR Code
         </button>
       </div>
-    </form>
+    </div>
   );
 }
 

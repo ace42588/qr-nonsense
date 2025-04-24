@@ -168,4 +168,22 @@ canvas {
 /* Optional: ensure the label has no right margin if using gap */
 .label-select-row label {
   margin-right: 0;
+  min-width: 80px;
+}
+
+/* Optional: ensure the label has no right margin if using gap */
+.label-select-row select {
+  margin-right: 0;
+  max-width: 200px;
+}
+
+.label-select-checkbox-row {
+  display: flex;
+  align-items: center;      /* Vertically centers label and select */
+  gap: 0.5rem;              /* Space between label and select */
+}
+
+/* Optional: ensure the label has no right margin if using gap */
+.label-select-checkbox-row label {
+  margin-right: 0;
 }
