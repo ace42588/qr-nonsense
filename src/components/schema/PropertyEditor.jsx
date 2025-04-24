@@ -4,7 +4,6 @@ import { addBlankItem } from "./schemaUtils";
 import { ConstraintsEditor } from "./ConstraintsEditor";
 
 export function PropertyEditor({
-  displayName,
   propertyKey,
   onKeyChange,
   schema,
@@ -15,7 +14,7 @@ export function PropertyEditor({
   addBlankProperty,
   required,
 }) {
-  console.debug("PropertyEditor", { required, schema });
+  console.debug("PropertyEditor", { propertyKey, required, schema });
   const [enumEditValue, setEnumEditValue] = useState("");
   const [propName, setPropName] = useState("newField");
 
@@ -26,6 +25,7 @@ export function PropertyEditor({
     ? [schema.type]
     : [];
 
+  required = required ? required : schema.required;
   required = Array.isArray(required) ? required : required ? [required] : [];
 
   const handleAddProperty = () => {
@@ -86,9 +86,9 @@ export function PropertyEditor({
           </button>
         )}
       </div>
-      <ConstraintsEditor schema={schema} onChange={onChange} />
+      {/*<ConstraintsEditor schema={schema} onChange={onChange} />*/}
       {/* Recursively render for nested objects */}
-      {console.debug("properties", schema.properties)}
+      {console.debug("schema.properties", schema.properties)}
       {isObjectType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           {(schema.properties || []).map((prop) => (
@@ -134,7 +134,7 @@ export function PropertyEditor({
           </div>
         </div>
       )}
-      {console.debug("items", schema.items)}
+      {console.debug("schema.items", schema.items)}
       {isArrayType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           {Array.isArray(schema.items) ? (
@@ -158,6 +158,7 @@ export function PropertyEditor({
                   parentType="array"
                   nextId={nextId}
                   addBlankProperty={addBlankProperty}
+                  required={schema.items.required}
                 />
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <button onClick={handleAddItem} style={{ fontSize: 12 }}>
