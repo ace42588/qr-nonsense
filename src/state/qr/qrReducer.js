@@ -13,6 +13,23 @@ export const initialData = {
   matrix: null,
 };
 
+function calculateQRState(state, override = {}) {
+  const {
+    inputs = state.inputs,
+    errorCorrectionLevel = state.errorCorrectionLevel,
+    version = state.version,
+    dataMask = state.dataMask,
+  } = override;
+
+  const newQRData = getQRDataFromInputs(
+    inputs,
+    errorCorrectionLevel,
+    version,
+    dataMask
+  );
+  return { ...state, ...newQRData, ...override };
+}
+
 export function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
@@ -29,7 +46,7 @@ export function dataReducer(state, action) {
         inputs,
       };
       console.log({ newState });
-      return newState;
+      return calculateQRState(state, { inputs: action.inputs });
     }
     case Actions.ChangeDataMask: {
       const { dataMask } = action;
