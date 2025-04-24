@@ -33,50 +33,18 @@ function calculateQRState(state, override = {}) {
 export function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
-      const { inputs } = action;
-      const newQRData = getQRDataFromInputs(
-        inputs,
-        state.errorCorrectionLevel,
-        state.version,
-        state.dataMask
-      );
-      const newState = {
-        ...state,
-        ...newQRData,
-        inputs,
-      };
-      console.log({ newState });
       return calculateQRState(state, { inputs: action.inputs });
     }
     case Actions.ChangeDataMask: {
-      const { dataMask } = action;
-      const newQRData = getQRDataFromInputs(
-        state.inputs,
-        state.errorCorrectionLevel,
-        state.version,
-        dataMask
-      );
-      return { ...state, ...newQRData, dataMask };
+      return calculateQRState(state, { dataMask: action.dataMask });
     }
     case Actions.ChangeVersion: {
-      const { version } = action;
-      const newQRData = getQRDataFromInputs(
-        state.inputs,
-        state.errorCorrectionLevel,
-        version,
-        state.dataMask
-      );
-      return { ...state, ...newQRData, version };
+      return calculateQRState(state, { version: action.version });
     }
     case Actions.ChangeErrorCorretionLevel: {
-      const { errorCorrectionLevel } = action;
-      const newQRData = getQRDataFromInputs(
-        state.inputs,
-        errorCorrectionLevel,
-        state.version,
-        state.dataMask
-      );
-      return { ...state, ...newQRData, errorCorrectionLevel };
+      return calculateQRState(state, {
+        errorCorrectionLevel: action.errorCorrectionLevel,
+      });
     }
     case Actions.HighlightModules: {
       const { segment } = action;
