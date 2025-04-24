@@ -82,9 +82,11 @@ export function PropertyEditor({
           value={schema.type}
           onChange={(type) => onChange({ ...schema, type })}
         />
-        <button onClick={onDelete} style={{ color: "red", marginLeft: "auto" }}>
+        {isRemovable && (
+          <button onClick={onDelete} style={{ color: "red", marginLeft: "auto" }}>
           ✖
         </button>
+        )}
       </div>
 
       <ConstraintsEditor schema={schema} onChange={onChange} />

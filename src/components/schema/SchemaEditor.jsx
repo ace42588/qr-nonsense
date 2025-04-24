@@ -47,6 +47,8 @@ export function RecursiveSchemaEditor({
   const [error, setError] = useState("");
   const [label, setLabel] = useState("MyProp");
 
+  console.debug("RecursiveSchemaEditor", { schema });
+
   // Update raw code view whenever schema changes
   useEffect(() => {
     setRaw(
