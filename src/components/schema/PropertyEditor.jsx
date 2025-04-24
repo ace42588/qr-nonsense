@@ -114,7 +114,7 @@ export function PropertyEditor({
               parentType="object"
               nextId={nextId}
               addBlankProperty={addBlankProperty}
-              required={prop.required}
+              required={schema.required}
             />
           ))}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
