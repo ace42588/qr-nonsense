@@ -9,23 +9,25 @@ export function parseInput(input) {
   let { mode, data, encoding } = input;
   const forceUtf = encoding === "utf-8";
 
-  let parsedInput = { mode };
+  const parsedInput = { mode, data, encoding };
 
   switch (mode) {
     case "numeric": {
       const regex = /\d+/gm;
       const match = data.match(regex);
       parsedInput.data = match ? match.join("") : "";
-      break;
     }
     case "alphanumeric": {
       const regex = /[0-9A-Z \$\%\*\+\-\.\/:]+/gm;
       let upperCase = data.toUpperCase();
       const match = upperCase.match(regex);
       parsedInput.data = match ? match.join("") : "";
-      break;
     }
     case "byte": {
+      if (encoding === "utf-8") {
+        parsedInput.data = data;
+        
+      }
       if (isBinary(data) && !forceUtf) {
         let hex = "";
         let bin = data.replace(/^0b/i, "");
@@ -59,8 +61,6 @@ export function parseInput(input) {
         parsedInput.encoding = "utf-8";
         parsedInput.data = data;
       }
-
-      break;
     }
     default: {
       parsedInput.data = data;

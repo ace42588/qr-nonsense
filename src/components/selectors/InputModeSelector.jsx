@@ -6,7 +6,8 @@ const modes = [
   "eci",
 ];
 
-export function InputModeSelector({ mode, onChange }) {
+export function InputModeSelector({ mode, encoding, onChange }) {
+  console.debug("InputModeSelector", { mode });
   return (
     <div className="label-select-row">
       <label htmlFor="inputMode">Input Mode:</label>
@@ -14,8 +15,8 @@ export function InputModeSelector({ mode, onChange }) {
         id="inputMode"
         value={mode}
         onChange={(e) => {
-          console.debug("InputModeSelector", {e})
-          onChange({ value: e.target.value })
+          console.debug("InputModeSelector", { e });
+          onChange({ mode, encoding });
         }}
       >
         {modes.map((m, idx) => (
@@ -30,10 +31,10 @@ export function InputModeSelector({ mode, onChange }) {
           <input
             id="forceUtf8"
             type="checkbox"
-            checked={mode.encoding === "utf-8"}
+            checked={encoding === "utf-8"}
             onChange={(e) =>
               onChange({
-                value: mode,
+                mode,
                 encoding: e.target.checked ? "utf-8" : undefined,
               })
             }
