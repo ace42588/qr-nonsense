@@ -71,16 +71,17 @@ export function InputForm() {
                 encoding={input.encoding}
                 onChange={(e) => handleModeChange(index, e)}
               />
-
-              <input
-                type="text"
-                value={input.data}
-                onChange={(e) => handleInputChange(index, e)}
-                placeholder={`Input ${index + 1}`}
-              />
-              <button type="button" onClick={() => handleRemoveInput(index)}>
-                ✖
-              </button>
+              <div className="input-button-row">
+                <input
+                  type="text"
+                  value={input.data}
+                  onChange={(e) => handleInputChange(index, e)}
+                  placeholder={`Input ${index + 1}`}
+                />
+                <button type="button" onClick={() => handleRemoveInput(index)}>
+                  ✖
+                </button>
+              </div>
             </div>
           ))}
         </div>

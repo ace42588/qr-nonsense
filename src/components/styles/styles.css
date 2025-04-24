@@ -135,6 +135,10 @@ canvas {
   border-radius: 8px;
 }
 
+.input-group {
+  
+}
+
 .input-label {
   height: 10px;
   font-size: 12px;
@@ -168,11 +172,12 @@ canvas {
 
 .input-button-row input {
   min-width: 200px;
-  max-width: 
+  max-width: 600px;
 }
 
 .input-button-row button {
-  
+  min-width: 20px;
+  max-width: 80px;
 }
 
 .label-select-row {
