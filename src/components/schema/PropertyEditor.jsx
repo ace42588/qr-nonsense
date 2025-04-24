@@ -15,9 +15,9 @@ export function PropertyEditor({
   addBlankProperty,
   required,
 }) {
-  console.debug("PropertyEditor", { required });
+  console.debug("PropertyEditor", { required, schema });
   const [enumEditValue, setEnumEditValue] = useState("");
-  const [label, setLabel] = useState("newField");
+  const [propName, setPropName] = useState("newField");
 
   // Normalize type to array for checks
   const types = Array.isArray(schema.type)
@@ -29,11 +29,9 @@ export function PropertyEditor({
   required = Array.isArray(required) ? required : required ? [required] : [];
 
   const handleAddProperty = () => {
-    console.debug("handleAddProperty", typeof addBlankProperty);
-    const newProps = addBlankProperty(schema.properties, nextId, label);
-    console.debug("handleAddProperty", { newProps });
+    const newProps = addBlankProperty(schema.properties, nextId, propName);
     onChange({ ...schema, properties: newProps });
-    setLabel("");
+    setPropName("");
   };
 
   const handleAddItem = () => {
@@ -90,6 +88,7 @@ export function PropertyEditor({
       </div>
       <ConstraintsEditor schema={schema} onChange={onChange} />
       {/* Recursively render for nested objects */}
+      {console.debug("properties", schema.properties)}
       {isObjectType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           {(schema.properties || []).map((prop) => (
@@ -121,8 +120,8 @@ export function PropertyEditor({
           ))}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <input
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
+              value={propName}
+              onChange={(e) => setPropName(e.target.value)}
               style={{
                 fontWeight: "bold",
                 fontSize: 14,
@@ -135,44 +134,38 @@ export function PropertyEditor({
           </div>
         </div>
       )}
-      {console.debug(schema.items)}
+      {console.debug("items", schema.items)}
       {isArrayType && (
         <div style={{ marginLeft: 12, marginTop: 4 }}>
           {Array.isArray(schema.items) ? (
-            schema.items.map((item, idx) => {
-              console.debug({ item });
-              return (
-                <>
-                  <PropertyEditor
-                    key={idx}
-                    propertyKey={`[${idx}]`}
-                    onKeyChange={() => {}}
-                    schema={item}
-                    onChange={(newItem) => {
-                      const arr = [...schema.items];
-                      arr[idx] = newItem;
-                      onChange({ ...schema, items: arr });
-                    }}
-                    onDelete={() => {
-                      const arr = [...schema.items];
-                      arr.splice(idx, 1);
-                      onChange({ ...schema, items: arr });
-                    }}
-                    parentType="array"
-                    nextId={nextId}
-                    addBlankProperty={addBlankProperty}
-                    required={item.required}
-                  />
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
-                    <button onClick={handleAddItem} style={{ fontSize: 12 }}>
-                      Add Item Schema
-                    </button>
-                  </div>
-                </>
-              );
-            })
+            schema.items.map((item, idx) => (
+              <>
+                <PropertyEditor
+                  key={idx}
+                  propertyKey={`[${idx}]`}
+                  onKeyChange={() => {}}
+                  schema={item}
+                  onChange={(newItem) => {
+                    const arr = [...schema.items];
+                    arr[idx] = newItem;
+                    onChange({ ...schema, items: arr });
+                  }}
+                  onDelete={() => {
+                    const arr = [...schema.items];
+                    arr.splice(idx, 1);
+                    onChange({ ...schema, items: arr });
+                  }}
+                  parentType="array"
+                  nextId={nextId}
+                  addBlankProperty={addBlankProperty}
+                />
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button onClick={handleAddItem} style={{ fontSize: 12 }}>
+                    Add Item Schema
+                  </button>
+                </div>
+              </>
+            ))
           ) : schema.items && Object.keys(schema.items).length > 0 ? (
             <PropertyEditor
               onKeyChange={() => {}}
