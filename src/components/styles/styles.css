@@ -159,6 +159,21 @@ canvas {
   background: #e1e8f0;
 }
 
+.input-button-row {
+  display: flex;
+  align-items: center;      /* Vertically centers label and select */
+  gap: 0.5rem;              /* Space between label and select */
+  justify-content: space-between;
+}
+
+.input-button-row button {
+  
+}
+
+.input-button-row button {
+  
+}
+
 .label-select-row {
   display: flex;
   align-items: center;      /* Vertically centers label and select */
