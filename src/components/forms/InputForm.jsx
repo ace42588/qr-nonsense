@@ -19,19 +19,21 @@ export function InputForm({
   errorCorrectionLevel,
   setErrorCorrectionLevel,
 }) {
-  const [inputs, setInputs] = useState([{ mode: "byte", data: "" }]);
-  const [encoding, setEncoding] = useState("JSON");
+  const [inputs, setInputs] = useState([
+    { mode: "byte", data: "Hello world!" },
+  ]);
   const dispatch = useQRDataDispatch();
 
   const updateQRData = useCallback(
-    (inputValue = inputs, encodingType = encoding) => {
+    (inputValue = inputs) => {
       const parsed = inputs.map((i) => parseInput(i));
+      console.debug("updateQRData", { inputValue });
       dispatch({
         type: Actions.ChangeInput,
         inputs: parsed,
       });
     },
-    [dispatch, inputs, encoding]
+    [dispatch, inputs]
   );
 
   useEffect(() => {
@@ -55,6 +57,14 @@ export function InputForm({
     setInputs(newInputs);
   };
 
+  const handleCheckboxChange = (input) => {
+    if (input.encoding === "utf-8") {
+      input.encoding = "";
+    } else {
+      input.encoding = "utf-8";
+    }
+  };
+
   const handleAddInput = () => {
     setInputs([...inputs, { mode: "byte", value: "" }]);
   };
@@ -64,36 +74,8 @@ export function InputForm({
     setInputs(newInputs);
   };
 
-  const handleInputSubmit = (event) => {
-    event.preventDefault();
-  };
-
-  const handleCheckboxChange = (input) => {
-    if (input.encoding === "utf-8") {
-      input.encoding = "";
-    } else {
-      input.encoding = "utf-8";
-    }
-    console.log("handleCheckboxChange", input);
-  };
-
-  const createCheckbox = (input) => {
-    if (input.type === "byte") {
-      return (
-        <label>
-          Force string encoding
-          <input
-            type="checkbox"
-            value={inputs.encoding === "utf-8"}
-            onChange={() => handleCheckboxChange(input)}
-          />
-        </label>
-      );
-    }
-  };
-
   return (
-    <form onSubmit={handleInputSubmit} className="input-form">
+    <div className="input-form">
       <div className="row">
         <ErrorCorrectionSelector />
       </div>
@@ -116,9 +98,18 @@ export function InputForm({
               onChange={(e) => handleInputChange(index, e)}
               placeholder={`Input ${index + 1}`}
             />
-            {createCheckbox(input)}
+            {input.type === "byte" && (
+              <label>
+                Force bytes
+                <input
+                  type="checkbox"
+                  value={inputs.encoding === "utf-8"}
+                  onChange={() => handleCheckboxChange(input)}
+                />
+              </label>
+            )}
             <button type="button" onClick={() => handleRemoveInput(index)}>
-              Remove
+              ✖
             </button>
           </div>
         ))}
@@ -128,7 +119,7 @@ export function InputForm({
           Add Input
         </button>
       </div>
-    </form>
+    </div>
   );
 }
 
