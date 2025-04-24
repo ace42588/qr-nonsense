@@ -163,6 +163,7 @@ canvas {
   display: flex;
   align-items: center;      /* Vertically centers label and select */
   gap: 0.5rem;              /* Space between label and select */
+  justify-content: space-between;
 }
 
 /* Optional: ensure the label has no right margin if using gap */
@@ -174,16 +175,24 @@ canvas {
 /* Optional: ensure the label has no right margin if using gap */
 .label-select-row select {
   margin-right: 0;
-  max-width: 200px;
+  max-width: 300px;
 }
 
 .label-select-checkbox-row {
   display: flex;
   align-items: center;      /* Vertically centers label and select */
   gap: 0.5rem;              /* Space between label and select */
+  justify-content: space-between;
 }
 
 /* Optional: ensure the label has no right margin if using gap */
 .label-select-checkbox-row label {
   margin-right: 0;
+  min-width: 80px;
+}
+
+.label-select-checkbox-row select {
+  margin-right: 0;
+  min-width: 100px;
+  max-width: 300px;
 }

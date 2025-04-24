@@ -34,11 +34,11 @@ export function InputForm() {
     setInputs(newInputs);
   };
 
-  const handleModeChange = (index, {mode, encoding}) => {
+  const handleModeChange = (index, { mode, encoding }) => {
     console.debug("handleModeChange", { index, mode });
     const newInputs = [...inputs];
     const input = newInputs[index];
-    newInputs[index] = {...input, mode, encoding};
+    newInputs[index] = { ...input, mode, encoding };
     console.debug("handleModeChange", { newInputs });
     setInputs(newInputs);
   };
@@ -66,19 +66,12 @@ export function InputForm() {
         >
           {inputs.map((input, index) => (
             <div key={index} className="input-group">
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: 8,
-                }}
-              >
-                <InputModeSelector
-                  mode={input.mode}
-                  encoding={input.encoding}
-                  onChange={(e) => handleModeChange(index, e)}
-                />
-              </div>
+              <InputModeSelector
+                mode={input.mode}
+                encoding={input.encoding}
+                onChange={(e) => handleModeChange(index, e)}
+              />
+
               <input
                 type="text"
                 value={input.data}

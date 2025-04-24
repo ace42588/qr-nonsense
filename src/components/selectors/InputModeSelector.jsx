@@ -9,7 +9,7 @@ const modes = [
 export function InputModeSelector({ mode, encoding, onChange }) {
   //console.debug("InputModeSelector", { mode });
   return (
-    <div className="label-select-row">
+    <div className="label-select-checkbox-row">
       <label htmlFor="inputMode">Input Mode:</label>
       <select
         id="inputMode"
