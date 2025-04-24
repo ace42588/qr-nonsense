@@ -19,7 +19,7 @@ export function InputForm({
   errorCorrectionLevel,
   setErrorCorrectionLevel,
 }) {
-  const [inputs, setInputs] = useState([{ type: "byte", value: "" }]);
+  const [inputs, setInputs] = useState([{ mode: "byte", data: "" }]);
   const [encoding, setEncoding] = useState("JSON");
   const dispatch = useQRDataDispatch();
 

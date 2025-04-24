@@ -1,33 +1,34 @@
-export function parseInput(input) {
-  let { type, value, encoding } = input;
-  let parsedInput = { type };
+const isBinary = (str) =>
+  /^(?:0b)?(?:[01]{8}(?:\s+[01]{8})+|(?:[01]{8})+)$/i.test(str);
+const isHex = (str) =>
+  /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(str);
 
-  switch (type) {
+export function parseInput(input) {
+  console.debug("parseInput",{input});
+  if (!input || !input.data || !input.mode) return {};
+  let { mode, data, encoding } = input;
+  const forceUtf = encoding === "utf-8";
+
+  let parsedInput = { mode };
+
+  switch (mode) {
     case "numeric": {
       const regex = /\d+/gm;
-      const match = value.match(regex);
+      const match = data.match(regex);
       parsedInput.text = match ? match.join("") : "";
       break;
     }
     case "alphanumeric": {
       const regex = /[0-9A-Z \$\%\*\+\-\.\/:]+/gm;
-      let upperCase = value.toUpperCase();
+      let upperCase = data.toUpperCase();
       const match = upperCase.match(regex);
       parsedInput.text = match ? match.join("") : "";
       break;
     }
     case "byte": {
-      const isBinary = (str) =>
-        /^(?:0b)?(?:[01]{8}(?:\s+[01]{8})+|(?:[01]{8})+)$/i.test(str);
-      const isHex = (str) =>
-        /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(
-          str
-        );
-      const forceUtf = encoding === "utf-8";
-
-      if (isBinary(value) && !forceUtf) {
+      if (isBinary(data) && !forceUtf) {
         let hex = "";
-        let bin = value.replace(/^0b/i, "");
+        let bin = data.replace(/^0b/i, "");
         bin = bin.replace(/\s+/g, "");
 
         if (bin.length % 8 !== 0) {
@@ -42,8 +43,8 @@ export function parseInput(input) {
         }
         parsedInput.encoding = "hex";
         parsedInput.bytes = hex;
-      } else if (isHex(value) && !forceUtf) {
-        let hex = value.replace(/0x/gi, "");
+      } else if (isHex(data) && !forceUtf) {
+        let hex = data.replace(/0x/gi, "");
         hex = hex.replace(/\s+/g, "");
 
         if (hex.length % 2 !== 0) {
@@ -56,15 +57,15 @@ export function parseInput(input) {
           "input value for byte mode did not match binary or hex encoding"
         );
         parsedInput.encoding = "utf-8";
-        parsedInput.text = value;
+        parsedInput.text = data;
       }
 
       break;
     }
     default: {
-      parsedInput.text = value;
+      parsedInput.text = data;
     }
   }
 
   return parsedInput;
-};
+}

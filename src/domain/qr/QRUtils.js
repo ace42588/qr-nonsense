@@ -49,7 +49,8 @@ export function getQRDataFromInputs(
   version,
   dataMask
 ) {
-  if (!inputs) return {};
+  console.debug("getQRDataFromInputs", { inputs });
+  if (!Array.isArray(inputs)) return {};
   const init = {
     segments: [],
     segmentMap: [],

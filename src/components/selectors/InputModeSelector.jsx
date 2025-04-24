@@ -3,10 +3,10 @@ const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 export function InputModeSelector({ mode, onChange }) {
   return (
     <div className="order-encoding-selector">
-      <label htmlFor="encoding">Encoding:</label>
-      <select id="encoding" value={modes} onChange={onChange}>
-        {modes.map((encoding, idx) => (
-          <option key={encoding} value={mode}>
+      <label htmlFor="inputMode">Input Mode:</label>
+      <select id="inputMode" value={modes} onChange={onChange}>
+        {modes.map((mode, idx) => (
+          <option key={mode} value={mode}>
             {mode}
           </option>
         ))}
