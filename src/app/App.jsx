@@ -20,70 +20,7 @@ export default function App() {
 
   const selectUI = () => {
     if (inputMode === "merch") {
-      return (
-        <>
-          <RecursiveSchemaEditor
-            value={{
-              type: "object",
-              required: ["txn", "i"],
-              properties: {
-                txn: {
-                  type: "string",
-                },
-                i: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    required: ["v", "q"],
-                    properties: {
-                      v: {
-                        type: "integer",
-                      },
-                      q: {
-                        type: "integer",
-                      },
-                    },
-                  },
-                  //uniqueItems: true,
-                },
-              },
-            }}
-            onChange={(schema) => {
-              console.log("Schema changed:", schema);
-            }}
-          />
-          <RecursiveSchemaEditor
-            value={{
-              type: "object",
-              required: ["txn", "i"],
-              properties: {
-                txn: {
-                  type: "string",
-                },
-                i: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    required: ["v", "q"],
-                    properties: {
-                      v: {
-                        type: "integer",
-                      },
-                      q: {
-                        type: "integer",
-                      },
-                    },
-                  },
-                  //uniqueItems: true,
-                },
-              },
-            }}
-            onChange={(schema) => {
-              console.log("Schema changed:", schema);
-            }}
-          />
-        </>
-      );
+      return <DynamicOrderEditor />;
     } else if (inputMode === "scan") {
       return <VideoScanner />;
     }
