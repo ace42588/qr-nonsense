@@ -23,7 +23,7 @@ export function InputModeSelector({ mode, onChange }) {
           <input
             id="forceUtf8"
             type="checkbox"
-            value={mode.encoding}
+            checked={mode.encoding === "utf-8"}
             onChange={onChange}
           />
         </>

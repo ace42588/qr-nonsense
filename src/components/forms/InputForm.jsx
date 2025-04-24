@@ -35,16 +35,14 @@ export function InputForm() {
   };
 
   const handleModeChange = (index, event) => {
-    const newInputs = [...inputs];
-    const newMode = newInputs[index].mode;
-    event.target.value;
     console.debug("handleModeChange", { index, event });
-    newInputs[index].mode = newMode;
-    if (newMode === "byte") {
-      newInputs[index].encoding = "";
-    } else {
-      delete newInputs[index].encoding;
-    }
+    const newInputs = [...inputs];
+    let newMode = newInputs[index].mode;
+    const { target } = event;
+
+    if (target.value) newInputs[index].mode = target.value;
+    if (target.checked) newInputs[index].mode.encoding = "utf-8";
+
     setInputs(newInputs);
   };
 
