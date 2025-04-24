@@ -42,11 +42,13 @@ export function InputForm({
 
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
-    newInputs[index].value = event.target.value;
+    newInputs[index].data = event.target.value;
     setInputs(newInputs);
   };
 
-  const handleModeChange = (index, newMode) => {
+  const handleModeChange = (index, event) => {
+    const newMode = event.target.value;
+    console.debug("handleModeChange", { index, newMode });
     const newInputs = [...inputs];
     newInputs[index].mode = newMode;
     if (newMode === "byte") {
@@ -90,11 +92,11 @@ export function InputForm({
           <div key={index} className="input-group">
             <InputModeSelector
               mode={input.mode}
-              onchange={(e) => handleModeChange(index, e)}
+              onChange={(e) => handleModeChange(index, e)}
             />
             <input
               type="text"
-              value={input.value}
+              value={input.data}
               onChange={(e) => handleInputChange(index, e)}
               placeholder={`Input ${index + 1}`}
             />

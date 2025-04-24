@@ -15,14 +15,14 @@ export function parseInput(input) {
     case "numeric": {
       const regex = /\d+/gm;
       const match = data.match(regex);
-      parsedInput.text = match ? match.join("") : "";
+      parsedInput.data = match ? match.join("") : "";
       break;
     }
     case "alphanumeric": {
       const regex = /[0-9A-Z \$\%\*\+\-\.\/:]+/gm;
       let upperCase = data.toUpperCase();
       const match = upperCase.match(regex);
-      parsedInput.text = match ? match.join("") : "";
+      parsedInput.data = match ? match.join("") : "";
       break;
     }
     case "byte": {
@@ -57,13 +57,13 @@ export function parseInput(input) {
           "input value for byte mode did not match binary or hex encoding"
         );
         parsedInput.encoding = "utf-8";
-        parsedInput.text = data;
+        parsedInput.data = data;
       }
 
       break;
     }
     default: {
-      parsedInput.text = data;
+      parsedInput.data = data;
     }
   }
 
