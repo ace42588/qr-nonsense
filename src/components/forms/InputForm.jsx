@@ -4,12 +4,11 @@ import {
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
-} from "../selectors/Selectors";
+  InputModeSelector,
+} from "../selectors";
 import { useQRDataDispatch } from "../../state";
 import { parseInput } from "./inputUtils";
 import { Actions } from "../../domain/qr/Constants";
-
-const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"]; // Available modes
 
 export function InputForm({
   setBitStream,
@@ -47,7 +46,7 @@ export function InputForm({
 
   const handleModeChange = (index, newMode) => {
     const newInputs = [...inputs];
-    newInputs[index].type = newMode;
+    newInputs[index].mode = newMode;
     if (newMode === "byte") {
       newInputs[index].encoding = "";
     } else {
@@ -57,7 +56,7 @@ export function InputForm({
   };
 
   const handleAddInput = () => {
-    setInputs([...inputs, { type: "byte", value: "" }]);
+    setInputs([...inputs, { mode: "byte", value: "" }]);
   };
 
   const handleRemoveInput = (index) => {
@@ -107,16 +106,10 @@ export function InputForm({
       <div className="row">
         {inputs.map((input, index) => (
           <div key={index} className="input-group">
-            <select
-              value={input.type}
-              onChange={(e) => handleModeChange(index, e.target.value)}
-            >
-              {modes.map((mode) => (
-                <option key={mode} value={mode}>
-                  {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                </option>
-              ))}
-            </select>
+            <InputModeSelector
+              mode={input.mode}
+              onchange={(e) => handleModeChange(index, e)}
+            />
             <input
               type="text"
               value={input.value}
