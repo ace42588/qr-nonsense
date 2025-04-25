@@ -1,12 +1,11 @@
 import {
-  
+  FINDER_PATTERN,
   DATA_MASKS,
   calculatePenalty,
   addFormatInfoModules,
   addNonDataModules,
   makeModule,
 } from "../../domain/qr";
-import { DATA_MASKS, FINDER_PATTERN } from "../Constants";
 
 export function deriveMatrixFromCodewords({
   version,
