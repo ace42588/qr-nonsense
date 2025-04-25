@@ -23,7 +23,7 @@ function deriveSegmentsFromInputs(inputs) {
     //  getEncoder(mode).encode(data, encoding)
     encodeInput(mode, data, encoding)
   );
-  console.debug("deriveSegmentsFromInputs", { segments });
+  //console.debug("deriveSegmentsFromInputs", { segments });
   return segments;
 }
 
@@ -77,12 +77,18 @@ export function deriveFromInputs(state, override = {}) {
     dataMask,
     codewords,
   });
+  
+  console.debug("deriveFromInputs", {
+    ...qrData,
+    calculatedVersion,
+    codewords,
+    calculatedDataMask
+  });
 
   const newQRData = {
     ...qrData,
-    segments,
+    segments: [...qrData.segmentMap.keys()],
     calculatedVersion,
-    codewords,
     matrix,
     calculatedDataMask,
   };

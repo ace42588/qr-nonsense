@@ -32,7 +32,8 @@ export function dataReducer(state, action) {
     }
     case Actions.HighlightModules: {
       const { segment } = action;
-      const modulesToUpdate = state.segmentMap.get(segment.id);
+      const modulesToUpdate = state.segmentMap.get(segment);
+      console.debug("Actions.HighlightModules", {modulesToUpdate});
       const newMatrix = state.matrix.map((row) =>
         row.map((module) => {
           let { bit, isHighlighted } = module;

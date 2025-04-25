@@ -7,24 +7,24 @@ export function SegmentDisplay({ bitStream }) {
   const { segments, segmentMap, bitMap } = useQRData();
   const dispatch = useQRDataDispatch();
 
-  const handleSegmentClick = (segmentId) => {
+  const handleSegmentClick = (segment) => {
     dispatch({
       type: Actions.HighlightModules,
-      segment: { id: segmentId },
+      segment: { id: segment },
     });
   };
 
   const handleMouseEnter = (segment) => {
     dispatch({
       type: Actions.HighlightModules,
-      segment: { id: segment.id },
+      segment: { id: segment },
     });
   };
 
   const handleMouseLeave = (segment) => {
     dispatch({
       type: Actions.HighlightModules,
-      segment: { id: segment.id },
+      segment: { id: segment },
     });
   };
 
@@ -42,7 +42,7 @@ export function SegmentDisplay({ bitStream }) {
             className={getClassName(segment.type, segment.isHighlighted)}
             onClick={() => handleSegmentClick(segment)}
             onMouseEnter={() => handleSegmentClick(segment)}
-            onMouseLeave={handleMouseLeave}
+            onMouseLeave={() => handleSegmentClick(segment)}
             title={`Segment ${segment.id}`}
           >
             {segment.text}

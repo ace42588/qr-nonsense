@@ -42,7 +42,8 @@ export function createCodon(value, text, inputMode, length) {
     value,
     text,
     inputMode,
-    length: length || 8,
+    length,
+    id: getId()
   };
 }
 
@@ -52,6 +53,7 @@ function createModeIndicator(mode) {
     value: mode.bits,
     text: mode.name,
     length: 4,
+    id: getId()
   };
 }
 
@@ -61,6 +63,7 @@ function createCharacterCountIndicator(data, codons, mode) {
     value: data.length,
     text: data.length,
     length: computeIndicatorLength(codons.length, mode),
+    id: getId()
   };
 }
 
@@ -77,12 +80,12 @@ function createMaps(segment) {
 }
 
 export function encodeSegment(data, inputMode, codonItrFn) {
-  console.debug("encodeSegment", { data, inputMode, codonItrFn });
+  //console.debug("encodeSegment", { data, inputMode, codonItrFn });
   const codons = [...codonItrFn(data)];
   const mode = createModeIndicator(inputMode);
   const characterCount = createCharacterCountIndicator(data, codons, inputMode);
   const segment = [ mode, characterCount, ...codons ];
-  console.debug("encodeSegment", { segment });
+  //console.debug("encodeSegment", { segment });
 
   const { bitMap, segmentMap } = createMaps(segment);
   const bits = [...bitMap.keys()];
