@@ -10,7 +10,7 @@ import { getEncoder } from "./encoders/Encoders";
 
 const deriveCodewordsFromInputs = getCodewords;
 
-function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
+export function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   // Try each version until one is found that fits the data.
   for (let version = 1; version <= 40; version++) {
     const { capacity } = gerVersionInfo(errorCorrectionLevel, version);

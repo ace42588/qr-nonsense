@@ -1,10 +1,12 @@
 import {
+  
+  DATA_MASKS,
+  calculatePenalty,
   addFormatInfoModules,
   addNonDataModules,
   makeModule,
-} from "./ModuleUtils";
+} from "../../domain/qr";
 import { DATA_MASKS, FINDER_PATTERN } from "../Constants";
-import { calculatePenalty } from "./calculatePenalty";
 
 export function deriveMatrixFromCodewords({
   version,
