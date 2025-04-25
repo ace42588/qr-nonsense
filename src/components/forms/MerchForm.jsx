@@ -9,7 +9,7 @@ import {
   OrderEncodingSelector,
 } from "../selectors";
 import { useQRDataDispatch } from "../../state";
-import { Actions } from "../../domain/qr/Constants";
+import { Actions } from "../../state/qr/Constants";
 
 import { encodeOrder, parseOrderJson } from "../../utils/orderUtils";
 

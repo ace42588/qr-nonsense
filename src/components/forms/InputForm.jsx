@@ -4,7 +4,7 @@ import { QRInfoInput } from "../qr/QRInfoInput";
 import { InputModeSelector } from "../selectors";
 import { useQRDataDispatch } from "../../state";
 import { parseInput } from "./inputUtils";
-import { Actions } from "../../domain/qr/Constants";
+import { Actions } from "../../state/qr/Constants";
 
 export function InputForm() {
   const [inputs, setInputs] = useState([

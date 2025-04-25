@@ -11,7 +11,7 @@ import {
 } from "../selectors/Selectors";
 import { useQRDataDispatch, SchemaProvider } from "../../state";
 import { encodeOrder } from "../../utils/orderUtils";
-import { Actions } from "../../domain/qr/Constants";
+import { Actions } from "../../state/qr/Constants";
 
 const defaultSchema = [
   { label: "Platform", name: "p", type: "string", value: "A" },

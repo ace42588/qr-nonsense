@@ -1,4 +1,4 @@
-import { Actions } from "../../domain/qr/Constants";
+import { Actions } from "./Constants";
 import { deriveFromInputs } from "./deriveFromInputs";
 import { deriveInputsFromMatrix } from "./deriveFromMatrix";
 

@@ -1,11 +1,12 @@
-import { getCodewords, getEncoder, getMinimumQRCodeVersion } from "../../domain/qr";
-import { deriveMatrixFromCodewords } from "./deriveMatrixFromCodewords"
+//import { getCodewords, getEncoder, getMinimumQRCodeVersion } from "../../domain/qr";
+import {
+  getCodewords,
+  encodeInput,
+  getMinimumQRCodeVersion,
+} from "../../domain/qr";
+import { deriveMatrixFromCodewords } from "./deriveMatrixFromCodewords";
 
-function deriveVersionFromInputs(
-  numBits,
-  inputVersion,
-  errorCorrectionLevel
-) {
+function deriveVersionFromInputs(numBits, inputVersion, errorCorrectionLevel) {
   let version = parseInt(inputVersion) || -1;
   if (1 <= version && version <= 40) {
     return version;
@@ -17,13 +18,14 @@ function deriveVersionFromInputs(
 
 function deriveSegmentsFromInputs(inputs) {
   const segments = inputs.map(({ data, mode, encoding }) =>
-    getEncoder(mode).encode(data, encoding)
+    //  getEncoder(mode).encode(data, encoding)
+    encodeInput(mode, data, encoding)
   );
+
   return segments;
 }
 
 const deriveCodewordsFromSegments = getCodewords;
-
 
 export function deriveFromInputs(state, override = {}) {
   const {
@@ -68,11 +70,11 @@ export function deriveFromInputs(state, override = {}) {
 
   const newQRData = {
     ...qrData,
-      segments,
-      calculatedVersion,
-      codewords,
-      matrix,
-      calculatedDataMask,
+    segments,
+    calculatedVersion,
+    codewords,
+    matrix,
+    calculatedDataMask,
   };
 
   return { ...state, ...newQRData, ...override };
