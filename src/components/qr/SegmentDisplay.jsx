@@ -10,21 +10,21 @@ export function SegmentDisplay({ bitStream }) {
   const handleSegmentClick = (segment) => {
     dispatch({
       type: Actions.HighlightModules,
-      segment: { id: segment },
+      segment,
     });
   };
 
   const handleMouseEnter = (segment) => {
     dispatch({
       type: Actions.HighlightModules,
-      segment: { id: segment },
+      segment,
     });
   };
 
   const handleMouseLeave = (segment) => {
     dispatch({
       type: Actions.HighlightModules,
-      segment: { id: segment },
+      segment,
     });
   };
 

@@ -6,7 +6,7 @@ import { useQRData, useQRDataDispatch } from "../../state";
 
 export function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const { matrix, bitMap, ecCodewords } = useQRData();
+  const { matrix, bitMap } = useQRData();
   const dispatch = useQRDataDispatch();
 
   useEffect(() => {
@@ -83,12 +83,6 @@ export function QRCodeCanvas() {
       source = module.source;
     } else if (module.bit.id) {
       source = bitMap.get(module.bit.id);
-      if (!source) {
-        // check for ecCodewords
-        source = ecCodewords.filter(({ bitIds }) =>
-          bitIds.some((id) => id === module.bit.id)
-        );
-      }
     }
 
     console.debug(source);

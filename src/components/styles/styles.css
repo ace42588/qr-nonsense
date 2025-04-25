@@ -95,6 +95,16 @@ canvas {
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
+.codon-button {
+  padding: 10px 15px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
 .segment-button-highlighted {
   padding: 10px 15px;
   background-color: #3498db;
@@ -105,7 +115,22 @@ canvas {
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
+.codon-button-highlighted {
+  padding: 10px 15px;
+  background-color: #3498db;
+  color: white;
+  border: 1rem solid;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
 .segment-button:hover {
+  background-color: #2980b9;
+  transform: scale(1.05);
+}
+
+.codon-button:hover {
   background-color: #2980b9;
   transform: scale(1.05);
 }
