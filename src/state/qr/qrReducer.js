@@ -31,53 +31,63 @@ export function dataReducer(state, action) {
       });
     }
     case Actions.HighlightModules: {
-      const { segment } = action;
-      const modulesToUpdate = state.segmentMap.get(segment);
-      const newMatrix = state.matrix.map((row) =>
-        row.map((module) => {
-          let { bit, isHighlighted } = module;
-          const newModule = { ...module };
-          if (bit.id && modulesToUpdate.some(({id}) => id === bit.id)) {
-            newModule.isHighlighted = !isHighlighted;
-          }
-          return newModule;
-        })
-      );
-      return {
-        ...state,
-        matrix: newMatrix,
-      };
-    }
-    case Actions.HighlightSegment: {
-      const { module } = action;
-      const { bit, nonData } = module;
-      if (nonData) {
-        const {
-          source: { name },
-        } = module;
+      try {
+        const { segment } = action;
+        const modulesToUpdate = state.segmentMap.get(segment);
         const newMatrix = state.matrix.map((row) =>
           row.map((module) => {
+            let { bit, isHighlighted } = module;
             const newModule = { ...module };
-            if (module.source && module.source.name === name)
-              newModule.isHighlighted = !module.isHighlighted;
+            if (bit.id && modulesToUpdate.some(({ id }) => id === bit.id)) {
+              newModule.isHighlighted = !isHighlighted;
+            }
             return newModule;
           })
         );
-        return { ...state, matrix: newMatrix };
+        return {
+          ...state,
+          matrix: newMatrix,
+        };
+      } catch (e) {
+        console.error(e);
       }
-      const segmentToUpdate = state.bitMap.get(bit);
-      if (!segmentToUpdate) return state;
-      const newSegments = state.segments.map((segment) => {
-        let { id, isHighlighted } = segment;
-        const newSegment = { ...segment };
-        if (id === segmentToUpdate.id)
-          newSegment.isHighlighted = !isHighlighted;
-        return newSegment;
-      });
-      return {
-        ...state,
-        segments: newSegments,
-      };
+      return state;
+    }
+    case Actions.HighlightSegment: {
+      try {
+        const { module } = action;
+        const { bit, nonData } = module;
+        if (nonData) {
+          const {
+            source: { name },
+          } = module;
+          const newMatrix = state.matrix.map((row) =>
+            row.map((module) => {
+              const newModule = { ...module };
+              if (module.source && module.source.name === name)
+                newModule.isHighlighted = !module.isHighlighted;
+              return newModule;
+            })
+          );
+          return { ...state, matrix: newMatrix };
+        }
+        const segmentToUpdate = state.bitMap.get(bit);
+        if (!segmentToUpdate) return state;
+        const newSegments = state.segments.map((segment) => {
+          let { id, isHighlighted } = segment;
+          const newSegment = { ...segment };
+          if (id === segmentToUpdate.id)
+            newSegment.isHighlighted = !isHighlighted;
+          return newSegment;
+        });
+        return {
+          ...state,
+          segments: newSegments,
+        };
+      } catch (e) {
+        console.error(e);
+      }
+      return state;
     }
     default: {
       return state;
