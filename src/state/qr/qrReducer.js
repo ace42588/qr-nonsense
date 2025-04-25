@@ -13,13 +13,46 @@ export const initialData = {
   matrix: null,
 };
 
-function calculateQRState(state, override = {}) {
+function deriveFromInputs(state, override = {}) {
   const {
     inputs = state.inputs,
     errorCorrectionLevel = state.errorCorrectionLevel,
     version = state.version,
     dataMask = state.dataMask,
   } = override;
+  
+  const segments = deriveSegmentsFromInputs(inputs);
+    const qrData = segments.reduce(
+      (acc, curr) => {
+        return {
+          segments: [...acc.segments, ...curr.segments],
+          segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
+          bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
+        };
+      },
+      {
+        segments: [],
+        segmentMap: [],
+        bitMap: [],
+      }
+    );
+
+    const calculatedVersion = deriveVersionFromInputs(
+      qrData.bitMap.size,
+      version,
+      errorCorrectionLevel
+    );
+    const codewords = deriveCodewordsFromInputs(
+      segments,
+      calculatedVersion,
+      errorCorrectionLevel
+    );
+    const { matrix, dataMask: calculatedDataMask } = deriveMatrixFromInputs({
+      version: calculatedVersion,
+      errorCorrectionLevel,
+      dataMask,
+      codewords,
+    });
 
   const newQRData = getQRDataFromInputs(
     inputs,
@@ -33,16 +66,16 @@ function calculateQRState(state, override = {}) {
 export function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
-      return calculateQRState(state, { inputs: action.inputs });
+      return deriveFromInputs(state, { inputs: action.inputs });
     }
     case Actions.ChangeDataMask: {
-      return calculateQRState(state, { dataMask: action.dataMask });
+      return deriveFromInputs(state, { dataMask: action.dataMask });
     }
     case Actions.ChangeVersion: {
-      return calculateQRState(state, { version: action.version });
+      return deriveFromInputs(state, { version: action.version });
     }
     case Actions.ChangeErrorCorretionLevel: {
-      return calculateQRState(state, {
+      return deriveFromInputs(state, {
         errorCorrectionLevel: action.errorCorrectionLevel,
       });
     }

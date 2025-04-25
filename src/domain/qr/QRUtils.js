@@ -5,8 +5,10 @@ import {
   makeModule,
 } from "./ModuleUtils";
 import { calculatePenalty } from "./calculatePenalty";
-import { getCodewords } from "./CodewordUtils";
+import { getCodewords }  from "./CodewordUtils";
 import { getEncoder } from "./encoders/Encoders";
+
+const deriveCodewordsFromInputs = getCodewords;
 
 function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   // Try each version until one is found that fits the data.
@@ -33,7 +35,7 @@ export function gerVersionInfo(errorCorrectionLevel, version) {
   return versionInfo;
 }
 
-export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
+export function deriveVersionFromInputs(numBits, inputVersion, errorCorrectionLevel) {
   let version = parseInt(inputVersion) || -1;
   if (1 <= version && version <= 40) {
     return version;
@@ -41,6 +43,13 @@ export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
     return getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
   }
   throw new Error(`Invalid version: ${inputVersion.toString()}`);
+}
+
+export function deriveSegmentsFromInputs(inputs) {
+  const segments = inputs.map(({ data, mode, encoding }) =>
+    getEncoder(mode).encode(data, encoding)
+  );
+  return segments;
 }
 
 export function getQRDataFromInputs(
@@ -51,43 +60,44 @@ export function getQRDataFromInputs(
 ) {
   console.debug("getQRDataFromInputs", { inputs });
   if (!Array.isArray(inputs)) return {};
-  const init = {
-    segments: [],
-    segmentMap: [],
-    bitMap: [],
-  };
-  try {
-    const encodedInputs = inputs.map(({ data, mode, encoding }) =>
-      getEncoder(mode).encode(data, encoding)
-    );
-    const encoded = encodedInputs.reduce((acc, curr) => {
-      return {
-        segments: [...acc.segments, ...curr.segments],
-        segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
-        bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
-      };
-    }, init);
 
-    const calculatedVersion = getVersion(
-      encoded.bitMap.size,
+  try {
+    const segments = deriveSegmentsFromInputs(inputs);
+    const qrData = segments.reduce(
+      (acc, curr) => {
+        return {
+          segments: [...acc.segments, ...curr.segments],
+          segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
+          bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
+        };
+      },
+      {
+        segments: [],
+        segmentMap: [],
+        bitMap: [],
+      }
+    );
+
+    const calculatedVersion = deriveVersionFromInputs(
+      qrData.bitMap.size,
       version,
       errorCorrectionLevel
     );
-    const codewords = getCodewords(
-      encodedInputs,
+    const codewords = deriveCodewordsFromInputs(
+      segments,
       calculatedVersion,
       errorCorrectionLevel
     );
-    const { matrix, dataMask: calculatedDataMask } = generateQRCodeMatrix({
+    const { matrix, dataMask: calculatedDataMask } = deriveMatrixFromInputs({
       version: calculatedVersion,
       errorCorrectionLevel,
       dataMask,
       codewords,
     });
     return {
-      ...encoded,
+      ...qrData,
       ecCodewords: codewords.filter((cw) => cw.type === "errorCorrection"),
-      encodedInputs,
+      segments,
       calculatedVersion,
       codewords,
       matrix,
@@ -98,7 +108,7 @@ export function getQRDataFromInputs(
   }
 }
 
-function generateQRCodeMatrix({
+export function deriveMatrixFromInputs({
   version,
   errorCorrectionLevel,
   dataMask,
