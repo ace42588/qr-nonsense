@@ -85,8 +85,6 @@ export function QRCodeCanvas() {
       source = bitMap.get(module.bit.id);
     }
 
-    console.debug(source);
-
     let type =
       event.type === "contextmenu"
         ? Actions.ToggleModule

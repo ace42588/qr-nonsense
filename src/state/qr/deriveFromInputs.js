@@ -46,52 +46,57 @@ export function deriveFromInputs(state, override = {}) {
     dataMask = state.dataMask,
   } = override;
 
-  const segments = deriveSegmentsFromInputs(inputs);
-  const qrData = segments.reduce(
-    (acc, curr) => {
-      return {
-        segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
-        bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
-      };
-    },
-    {
-      segmentMap: [],
-      bitMap: [],
-    }
-  );
+  try {
+    const segments = deriveSegmentsFromInputs(inputs);
+    const qrData = segments.reduce(
+      (acc, curr) => {
+        return {
+          segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
+          bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
+        };
+      },
+      {
+        segmentMap: [],
+        bitMap: [],
+      }
+    );
 
-  const calculatedVersion = deriveVersionFromInputs(
-    qrData.bitMap.size,
-    version,
-    errorCorrectionLevel
-  );
-  const codewords = deriveCodewordsFromSegments(
-    qrData.bitMap,
-    calculatedVersion,
-    errorCorrectionLevel
-  );
-  //console.debug("deriveFromInputs", { codewords });
-  const { matrix, dataMask: calculatedDataMask } = deriveMatrixFromCodewords({
-    version: calculatedVersion,
-    errorCorrectionLevel,
-    dataMask,
-    codewords,
-  });
-  
-  console.debug("deriveFromInputs", {
-    ...qrData,
-    calculatedVersion,
-    codewords,
-    calculatedDataMask
-  });
+    const calculatedVersion = deriveVersionFromInputs(
+      qrData.bitMap.size,
+      version,
+      errorCorrectionLevel
+    );
+    const codewords = deriveCodewordsFromSegments(
+      qrData.bitMap,
+      calculatedVersion,
+      errorCorrectionLevel
+    );
+    //console.debug("deriveFromInputs", { codewords });
+    const { matrix, dataMask: calculatedDataMask } = deriveMatrixFromCodewords({
+      version: calculatedVersion,
+      errorCorrectionLevel,
+      dataMask,
+      codewords,
+    });
 
-  const newQRData = {
-    ...qrData,
-    segments: [...qrData.segmentMap.keys()],
-    calculatedVersion,
-    matrix,
-    calculatedDataMask,
-  };
+    console.debug("deriveFromInputs", {
+      ...qrData,
+      calculatedVersion,
+      codewords,
+      calculatedDataMask,
+    });
 
-  return { ...state, ...newQRData, ...override };
+    const newQRData = {
+      ...qrData,
+      segments: [...qrData.segmentMap.keys()],
+      calculatedVersion,
+      matrix,
+      calculatedDataMask,
+    };
+
+    return { ...state, ...newQRData, ...override };
+  } catch (e) {
+    console.error(e);
+    return state;
+  }
 }

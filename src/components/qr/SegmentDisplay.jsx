@@ -45,7 +45,9 @@ export function SegmentDisplay({ bitStream }) {
             onMouseLeave={() => handleSegmentClick(segment)}
             title={`Segment ${segment.id}`}
           >
-            {segment.text}
+            {segment.type !== "codon"
+              ? `${segment.type}: ${segment.text}`
+              : segment.text}
           </button>
         ))}
       </div>
