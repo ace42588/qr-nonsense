@@ -21,11 +21,14 @@ function deriveSegmentsFromInputs(inputs) {
     //  getEncoder(mode).encode(data, encoding)
     encodeInput(mode, data, encoding)
   );
-
+  console.debug("deriveSegmentsFromInputs", { segments });
   return segments;
 }
 
-const deriveCodewordsFromSegments = getCodewords;
+function deriveCodewordsFromSegments(segmentMap, version, ecLevel) {
+  
+  getCodewords();
+}
 
 export function deriveFromInputs(state, override = {}) {
   const {
@@ -39,13 +42,11 @@ export function deriveFromInputs(state, override = {}) {
   const qrData = segments.reduce(
     (acc, curr) => {
       return {
-        segments: [...acc.segments, ...curr.segments],
         segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
         bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
       };
     },
     {
-      segments: [],
       segmentMap: [],
       bitMap: [],
     }

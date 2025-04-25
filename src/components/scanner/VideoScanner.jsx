@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useEffect, useState } from "react";
 import { useQRDataDispatch } from "../../state";
-import { Actions } from "../../domain/qr/Constants";
+import { Actions } from "../../state/qr/Constants";
 import jsQR from "jsqr";
 import "../styles/styles.css";
 

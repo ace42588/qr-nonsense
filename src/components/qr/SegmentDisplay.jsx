@@ -40,12 +40,12 @@ export function SegmentDisplay({ bitStream }) {
           <button
             key={segment.id}
             className={getClassName(segment.type, segment.isHighlighted)}
-            onClick={() => handleSegmentClick(id)}
-            onMouseEnter={() => handleSegmentClick(id)}
+            onClick={() => handleSegmentClick(segment)}
+            onMouseEnter={() => handleSegmentClick(segment)}
             onMouseLeave={handleMouseLeave}
             title={`Segment ${segment.id}`}
           >
-            {text}
+            {segment.text}
           </button>
         ))}
       </div>

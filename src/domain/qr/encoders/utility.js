@@ -69,7 +69,7 @@ function createMaps(segment) {
   const segmentMap = new Map();
 
   for (const elem of segment) {
-    const bits = getBits(elem);
+    const bits = getBits(elem.value, elem.length);
     segmentMap.set(elem, bits);
     bits.forEach((b) => bitMap.set(b, elem));
   }
@@ -77,10 +77,12 @@ function createMaps(segment) {
 }
 
 export function encodeSegment(data, inputMode, codonItrFn) {
+  console.debug("encodeSegment", { data, inputMode, codonItrFn });
   const codons = [...codonItrFn(data)];
   const mode = createModeIndicator(inputMode);
   const characterCount = createCharacterCountIndicator(data, codons, inputMode);
-  const segment = { mode, characterCount, ...codons };
+  const segment = [ mode, characterCount, ...codons ];
+  console.debug("encodeSegment", { segment });
 
   const { bitMap, segmentMap } = createMaps(segment);
   const bits = [...bitMap.keys()];
