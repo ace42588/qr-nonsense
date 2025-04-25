@@ -1,5 +1,11 @@
 import { Actions } from "../../domain/qr/Constants";
-import { getQRDataFromInputs } from "../../domain/qr/QRUtils";
+import {
+  deriveSegmentsFromInputs,
+  deriveVersionFromInputs,
+  deriveMatrixFromInputs,
+  getCodewords
+} from "../../domain/qr";
+const deriveCodewordsFromInputs = getCodewords;
 
 export const initialData = {
   encodedInputs: [],
@@ -20,46 +26,49 @@ function deriveFromInputs(state, override = {}) {
     version = state.version,
     dataMask = state.dataMask,
   } = override;
-  
-  const segments = deriveSegmentsFromInputs(inputs);
-    const qrData = segments.reduce(
-      (acc, curr) => {
-        return {
-          segments: [...acc.segments, ...curr.segments],
-          segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
-          bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
-        };
-      },
-      {
-        segments: [],
-        segmentMap: [],
-        bitMap: [],
-      }
-    );
 
-    const calculatedVersion = deriveVersionFromInputs(
-      qrData.bitMap.size,
-      version,
-      errorCorrectionLevel
-    );
-    const codewords = deriveCodewordsFromInputs(
+  const segments = deriveSegmentsFromInputs(inputs);
+  const qrData = segments.reduce(
+    (acc, curr) => {
+      return {
+        segments: [...acc.segments, ...curr.segments],
+        segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
+        bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
+      };
+    },
+    {
+      segments: [],
+      segmentMap: [],
+      bitMap: [],
+    }
+  );
+
+  const calculatedVersion = deriveVersionFromInputs(
+    qrData.bitMap.size,
+    version,
+    errorCorrectionLevel
+  );
+  const codewords = deriveCodewordsFromInputs(
+    segments,
+    calculatedVersion,
+    errorCorrectionLevel
+  );
+  const { matrix, dataMask: calculatedDataMask } = deriveMatrixFromInputs({
+    version: calculatedVersion,
+    errorCorrectionLevel,
+    dataMask,
+    codewords,
+  });
+
+  const newQRData = {
+    ...qrData,
       segments,
       calculatedVersion,
-      errorCorrectionLevel
-    );
-    const { matrix, dataMask: calculatedDataMask } = deriveMatrixFromInputs({
-      version: calculatedVersion,
-      errorCorrectionLevel,
-      dataMask,
       codewords,
-    });
+      matrix,
+      calculatedDataMask,
+  };
 
-  const newQRData = getQRDataFromInputs(
-    inputs,
-    errorCorrectionLevel,
-    version,
-    dataMask
-  );
   return { ...state, ...newQRData, ...override };
 }
 
