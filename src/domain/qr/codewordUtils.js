@@ -26,6 +26,7 @@ function getCodeword(bits, type) {
 }
 
 function getBlocks(encodedData, errorCorrectionLevel, version) {
+  //console.debug("getBlocks", { encodedData });
   const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
     errorCorrectionLevel,
     version
@@ -77,6 +78,7 @@ function getCodewordsForBlock(
   numProcessedCodewords,
   encodedData
 ) {
+  //console.debug("getCodewordsForBlock", { encodedData });
   const dataCodewords = Array.from(
     { length: dataCodewordsPerBlock },
     (_, i) => {
@@ -115,8 +117,9 @@ export function getCodewords(encodedInputs, version, errorCorrectionLevel) {
     errorCorrectionLevel
   );
 
-  const encodedData = finalizeEncoding(encodedInputs, requiredDataCodewords);
-  const qrBlocks = getBlocks(encodedData, errorCorrectionLevel, version);
+  //const encodedData = finalizeEncoding(encodedInputs, requiredDataCodewords);
+  //const qrBlocks = getBlocks(encodedData, errorCorrectionLevel, version);
+  const qrBlocks = getBlocks(encodedInputs, errorCorrectionLevel, version);
   //console.debug("getCodewords", { qrBlocks });
   const totalCodewords = qrBlocks.reduce(
     (total, { codewords }) => total + codewords.length,
