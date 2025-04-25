@@ -37,3 +37,39 @@ export const useQRSegments = () => {
 
   return { setSegments, toggleSegmentHighlight, clearHighlights };
 };
+
+export const useQRModules = () => {
+  const dispatch = useQRDataDispatch();
+
+  const setModules = useCallback((segments) => {
+    dispatch({ type: "SET_MODULES", payload: segments });
+  }, [dispatch]);
+
+  const toggleModuleHighlight = useCallback((segmentId) => {
+    dispatch({ type: "TOGGLE_HIGHLIGHT", payload: segmentId });
+  }, [dispatch]);
+
+  const clearModuleHighlights = useCallback(() => {
+    dispatch({ type: "CLEAR_HIGHLIGHTS" });
+  }, [dispatch]);
+
+  return { setModules, toggleModuleHighlight, clearModuleHighlights };
+};
+
+export const useQRMatrix = () => {
+  const dispatch = useQRDataDispatch();
+
+  const setSegments = useCallback((segments) => {
+    dispatch({ type: "SET_SEGMENTS", payload: segments });
+  }, [dispatch]);
+
+  const toggleSegmentHighlight = useCallback((segmentId) => {
+    dispatch({ type: "TOGGLE_HIGHLIGHT", payload: segmentId });
+  }, [dispatch]);
+
+  const clearHighlights = useCallback(() => {
+    dispatch({ type: "CLEAR_HIGHLIGHTS" });
+  }, [dispatch]);
+
+  return { setSegments, toggleSegmentHighlight, clearHighlights };
+};

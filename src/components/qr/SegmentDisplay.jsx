@@ -13,6 +13,8 @@ export function SegmentDisplay({ bitStream }) {
       segment: { id: segmentId },
     });
   };
+  
+  const handleHighlight = (segment)
 
   const getClassName = (type, isHighlighted) => {
     return `${type}-button${isHighlighted ? "-highlighted" : ""}`;
@@ -27,6 +29,8 @@ export function SegmentDisplay({ bitStream }) {
             key={id}
             className={getClassName(type, isHighlighted)}
             onClick={() => handleSegmentClick(id)}
+            onMouseEnter={() => handleSegmentClick(id)}
+      onMouseLeave={handleMouseLeave}
             title={`Segment ${id}`}
           >
             {text}
