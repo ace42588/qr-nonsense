@@ -3,7 +3,7 @@ import {
   addFormatInfoModules,
   addNonDataModules,
   makeModule,
-} from "./ModuleUtils";
+} from "./moduleUtils";
 import { calculatePenalty } from "./calculatePenalty";
 
 function QRMatrix(dimension) {

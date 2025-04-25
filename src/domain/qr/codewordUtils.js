@@ -1,7 +1,7 @@
 import { CodewordLength } from "./Constants";
 import { ReedSolomonEncoder } from "./reedsolomon/";
-import { getBits } from "./BitUtils";
-import { gerVersionInfo } from "./QRUtils";
+import { getBits } from "./bitUtils";
+import { gerVersionInfo } from "./versionUtils";
 import { finalizeEncoding } from "./encoders/Encoders";
 
 let lastCodewordId = 0;

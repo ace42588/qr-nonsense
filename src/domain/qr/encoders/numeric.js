@@ -14,4 +14,4 @@ function encoder(data) {
 }
 
 const itrFn = (data) => createNonByte(data, mode, encoder);
-const encodeNumeric = (input) => encodeSegment(input, mode, itrFn);
+export const encodeNumeric = (input) => encodeSegment(input, mode, itrFn);

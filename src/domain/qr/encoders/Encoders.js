@@ -1,5 +1,5 @@
-import { MODE, AlphaNumCharMap, CodewordLength, PAD_BYTES } from "./Constants";
-import { getBits } from "../BitUtils";
+import { MODE, AlphanumericCharMap, CodewordLength, PAD_BYTES } from "./Constants";
+import { getBits } from "../bitUtils";
 
 let lastSegmentId = 0;
 
@@ -42,11 +42,11 @@ function encodeNumeric(data) {
 
 function encodeAlphanumeric(data) {
   validateLength(data, 1, 2, "Alphanumeric");
-  let value = AlphaNumCharMap.indexOf(data[0]);
+  let value = AlphanumericCharMap.indexOf(data[0]);
   let length = 6;
   if (data.length === 2) {
     value =
-      AlphaNumCharMap.indexOf(data[0]) * 45 + AlphaNumCharMap.indexOf(data[1]);
+      AlphanumericCharMap.indexOf(data[0]) * 45 + AlphanumericCharMap.indexOf(data[1]);
     length = 11;
   }
   return { value, length };

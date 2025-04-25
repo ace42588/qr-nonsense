@@ -1,6 +1,6 @@
-import encodeNumeric from "./numeric";
-import encodeAlphanumeric from "./alphanumeric";
-import encodeByte from "./byte";
+import { encodeNumeric} from "./numeric";
+import {encodeAlphanumeric} from "./alphanumeric";
+import {encodeByte} from "./byte";
 
 export function encodeInput(mode, input, options = {}) {
   switch (mode) {

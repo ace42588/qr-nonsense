@@ -1,11 +1,6 @@
 import { Actions } from "../../domain/qr/Constants";
-import {
-  deriveSegmentsFromInputs,
-  deriveVersionFromInputs,
-  deriveMatrixFromCodewords,
-  getCodewords
-} from "../../domain/qr";
-const deriveCodewordsFromSegments = getCodewords;
+import { deriveFromInputs } from "./deriveFromInputs";
+import { deriveInputsFromMatrix } from "./deriveFromMatrix";
 
 export const initialData = {
   encodedInputs: [],
@@ -18,67 +13,6 @@ export const initialData = {
   codewords: [],
   matrix: null,
 };
-
-function deriveFromInputs(state, override = {}) {
-  const {
-    inputs = state.inputs,
-    errorCorrectionLevel = state.errorCorrectionLevel,
-    version = state.version,
-    dataMask = state.dataMask,
-  } = override;
-
-  const segments = deriveSegmentsFromInputs(inputs);
-  const qrData = segments.reduce(
-    (acc, curr) => {
-      return {
-        segments: [...acc.segments, ...curr.segments],
-        segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
-        bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
-      };
-    },
-    {
-      segments: [],
-      segmentMap: [],
-      bitMap: [],
-    }
-  );
-
-  const calculatedVersion = deriveVersionFromInputs(
-    qrData.bitMap.size,
-    version,
-    errorCorrectionLevel
-  );
-  const codewords = deriveCodewordsFromSegments(
-    segments,
-    calculatedVersion,
-    errorCorrectionLevel
-  );
-  const { matrix, dataMask: calculatedDataMask } = deriveMatrixFromCodewords({
-    version: calculatedVersion,
-    errorCorrectionLevel,
-    dataMask,
-    codewords,
-  });
-
-  const newQRData = {
-    ...qrData,
-      segments,
-      calculatedVersion,
-      codewords,
-      matrix,
-      calculatedDataMask,
-  };
-
-  return { ...state, ...newQRData, ...override };
-}
-
-function deriveInputsFromMatrix(matrix) {
-  // Use a QR decoder here!
-  // Return object: { inputs, errorCorrectionLevel, version, dataMask }
-  // If decode fails, throw or return error info.
-  //return decodeQRMatrixToInputs(matrix);
-  const segments = deriveSegmentsFromMatrix();
-}
 
 export function dataReducer(state, action) {
   switch (action.type) {
@@ -148,49 +82,5 @@ export function dataReducer(state, action) {
     default: {
       return state;
     }
-  }
-}
-
-/* ChatGPT recommended refactor....*/
-
-export const initialQRState = {
-  matrix: null,
-  bitMap: null,
-  selectedMask: null,
-  calculatedVersion: null,
-  segments: [],
-  codewords: [],
-};
-
-export function qrReducer(state, action) {
-  switch (action.type) {
-    case "SET_MATRIX":
-      return { ...state, matrix: action.payload };
-    case "SET_BIT_MAP":
-      return { ...state, bitMap: action.payload };
-    case "SET_SELECTED_MASK":
-      return { ...state, selectedMask: action.payload };
-    case "SET_CALCULATED_VERSION":
-      return { ...state, calculatedVersion: action.payload };
-    case "SET_SEGMENTS":
-      return { ...state, segments: action.payload };
-    case "TOGGLE_HIGHLIGHT":
-      return {
-        ...state,
-        segments: state.segments.map((s) =>
-          s.id === action.payload
-            ? { ...s, isHighlighted: !s.isHighlighted }
-            : s
-        ),
-      };
-    case "CLEAR_HIGHLIGHTS":
-      return {
-        ...state,
-        segments: state.segments.map((s) => ({ ...s, isHighlighted: false })),
-      };
-    case "SET_CODEWORDS":
-      return { ...state, codewords: action.payload };
-    default:
-      return state;
   }
 }

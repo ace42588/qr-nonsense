@@ -1,5 +1,5 @@
 import { CodewordLength, PAD_BYTES } from "./Constants";
-import { getBits } from "./BitUtils";
+import { getBits } from "../bitUtils";
 
 let lastSegmentId = 0;
 

@@ -30,5 +30,5 @@ export function* iteratorFunc(data, options) {
   }
 }
 
-const encodeAlphanumeric = (input, options) =>
+export const encodeByte = (input, options) =>
   encodeSegment(input, mode, (data) => iteratorFunc(data, options));
