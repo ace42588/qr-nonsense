@@ -2,7 +2,9 @@
 import {
   getCodewords,
   encodeInput,
+  finalizeEncoding,
   getMinimumQRCodeVersion,
+  getRequiredDataCodewords
 } from "../../domain/qr";
 import { deriveMatrixFromCodewords } from "./deriveMatrixFromCodewords";
 
@@ -25,9 +27,13 @@ function deriveSegmentsFromInputs(inputs) {
   return segments;
 }
 
-function deriveCodewordsFromSegments(segmentMap, version, ecLevel) {
-  
-  getCodewords();
+function deriveCodewordsFromSegments(bitMap, version, ecLevel) {
+  const requiredDataCodewords = getRequiredDataCodewords(
+    version,
+    ecLevel
+  );
+  const finalizedBits = finalizeEncoding([...bitMap.keys], requiredDataCodewords);
+  getCodewords(finalizedBits, version, ecLevel);
 }
 
 export function deriveFromInputs(state, override = {}) {
@@ -58,7 +64,7 @@ export function deriveFromInputs(state, override = {}) {
     errorCorrectionLevel
   );
   const codewords = deriveCodewordsFromSegments(
-    segments,
+    qrData.bitMap,
     calculatedVersion,
     errorCorrectionLevel
   );

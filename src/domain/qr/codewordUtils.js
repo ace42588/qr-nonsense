@@ -114,6 +114,7 @@ export function getCodewords(encodedInputs, version, errorCorrectionLevel) {
     version,
     errorCorrectionLevel
   );
+
   const encodedData = finalizeEncoding(encodedInputs, requiredDataCodewords);
   const qrBlocks = getBlocks(encodedData, errorCorrectionLevel, version);
   //console.debug("getCodewords", { qrBlocks });

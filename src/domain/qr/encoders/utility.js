@@ -31,7 +31,7 @@ function computeIndicatorLength(charCount, mode) {
   return thresholds[thresholds.length - 1].length;
 }
 
-function getTerminatorLength(capacityBytes, totalDataBits) {
+export function getTerminatorLength(capacityBytes, totalDataBits) {
   const capacityBits = capacityBytes * CodewordLength;
   return Math.min(4, Math.max(0, capacityBits - totalDataBits));
 }
@@ -106,27 +106,4 @@ export function* createNonByte(input, mode, encoderFn) {
     const { value, length } = encoderFn(groups[i]);
     yield createCodon(value, groups[i], mode.name, length);
   }
-}
-
-export function finalizeEncoding(segments, requiredDataCodewords) {
-  let bits = segments.flatMap(({ bitMap }) => [...bitMap.keys]);
-  // Add terminator bits, based on version capacity
-  const numTermBits = getTerminatorLength(requiredDataCodewords, bits.length);
-  const termBits = getBits(0, numTermBits);
-  bits = [...bits, ...termBits];
-
-  // add filler bits to complete the last codeword
-  const remainder = bits.length % CodewordLength;
-  const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
-  const fillBits = getBits(0, numFillBits);
-  bits = [...bits, ...fillBits];
-
-  // add padding to fill the capacity
-  const numPadBytes =
-    requiredDataCodewords - Math.ceil(bits.length / CodewordLength);
-  const padBytes = Array.from({ length: numPadBytes }, (_, i) =>
-    getBits(PAD_BYTES[i % 2], 8)
-  );
-
-  return [...bits, ...padBytes.flat()];
 }
