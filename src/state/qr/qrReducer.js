@@ -96,7 +96,6 @@ export function dataReducer(state, action) {
       };
     }
     default: {
-      console.error("dataReducer", `Unrecognized action: ${action.type}`);
       return state;
     }
   }
