@@ -1,17 +1,6 @@
-export const AlphaNumCharMap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+export const AlphanumericCharacterMap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
 export const CodewordLength = 8;
-
-export const Actions = {
-  ChangeInput: "UPDATE_INPUTS",
-  ChangeDataMask: "UPDATE_DATAMASK",
-  UpdateDataMask: "SET_DATAMASK",
-  ChangeVersion: "UPDATE_VERSION",
-  ChangeErrorCorretionLevel: "UPDATE_ECL",
-  HighlightSegment: "HIGHLIGHT_SEGMENT",
-  HighlightModules: "HIGHLIGHT_MODULES",
-  ToggleModule: "TOGGLE_MODULE"
-};
 
 export const MODE = {
   Terminator: {

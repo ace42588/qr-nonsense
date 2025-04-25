@@ -88,7 +88,7 @@ export function getQRDataFromInputs(
       calculatedVersion,
       errorCorrectionLevel
     );
-    const { matrix, dataMask: calculatedDataMask } = deriveMatrixFromInputs({
+    const { matrix, dataMask: calculatedDataMask } = deriveMatrixFromCodewords({
       version: calculatedVersion,
       errorCorrectionLevel,
       dataMask,
@@ -108,7 +108,7 @@ export function getQRDataFromInputs(
   }
 }
 
-export function deriveMatrixFromInputs({
+export function deriveMatrixFromCodewords({
   version,
   errorCorrectionLevel,
   dataMask,
