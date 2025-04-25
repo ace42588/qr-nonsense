@@ -2,10 +2,10 @@ import { Actions } from "../../domain/qr/Constants";
 import {
   deriveSegmentsFromInputs,
   deriveVersionFromInputs,
-  deriveMatrixFromInputs,
+  deriveMatrixFromCodewords,
   getCodewords
 } from "../../domain/qr";
-const deriveCodewordsFromInputs = getCodewords;
+const deriveCodewordsFromSegments = getCodewords;
 
 export const initialData = {
   encodedInputs: [],
@@ -48,12 +48,12 @@ function deriveFromInputs(state, override = {}) {
     version,
     errorCorrectionLevel
   );
-  const codewords = deriveCodewordsFromInputs(
+  const codewords = deriveCodewordsFromSegments(
     segments,
     calculatedVersion,
     errorCorrectionLevel
   );
-  const { matrix, dataMask: calculatedDataMask } = deriveMatrixFromInputs({
+  const { matrix, dataMask: calculatedDataMask } = deriveMatrixFromCodewords({
     version: calculatedVersion,
     errorCorrectionLevel,
     dataMask,
@@ -70,6 +70,14 @@ function deriveFromInputs(state, override = {}) {
   };
 
   return { ...state, ...newQRData, ...override };
+}
+
+function deriveInputsFromMatrix(matrix) {
+  // Use a QR decoder here!
+  // Return object: { inputs, errorCorrectionLevel, version, dataMask }
+  // If decode fails, throw or return error info.
+  //return decodeQRMatrixToInputs(matrix);
+  const segments = deriveSegmentsFromMatrix();
 }
 
 export function dataReducer(state, action) {
