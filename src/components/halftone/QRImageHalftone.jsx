@@ -34,7 +34,7 @@ export default function QRImageHalftone({
       //const qrModules = qr.modules.data;
       //const qrSize = qr.modules.size;
       //const modulePixelSize = size / qrSize;
-      
+
       const qrModules = matrix.flat();
       const qrSize = matrix.length;
       const modulePixelSize = size / qrSize;
@@ -51,8 +51,7 @@ export default function QRImageHalftone({
             // Get image color at module center
             const cx = Math.round((c + 0.5) * modulePixelSize);
             const cy = Math.round((r + 0.5) * modulePixelSize);
-            const idx =
-              ((cy % size) * size + (cx % size)) * 4;
+            const idx = ((cy % size) * size + (cx % size)) * 4;
             const [rC, gC, bC] = [
               imgData.data[idx],
               imgData.data[idx + 1],
@@ -66,18 +65,27 @@ export default function QRImageHalftone({
               (r >= qrSize - 8 && c < 8);
 
             ctx.beginPath();
-            ctx.arc(
+            if (isFinder) {
+              ctx.fillStyle = m.isDark
+                ? "black"
+                : "white"
+            } else {
+              ctx.arc(
               cx,
               cy,
-              isFinder
-                ? modulePixelSize / 2
-                : (dotSize / 2) * ((rC + gC + bC) / (255 * 3) * 0.7 + 0.3), // size varies with brightness
+              (dotSize / 2) * (((rC + gC + bC) / (255 * 3)) * 0.7 + 0.3), // size varies with brightness
               0,
               2 * Math.PI
             );
-            ctx.fillStyle = isFinder
-              ? "#000"
-              : `rgb(${rC},${gC},${bC})`;
+            }
+            const fill = isFinder
+              ? m.isDark
+                ? "#000"
+                : "#FFF"
+              : m.isDark
+              ? `rgb(${rC},${gC},${bC})`
+              : "#FFF";
+            ctx.fillStyle = fill;
             ctx.globalAlpha = 1;
             ctx.fill();
           }
