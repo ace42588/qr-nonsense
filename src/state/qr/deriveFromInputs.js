@@ -20,20 +20,15 @@ function deriveVersionFromInputs(numBits, inputVersion, errorCorrectionLevel) {
 
 function deriveSegmentsFromInputs(inputs) {
   const segments = inputs.map(({ data, mode, encoding }) =>
-    //  getEncoder(mode).encode(data, encoding)
     encodeInput(mode, data, encoding)
   );
-  //console.debug("deriveSegmentsFromInputs", { segments });
   return segments;
 }
 
 function deriveCodewordsFromBits(bits, version, ecLevel) {
   //console.debug("deriveCodewordsFromBits", { bitMap, version, ecLevel });
   const requiredDataCodewords = getRequiredDataCodewords(version, ecLevel);
-  const finalizedBits = finalizeEncoding(
-    bits,
-    requiredDataCodewords
-  );
+  const finalizedBits = finalizeEncoding(bits, requiredDataCodewords);
   //console.debug("deriveCodewordsFromBits", { finalizedBits });
   return getCodewords(finalizedBits, version, ecLevel);
 }
