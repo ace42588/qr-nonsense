@@ -14,8 +14,41 @@ export const initialData = {
   matrix: null,
 };
 
-function highlightModules(segment, ) {
+function getModulesToHighlight(segment, ) {
   
+}
+
+function highlightModules(segment, matrix) {
+  const modulesToUpdate = getModulesToHighlight(segment);
+        const newMatrix = matrix.map((row) =>
+          row.map((module) => {
+            let { bit, isHighlighted } = module;
+            const newModule = { ...module };
+            if (bit.id && modulesToUpdate.some(({ id }) => id === bit.id)) {
+              newModule.isHighlighted = !isHighlighted;
+            }
+            return newModule;
+          })
+        );
+  return newMatrix;
+}
+
+function getSegmentToHighlight(module) {
+  
+}
+
+function highlightSegment(module, segments) {
+  const { bit, nonData } = module;
+
+        const segmentToUpdate = getSegmentToHighlight(module);
+        if (!segmentToUpdate) return state;
+        const newSegments = state.segments.map((segment) => {
+          let { id, isHighlighted } = segment;
+          const newSegment = { ...segment };
+          if (id === segmentToUpdate.id)
+            newSegment.isHighlighted = !isHighlighted;
+          return newSegment;
+        });
 }
 
 export function dataReducer(state, action) {
@@ -37,20 +70,9 @@ export function dataReducer(state, action) {
     case Actions.HighlightModules: {
       try {
         const { segment } = action;
-        const modulesToUpdate = state.segmentMap.get(segment);
-        const newMatrix = state.matrix.map((row) =>
-          row.map((module) => {
-            let { bit, isHighlighted } = module;
-            const newModule = { ...module };
-            if (bit.id && modulesToUpdate.some(({ id }) => id === bit.id)) {
-              newModule.isHighlighted = !isHighlighted;
-            }
-            return newModule;
-          })
-        );
         return {
           ...state,
-          matrix: newMatrix,
+          matrix: highlightModules(segment, state.matrix),
         };
       } catch (e) {
         console.error(e);
@@ -73,7 +95,7 @@ export function dataReducer(state, action) {
               return newModule;
             })
           );
-          return { ...state, matrix: newMatrix };
+          return { ...state, matrix: highlightModules() };
         }
         const segmentToUpdate = state.bitMap.get(bit);
         if (!segmentToUpdate) return state;
