@@ -2,6 +2,11 @@ import React, { useRef, useEffect } from "react";
 //import QRCode from "qrcode";
 import { useQRData } from "../../state";
 
+function getBrightness(r, g, b) {
+  // Perceived brightness
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+}
+
 export default function QRImageHalftone({
   text = "https://openai.com",
   imageUrl = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=256&q=80",
@@ -66,18 +71,21 @@ export default function QRImageHalftone({
 
             ctx.beginPath();
             if (isFinder) {
-              ctx.fillRect(r * modulePixelSize, c * modulePixelSize, modulePixelSize, modulePixelSize);
-              ctx.fillStyle = m.isDark
-                ? "black"
-                : "white";
+              ctx.fillRect(
+                r * modulePixelSize,
+                c * modulePixelSize,
+                modulePixelSize,
+                modulePixelSize
+              );
+              ctx.fillStyle = m.isDark ? "black" : "white";
             } else {
               ctx.arc(
-              cx,
-              cy,
-              (dotSize / 2) * (((rC + gC + bC) / (255 * 3)) * 0.7 + 0.3), // size varies with brightness
-              0,
-              2 * Math.PI
-            );
+                cx,
+                cy,
+                (dotSize / 2) * (((rC + gC + bC) / (255 * 3)) * 0.7 + 0.3), // size varies with brightness
+                0,
+                2 * Math.PI
+              );
               ctx.fillStyle = m.isDark ? `rgb(${rC},${gC},${bC})` : "white";
             }
             ctx.globalAlpha = 1;
@@ -90,6 +98,53 @@ export default function QRImageHalftone({
       isMounted = false;
     };
   }, [text, imageUrl, size, dotSize]);
+
+  useEffect(() => {
+    if (!canvasRef.current || !matrix) return;
+
+    let isMounted = true;
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.src = imageUrl;
+    img.onload = async () => {
+      if (!isMounted) return;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+
+      // Draw image, scale to fit canvas
+      ctx.clearRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+
+      // Get image data for color sampling
+      const imgData = ctx.getImageData(0, 0, size, size);
+
+      const dimension = matrix.length;
+      const quietZone = 4;
+      const totalDimension = dimension + quietZone * 2;
+      const moduleSize = canvas.width / totalDimension;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Fill entire canvas with white (including quiet zone)
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let y = 0; y < dimension; y++) {
+        for (let x = 0; x < dimension; x++) {
+          const m = matrix[y][x];
+          if (!m) continue;
+
+          ctx.fillStyle = m.isDark ? "black" : "white";
+          ctx.fillRect(
+            (x + quietZone) * moduleSize,
+            (y + quietZone) * moduleSize,
+            moduleSize,
+            moduleSize
+          );
+        }
+      }
+    };
+  }, [matrix]);
 
   return (
     <canvas
