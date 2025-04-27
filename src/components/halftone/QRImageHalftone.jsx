@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import QRCode from "qrcode";
+//import QRCode from "qrcode";
 import { useQRData } from "../../state";
 
 export default function QRImageHalftone({
@@ -8,9 +8,11 @@ export default function QRImageHalftone({
   size = 256,
   dotSize = 8,
 }) {
+  const { matrix } = useQRData();
   const canvasRef = useRef();
 
   useEffect(() => {
+    if (matrix === null) return;
     let isMounted = true;
     const img = new window.Image();
     img.crossOrigin = "anonymous";
@@ -28,13 +30,14 @@ export default function QRImageHalftone({
       const imgData = ctx.getImageData(0, 0, size, size);
 
       // Generate QR matrix (using qrcode package)
-      const qr = await QRCode.create(text, { errorCorrectionLevel: "H" });
-      const qrModules = qr.modules.data;
-      const qrSize = qr.modules.size;
-      const modulePixelSize = size / qrSize;
+      //const qr = await QRCode.create(text, { errorCorrectionLevel: "H" });
+      //const qrModules = qr.modules.data;
+      //const qrSize = qr.modules.size;
+      //const modulePixelSize = size / qrSize;
       
-      const { matrix } = useQRData();
-      const dimension = matrix.length;
+      const qrModules = matrix.flat();
+      const qrSize = matrix.length;
+      const modulePixelSize = size / qrSize;
 
       // Clear and re-draw image as background (optional)
       ctx.clearRect(0, 0, size, size);

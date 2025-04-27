@@ -44,7 +44,7 @@ export function deriveFromInputs(state, override = {}) {
 
   try {
     const segments = deriveSegmentsFromInputs(inputs);
-    console.debug("deriveFromInputs", { segments });
+    //console.debug("deriveFromInputs", { segments });
     const idMap = new Map();
     const bits = segments.flatMap((s) => {
       const bits = getBits(s.value, s.length);
