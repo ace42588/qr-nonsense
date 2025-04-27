@@ -27,14 +27,14 @@ function deriveSegmentsFromInputs(inputs) {
   return segments;
 }
 
-function deriveCodewordsFromSegments(bitMap, version, ecLevel) {
-  //console.debug("deriveCodewordsFromSegments", { bitMap, version, ecLevel });
+function deriveCodewordsFromBits(bits, version, ecLevel) {
+  //console.debug("deriveCodewordsFromBits", { bitMap, version, ecLevel });
   const requiredDataCodewords = getRequiredDataCodewords(version, ecLevel);
   const finalizedBits = finalizeEncoding(
-    [...bitMap.keys()],
+    bits,
     requiredDataCodewords
   );
-  //console.debug("deriveCodewordsFromSegments", { finalizedBits });
+  //console.debug("deriveCodewordsFromBits", { finalizedBits });
   return getCodewords(finalizedBits, version, ecLevel);
 }
 
@@ -66,8 +66,8 @@ export function deriveFromInputs(state, override = {}) {
       version,
       errorCorrectionLevel
     );
-    const codewords = deriveCodewordsFromSegments(
-      qrData.bitMap,
+    const codewords = deriveCodewordsFromBits(
+      [...qrData.bitMap.keys()],
       calculatedVersion,
       errorCorrectionLevel
     );

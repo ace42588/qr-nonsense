@@ -36,37 +36,32 @@ export function getTerminatorLength(capacityBytes, totalDataBits) {
   return Math.min(4, Math.max(0, capacityBits - totalDataBits));
 }
 
-function createPart(value,)
+function createPart(type, value, text, length) {
+  return {
+    type: type,
+    value: value,
+    text: text,
+    length: length,
+    id: getId(),
+  };
+}
 
 export function createCodon(value, text, inputMode, length) {
-  return {
-    type: "codon",
-    value,
-    text,
-    inputMode,
-    length,
-    id: getId()
-  };
+  const codon = createPart("codon", value, text, length);
+  return { ...codon, inputMode };
 }
 
 function createModeIndicator(mode) {
-  return {
-    type: "modeIndicator",
-    value: mode.bits,
-    text: mode.name,
-    length: 4,
-    id: getId()
-  };
+  return createPart("modeIndicator", mode.bits, mode.name, length);
 }
 
 function createCharacterCountIndicator(data, codons, mode) {
-  return {
-    type: "characterCountIndicator",
-    value: data.length,
-    text: data.length,
-    length: computeIndicatorLength(codons.length, mode),
-    id: getId()
-  };
+  return createPart(
+    "characterCountIndicator",
+    data.length,
+    data.length,
+    computeIndicatorLength(codons.length, mode)
+  );
 }
 
 function createMaps(segment) {
@@ -86,7 +81,7 @@ export function encodeSegment(data, inputMode, codonItrFn) {
   const codons = [...codonItrFn(data)];
   const mode = createModeIndicator(inputMode);
   const characterCount = createCharacterCountIndicator(data, codons, inputMode);
-  const segment = [ mode, characterCount, ...codons ];
+  const segment = [mode, characterCount, ...codons];
   //console.debug("encodeSegment", { segment });
 
   const { bitMap, segmentMap } = createMaps(segment);
