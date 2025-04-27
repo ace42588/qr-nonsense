@@ -52,7 +52,7 @@ export function createCodon(value, text, inputMode, length) {
 }
 
 function createModeIndicator(mode) {
-  return createPart("modeIndicator", mode.bits, mode.name, length);
+  return createPart("modeIndicator", mode.bits, mode.name, 4);
 }
 
 function createCharacterCountIndicator(data, codons, mode) {
