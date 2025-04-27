@@ -10,6 +10,7 @@ import {
   MerchForm,
   RecursiveSchemaEditor,
 } from "../components";
+import HalftoneDemo from "../components/halftone/HalftoneDemo";
 
 import { QRDataProvider } from "../state";
 
@@ -39,6 +40,7 @@ export default function App() {
         <div className="row">
           <div className="column">
             <div className="row">{selectUI()}</div>
+            <HalftoneDemo />
           </div>
           <div className="column">
             <div className="row">
