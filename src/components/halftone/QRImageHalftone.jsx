@@ -49,9 +49,9 @@ export default function QRImageHalftone({
       );
 
       // Fill entire canvas with white (including quiet zone)
-      //ctx.clearRect(0, 0, size, size);
-      //ctx.fillStyle = "white";
-      //ctx.fillRect(0, 0, size, size);
+      ctx.clearRect(0, 0, size, size);
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, size, size);
 
       const moduleSize = size / totalDimension;
       const subSize = moduleSize / subDivs;
@@ -92,15 +92,6 @@ export default function QRImageHalftone({
           const centerY = (y + 0.5 + quietZone) * moduleSize;
           const brightness = getBrightness(centerX, centerY); // 0..1
 
-          // Sample image at center of module
-          const px = Math.floor(centerX);
-          const py = Math.floor(centerY);
-          const idx = (py * size + px) * 4;
-          const r = imgData.data[idx];
-          const g = imgData.data[idx + 1];
-          const b = imgData.data[idx + 2];
-          const imgIsDark = brightness < 0.5;
-
           // Light module: dither with Bayer or other halftoning
           for (let sy = 0; sy < subDivs; ++sy) {
             for (let sx = 0; sx < subDivs; ++sx) {
@@ -112,8 +103,8 @@ export default function QRImageHalftone({
                 ctx.fillStyle = "#fff";
               }
               ctx.fillRect(
-                x * moduleSize + sx * subSize,
-                y * moduleSize + sy * subSize,
+                (x + quietZone) * moduleSize + sx * subSize,
+                (y + quietZone) * moduleSize + sy * subSize,
                 subSize,
                 subSize
               );
