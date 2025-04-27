@@ -64,21 +64,15 @@ function createCharacterCountIndicator(data, codons, mode) {
   );
 }
 
-
 export function encodeSegment(data, inputMode, codonItrFn) {
   //console.debug("encodeSegment", { data, inputMode, codonItrFn });
   const codons = [...codonItrFn(data)];
   const mode = createModeIndicator(inputMode);
   const characterCount = createCharacterCountIndicator(data, codons, inputMode);
   const segment = [mode, characterCount, ...codons];
-  const bits = segment.map((s) => getBits(s.value, s.length));
   //console.debug("encodeSegment", { segment });
 
-  const encoded = {
-    segment,
-    bits
-  };
-  return encoded;
+  return segment;
 }
 
 export function* createNonByte(input, mode, encoderFn) {

@@ -91,7 +91,7 @@ export function QRCodeCanvas() {
         : Actions.HighlightSegment;
     dispatch({
       type,
-      module,
+      payload: module,
     });
   };
 

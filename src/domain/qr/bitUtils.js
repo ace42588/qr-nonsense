@@ -1,5 +1,3 @@
-import { PAD_BYTES, CodewordLength } from "./Constants";
-
 let lastBitId = 0;
 
 // ~24k bits possible
