@@ -22,6 +22,7 @@ function getModulesToHighlight(segment, state) {
 
 function highlightModules(segment, state) {
   const modulesToUpdate = getModulesToHighlight(segment, state);
+  console.debug("highlightModules", {modulesToUpdate});
   const newMatrix = state.matrix.map((row) =>
     row.map((module) => {
       let { bit, isHighlighted } = module;
@@ -36,7 +37,9 @@ function highlightModules(segment, state) {
 }
 
 function getSegmentToHighlight(module, state) {
-  const { bit: { id } } = module;
+  const {
+    bit: { id },
+  } = module;
   const { idMap } = state;
   return idMap.get(id);
 }
@@ -69,6 +72,7 @@ export function dataReducer(state, action) {
       });
     }
     case Actions.HighlightModules: {
+      console.debug("HighlightModules", {action});
       try {
         if (action.payload.type === "module") {
           // we got a module, highlight segments
@@ -90,14 +94,14 @@ export function dataReducer(state, action) {
           }
           return {
             ...state,
-            segments: highlightSegment(module, state.matrix),
+            segments: highlightSegment(module, state),
           };
         } else {
           // we got a segment part, highlight modules
           const segment = action.payload;
           return {
             ...state,
-            matrix: highlightModules(segment, state.matrix),
+            matrix: highlightModules(segment, state),
           };
         }
       } catch (e) {

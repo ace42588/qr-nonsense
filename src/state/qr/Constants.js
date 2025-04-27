@@ -3,9 +3,9 @@ export const Actions = {
   ChangeDataMask: "UPDATE_DATAMASK",
   ChangeVersion: "UPDATE_VERSION",
   ChangeErrorCorretionLevel: "UPDATE_ECL",
-  HighlightSegment: "HIGHLIGHT_SEGMENT",
+  HighlightSegment: "HIGHLIGHT",
   ClearSegmentHighlight: "RESET_SEGMENT_HIGHLIGHT",
-  HighlightModules: "HIGHLIGHT_MODULES",
+  HighlightModules: "HIGHLIGHT",
   ClearSegmentHighlight: "RESET_MODULE_HIGHLIGHT",
   ToggleModule: "TOGGLE_MODULE"
 };
