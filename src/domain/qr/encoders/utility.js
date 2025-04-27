@@ -36,6 +36,8 @@ export function getTerminatorLength(capacityBytes, totalDataBits) {
   return Math.min(4, Math.max(0, capacityBits - totalDataBits));
 }
 
+function createPart(value,)
+
 export function createCodon(value, text, inputMode, length) {
   return {
     type: "codon",
