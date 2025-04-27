@@ -14,11 +14,11 @@ export const initialData = {
   matrix: null,
 };
 
-function getModulesToHighlight(segment) {}
+function getModulesToHighlight(segment, state) {}
 
-function highlightModules(segment, matrix) {
-  const modulesToUpdate = getModulesToHighlight(segment);
-  const newMatrix = matrix.map((row) =>
+function highlightModules(segment, state) {
+  const modulesToUpdate = getModulesToHighlight(segment, state);
+  const newMatrix = state.matrix.map((row) =>
     row.map((module) => {
       let { bit, isHighlighted } = module;
       const newModule = { ...module };
@@ -31,19 +31,17 @@ function highlightModules(segment, matrix) {
   return newMatrix;
 }
 
-function getSegmentToHighlight(module) {}
+function getSegmentToHighlight(module, state) {}
 
-function highlightSegment(module, segments) {
-  const { bit, nonData } = module;
-
-  const segmentToUpdate = getSegmentToHighlight(module);
-  if (!segmentToUpdate) return;
-  const newSegments = segments.map((segment) => {
+function highlightSegment(module, state) {
+  const segmentToUpdate = getSegmentToHighlight(module, state);
+  const newSegments = state.segments.map((segment) => {
     let { id, isHighlighted } = segment;
     const newSegment = { ...segment };
     if (id === segmentToUpdate.id) newSegment.isHighlighted = !isHighlighted;
     return newSegment;
   });
+  return newSegments;
 }
 
 export function dataReducer(state, action) {
@@ -65,6 +63,7 @@ export function dataReducer(state, action) {
     case Actions.HighlightModules: {
       try {
         if (action.payload.type === "module") {
+          // we got a module, highlight segments
           const { module } = action.payload;
           // highlight the other nondata modules
           if (module.nonData) {
@@ -79,26 +78,18 @@ export function dataReducer(state, action) {
                 return newModule;
               })
             );
-            return { ...state, matrix: highlightModules() };
+            return { ...state, matrix: newMatrix };
           }
-          // otherwise highlight the segment
           return {
             ...state,
             segments: highlightSegment(module, state.matrix),
           };
         } else {
           // we got a segment part, highlight modules
-          const segmentToUpdate = getSegmentToHighlight();
-          const newSegments = state.segments.map((segment) => {
-            let { id, isHighlighted } = segment;
-            const newSegment = { ...segment };
-            if (id === segmentToUpdate.id)
-              newSegment.isHighlighted = !isHighlighted;
-            return newSegment;
-          });
+          const segment = action.payload;
           return {
             ...state,
-            matrix: highlightModules(segment),
+            matrix: highlightModules(segment, state.matrix),
           };
         }
       } catch (e) {
