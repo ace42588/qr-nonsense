@@ -20,7 +20,7 @@ function deriveVersionFromInputs(numBits, inputVersion, errorCorrectionLevel) {
 }
 
 function deriveSegmentsFromInputs(inputs) {
-  const segments = inputs.map(({ data, mode, encoding }) =>
+  const segments = inputs.flatMap(({ data, mode, encoding }) =>
     encodeInput(mode, data, encoding)
   );
   return segments;
@@ -44,7 +44,8 @@ export function deriveFromInputs(state, override = {}) {
 
   try {
     const segments = deriveSegmentsFromInputs(inputs);
-    const bits = segments.map((s) => getBits(s.value, s.length));
+    console.debug("deriveFromInputs", {segments});
+    const bits = segments.flatMap((s) => getBits(s.value, s.length));
 
     const calculatedVersion = deriveVersionFromInputs(
       bits.length,
@@ -65,9 +66,7 @@ export function deriveFromInputs(state, override = {}) {
     });
 
     console.debug("deriveFromInputs", {
-      calculatedVersion,
-      codewords,
-      calculatedDataMask,
+      newQRData
     });
 
     const newQRData = {
