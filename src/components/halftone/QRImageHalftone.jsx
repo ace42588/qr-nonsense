@@ -69,31 +69,35 @@ export default function QRImageHalftone({
           const b = imgData.data[idx + 2];
           const brightness = getBrightness(r, g, b); // 0..255
           const imgIsDark = brightness < 127;
-          
-          if ((m.isDark && imgIsDark) {
-            // img is dark
-            ctx.fillStyle = `rgb(${r},${g},${b})`;
-          } else if (m.isDark && !imgIsDark) {
-            // draw the img, then a black dot
-          } else if (!m.isDark && imgIsDark) {
-            // draw the img, then a white dot
-          } else if (!m.isDark && !imgIsDark) {
-            // img is bright
-          }
 
-          ctx.fillStyle = m.isDark
-            ? brightness < 127
-              ? `rgb(${r},${g},${b})`
-              : "black"
-            : brightness > 127
-            ? `rgb(${r},${g},${b})`
-            : "white";
+          ctx.fillStyle = `rgb(${r},${g},${b})`;
           ctx.fillRect(
             (x + quietZone) * moduleSize,
             (y + quietZone) * moduleSize,
             moduleSize,
             moduleSize
           );
+
+          const dotRadius = 2;
+
+          if ((m.isDark && imgIsDark) || (!m.isDark && !imgIsDark)) {
+            // img should work directly
+            continue;
+          } else if (m.isDark && !imgIsDark) {
+            // draw the img, then a black dot
+            ctx.fillStyle = "#000";
+            ctx.shadowColor = "#fff";
+          } else if (!m.isDark && imgIsDark) {
+            // draw the img, then a white dot
+            ctx.fillStyle = "#fff";
+            ctx.shadowColor = "#000";
+          }
+
+          ctx.beginPath();
+          ctx.arc(centerX + quietZone, centerY + quietZone, dotRadius, 0, 2 * Math.PI);
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 1;
+          ctx.fill();
         }
       }
     };
