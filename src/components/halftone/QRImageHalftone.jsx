@@ -10,8 +10,9 @@ function getBrightness(r, g, b) {
 export default function QRImageHalftone({
   text = "https://openai.com",
   imageUrl = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=256&q=80",
-  size = 256,
-  dotSize = 8,
+  size = 320,
+  minDot = 1,
+  maxDot = 7
 }) {
   const { matrix } = useQRData();
   const canvasRef = useRef();
@@ -31,7 +32,7 @@ export default function QRImageHalftone({
       const dimension = matrix.length;
       const quietZone = 4;
       const totalDimension = dimension + quietZone * 2;
-      const moduleSize = canvas.width / totalDimension;
+      const moduleSize = size / totalDimension;
 
       // 2. Draw image scaled to canvas
       ctx.clearRect(0, 0, size, size);
@@ -39,7 +40,7 @@ export default function QRImageHalftone({
       const imgData = ctx.getImageData(0, 0, size, size);
 
       // 3. Overlay dots for QR modules
-      ctx.clearRect(0, 0, size, size); // Clear for clean drawing
+      //ctx.clearRect(0, 0, size, size); // Clear for clean drawing
 
       const dotMargin = 0.14; // 0 = full square, ~0.14 = more space between dots
 
@@ -74,7 +75,7 @@ export default function QRImageHalftone({
               0,
               2 * Math.PI
             );
-            ctx.fillStyle = m ? "#000" : "#fff";
+            ctx.fillStyle = m.isDark ? "#000" : "#fff";
             ctx.fill();
             continue;
           }
@@ -88,13 +89,18 @@ export default function QRImageHalftone({
           const b = imgData.data[idx + 2];
           const brightness = getBrightness(r, g, b); // 0..255
 
-          ctx.fillStyle = m.isDark ? "black" : "white";
-          ctx.fillRect(
-            (x + quietZone) * moduleSize,
-            (y + quietZone) * moduleSize,
-            moduleSize,
-            moduleSize
-          );
+          // Determine dot size (map brightness to range)
+          const t = brightness / 255;
+          const dotRadius =
+            minDot + (maxDot - minDot) * (m.isDark  ? t : 1 - t);
+
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, dotRadius, 0, 2 * Math.PI);
+          ctx.fillStyle = m.isDark ? "#000" : "#fff";
+          ctx.shadowColor = m.isDark  ? "#fff" : "#000";
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 1;
+          ctx.fill();
         }
       }
     };
