@@ -64,26 +64,42 @@ export function dataReducer(state, action) {
     }
     case Actions.HighlightModules: {
       try {
-        const { segment } = action.payload;
         if (action.payload.type === "module") {
-          const { bit, nonData } = action.payload;
+          const { module } = action.payload;
+          // highlight the other nondata modules
+          if (module.nonData) {
+            const {
+              source: { name },
+            } = module;
+            const newMatrix = state.matrix.map((row) =>
+              row.map((module) => {
+                const newModule = { ...module };
+                if (module.source && module.source.name === name)
+                  newModule.isHighlighted = !module.isHighlighted;
+                return newModule;
+              })
+            );
+            return { ...state, matrix: highlightModules() };
+          }
+          // otherwise highlight the segment
           return {
             ...state,
-            matrix: highlightModules(segment, state.matrix),
+            segments: highlightSegment(module, state.matrix),
           };
         } else {
+          // we got a segment part, highlight modules
           const segmentToUpdate = getSegmentToHighlight();
           const newSegments = state.segments.map((segment) => {
-          let { id, isHighlighted } = segment;
-          const newSegment = { ...segment };
-          if (id === segmentToUpdate.id)
-            newSegment.isHighlighted = !isHighlighted;
-          return newSegment;
-        });
-        return {
-          ...state,
-          segments: newSegments,
-        };
+            let { id, isHighlighted } = segment;
+            const newSegment = { ...segment };
+            if (id === segmentToUpdate.id)
+              newSegment.isHighlighted = !isHighlighted;
+            return newSegment;
+          });
+          return {
+            ...state,
+            matrix: highlightModules(segment),
+          };
         }
       } catch (e) {
         console.error(e);
