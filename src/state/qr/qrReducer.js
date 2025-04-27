@@ -14,7 +14,11 @@ export const initialData = {
   matrix: null,
 };
 
-function getModulesToHighlight(segment, state) {}
+function getModulesToHighlight(segment, state) {
+  const { id } = segment;
+  const { idMap } = state;
+  return idMap.get(id);
+}
 
 function highlightModules(segment, state) {
   const modulesToUpdate = getModulesToHighlight(segment, state);
@@ -31,7 +35,11 @@ function highlightModules(segment, state) {
   return newMatrix;
 }
 
-function getSegmentToHighlight(module, state) {}
+function getSegmentToHighlight(module, state) {
+  const { bit: { id } } = module;
+  const { idMap } = state;
+  return idMap.get(id);
+}
 
 function highlightSegment(module, state) {
   const segmentToUpdate = getSegmentToHighlight(module, state);

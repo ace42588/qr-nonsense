@@ -45,7 +45,16 @@ export function deriveFromInputs(state, override = {}) {
   try {
     const segments = deriveSegmentsFromInputs(inputs);
     console.debug("deriveFromInputs", { segments });
-    const bits = segments.flatMap((s) => getBits(s.value, s.length));
+    const idMap = new Map();
+    const bits = segments.flatMap((s) => {
+      const bits = getBits(s.value, s.length);
+      idMap.set(
+        s.id,
+        bits.map((b) => b.id)
+      );
+      bits.forEach((b) => idMap.set(b.id, s.id));
+      return bits;
+    });
 
     const calculatedVersion = deriveVersionFromInputs(
       bits.length,
@@ -70,6 +79,7 @@ export function deriveFromInputs(state, override = {}) {
       calculatedVersion,
       matrix,
       calculatedDataMask,
+      idMap
     };
 
     console.debug("deriveFromInputs", {
