@@ -46,6 +46,7 @@ export default function QRImageHalftone({
       // Draw QR modules as dots with sampled image color
       for (let r = 0; r < qrSize; ++r) {
         for (let c = 0; c < qrSize; ++c) {
+          const m = matrix[r][c];
           if (qrModules[r * qrSize + c]) {
             // Get image color at module center
             const cx = Math.round((c + 0.5) * modulePixelSize);
