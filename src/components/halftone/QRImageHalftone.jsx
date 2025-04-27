@@ -34,22 +34,16 @@ export default function QRImageHalftone({
 
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, size, size);
 
       const dimension = matrix.length;
-      const quietZone = 4;
-      const totalDimension = dimension + quietZone * 2;
+      //const totalDimension = dimension + quietZone * 2;
+      const totalDimension = dimension;
 
-      ctx.clearRect(0, 0, size, size);
       ctx.drawImage(img, 0, 0, size, size);
-      const imgData = ctx.getImageData(
-        quietZone,
-        quietZone,
-        size - quietZone,
-        size - quietZone
-      );
+      const imgData = ctx.getImageData(0, 0, size, size);
 
       // Fill entire canvas with white (including quiet zone)
-      ctx.clearRect(0, 0, size, size);
       ctx.fillStyle = "white";
       ctx.fillRect(0, 0, size, size);
 
@@ -79,8 +73,8 @@ export default function QRImageHalftone({
             ctx.beginPath();
             ctx.fillStyle = m.isDark ? "black" : "white";
             ctx.fillRect(
-              (x + quietZone) * moduleSize,
-              (y + quietZone) * moduleSize,
+              x * moduleSize,
+              y * moduleSize,
               moduleSize,
               moduleSize
             );
@@ -88,26 +82,37 @@ export default function QRImageHalftone({
             continue;
           }
 
-          const centerX = (x + 0.5 + quietZone) * moduleSize;
-          const centerY = (y + 0.5 + quietZone) * moduleSize;
+          const centerX = (x + 0.5) * moduleSize;
+          const centerY = (y + 0.5) * moduleSize;
           const brightness = getBrightness(centerX, centerY); // 0..1
 
-          // Light module: dither with Bayer or other halftoning
-          for (let sy = 0; sy < subDivs; ++sy) {
-            for (let sx = 0; sx < subDivs; ++sx) {
-              // Bayer threshold
-              const threshold = (BAYER_4x4[sy % 4][sx % 4] + 0.5) / 16;
-              if (brightness < threshold) {
-                ctx.fillStyle = "#111";
-              } else {
-                ctx.fillStyle = "#fff";
+          if (m.isDark) {
+            // Dark module: fill all subpixels black
+            ctx.fillStyle = "#111";
+            ctx.fillRect(
+              x * moduleSize,
+              y * moduleSize,
+              moduleSize,
+              moduleSize
+            );
+          } else {
+            // Light module: dither with Bayer or other halftoning
+            for (let sy = 0; sy < subDivs; ++sy) {
+              for (let sx = 0; sx < subDivs; ++sx) {
+                // Bayer threshold
+                const threshold = (BAYER_4x4[sy % 4][sx % 4] + 0.5) / 16;
+                if (brightness < threshold) {
+                  ctx.fillStyle = "#111";
+                } else {
+                  ctx.fillStyle = "#fff";
+                }
+                ctx.fillRect(
+                  x * moduleSize + sx * subSize,
+                  y * moduleSize + sy * subSize,
+                  subSize,
+                  subSize
+                );
               }
-              ctx.fillRect(
-                (x + quietZone) * moduleSize + sx * subSize,
-                (y + quietZone) * moduleSize + sy * subSize,
-                subSize,
-                subSize
-              );
             }
           }
         }
