@@ -6,7 +6,7 @@ import { useQRData, useQRDataDispatch } from "../../state";
 
 export function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const { matrix, bitMap } = useQRData();
+  const { matrix } = useQRData();
   const dispatch = useQRDataDispatch();
 
   useEffect(() => {
@@ -78,12 +78,6 @@ export function QRCodeCanvas() {
     if (!module) return;
 
     console.debug(module);
-    let source;
-    if (module.nonData) {
-      source = module.source;
-    } else if (module.bit.id) {
-      source = bitMap.get(module.bit.id);
-    }
 
     let type =
       event.type === "contextmenu"

@@ -22,7 +22,6 @@ function getModulesToHighlight(segment, state) {
 
 function highlightModules(segment, state) {
   const modulesToUpdate = getModulesToHighlight(segment, state);
-  //console.debug("highlightModules", { modulesToUpdate });
   const newMatrix = state.matrix.map((row) =>
     row.map((module) => {
       let { bit, isHighlighted } = module;
@@ -33,7 +32,6 @@ function highlightModules(segment, state) {
       return newModule;
     })
   );
-  //console.debug("highlightModules", { newMatrix });
   return newMatrix;
 }
 
@@ -47,10 +45,11 @@ function getSegmentToHighlight(module, state) {
 
 function highlightSegment(module, state) {
   const segmentToUpdate = getSegmentToHighlight(module, state);
+  //console.debug("highlightSegment", {segmentToUpdate});
   const newSegments = state.segments.map((segment) => {
     let { id, isHighlighted } = segment;
     const newSegment = { ...segment };
-    if (id === segmentToUpdate.id) newSegment.isHighlighted = !isHighlighted;
+    if (id === segmentToUpdate) newSegment.isHighlighted = !isHighlighted;
     return newSegment;
   });
   return newSegments;
@@ -73,21 +72,20 @@ export function dataReducer(state, action) {
       });
     }
     case Actions.HighlightModules: {
-      console.debug("Highlight", { action });
       try {
         if (action.payload.type === "module") {
           // we got a module, highlight segments
-          const { module } = action.payload;
+          const module = action.payload;
           // highlight the other nondata modules
           if (module.nonData) {
             const {
               source: { name },
             } = module;
             const newMatrix = state.matrix.map((row) =>
-              row.map((module) => {
-                const newModule = { ...module };
-                if (module.source && module.source.name === name)
-                  newModule.isHighlighted = !module.isHighlighted;
+              row.map((m) => {
+                const newModule = { ...m };
+                if (m.source && m.source.name === name)
+                  newModule.isHighlighted = !m.isHighlighted;
                 return newModule;
               })
             );
