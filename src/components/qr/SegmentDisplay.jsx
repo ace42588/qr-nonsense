@@ -15,10 +15,12 @@ export function SegmentDisplay({ bitStream }) {
   };
 
   const handleMouseEnter = (segment) => {
-    dispatch({
-      type: Actions.HighlightModules,
-      payload: segment,
-    });
+    if (!segment.isHighlighted) {
+      dispatch({
+        type: Actions.HighlightModules,
+        payload: segment,
+      });
+    }
   };
 
   const handleMouseLeave = (segment) => {
@@ -28,8 +30,10 @@ export function SegmentDisplay({ bitStream }) {
     });
   };
 
-  const getClassName = (type, isHighlighted) => {
-    return `${type}-button${isHighlighted ? "-highlighted" : ""}`;
+  const getClassName = (segment) => {
+    return `${segment.type}-button${
+      segment.isHighlighted ? "-highlighted" : ""
+    }`;
   };
 
   return (
@@ -39,7 +43,7 @@ export function SegmentDisplay({ bitStream }) {
         {segments.map((segment, index) => (
           <button
             key={segment.id}
-            className={getClassName(segment.type, segment.isHighlighted)}
+            className={getClassName(segment)}
             onClick={() => handleSegmentClick(segment)}
             onMouseEnter={() => handleSegmentClick(segment)}
             onMouseLeave={() => handleSegmentClick(segment)}

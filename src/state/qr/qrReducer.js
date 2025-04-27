@@ -64,7 +64,12 @@ export function dataReducer(state, action) {
     }
     case Actions.HighlightModules: {
       try {
-        const { segment } = action;
+        const { segment } = action.payload;
+        switch(action.payload.type) {
+          case "segment": {
+            
+          }
+        }
         return {
           ...state,
           matrix: highlightModules(segment, state.matrix),

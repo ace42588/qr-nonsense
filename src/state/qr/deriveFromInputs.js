@@ -44,7 +44,7 @@ export function deriveFromInputs(state, override = {}) {
 
   try {
     const segments = deriveSegmentsFromInputs(inputs);
-    console.debug("deriveFromInputs", {segments});
+    console.debug("deriveFromInputs", { segments });
     const bits = segments.flatMap((s) => getBits(s.value, s.length));
 
     const calculatedVersion = deriveVersionFromInputs(
@@ -65,15 +65,16 @@ export function deriveFromInputs(state, override = {}) {
       codewords,
     });
 
-    console.debug("deriveFromInputs", {
-      newQRData
-    });
-
     const newQRData = {
+      segments,
       calculatedVersion,
       matrix,
       calculatedDataMask,
     };
+
+    console.debug("deriveFromInputs", {
+      newQRData,
+    });
 
     return { ...state, ...newQRData, ...override };
   } catch (e) {
