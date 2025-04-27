@@ -17,89 +17,6 @@ export default function QRImageHalftone({
   const canvasRef = useRef();
 
   useEffect(() => {
-    if (matrix === null) return;
-    let isMounted = true;
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.src = imageUrl;
-    img.onload = async () => {
-      if (!isMounted) return;
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-
-      // Draw image, scale to fit canvas
-      ctx.clearRect(0, 0, size, size);
-      ctx.drawImage(img, 0, 0, size, size);
-
-      // Get image data for color sampling
-      const imgData = ctx.getImageData(0, 0, size, size);
-
-      // Generate QR matrix (using qrcode package)
-      //const qr = await QRCode.create(text, { errorCorrectionLevel: "H" });
-      //const qrModules = qr.modules.data;
-      //const qrSize = qr.modules.size;
-      //const modulePixelSize = size / qrSize;
-
-      const qrModules = matrix.flat();
-      const qrSize = matrix.length;
-      const modulePixelSize = size / qrSize;
-
-      // Clear and re-draw image as background (optional)
-      ctx.clearRect(0, 0, size, size);
-      ctx.drawImage(img, 0, 0, size, size);
-
-      // Draw QR modules as dots with sampled image color
-      for (let r = 0; r < qrSize; ++r) {
-        for (let c = 0; c < qrSize; ++c) {
-          const m = matrix[r][c];
-          if (m) {
-            // Get image color at module center
-            const cx = Math.round((c + 0.5) * modulePixelSize);
-            const cy = Math.round((r + 0.5) * modulePixelSize);
-            const idx = ((cy % size) * size + (cx % size)) * 4;
-            const [rC, gC, bC] = [
-              imgData.data[idx],
-              imgData.data[idx + 1],
-              imgData.data[idx + 2],
-            ];
-
-            // Optional: make finder patterns solid (black)
-            const isFinder =
-              (r < 7 && c < 7) ||
-              (r < 7 && c >= qrSize - 7) ||
-              (r >= qrSize - 7 && c < 7);
-
-            ctx.beginPath();
-            if (isFinder) {
-              ctx.fillRect(
-                r * modulePixelSize,
-                c * modulePixelSize,
-                modulePixelSize,
-                modulePixelSize
-              );
-              ctx.fillStyle = m.isDark ? "black" : "white";
-            } else {
-              ctx.arc(
-                cx,
-                cy,
-                (dotSize / 2) * (((rC + gC + bC) / (255 * 3)) * 0.7 + 0.3), // size varies with brightness
-                0,
-                2 * Math.PI
-              );
-              ctx.fillStyle = m.isDark ? `rgb(${rC},${gC},${bC})` : "white";
-            }
-            ctx.globalAlpha = 1;
-            ctx.fill();
-          }
-        }
-      }
-    };
-    return () => {
-      isMounted = false;
-    };
-  }, [text, imageUrl, size, dotSize]);
-
-  useEffect(() => {
     if (!canvasRef.current || !matrix) return;
 
     let isMounted = true;
@@ -111,19 +28,29 @@ export default function QRImageHalftone({
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
 
-      // Draw image, scale to fit canvas
-      ctx.clearRect(0, 0, size, size);
-      ctx.drawImage(img, 0, 0, size, size);
-
-      // Get image data for color sampling
-      const imgData = ctx.getImageData(0, 0, size, size);
-
       const dimension = matrix.length;
       const quietZone = 4;
       const totalDimension = dimension + quietZone * 2;
       const moduleSize = canvas.width / totalDimension;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // 2. Draw image scaled to canvas
+      ctx.clearRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+      const imgData = ctx.getImageData(0, 0, size, size);
+
+      // 3. Overlay dots for QR modules
+      ctx.clearRect(0, 0, size, size); // Clear for clean drawing
+
+      const dotMargin = 0.14; // 0 = full square, ~0.14 = more space between dots
+
+      // Helper: Finder pattern?
+      function isFinder(x, y) {
+        const inPattern = (a, b) =>
+          (a < 7 && b < 7) || // top-left
+          (a > dimension - 8 && b < 7) || // top-right
+          (a < 7 && b > dimension - 8); // bottom-left
+        return inPattern(x, y);
+      }
 
       // Fill entire canvas with white (including quiet zone)
       ctx.fillStyle = "white";
@@ -133,6 +60,33 @@ export default function QRImageHalftone({
         for (let x = 0; x < dimension; x++) {
           const m = matrix[y][x];
           if (!m) continue;
+
+          const centerX = (x + 0.5) * moduleSize;
+          const centerY = (y + 0.5) * moduleSize;
+
+          // Finder patterns: always black or white, always max dot
+          if (isFinder(x, y)) {
+            ctx.beginPath();
+            ctx.arc(
+              centerX,
+              centerY,
+              (moduleSize / 2) * (1 - dotMargin),
+              0,
+              2 * Math.PI
+            );
+            ctx.fillStyle = m ? "#000" : "#fff";
+            ctx.fill();
+            continue;
+          }
+
+          // Sample image at center of module
+          const px = Math.floor(centerX);
+          const py = Math.floor(centerY);
+          const idx = (py * size + px) * 4;
+          const r = imgData.data[idx];
+          const g = imgData.data[idx + 1];
+          const b = imgData.data[idx + 2];
+          const brightness = getBrightness(r, g, b); // 0..255
 
           ctx.fillStyle = m.isDark ? "black" : "white";
           ctx.fillRect(
