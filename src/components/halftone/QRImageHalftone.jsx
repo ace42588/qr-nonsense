@@ -43,8 +43,8 @@ export default function QRImageHalftone({
       for (let y = 0; y < dimension; y++) {
         for (let x = 0; x < dimension; x++) {
           const m = matrix[y][x];
-          const centerX = (x + 0.5) * moduleSize;
-          const centerY = (y + 0.5) * moduleSize;
+          const centerX = (x + 0.5 + quietZone) * moduleSize;
+          const centerY = (y + 0.5 + quietZone) * moduleSize;
           if (!m) continue;
 
           if (m.nonData) {
@@ -78,7 +78,7 @@ export default function QRImageHalftone({
             moduleSize
           );
 
-          const dotRadius = 2;
+          minDot + (maxDot - minDot) * (modules[y][x] ? 1 - t : t)
 
           if ((m.isDark && imgIsDark) || (!m.isDark && !imgIsDark)) {
             // img should work directly
@@ -94,7 +94,7 @@ export default function QRImageHalftone({
           }
 
           ctx.beginPath();
-          ctx.arc(centerX + quietZone, centerY + quietZone, dotRadius, 0, 2 * Math.PI);
+          ctx.arc(centerX, centerY, dotRadius, 0, 2 * Math.PI);
           ctx.shadowBlur = 0;
           ctx.globalAlpha = 1;
           ctx.fill();
