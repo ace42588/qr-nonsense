@@ -87,10 +87,7 @@ export function encodeSegment(data, inputMode, codonItrFn) {
   const { bitMap, segmentMap } = createMaps(segment);
 
   const encoded = {
-    mode,
-    characterCount,
-    segmentMap,
-    bitMap,
+    segment
   };
   return encoded;
 }
