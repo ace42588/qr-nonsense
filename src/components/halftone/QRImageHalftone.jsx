@@ -47,7 +47,7 @@ export default function QRImageHalftone({
       for (let r = 0; r < qrSize; ++r) {
         for (let c = 0; c < qrSize; ++c) {
           const m = matrix[r][c];
-          if (qrModules[r * qrSize + c]) {
+          if (m) {
             // Get image color at module center
             const cx = Math.round((c + 0.5) * modulePixelSize);
             const cy = Math.round((r + 0.5) * modulePixelSize);
@@ -61,9 +61,9 @@ export default function QRImageHalftone({
 
             // Optional: make finder patterns solid (black)
             const isFinder =
-              (r < 7 && c < 7) ||
-              (r < 7 && c >= qrSize - 7) ||
-              (r >= qrSize - 7 && c < 7);
+              (r < 8 && c < 8) ||
+              (r < 8 && c >= qrSize - 8) ||
+              (r >= qrSize - 8 && c < 8);
 
             ctx.beginPath();
             ctx.arc(
