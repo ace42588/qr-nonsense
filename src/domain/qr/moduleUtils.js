@@ -17,6 +17,7 @@ export function makeModule({ bit, x, y, isMasked }) {
     isDark,
     isMasked,
     isHighlighted: false,
+    type: "module",
   };
 }
 
@@ -27,8 +28,6 @@ function makeNonDataModule(value, source, x, y) {
     source,
   };
   const module = makeModule({ bit, x, y, isMasked: false });
-  module;
-  module.nonData = true;
   return { ...module, nonData: true, source };
 }
 

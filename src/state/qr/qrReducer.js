@@ -65,15 +65,26 @@ export function dataReducer(state, action) {
     case Actions.HighlightModules: {
       try {
         const { segment } = action.payload;
-        switch(action.payload.type) {
-          case "segment": {
-            
-          }
-        }
+        if (action.payload.type === "module") {
+          const { bit, nonData } = action.payload;
+          return {
+            ...state,
+            matrix: highlightModules(segment, state.matrix),
+          };
+        } else {
+          const segmentToUpdate = getSegmentToHighlight();
+          const newSegments = state.segments.map((segment) => {
+          let { id, isHighlighted } = segment;
+          const newSegment = { ...segment };
+          if (id === segmentToUpdate.id)
+            newSegment.isHighlighted = !isHighlighted;
+          return newSegment;
+        });
         return {
           ...state,
-          matrix: highlightModules(segment, state.matrix),
+          segments: newSegments,
         };
+        }
       } catch (e) {
         console.error(e);
       }
