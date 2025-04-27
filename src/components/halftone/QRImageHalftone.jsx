@@ -69,7 +69,13 @@ export default function QRImageHalftone({
           const b = imgData.data[idx + 2];
           const brightness = getBrightness(r, g, b); // 0..255
 
-          ctx.fillStyle = m.isDark ? `rgb(${r},${g},${b})` : "white";
+          ctx.fillStyle = m.isDark
+            ? brightness < 127
+              ? `rgb(${r},${g},${b})`
+              : "black"
+            : brightness > 127
+            ? `rgb(${r},${g},${b})`
+            : "white";
           ctx.fillRect(
             (x + quietZone) * moduleSize,
             (y + quietZone) * moduleSize,
