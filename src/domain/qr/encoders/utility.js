@@ -64,17 +64,6 @@ function createCharacterCountIndicator(data, codons, mode) {
   );
 }
 
-function createMaps(segment) {
-  const bitMap = new Map();
-  const segmentMap = new Map();
-
-  for (const elem of segment) {
-    const bits = getBits(elem.value, elem.length);
-    segmentMap.set(elem, bits);
-    bits.forEach((b) => bitMap.set(b, elem));
-  }
-  return { bitMap, segmentMap };
-}
 
 export function encodeSegment(data, inputMode, codonItrFn) {
   //console.debug("encodeSegment", { data, inputMode, codonItrFn });
@@ -82,12 +71,12 @@ export function encodeSegment(data, inputMode, codonItrFn) {
   const mode = createModeIndicator(inputMode);
   const characterCount = createCharacterCountIndicator(data, codons, inputMode);
   const segment = [mode, characterCount, ...codons];
+  const bits = segment.map((s) => getBits(s.value, s.length));
   //console.debug("encodeSegment", { segment });
 
-  const { bitMap, segmentMap } = createMaps(segment);
-
   const encoded = {
-    segment
+    segment,
+    bits
   };
   return encoded;
 }

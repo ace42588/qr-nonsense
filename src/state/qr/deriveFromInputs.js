@@ -47,12 +47,12 @@ export function deriveFromInputs(state, override = {}) {
       (acc, curr) => {
         return {
           segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
-          bitMap: new Map([...acc.bitMap, ...curr.bitMap]),
+          bits: [...acc.bitMap, ...curr.bitMap],
         };
       },
       {
         segmentMap: [],
-        bitMap: [],
+        bits: [],
       }
     );
 
