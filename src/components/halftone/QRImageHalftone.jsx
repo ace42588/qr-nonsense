@@ -68,6 +68,18 @@ export default function QRImageHalftone({
           const g = imgData.data[idx + 1];
           const b = imgData.data[idx + 2];
           const brightness = getBrightness(r, g, b); // 0..255
+          const imgIsDark = brightness < 127;
+          
+          if ((m.isDark && imgIsDark) {
+            // img is dark
+            ctx.fillStyle = `rgb(${r},${g},${b})`;
+          } else if (m.isDark && !imgIsDark) {
+            // draw the img, then a black dot
+          } else if (!m.isDark && imgIsDark) {
+            // draw the img, then a white dot
+          } else if (!m.isDark && !imgIsDark) {
+            // img is bright
+          }
 
           ctx.fillStyle = m.isDark
             ? brightness < 127
