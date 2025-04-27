@@ -11,8 +11,8 @@ export default function QRImageHalftone({
   text = "https://defcon.org/images/defcon-33/dc33-logo.webp",
   imageUrl = "https://cdn.glitch.global/18921864-7cab-44f6-a895-dad8926b3c21/defcon_k_skull-reg_54b34d05-a33f-4c62-bb9f-4b8cc33dfec3.jpg?v=1745786551556",
   size = 480,
-  minDot = 1,
-  maxDot = 5,
+  minDot = 1.5,
+  maxDot = 4,
 }) {
   const { matrix } = useQRData();
   const canvasRef = useRef();
