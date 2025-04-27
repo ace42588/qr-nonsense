@@ -43,6 +43,8 @@ export default function QRImageHalftone({
       for (let y = 0; y < dimension; y++) {
         for (let x = 0; x < dimension; x++) {
           const m = matrix[y][x];
+          const centerX = (x + 0.5) * moduleSize;
+          const centerY = (y + 0.5) * moduleSize;
           if (!m) continue;
 
           if (m.nonData) {
@@ -58,7 +60,16 @@ export default function QRImageHalftone({
             continue;
           }
 
-          ctx.fillStyle = m.isDark ? "black" : "white";
+          // Sample image at center of module
+          const px = Math.floor(centerX);
+          const py = Math.floor(centerY);
+          const idx = (py * size + px) * 4;
+          const r = imgData.data[idx];
+          const g = imgData.data[idx + 1];
+          const b = imgData.data[idx + 2];
+          const brightness = getBrightness(r, g, b); // 0..255
+
+          ctx.fillStyle = m.isDark ? `rgb(${r},${g},${b})` : "white";
           ctx.fillRect(
             (x + quietZone) * moduleSize,
             (y + quietZone) * moduleSize,
