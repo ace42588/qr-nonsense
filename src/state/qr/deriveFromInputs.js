@@ -46,23 +46,23 @@ export function deriveFromInputs(state, override = {}) {
     const qrData = segments.reduce(
       (acc, curr) => {
         return {
-          segmentMap: new Map([...acc.segmentMap, ...curr.segmentMap]),
-          bits: [...acc.bitMap, ...curr.bitMap],
+          segments: [...acc.segments, ...curr.segment],
+          bits: [...acc.bits, ...curr.bits],
         };
       },
       {
-        segmentMap: [],
+        segments: [],
         bits: [],
       }
     );
 
     const calculatedVersion = deriveVersionFromInputs(
-      qrData.bitMap.size,
+      qrData.bits.length,
       version,
       errorCorrectionLevel
     );
     const codewords = deriveCodewordsFromBits(
-      [...qrData.bitMap.keys()],
+      qrData.bits,
       calculatedVersion,
       errorCorrectionLevel
     );
@@ -83,7 +83,6 @@ export function deriveFromInputs(state, override = {}) {
 
     const newQRData = {
       ...qrData,
-      segments: [...qrData.segmentMap.keys()],
       calculatedVersion,
       matrix,
       calculatedDataMask,

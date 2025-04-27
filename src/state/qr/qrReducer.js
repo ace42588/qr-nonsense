@@ -14,6 +14,10 @@ export const initialData = {
   matrix: null,
 };
 
+function highlightModules(segment, ) {
+  
+}
+
 export function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
