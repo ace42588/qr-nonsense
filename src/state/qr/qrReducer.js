@@ -11,7 +11,7 @@ export const initialData = {
   calculatedDataMask: 0,
   segments: [],
   codewords: [],
-  matrix: null,
+  matrix: [[]],
 };
 
 function getModulesToHighlight(segment, state) {

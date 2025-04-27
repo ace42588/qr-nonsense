@@ -2,17 +2,75 @@ import React, { useRef, useEffect } from "react";
 //import QRCode from "qrcode";
 import { useQRData } from "../../state";
 
-// Bayer 4x4 matrix (for ordered dithering)
-const BAYER_4x4 = [
-  [0, 8, 2, 10],
-  [12, 4, 14, 6],
-  [3, 11, 1, 9],
-  [15, 7, 13, 5],
-];
-
 function getBrightness(r, g, b) {
-  // Perceived brightness
+  // Perceived brightness, 0=black, 255=white
   return 0.299 * r + 0.587 * g + 0.114 * b;
+}
+
+// Some candidate patterns (black=1, white=0) for center black or white
+// For dark (center=1) and light (center=0) modules
+const PATTERNS = {
+  dark: [
+    [ // only center black
+      [0,0,0],
+      [0,1,0],
+      [0,0,0]
+    ],
+    [ // cross
+      [0,1,0],
+      [1,1,1],
+      [0,1,0]
+    ],
+    [ // center + edges
+      [1,0,1],
+      [0,1,0],
+      [1,0,1]
+    ],
+    [ // all black
+      [1,1,1],
+      [1,1,1],
+      [1,1,1]
+    ]
+  ],
+  light: [
+    [ // only center white
+      [1,1,1],
+      [1,0,1],
+      [1,1,1]
+    ],
+    [ // cross
+      [1,0,1],
+      [0,0,0],
+      [1,0,1]
+    ],
+    [ // edges white
+      [0,1,0],
+      [1,0,1],
+      [0,1,0]
+    ],
+    [ // all white
+      [0,0,0],
+      [0,0,0],
+      [0,0,0]
+    ]
+  ]
+};
+
+// Choose pattern by which has number of black subpixels closest to (1-brightness) * 9
+function choosePattern(patterns, brightness) {
+  let best = patterns[0], bestScore = 999;
+  for (let pat of patterns) {
+    // count black subpixels
+    let blacks = pat.flat().reduce((a, b) => a + b, 0);
+    // center is always correct
+    let targetBlacks = (1 - brightness) * 9;
+    let score = Math.abs(blacks - targetBlacks);
+    if (score < bestScore) {
+      best = pat;
+      bestScore = score;
+    }
+  }
+  return best;
 }
 
 export default function QRImageHalftone({
@@ -34,85 +92,50 @@ export default function QRImageHalftone({
 
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
+      
+      // Draw and sample image
       ctx.clearRect(0, 0, size, size);
-
-      const dimension = matrix.length;
-      //const totalDimension = dimension + quietZone * 2;
-      const totalDimension = dimension;
-
       ctx.drawImage(img, 0, 0, size, size);
       const imgData = ctx.getImageData(0, 0, size, size);
 
-      // Fill entire canvas with white (including quiet zone)
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, size, size);
+      ctx.clearRect(0, 0, size, size);
 
-      const moduleSize = size / totalDimension;
-      const subSize = moduleSize / subDivs;
+      const moduleSize = size / qrSize;
+      const subSize = moduleSize / modulePixel;
 
-      // Helper to get brightness at canvas (0..1)
-      function getBrightness(x, y) {
-        const ix = Math.max(0, Math.min(size - 1, Math.floor(x)));
-        const iy = Math.max(0, Math.min(size - 1, Math.floor(y)));
-        const idx = (iy * size + ix) * 4;
-        const [r, g, b] = [
-          imgData.data[idx],
-          imgData.data[idx + 1],
-          imgData.data[idx + 2],
-        ];
-        // Perceived brightness (normalize to 0..1)
-        return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-      }
 
-      for (let y = 0; y < dimension; y++) {
-        for (let x = 0; x < dimension; x++) {
-          const m = matrix[y][x];
-          if (!m) continue;
+      // For each QR module
+      for (let qy = 0; qy < qrSize; ++qy) {
+        for (let qx = 0; qx < qrSize; ++qx) {
+          // Center of QR module
+          const centerX = (qx + 0.5) * moduleSize;
+          const centerY = (qy + 0.5) * moduleSize;
+          const px = Math.floor(centerX);
+          const py = Math.floor(centerY);
+          const idx = (py * size + px) * 4;
+          const r = imgData.data[idx];
+          const g = imgData.data[idx + 1];
+          const b = imgData.data[idx + 2];
+          const brightness = getBrightness(r, g, b) / 255; // 0 (black) .. 1 (white)
 
-          if (m.nonData) {
-            ctx.beginPath();
-            ctx.fillStyle = m.isDark ? "black" : "white";
-            ctx.fillRect(
-              x * moduleSize,
-              y * moduleSize,
-              moduleSize,
-              moduleSize
-            );
-            ctx.fill();
-            continue;
-          }
+          // Is this module dark or light?
+          const isDark = qr.modules.get(qx, qy);
 
-          const centerX = (x + 0.5) * moduleSize;
-          const centerY = (y + 0.5) * moduleSize;
-          const brightness = getBrightness(centerX, centerY); // 0..1
+          // Select best matching pattern
+          const patterns = isDark ? PATTERNS.dark : PATTERNS.light;
+          const pattern = choosePattern(patterns, brightness);
 
-          if (m.isDark) {
-            // Dark module: fill all subpixels black
-            ctx.fillStyle = "#111";
-            ctx.fillRect(
-              x * moduleSize,
-              y * moduleSize,
-              moduleSize,
-              moduleSize
-            );
-          } else {
-            // Light module: dither with Bayer or other halftoning
-            for (let sy = 0; sy < subDivs; ++sy) {
-              for (let sx = 0; sx < subDivs; ++sx) {
-                // Bayer threshold
-                const threshold = (BAYER_4x4[sy % 4][sx % 4] + 0.5) / 16;
-                if (brightness < threshold) {
-                  ctx.fillStyle = "#111";
-                } else {
-                  ctx.fillStyle = "#fff";
-                }
-                ctx.fillRect(
-                  x * moduleSize + sx * subSize,
-                  y * moduleSize + sy * subSize,
-                  subSize,
-                  subSize
-                );
-              }
+          // Draw 3x3 pattern for this module
+          for (let sy = 0; sy < modulePixel; ++sy) {
+            for (let sx = 0; sx < modulePixel; ++sx) {
+              const color = pattern[sy][sx] ? "#111" : "#fff";
+              ctx.fillStyle = color;
+              ctx.fillRect(
+                qx * moduleSize + sx * subSize,
+                qy * moduleSize + sy * subSize,
+                subSize,
+                subSize
+              );
             }
           }
         }
