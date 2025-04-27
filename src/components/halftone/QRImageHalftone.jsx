@@ -8,11 +8,11 @@ function getBrightness(r, g, b) {
 }
 
 export default function QRImageHalftone({
-  text = "https://openai.com",
-  imageUrl = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=256&q=80",
-  size = 320,
+  text = "https://defcon.org/images/defcon-33/dc33-logo.webp",
+  imageUrl = "https://cdn.glitch.global/18921864-7cab-44f6-a895-dad8926b3c21/defcon_k_skull-reg_54b34d05-a33f-4c62-bb9f-4b8cc33dfec3.jpg?v=1745786551556",
+  size = 480,
   minDot = 1,
-  maxDot = 7,
+  maxDot = 5,
 }) {
   const { matrix } = useQRData();
   const canvasRef = useRef();
@@ -77,8 +77,8 @@ export default function QRImageHalftone({
             moduleSize,
             moduleSize
           );
-
-          minDot + (maxDot - minDot) * (modules[y][x] ? 1 - t : t)
+          const t = brightness / 255;
+          let dotRadius;
 
           if ((m.isDark && imgIsDark) || (!m.isDark && !imgIsDark)) {
             // img should work directly
@@ -87,10 +87,12 @@ export default function QRImageHalftone({
             // draw the img, then a black dot
             ctx.fillStyle = "#000";
             ctx.shadowColor = "#fff";
+            dotRadius = minDot + (maxDot - minDot) * (m.isDark ? 1 - t : t);
           } else if (!m.isDark && imgIsDark) {
             // draw the img, then a white dot
             ctx.fillStyle = "#fff";
             ctx.shadowColor = "#000";
+            dotRadius = minDot + (maxDot - minDot) * (!m.isDark ? 1 - t : t)
           }
 
           ctx.beginPath();
