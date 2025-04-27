@@ -60,15 +60,16 @@ export default function QRImageHalftone({
 
             // Optional: make finder patterns solid (black)
             const isFinder =
-              (r < 8 && c < 8) ||
-              (r < 8 && c >= qrSize - 8) ||
-              (r >= qrSize - 8 && c < 8);
+              (r < 7 && c < 7) ||
+              (r < 7 && c >= qrSize - 7) ||
+              (r >= qrSize - 7 && c < 7);
 
             ctx.beginPath();
             if (isFinder) {
+              ctx.fillRect(r * modulePixelSize, c * modulePixelSize, modulePixelSize, modulePixelSize);
               ctx.fillStyle = m.isDark
                 ? "black"
-                : "white"
+                : "white";
             } else {
               ctx.arc(
               cx,
@@ -77,15 +78,8 @@ export default function QRImageHalftone({
               0,
               2 * Math.PI
             );
+              ctx.fillStyle = m.isDark ? `rgb(${rC},${gC},${bC})` : "white";
             }
-            const fill = isFinder
-              ? m.isDark
-                ? "#000"
-                : "#FFF"
-              : m.isDark
-              ? `rgb(${rC},${gC},${bC})`
-              : "#FFF";
-            ctx.fillStyle = fill;
             ctx.globalAlpha = 1;
             ctx.fill();
           }
