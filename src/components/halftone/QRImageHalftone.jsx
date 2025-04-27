@@ -44,8 +44,19 @@ export default function QRImageHalftone({
         for (let x = 0; x < dimension; x++) {
           const m = matrix[y][x];
           if (!m) continue;
-          
-          if (m.bit)
+
+          if (m.nonData) {
+            ctx.beginPath();
+            ctx.fillStyle = m.isDark ? "black" : "white";
+            ctx.fillRect(
+              (x + quietZone) * moduleSize,
+              (y + quietZone) * moduleSize,
+              moduleSize,
+              moduleSize
+            );
+            ctx.fill();
+            continue;
+          }
 
           ctx.fillStyle = m.isDark ? "black" : "white";
           ctx.fillRect(
