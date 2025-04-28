@@ -107,6 +107,8 @@ export default function BitFieldPreviewer({ fields }) {
           Cannot encode (missing or invalid values).
         </div>
       )}
+      
+      <BitFieldVisualizer layout={layout} totalBits={totalBits} />
     </div>
   );
 }

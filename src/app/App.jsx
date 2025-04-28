@@ -12,8 +12,8 @@ import {
 } from "../components";
 import HalftoneDemo from "../components/halftone/HalftoneDemo";
 import QRImageHalftone from "../components/halftone/QRImageHalftone";
-import BitFieldEditor from "../components/forms/BitFieldEditor";
-import BitFieldPreviewer from "../components/forms/BitFieldPreviewer";
+import BitFieldEditor from "../components/BitFieldEditor/BitFieldEditor";
+import BitFieldPreviewer from "../components/BitFieldEditor/BitFieldPreviewer";
 
 import { QRDataProvider } from "../state";
 
