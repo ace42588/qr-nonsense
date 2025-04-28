@@ -7,6 +7,7 @@ import {
   VersionSelector,
   DataMaskSelector,
   OrderEncodingSelector,
+  InputModeSelector
 } from "../selectors";
 import { useQRDataDispatch } from "../../state";
 import { Actions } from "../../state/qr/Constants";
@@ -16,59 +17,57 @@ import { encodeOrder, parseOrderJson } from "../../utils/orderUtils";
 export function MerchForm() {
   const [order, setOrder] = useState(sampleInput);
   const [encoding, setEncoding] = useState("PER");
-  const [headers, setHeaders] = useState();
-  const [trailers, setTrailers] = useState();
+  const [headers, setHeaders] = useState([]);
+  const [trailers, setTrailers] = useState([]);
   const dispatch = useQRDataDispatch();
-  
 
   const updateQRData = useCallback(
     (inputValue = order, encodingType = encoding) => {
       const order = parseOrderJson(inputValue);
       if (!order) return;
-      const output = encodeOrder(order, encodingType);
-      if (!output) return;
+      const encoded = encodeOrder(order, encodingType);
+      if (!encoded) return;
       dispatch({
         type: Actions.ChangeInputs,
-        payload: { inputs: [output] },
+        payload: { inputs: [...headers, encoded, ...trailers] },
       });
     },
-    [dispatch, order, encoding]
+    [dispatch, order, encoding, headers, trailers]
   );
-  
+
   const handleInputChange = (index, event) => {
-    const newInputs = [...inputs];
+    const newInputs = [...order];
     newInputs[index].data = event.target.value;
-    setInputs(newInputs);
+    setOrder(newInputs);
   };
 
   const handleModeChange = (index, { mode, encoding }) => {
     console.debug("handleModeChange", { index, mode });
-    const newInputs = [...inputs];
+    const newInputs = [...order];
     const input = newInputs[index];
     newInputs[index] = { ...input, mode, encoding };
     console.debug("handleModeChange", { newInputs });
-    setInputs(newInputs);
+    setOrder(newInputs);
   };
 
   const handleAddHeader = () => {
-    setHeaders([...inputs, { mode: "byte", value: "" }]);
+    setHeaders([...headers, { mode: "byte", value: "" }]);
   };
 
   const handleRemoveHeader = (index) => {
-    const newInputs = inputs.filter((_, i) => i !== index);
+    const newInputs = headers.filter((_, i) => i !== index);
     setHeaders(newInputs);
   };
 
-    const handleAddTrailer = () => {
-    setTrailers([...inputs, { mode: "byte", value: "" }]);
+  const handleAddTrailer = () => {
+    setTrailers([...trailers, { mode: "byte", value: "" }]);
   };
 
   const handleRemoveTrailer = (index) => {
-    const newInputs = inputs.filter((_, i) => i !== index);
+    const newInputs = trailers.filter((_, i) => i !== index);
     setTrailers(newInputs);
   };
 
-  
   useEffect(() => {
     updateQRData();
   }, [updateQRData]);
@@ -85,23 +84,40 @@ export function MerchForm() {
             maxWidth: 900,
           }}
         >
-          <div key={0} className="input-group">
-            <button type="button" onClick={handleAddInput}>
+          <button type="button" onClick={handleAddHeader}>
             Add Header
           </button>
+          {headers.map((header, index) => (
+            <div key={index} className="input-group">
+              <InputModeSelector
+                mode={header.mode}
+                encoding={header.encoding}
+                onChange={(e) => handleModeChange(index, e)}
+              />
+              <div className="input-button-row">
+                <input
+                  type="text"
+                  value={input.data}
+                  onChange={(e) => handleInputChange(index, e)}
+                  placeholder={`Header ${index + 1}`}
+                />
+                <button type="button" onClick={() => handleRemoveHeader(index)}>
+                  ✖
+                </button>
+              </div>
+            </div>
+          ))}
+          <div key={0} className="input-group">
             <textarea
               type="text"
               rows={16}
-              value={input}
+              value={order}
               onChange={(e) => {
                 const newInput = e.target.value;
-                setInput(newInput);
+                setOrder(newInput);
                 updateQRData(newInput, encoding);
               }}
             />
-            <button type="button" onClick={handleAddInput}>
-            Add Trailer
-          </button>
           </div>
           <div>
             <OrderEncodingSelector
@@ -109,6 +125,32 @@ export function MerchForm() {
               setEncoding={setEncoding}
             />
           </div>
+          {trailers.map((input, index) => (
+            <div key={index} className="input-group">
+              <InputModeSelector
+                mode={input.mode}
+                encoding={input.encoding}
+                onChange={(e) => handleModeChange(index, e)}
+              />
+              <div className="input-button-row">
+                <input
+                  type="text"
+                  value={input.data}
+                  onChange={(e) => handleInputChange(index, e)}
+                  placeholder={`Trailer ${index + 1}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTrailer(index)}
+                >
+                  ✖
+                </button>
+              </div>
+            </div>
+          ))}
+          <button type="button" onClick={handleAddTrailer}>
+            Add Trailer
+          </button>
         </div>
       </div>
     </div>
