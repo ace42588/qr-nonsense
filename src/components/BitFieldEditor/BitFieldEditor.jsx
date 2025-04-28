@@ -1,22 +1,24 @@
 import React, { useRef } from "react";
-
 import {
   DndContext,
   closestCenter,
-  KeyboardSensor,
-  PointerSensor,
   useSensor,
   useSensors,
+  PointerSensor,
+  KeyboardSensor,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
-  sortableKeyboardCoordinates,
   useSortable,
+  arrayMove,
   verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { bitsNeeded } from "./utils";
+
+function bitsNeeded(max) {
+  return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
+}
 
 const DEFAULT_FIELD = { label: "", min: 0, max: 255 };
 
@@ -31,29 +33,29 @@ export default function BitFieldEditor({ fields, setFields }) {
   );
 
   function handleAddField() {
-    setFields((prev) => [
-      ...prev,
-      { ...DEFAULT_FIELD, id: String(nextId.current++) },
-    ]);
+    const newField = { ...DEFAULT_FIELD, id: String(nextId.current++) };
+    setFields((prevFields) => [...prevFields, newField]);
   }
 
   function handleChange(id, key, value) {
-    setFields((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, [key]: value } : f))
+    setFields((prevFields) =>
+      prevFields.map((f) => (f.id === id ? { ...f, [key]: value } : f))
     );
   }
 
   function handleRemove(id) {
-    setFields((prev) => prev.filter((f) => f.id !== id));
+    setFields((prevFields) => prevFields.filter((f) => f.id !== id));
   }
 
   function handleDragEnd(event) {
     const { active, over } = event;
     if (!over) return;
     if (active.id !== over.id) {
-      const oldIndex = fields.findIndex((f) => f.id === active.id);
-      const newIndex = fields.findIndex((f) => f.id === over.id);
-      setFields((prev) => arrayMove(prev, oldIndex, newIndex));
+      setFields((prevFields) => {
+        const oldIndex = prevFields.findIndex((f) => f.id === active.id);
+        const newIndex = prevFields.findIndex((f) => f.id === over.id);
+        return arrayMove(prevFields, oldIndex, newIndex);
+      });
     }
   }
 
@@ -84,6 +86,7 @@ export default function BitFieldEditor({ fields, setFields }) {
       <button onClick={handleAddField} style={{ marginTop: 8 }}>
         + Add Field
       </button>
+
       <div style={{ marginTop: 8, color: "#888" }}>
         Total bits: <b>{totalBits}</b>
       </div>

@@ -7,13 +7,13 @@ import { generateBitLayout, generateRandomPacket, bytesToHex } from "./utils"; /
 export default function OrderBitFieldEditor() {
   const [schemas, setSchemas] = useState({
     header: [
-      { id: 0, label: "platform", min: 0, max: 3 },
-      { id: 1, label: "confId", min: 0, max: 255 },
-      { id: 2, label: "transactionId", min: 0, max: 1048575 },
+      { id: "0", label: "platform", min: 0, max: 3 },
+      { id: "1", label: "confId", min: 0, max: 255 },
+      { id: "2", label: "transactionId", min: 0, max: 1048575 },
     ],
     item: [
-      { id: 0, label: "variant", min: 0, max: 65535 },
-      { id: 1, label: "quantity", min: 0, max: 255 },
+      { id: "0", label: "variant", min: 0, max: 65535 },
+      { id: "1", label: "quantity", min: 0, max: 255 },
     ],
   });
 
