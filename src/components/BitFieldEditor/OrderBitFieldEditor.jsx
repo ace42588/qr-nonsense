@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import BitFieldEditor from "./BitFieldEditor";
 import BitFieldPreviewer from "./BitFieldPreviewer";
 
+import { generateBitLayout, generateRandomPacket, bytesToHex } from "./utils"; // utility functions
+
 export default function OrderBitFieldEditor() {
   const [schemas, setSchemas] = useState({
     header: [

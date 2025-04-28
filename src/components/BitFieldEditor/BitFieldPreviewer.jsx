@@ -1,35 +1,7 @@
 import React, { useMemo, useState } from "react";
 import BitFieldVisualizer from "./BitFieldVisualizer";
+import { generateBitLayout, encodeFieldsToBytes, bytesToHex } from "./utils"
 
-function bitsNeeded(max) {
-  return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
-}
-
-function generateBitLayout(fields) {
-  const withBits = fields.map(field => ({
-    ...field,
-    bits: bitsNeeded(field.max)
-  }));
-
-  const totalBits = withBits.reduce((sum, field) => sum + field.bits, 0);
-
-  let currentBit = totalBits - 1;
-  const layout = withBits.map(field => {
-    const start = currentBit;
-    const end = currentBit - field.bits + 1;
-    currentBit -= field.bits;
-    return {
-      label: field.label,
-      min: field.min,
-      max: field.max,
-      startBit: start,
-      endBit: end,
-      width: field.bits
-    };
-  });
-
-  return { layout, totalBits };
-}
 
 function encodeFieldsToBytes(fieldsLayout, values) {
   let result = 0;
