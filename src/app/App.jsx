@@ -12,6 +12,7 @@ import {
 } from "../components";
 import HalftoneDemo from "../components/halftone/HalftoneDemo";
 import QRImageHalftone from "../components/halftone/QRImageHalftone";
+import BitFieldEditor from "../components/forms/BitFieldEditor";
 
 import { QRDataProvider } from "../state";
 
@@ -40,6 +41,7 @@ export default function App() {
       <QRDataProvider>
         <div className="row">
           <div className="column">
+            <BitFieldEditor />
             <div className="row">{selectUI()}</div>
             <QRImageHalftone />
           </div>
