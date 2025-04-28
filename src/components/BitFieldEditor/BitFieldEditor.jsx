@@ -34,28 +34,25 @@ export default function BitFieldEditor({ fields, setFields }) {
 
   function handleAddField() {
     const newField = { ...DEFAULT_FIELD, id: String(nextId.current++) };
-    setFields((prevFields) => [...prevFields, newField]);
+    setFields([...fields, newField]);
   }
 
   function handleChange(id, key, value) {
-    setFields((prevFields) =>
-      prevFields.map((f) => (f.id === id ? { ...f, [key]: value } : f))
-    );
+    setFields(fields.map((f) => (f.id === id ? { ...f, [key]: value } : f)));
   }
 
   function handleRemove(id) {
-    setFields((prevFields) => prevFields.filter((f) => f.id !== id));
+    console.debug("handleRemove", {id});
+    setFields(fields.filter((f) => f.id !== id));
   }
 
   function handleDragEnd(event) {
     const { active, over } = event;
     if (!over) return;
     if (active.id !== over.id) {
-      setFields((prevFields) => {
-        const oldIndex = prevFields.findIndex((f) => f.id === active.id);
-        const newIndex = prevFields.findIndex((f) => f.id === over.id);
-        return arrayMove(prevFields, oldIndex, newIndex);
-      });
+      const oldIndex = fields.findIndex((f) => f.id === active.id);
+      const newIndex = fields.findIndex((f) => f.id === over.id);
+      setFields(arrayMove(fields, oldIndex, newIndex));
     }
   }
 
@@ -112,8 +109,8 @@ function SortableField({ field, onChange, onRemove }) {
   const bitCount = bitsNeeded(field.max);
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <span style={{ cursor: "grab", marginRight: 8 }}>☰</span>
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>☰</span>
       <input
         type="text"
         placeholder="Label"
