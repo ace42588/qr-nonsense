@@ -3,7 +3,6 @@ import { deriveFromInputs } from "./deriveFromInputs";
 import { deriveInputsFromMatrix } from "./deriveFromMatrix";
 
 export const initialData = {
-  encodedInputs: [],
   errorCorrectionLevel: 0,
   version: -1,
   calculatedVersion: 1,
