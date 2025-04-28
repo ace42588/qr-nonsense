@@ -21,33 +21,39 @@ import { bitsNeeded } from "./utils";
 const DEFAULT_FIELD = { label: "", min: 0, max: 255 };
 
 export default function BitFieldEditor({ fields, setFields }) {
+  const nextId = useRef(
+    Math.max(0, ...fields.map((f) => parseInt(f.id ?? "-1"))) + 1
+  );
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const nextId = useRef(fields.length);
-
   function handleAddField() {
-    setFields((prev) => [...prev, { ...DEFAULT_FIELD, id: nextId.current++ }]);
+    setFields((prev) => [
+      ...prev,
+      { ...DEFAULT_FIELD, id: String(nextId.current++) },
+    ]);
   }
 
   function handleChange(id, key, value) {
-    setFields((fields) =>
-      fields.map((f) => (f.id === id ? { ...f, [key]: value } : f))
+    setFields((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, [key]: value } : f))
     );
   }
 
   function handleRemove(id) {
-    setFields((fields) => fields.filter((f) => f.id !== id));
+    setFields((prev) => prev.filter((f) => f.id !== id));
   }
 
   function handleDragEnd(event) {
     const { active, over } = event;
+    if (!over) return;
     if (active.id !== over.id) {
       const oldIndex = fields.findIndex((f) => f.id === active.id);
       const newIndex = fields.findIndex((f) => f.id === over.id);
-      setFields(arrayMove(fields, oldIndex, newIndex));
+      setFields((prev) => arrayMove(prev, oldIndex, newIndex));
     }
   }
 
@@ -67,7 +73,6 @@ export default function BitFieldEditor({ fields, setFields }) {
           {fields.map((field) => (
             <SortableField
               key={field.id}
-              id={field.id}
               field={field}
               onChange={handleChange}
               onRemove={handleRemove}
@@ -86,10 +91,10 @@ export default function BitFieldEditor({ fields, setFields }) {
   );
 }
 
-function SortableField({ id, field, onChange, onRemove }) {
-  console.debug("SortableField", { onRemove });
+function SortableField({ field, onChange, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id });
+    useSortable({ id: field.id });
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -110,23 +115,26 @@ function SortableField({ id, field, onChange, onRemove }) {
         type="text"
         placeholder="Label"
         value={field.label}
-        onChange={(e) => onChange(id, "label", e.target.value)}
+        onChange={(e) => onChange(field.id, "label", e.target.value)}
         style={{ width: 100, marginRight: 8 }}
       />
       <input
         type="number"
         value={field.min}
-        onChange={(e) => onChange(id, "min", Number(e.target.value))}
+        onChange={(e) => onChange(field.id, "min", Number(e.target.value))}
         style={{ width: 60, marginRight: 8 }}
       />
       <input
         type="number"
         value={field.max}
-        onChange={(e) => onChange(id, "max", Number(e.target.value))}
+        onChange={(e) => onChange(field.id, "max", Number(e.target.value))}
         style={{ width: 60 }}
       />
+      <div style={{ marginLeft: 8, fontSize: 12, color: "#666" }}>
+        ({bitCount} bits)
+      </div>
       <button
-        onClick={() => onRemove(id)}
+        onClick={() => onRemove(field.id)}
         style={{
           marginLeft: 8,
           color: "red",
