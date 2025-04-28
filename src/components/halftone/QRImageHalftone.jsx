@@ -20,27 +20,25 @@ function generatePatterns(center) {
 const patternsDark = generatePatterns(1);
 const patternsLight = generatePatterns(0);
 
-function isAcceptablePattern(center, blacks) {
-  // For dark module (center=1), require at least 5 black subpixels.
-  // For light module (center=0), require at most 4 black subpixels.
-  if (center === 1) return blacks >= 5;
-  return blacks <= 4;
-}
-
-function choosePatternWithGap(patterns, center, brightness) {
-  // Pick acceptable pattern with black count closest to image value
-  let best,
-    bestScore = Infinity;
-  for (let pat of patterns) {
-    let blacks = pat.flat().reduce((a, b) => a + b, 0);
-    if (!isAcceptablePattern(center, blacks)) continue;
-    let imageDiff = Math.abs(blacks / 9 - (1 - brightness));
-    if (imageDiff < bestScore) {
-      best = pat;
-      bestScore = imageDiff;
+function patternReliability(pattern) {
+  // Center pixel value
+  const center = pattern[1][1];
+  // Reinforcement: count how many adjacent subpixels match center
+  let reinforcement = 0;
+  for (let dy = -1; dy <= 1; ++dy) {
+    for (let dx = -1; dx <= 1; ++dx) {
+      if (dx === 0 && dy === 0) continue;
+      if (pattern[1+dy][1+dx] === center) reinforcement++;
     }
   }
-  return best || patterns[0]; // fallback
+  // Transition penalty: count transitions (neighbor pairs)
+  let transitions = 0;
+  for (let y = 0; y < 3; ++y) for (let x = 0; x < 3; ++x) {
+    if (x < 2 && pattern[y][x] !== pattern[y][x+1]) transitions++;
+    if (y < 2 && pattern[y][x] !== pattern[y+1][x]) transitions++;
+  }
+  // Reliability heuristic: more reinforcement, fewer transitions
+  return (reinforcement + 1) / (transitions + 1);
 }
 
 function getBrightness(r, g, b) {
@@ -138,16 +136,14 @@ function computeImportanceMap(imgData, size) {
   return importance;
 }
 
-// Choose pattern by which has number of black subpixels closest to (1-brightness) * 9
-function choosePattern(patterns, brightness) {
-  let best = patterns[0],
-    bestScore = 999;
+function choosePattern(patterns, brightness, importance, reliabilityWeight) {
+  let best, bestScore = Infinity;
   for (let pat of patterns) {
-    // count black subpixels
-    let blacks = pat.flat().reduce((a, b) => a + b, 0);
-    // center is always correct
-    let targetBlacks = (1 - brightness) * 9;
-    let score = Math.abs(blacks - targetBlacks);
+    const blacks = pat.flat().reduce((a, b) => a + b, 0);
+    const reliability = patternReliability(pat);
+    const imageScore = Math.abs(blacks / 9 - (1 - brightness));
+    // Lower score is better; importance modulates between image fit and reliability
+    const score = (importance * imageScore) + ((1 - importance) * (1 - reliability) * reliabilityWeight);
     if (score < bestScore) {
       best = pat;
       bestScore = score;
@@ -161,7 +157,7 @@ export default function QRImageHalftone({
   imageUrl = "https://cdn.glitch.global/18921864-7cab-44f6-a895-dad8926b3c21/defcon_k_skull-reg_cropped.jpg?v=1745787807417",
   size = 480,
   modulePixel = 3, // grid is 3x3 per module
-  reliabilityWeight = 0.5, // 0 = image fit only, 1 = reliability only
+  reliabilityWeight = 0.4, // 0 = image fit only, 1 = reliability only
 }) {
   const { matrix } = useQRData();
   const canvasRef = useRef();
@@ -212,9 +208,13 @@ export default function QRImageHalftone({
           const importance = importanceMap[py * size + px] || 0;
 
           const m = matrix[qy][qx];
+          if (!m) continue;
 
           // Is this module dark or light?
           const { isDark, nonData } = m;
+          const patterns = isDark ? patternsDark : patternsLight;
+          const pattern = choosePattern(patterns, brightness, importance, reliabilityWeight);
+
 
           if (nonData) {
             ctx.fillStyle = m.isDark ? "black" : "white";
@@ -235,23 +235,22 @@ export default function QRImageHalftone({
             brightness
           );
 
-          // Find best pattern (balance image fit and reliability, importance-weighted)
-          let best = patterns[0],
+          let best,
             bestScore = Infinity;
-          for (let i = 0; i < patterns.length; ++i) {
-            const pat = patterns[i];
-            const rel = reliabilities[i];
+          for (let pat of patterns) {
             let blacks = pat.flat().reduce((a, b) => a + b, 0);
-            let imageDiff = Math.abs(blacks / 9 - (1 - brightness));
-            // Interpolate between image fit and reliability based on importance
-            let score =
-              importance * imageDiff +
-              (1 - importance) * (1 - rel) * reliabilityWeight;
-            if (score < bestScore) {
+
+            // Enforce the contrast gap constraint:
+            if ((isDark && blacks < 5) || (!isDark && blacks > 4)) continue;
+
+            let imageDiff = Math.abs(blacks / 9 - (1 - brightness)); // (1-brightness) because 0=white, 1=black
+            if (imageDiff < bestScore) {
               best = pat;
-              bestScore = score;
+              bestScore = imageDiff;
             }
           }
+          // fallback to the first pattern if none matched (shouldn't happen in practice)
+          if (!best) best = patterns[0];
 
           // Draw 3x3 pattern for this module
           for (let sy = 0; sy < modulePixel; ++sy) {
