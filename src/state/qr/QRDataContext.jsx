@@ -22,22 +22,66 @@ export const useQRDataDispatch = () => useContext(QRDataDispatchContext);
 
 export const useQRInputs = () => {
   const dispatch = useQRDataDispatch();
-  const updateInputs = useCallback((inputs) =dispatch({
-        type: Actions.ChangeInputs,
-        payload: { inputs: [output] },
+  
+  const setInputs = useCallback(
+    (inputs) => {
+      dispatch({
+        type: "UPDATE_INPUTS",
+        payload: { inputs },
       });
-}
+    },
+    [dispatch]
+  );
+  
+  const setErrorCorrectionLevel = useCallback(
+    (errorCorrectionLevel) => {
+      dispatch({
+        type: "UPDATE_INPUTS",
+        payload: { errorCorrectionLevel },
+      });
+    },
+    [dispatch]
+  );
+  
+  const setVersion = useCallback(
+    (version) => {
+      dispatch({
+        type: "UPDATE_INPUTS",
+        payload: { version },
+      });
+    },
+    [dispatch]
+  );
+  
+  const setDataMask = useCallback(
+    (dataMask) => {
+      dispatch({
+        type: "UPDATE_INPUTS",
+        payload: { dataMask },
+      });
+    },
+    [dispatch]
+  );
+
+  return { setInputs, setErrorCorrectionLevel, setVersion, setDataMask };  
+};
 
 export const useQRSegments = () => {
   const dispatch = useQRDataDispatch();
 
-  const setSegments = useCallback((segments) => {
-    dispatch({ type: "SET_SEGMENTS", payload: segments });
-  }, [dispatch]);
+  const setSegments = useCallback(
+    (segments) => {
+      dispatch({ type: "SET_SEGMENTS", payload: segments });
+    },
+    [dispatch]
+  );
 
-  const toggleSegmentHighlight = useCallback((segmentId) => {
-    dispatch({ type: "TOGGLE_HIGHLIGHT", payload: segmentId });
-  }, [dispatch]);
+  const toggleSegmentHighlight = useCallback(
+    (segmentId) => {
+      dispatch({ type: "TOGGLE_HIGHLIGHT", payload: segmentId });
+    },
+    [dispatch]
+  );
 
   const clearHighlights = useCallback(() => {
     dispatch({ type: "CLEAR_HIGHLIGHTS" });
@@ -49,13 +93,19 @@ export const useQRSegments = () => {
 export const useQRModules = () => {
   const dispatch = useQRDataDispatch();
 
-  const setModules = useCallback((segments) => {
-    dispatch({ type: "SET_MODULES", payload: segments });
-  }, [dispatch]);
+  const setModules = useCallback(
+    (segments) => {
+      dispatch({ type: "SET_MODULES", payload: segments });
+    },
+    [dispatch]
+  );
 
-  const toggleModuleHighlight = useCallback((segmentId) => {
-    dispatch({ type: "TOGGLE_HIGHLIGHT", payload: segmentId });
-  }, [dispatch]);
+  const toggleModuleHighlight = useCallback(
+    (segmentId) => {
+      dispatch({ type: "TOGGLE_HIGHLIGHT", payload: segmentId });
+    },
+    [dispatch]
+  );
 
   const clearModuleHighlights = useCallback(() => {
     dispatch({ type: "CLEAR_HIGHLIGHTS" });
@@ -67,13 +117,19 @@ export const useQRModules = () => {
 export const useQRMatrix = () => {
   const dispatch = useQRDataDispatch();
 
-  const setSegments = useCallback((segments) => {
-    dispatch({ type: "SET_SEGMENTS", payload: segments });
-  }, [dispatch]);
+  const setSegments = useCallback(
+    (segments) => {
+      dispatch({ type: "SET_SEGMENTS", payload: segments });
+    },
+    [dispatch]
+  );
 
-  const toggleSegmentHighlight = useCallback((segmentId) => {
-    dispatch({ type: "TOGGLE_HIGHLIGHT", payload: segmentId });
-  }, [dispatch]);
+  const toggleSegmentHighlight = useCallback(
+    (segmentId) => {
+      dispatch({ type: "TOGGLE_HIGHLIGHT", payload: segmentId });
+    },
+    [dispatch]
+  );
 
   const clearHighlights = useCallback(() => {
     dispatch({ type: "CLEAR_HIGHLIGHTS" });
