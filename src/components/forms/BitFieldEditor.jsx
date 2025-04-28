@@ -62,7 +62,7 @@ export default function BitFieldEditor({ onChange }) {
               ref={provided.innerRef}
               {...provided.droppableProps}
               style={{
-                minHeight: 50, // Add a minHeight so it exists even with 0 items
+                minHeight: 50,
                 display: "flex",
                 flexDirection: "column",
               }}
@@ -98,6 +98,7 @@ export default function BitFieldEditor({ onChange }) {
                         >
                           ☰
                         </span>
+                        {/* input fields */}
                         <input
                           type="text"
                           placeholder="Label"
@@ -182,6 +183,7 @@ export default function BitFieldEditor({ onChange }) {
           )}
         </Droppable>
       </DragDropContext>
+
       <button
         onClick={handleAddField}
         style={{ marginTop: 12, padding: "6px 14px" }}
