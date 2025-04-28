@@ -16,11 +16,31 @@ function generatePatterns(center) {
   return patterns;
 }
 
-// Dummy reliability: e.g., patterns with more black pixels are more "reliable"
-function getDummyReliability(pattern) {
-  // You could use something more clever, but this works for demo
-  let blacks = pattern.flat().reduce((a, b) => a + b, 0);
-  return blacks / 9; // 0 to 1
+// Generate patterns
+const patternsDark = generatePatterns(1);
+const patternsLight = generatePatterns(0);
+
+function isAcceptablePattern(center, blacks) {
+  // For dark module (center=1), require at least 5 black subpixels.
+  // For light module (center=0), require at most 4 black subpixels.
+  if (center === 1) return blacks >= 5;
+  return blacks <= 4;
+}
+
+function choosePatternWithGap(patterns, center, brightness) {
+  // Pick acceptable pattern with black count closest to image value
+  let best,
+    bestScore = Infinity;
+  for (let pat of patterns) {
+    let blacks = pat.flat().reduce((a, b) => a + b, 0);
+    if (!isAcceptablePattern(center, blacks)) continue;
+    let imageDiff = Math.abs(blacks / 9 - (1 - brightness));
+    if (imageDiff < bestScore) {
+      best = pat;
+      bestScore = imageDiff;
+    }
+  }
+  return best || patterns[0]; // fallback
 }
 
 function getBrightness(r, g, b) {
@@ -140,7 +160,8 @@ export default function QRImageHalftone({
   text = "https://defcon.org/images/defcon-33/dc33-logo.webp",
   imageUrl = "https://cdn.glitch.global/18921864-7cab-44f6-a895-dad8926b3c21/defcon_k_skull-reg_cropped.jpg?v=1745787807417",
   size = 480,
-  subDivs = 3,
+  modulePixel = 3, // grid is 3x3 per module
+  reliabilityWeight = 0.5, // 0 = image fit only, 1 = reliability only
 }) {
   const { matrix } = useQRData();
   const canvasRef = useRef();
@@ -169,13 +190,11 @@ export default function QRImageHalftone({
       // Generate patterns
       const patternsDark = generatePatterns(1);
       const patternsLight = generatePatterns(0);
-      const reliabilitiesDark = patternsDark.map(getDummyReliability);
-      const reliabilitiesLight = patternsLight.map(getDummyReliability);
 
       ctx.clearRect(0, 0, size, size);
 
       const moduleSize = size / qrSize;
-      const subSize = moduleSize / subDivs;
+      const subSize = moduleSize / modulePixel;
 
       // For each QR module
       for (let qy = 0; qy < qrSize; ++qy) {
@@ -190,6 +209,7 @@ export default function QRImageHalftone({
           const g = imgData.data[idx + 1];
           const b = imgData.data[idx + 2];
           const brightness = getBrightness(r, g, b) / 255; // 0 (black) .. 1 (white)
+          const importance = importanceMap[py * size + px] || 0;
 
           const m = matrix[qy][qx];
 
@@ -207,14 +227,36 @@ export default function QRImageHalftone({
             continue;
           }
 
-          // Select best matching pattern
-          const patterns = isDark ? PATTERNS.dark : PATTERNS.light;
-          const pattern = choosePattern(patterns, brightness);
+          // Candidate patterns
+          const patterns = isDark ? patternsDark : patternsLight;
+          const pattern = choosePatternWithGap(
+            patterns,
+            isDark ? 1 : 0,
+            brightness
+          );
+
+          // Find best pattern (balance image fit and reliability, importance-weighted)
+          let best = patterns[0],
+            bestScore = Infinity;
+          for (let i = 0; i < patterns.length; ++i) {
+            const pat = patterns[i];
+            const rel = reliabilities[i];
+            let blacks = pat.flat().reduce((a, b) => a + b, 0);
+            let imageDiff = Math.abs(blacks / 9 - (1 - brightness));
+            // Interpolate between image fit and reliability based on importance
+            let score =
+              importance * imageDiff +
+              (1 - importance) * (1 - rel) * reliabilityWeight;
+            if (score < bestScore) {
+              best = pat;
+              bestScore = score;
+            }
+          }
 
           // Draw 3x3 pattern for this module
-          for (let sy = 0; sy < subDivs; ++sy) {
-            for (let sx = 0; sx < subDivs; ++sx) {
-              const color = pattern[sy][sx] ? "#111" : "#fff";
+          for (let sy = 0; sy < modulePixel; ++sy) {
+            for (let sx = 0; sx < modulePixel; ++sx) {
+              const color = best[sy][sx] ? "#111" : "#fff";
               ctx.fillStyle = color;
               ctx.fillRect(
                 qx * moduleSize + sx * subSize,
