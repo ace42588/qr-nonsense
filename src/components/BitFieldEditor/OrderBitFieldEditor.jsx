@@ -22,6 +22,11 @@ export default function OrderBitFieldEditor() {
     items: [],
   });
 
+  const [expandedSections, setExpandedSections] = useState({
+    header: false,
+    item: false,
+  });
+
   function updateSchema(name, newFields) {
     console.debug("updateSchema", { name, newFields });
     setSchemas((prev) => ({
@@ -44,6 +49,13 @@ export default function OrderBitFieldEditor() {
     });
   }
 
+  function toggleSection(name) {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [name]: !prev[name],
+    }));
+  }
+
   return (
     <div className="input-form">
       {/* Header definition */}
@@ -55,15 +67,27 @@ export default function OrderBitFieldEditor() {
           maxWidth: 900,
         }}
       >
-        <h2>Header Definition</h2>
-        <BitFieldEditor
-          fields={schemas.header}
-          setFields={(newFields) => updateSchema("header", newFields)}
-        />
-        <BitFieldPreviewer
-          fields={schemas.header}
-          sampleValues={sampleValues.header}
-        />
+        <h2
+          style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+          onClick={() => toggleSection("header")}
+        >
+          <span style={{ marginRight: 8 }}>
+            {expandedSections.header ? "▾" : "▸"}
+          </span>
+          Header Definition
+        </h2>
+        {expandedSections.header && (
+          <>
+            <BitFieldEditor
+              fields={schemas.header}
+              setFields={(newFields) => updateSchema("header", newFields)}
+            />
+            <BitFieldPreviewer
+              fields={schemas.header}
+              sampleValues={sampleValues.header}
+            />
+          </>
+        )}
       </div>
 
       {/* Item definition */}
