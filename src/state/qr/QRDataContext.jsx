@@ -20,6 +20,14 @@ export function QRDataProvider({ children }) {
 export const useQRData = () => useContext(QRDataContext);
 export const useQRDataDispatch = () => useContext(QRDataDispatchContext);
 
+export const useQRInputs = () => {
+  const dispatch = useQRDataDispatch();
+  const updateInputs = useCallback((inputs) =dispatch({
+        type: Actions.ChangeInputs,
+        payload: { inputs: [output] },
+      });
+}
+
 export const useQRSegments = () => {
   const dispatch = useQRDataDispatch();
 

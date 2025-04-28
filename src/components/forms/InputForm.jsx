@@ -17,7 +17,7 @@ export function InputForm() {
       const parsed = inputs.map((i) => parseInput(i));
       console.debug("updateQRData", { inputValue });
       dispatch({
-        type: Actions.ChangeInput,
+        type: Actions.ChangeInputs,
         payload: { inputs: parsed },
       });
     },

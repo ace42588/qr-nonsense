@@ -58,20 +58,19 @@ function highlightSegment(module, state) {
 }
 
 export function dataReducer(state, action) {
+  console.debug("dataReducer", {action})
   switch (action.type) {
-    case Actions.ChangeInput: {
-      return deriveFromInputs(state, ...actions.payload);
+    case Actions.ChangeInputs: {
+      return deriveFromInputs(state, action.payload);
     }
     case Actions.ChangeDataMask: {
-      return deriveFromInputs(state, { dataMask: action.dataMask });
+      return deriveFromInputs(state, action.payload);
     }
     case Actions.ChangeVersion: {
-      return deriveFromInputs(state, { version: action.version });
+      return deriveFromInputs(state, action.payload);
     }
     case Actions.ChangeErrorCorretionLevel: {
-      return deriveFromInputs(state, {
-        errorCorrectionLevel: action.errorCorrectionLevel,
-      });
+      return deriveFromInputs(state, action.payload);
     }
     case Actions.Highlight: {
       try {

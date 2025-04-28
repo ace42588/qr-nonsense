@@ -25,7 +25,7 @@ export function MerchForm() {
       const output = encodeOrder(order, encodingType);
       if (!output) return;
       dispatch({
-        type: Actions.ChangeInput,
+        type: Actions.ChangeInputs,
         payload: { inputs: [output] },
       });
     },
