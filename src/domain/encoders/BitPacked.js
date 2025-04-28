@@ -50,6 +50,7 @@ export function encode(order) {
   hex = itemsBytes.reduce((acc, curr) => {
     return acc.concat(curr.toString(16));
   }, hex);
+  console.debug("BitPacked:encode", {hex});
 
   return hex;
 }

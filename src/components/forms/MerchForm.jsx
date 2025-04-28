@@ -71,7 +71,7 @@ export function MerchForm() {
           onClick={(e) => {
             e.preventDefault();
             const order = parseOrderJson(input);
-            const output = encodeOrder(order, encoding);
+            const output = encodeOrder(order, {encoding});
             dispatch({
               type: Actions.ChangeInput,
               inputs: [output],

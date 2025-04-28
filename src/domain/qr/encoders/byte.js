@@ -9,6 +9,7 @@ const createByte = (value, text, inputEncoding = "utf-8") => {
 };
 
 export function* iteratorFunc(data, options) {
+  console.debug("byte:iteratprFunc", { data, options });
   let { inputEncoding } = options;
 
   switch (inputEncoding) {
