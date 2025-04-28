@@ -1,8 +1,11 @@
-const encs = [
-  {encoding: "", label: ""}
+const encodings = [
+  {value: "JSON", label: "Direct JSON"},
+  {value: "Alphanumeric", label: "Alphanumeric Only"},
+  {value: "PER", label: "Packed Encoding Rule"},
+  {value: "PER-ModHex", label: "Packed Encoding Rule, ModHex"},
+  {value: "PER-NTRU", label: "Packed Encoding Rule, NTRU"},
 ]
 
-const Encodings = ["JSON", "Alphanumeric", "PER", "PER-ModHex", "PER-NTRU"];
 export function OrderEncodingSelector({ encoding, setEncoding, onChange }) {
   const handleChange = (e) => {
     const newEncoding = e.target.value;
@@ -13,9 +16,9 @@ export function OrderEncodingSelector({ encoding, setEncoding, onChange }) {
     <div className="label-select-row">
       <label htmlFor="encoding">Encoding:</label>
       <select id="encoding" value={encoding} onChange={handleChange}>
-        {Encodings.map((encoding, idx) => (
-          <option key={encoding} value={encoding}>
-            {encoding}
+        {encodings.map((encoding, idx) => (
+          <option key={encoding.value} value={encoding.value}>
+            {encoding.label}
           </option>
         ))}
       </select>

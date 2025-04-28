@@ -115,6 +115,15 @@ export function MerchForm() {
               </div>
             </div>
           ))}
+        </div>
+        <div
+          style={{
+            border: "1px solid #aaa",
+            borderRadius: 8,
+            padding: 16,
+            maxWidth: 900,
+          }}
+        >
           <div key={0} className="input-group">
             <textarea
               type="text"
@@ -133,6 +142,15 @@ export function MerchForm() {
               setEncoding={setEncoding}
             />
           </div>
+        </div>
+        <div
+          style={{
+            border: "1px solid #aaa",
+            borderRadius: 8,
+            padding: 16,
+            maxWidth: 900,
+          }}
+        >
           {trailers.map((trailer, index) => (
             <div key={index} className="input-group">
               <InputModeSelector
