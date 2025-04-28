@@ -33,15 +33,17 @@ export default function BitFieldEditor({ fields, setFields }) {
   }
 
   function handleChange(idx, key, value) {
-    console.debug("handleChange", {idx, key, value});
-    const newFields = fields.map((f, i) => (i === idx ? { ...f, [key]: value } : f));
+    console.debug("handleChange", { idx, key, value });
+    const newFields = fields.map((f) =>
+      f.id === idx ? { ...f, [key]: value } : f
+    );
     console.debug("handleChange", newFields);
     setFields(newFields);
   }
 
   function handleRemove(idx) {
-    console.debug("handleRemove", {idx});
-    const newFields = (fields) => fields.filter((_, i) => i !== idx);
+    console.debug("handleRemove", { idx });
+    const newFields = (fields) => fields.filter((f) => f.id !== idx);
     console.debug("handleRemove", newFields);
     setFields(newFields);
   }
@@ -54,18 +56,8 @@ export default function BitFieldEditor({ fields, setFields }) {
       setFields(arrayMove(fields, oldIndex, newIndex));
     }
   }
-  
-   console.debug("BitFieldEditor",{fields});
-  // Add ids to each field if not present
-  const fieldsWithIds = fields.map((field, idx) => ({
-    id: field.id ?? idx.toString(),
-    ...field,
-  }));
 
-  const totalBits = fieldsWithIds.reduce(
-    (sum, f) => sum + bitsNeeded(f.max),
-    0
-  );
+  const totalBits = fields.reduce((sum, f) => sum + bitsNeeded(f.max), 0);
 
   return (
     <div style={{ marginBottom: 32 }}>
@@ -75,14 +67,13 @@ export default function BitFieldEditor({ fields, setFields }) {
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={fieldsWithIds.map((f) => f.id)}
+          items={fields.map((f) => f.id)}
           strategy={verticalListSortingStrategy}
         >
-          {fieldsWithIds.map((field, idx) => (
+          {fields.map((field) => (
             <SortableField
               key={field.id}
               id={field.id}
-              idx={idx}
               field={field}
               onChange={handleChange}
               onRemove={handleRemove}
@@ -101,7 +92,7 @@ export default function BitFieldEditor({ fields, setFields }) {
   );
 }
 
-function SortableField({ id, idx, field, onChange, onRemove }) {
+function SortableField({ id, field, onChange, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
   const style = {
@@ -124,28 +115,23 @@ function SortableField({ id, idx, field, onChange, onRemove }) {
         type="text"
         placeholder="Label"
         value={field.label}
-        onChange={(e) => {
-          console.debug("SortableField", {idx, e, onChange});
-          onChange(idx, "label", e.target.value)
-        }}
+        onChange={(e) => onChange(id, "label", e.target.value)}
         style={{ width: 100, marginRight: 8 }}
       />
       <input
         type="number"
         value={field.min}
-        onChange={(e) => onChange(idx, "min", Number(e.target.value))}
+        onChange={(e) => onChange(id, "min", Number(e.target.value))}
         style={{ width: 60, marginRight: 8 }}
       />
       <input
         type="number"
         value={field.max}
-        onChange={(e) => onChange(idx, "max", Number(e.target.value))}
+        onChange={(e) => onChange(id, "max", Number(e.target.value))}
         style={{ width: 60 }}
       />
       <button
-        onClick={() => {
-          console.debug("SortableField:onRemove", {idx});
-          onRemove(idx)}}
+        onClick={() => onRemove(id)}
         style={{
           marginLeft: 8,
           color: "red",
