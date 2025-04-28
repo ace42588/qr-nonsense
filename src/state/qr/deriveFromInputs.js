@@ -21,7 +21,7 @@ function deriveVersionFromInputs(numBits, inputVersion, errorCorrectionLevel) {
 
 function deriveSegmentsFromInputs(inputs) {
   const segments = inputs.flatMap(({ data, mode, encoding }) =>
-    encodeInput(mode, data, encoding)
+    encodeInput(mode, data, {inputEncoding: encoding})
   );
   return segments;
 }

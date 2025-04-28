@@ -66,21 +66,6 @@ export function MerchForm() {
       </div>
         </div>
       </div>
-      <div className="row">
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            const order = parseOrderJson(input);
-            const output = encodeOrder(order, {encoding});
-            dispatch({
-              type: Actions.ChangeInput,
-              inputs: [output],
-            });
-          }}
-        >
-          Generate QR Code
-        </button>
-      </div>
     </div>
   );
 }

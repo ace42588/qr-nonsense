@@ -19,6 +19,7 @@ export function* iteratorFunc(data, options) {
         const byte = parseInt(data.substring(i, i + 2), 16);
         yield createByte(hex, `0x${hex}`, inputEncoding);
       }
+      break;
     }
     default: {
       const encoder = new TextEncoder("latin1");

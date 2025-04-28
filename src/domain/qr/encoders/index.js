@@ -6,6 +6,7 @@ import { getBits } from "../bitUtils";
 import { getTerminatorLength } from "./utility";
 
 export function encodeInput(mode, input, options = {}) {
+  console.debug("encodeInput", { mode, input, options });
   switch (mode) {
     case "numeric":
       return encodeNumeric(input, options);
