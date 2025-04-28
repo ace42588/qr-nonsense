@@ -7,7 +7,7 @@ import {
   VersionSelector,
   DataMaskSelector,
   OrderEncodingSelector,
-  InputModeSelector
+  InputModeSelector,
 } from "../selectors";
 import { useQRDataDispatch } from "../../state";
 import { Actions } from "../../state/qr/Constants";
@@ -22,7 +22,12 @@ export function MerchForm() {
   const dispatch = useQRDataDispatch();
 
   const updateQRData = useCallback(
-    (inputValue = order, encodingType = encoding, inputHeaders = headers, inputTrailers = trailers) => {
+    (
+      inputValue = order,
+      encodingType = encoding,
+      inputHeaders = headers,
+      inputTrailers = trailers
+    ) => {
       const order = parseOrderJson(inputValue);
       if (!order) return;
       const encoded = encodeOrder(order, encodingType);
@@ -34,12 +39,6 @@ export function MerchForm() {
     },
     [dispatch, order, encoding, headers, trailers]
   );
-
-  const handleInputChange = (index, event) => {
-    const newInputs = [...order];
-    newInputs[index].data = event.target.value;
-    setOrder(newInputs);
-  };
 
   const handleModeChange = (inputs, input, index, { mode, encoding }) => {
     console.debug("handleModeChange", { index, mode });
@@ -91,9 +90,9 @@ export function MerchForm() {
               <InputModeSelector
                 mode={header.mode}
                 encoding={header.encoding}
-                onChange={({mode, encoding}) => {
+                onChange={({ mode, encoding }) => {
                   const newHeaders = [...headers];
-                  newHeaders[index] = {...header, mode, encoding};
+                  newHeaders[index] = { ...header, mode, encoding };
                   setHeaders(newHeaders);
                   updateQRData();
                 }}
@@ -102,7 +101,11 @@ export function MerchForm() {
                 <input
                   type="text"
                   value={header.data}
-                  onChange={(e) => handleInputChange(index, e)}
+                  onChange={(e) => {
+                    const newHeaders = [...headers];
+                    newHeaders[index].data = e.target.value;
+                    setHeaders(newHeaders);
+                  }}
                   placeholder={`Header ${index + 1}`}
                 />
                 <button type="button" onClick={() => handleRemoveHeader(index)}>
@@ -140,7 +143,11 @@ export function MerchForm() {
                 <input
                   type="text"
                   value={trailer.data}
-                  onChange={(e) => handleInputChange(index, e)}
+                  onChange={(e) => {
+                    const newTrailers = [...trailers];
+                    newTrailers[index].data = e.target.value;
+                    setTrailers(newTrailers);
+                  }}
                   placeholder={`Trailer ${index + 1}`}
                 />
                 <button
