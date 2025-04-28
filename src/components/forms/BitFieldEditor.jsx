@@ -58,7 +58,15 @@ export default function BitFieldEditor({ onChange }) {
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="bitfields">
           {(provided) => (
-            <div ref={provided.innerRef} {...provided.droppableProps}>
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              style={{
+                minHeight: 50, // Add a minHeight so it exists even with 0 items
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               {fields.map((field, idx) => {
                 const bitCount = bitsNeeded(field.max);
                 const widthPercent = (bitCount / Math.max(1, totalBits)) * 100;
