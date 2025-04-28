@@ -22,14 +22,14 @@ export function MerchForm() {
   const dispatch = useQRDataDispatch();
 
   const updateQRData = useCallback(
-    (inputValue = order, encodingType = encoding) => {
+    (inputValue = order, encodingType = encoding, inputHeaders = headers, inputTrailers = trailers) => {
       const order = parseOrderJson(inputValue);
       if (!order) return;
       const encoded = encodeOrder(order, encodingType);
       if (!encoded) return;
       dispatch({
         type: Actions.ChangeInputs,
-        payload: { inputs: [...headers, encoded, ...trailers] },
+        payload: { inputs: [...inputHeaders, encoded, ...inputTrailers] },
       });
     },
     [dispatch, order, encoding, headers, trailers]
@@ -91,8 +91,11 @@ export function MerchForm() {
               <InputModeSelector
                 mode={header.mode}
                 encoding={header.encoding}
-                onChange={(e) => {
-                  const newHeaders = [...headers]
+                onChange={({mode, encoding}) => {
+                  const newHeaders = [...headers];
+                  newHeaders[index] = {...header, mode, encoding};
+                  setHeaders(newHeaders);
+                  updateQRData();
                 }}
               />
               <div className="input-button-row">
