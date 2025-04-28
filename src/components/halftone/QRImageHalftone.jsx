@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 //import QRCode from "qrcode";
 import { useQRData } from "../../state";
 
@@ -164,6 +164,10 @@ export default function QRImageHalftone({
   reliabilityWeight = 0.4, // 0 = image fit only, 1 = reliability only
 }) {
   const { matrix } = useQRData();
+  const [x, setX] = useState(0);
+  const [y, setY] = useState(0);
+  const [scale, setScale] = useState(1);
+  const [img, setImg] = useState(null);
   const canvasRef = useRef();
 
   useEffect(() => {
@@ -179,9 +183,12 @@ export default function QRImageHalftone({
 
       const qrSize = matrix.length;
 
-      // Draw and sample image
       ctx.clearRect(0, 0, size, size);
-      ctx.drawImage(img, 0, 0, size, size);
+
+    // Centered initial position, but allow for slider adjustment
+    const drawX = size / 2 - (img.width * scale) / 2 + x;
+    const drawY = size / 2 - (img.height * scale) / 2 + y;
+      ctx.drawImage(img, drawX, drawY, img.width * scale, img.height * scale);
       const imgData = ctx.getImageData(0, 0, size, size);
 
       // Compute importance map
@@ -264,21 +271,64 @@ export default function QRImageHalftone({
     return () => {
       isMounted = false;
     };
-  }, [matrix]);
+  }, [matrix, x, y, scale, img, size]);
 
   return (
-    <canvas
-      id="halftone"
-      ref={canvasRef}
-      width={size}
-      height={size}
-      style={{
-        width: size,
-        height: size,
-        borderRadius: 8,
-        boxShadow: "0 2px 10px #0002",
-        display: "block",
-      }}
-    />
+    <>
+      <canvas
+        id="halftone"
+        ref={canvasRef}
+        width={size}
+        height={size}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: 8,
+          boxShadow: "0 2px 10px #0002",
+          display: "block",
+        }}
+      />
+      <div style={{ marginTop: 16 }}>
+        <label>
+          X:{" "}
+          <input
+            type="range"
+            min={-size / 2}
+            max={size / 2}
+            value={x}
+            onChange={(e) => setX(Number(e.target.value))}
+            style={{ width: "80%" }}
+          />{" "}
+          {x}
+        </label>
+        <br />
+        <label>
+          Y:{" "}
+          <input
+            type="range"
+            min={-size / 2}
+            max={size / 2}
+            value={y}
+            onChange={(e) => setY(Number(e.target.value))}
+            style={{ width: "80%" }}
+          />{" "}
+          {y}
+        </label>
+        <br />
+        <label>
+          Scale:{" "}
+          <input
+            type="range"
+            min={0.1}
+            max={3}
+            step={0.01}
+            value={scale}
+            onChange={(e) => setScale(Number(e.target.value))}
+            style={{ width: "80%" }}
+          />{" "}
+          {scale.toFixed(2)}
+        </label>
+      </div>
+    </>
   );
 }
