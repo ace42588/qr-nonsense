@@ -80,7 +80,7 @@ export default function BitFieldEditor({ fields, setFields }) {
               id={field.id}
               idx={idx}
               field={field}
-              onChange={() => handleChange()}
+              onChange={handleChange}
               onRemove={handleRemove}
             />
           ))}

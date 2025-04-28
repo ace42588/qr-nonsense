@@ -3,7 +3,7 @@ export function bitsNeeded(max) {
 }
 
 export function generateBitLayout(fields) {
-  console.debug("generateBitLayout", { fields });
+  //console.debug("generateBitLayout", { fields });
   const withBits = fields.map((field) => ({
     ...field,
     bits: bitsNeeded(field.max),
