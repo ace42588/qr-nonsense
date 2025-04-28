@@ -23,7 +23,7 @@ export default function OrderBitFieldEditor() {
   });
 
   function updateSchema(name, newFields) {
-    console.debug("updateSchema", {name, newFields});
+    console.debug("updateSchema", { name, newFields });
     setSchemas((prev) => ({
       ...prev,
       [name]: newFields,
@@ -36,7 +36,7 @@ export default function OrderBitFieldEditor() {
       itemFields: schemas.item,
       itemCount: 5, // or let user specify number later
     });
-    console.debug("handleGenerateRandom",{ headerValues, items });
+    console.debug("handleGenerateRandom", { headerValues, items });
 
     setSampleValues({
       header: headerValues,
@@ -44,42 +44,49 @@ export default function OrderBitFieldEditor() {
     });
   }
 
-return (
-    <div style={{ padding: 32 }}>
-
-      <button
-        onClick={handleGenerateRandom}
-        style={{ marginBottom: 32, padding: "8px 16px", fontSize: 16 }}
-      >
-        🎲 Generate Random Order
-      </button>
-
+  return (
+    <div className="input-form">
       {/* Header definition */}
-      <section style={{ marginBottom: 48 }}>
+      <div
+        style={{
+          border: "1px solid #aaa",
+          borderRadius: 8,
+          padding: 16,
+          maxWidth: 900,
+        }}
+      >
         <h2>Header Definition</h2>
         <BitFieldEditor
           fields={schemas.header}
-          setFields={newFields => updateSchema("header", newFields)}
+          setFields={(newFields) => updateSchema("header", newFields)}
         />
         <BitFieldPreviewer
           fields={schemas.header}
           sampleValues={sampleValues.header}
         />
-      </section>
+      </div>
 
       {/* Item definition */}
-      <section style={{ marginBottom: 48 }}>
+      <div
+        style={{
+          border: "1px solid #aaa",
+          borderRadius: 8,
+          padding: 16,
+          maxWidth: 900,
+        }}
+      >
         <h2>Item Definition (Single Item Preview)</h2>
         <BitFieldEditor
           fields={schemas.item}
-          setFields={newFields => updateSchema("item", newFields)}
+          setFields={(newFields) => updateSchema("item", newFields)}
         />
         {/* Show only the first generated item */}
         <BitFieldPreviewer
           fields={schemas.item}
           sampleValues={sampleValues.items[0] ?? {}}
         />
-      </section>
+      </div>
+      <button onClick={handleGenerateRandom}>🎲 Generate Random Order</button>
     </div>
   );
 }
