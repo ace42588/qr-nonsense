@@ -26,26 +26,20 @@ export default function BitFieldEditor({ fields, setFields }) {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const nextId = useRef(fields.length); // ⬅️ Start after initial fields
+  const nextId = useRef(fields.length);
 
   function handleAddField() {
-    setFields([...fields, { ...DEFAULT_FIELD, id: String(nextId.current++) }]);
+    setFields((prev) => [...prev, { ...DEFAULT_FIELD, id: nextId.current++ }]);
   }
 
-  function handleChange(idx, key, value) {
-    console.debug("handleChange", { idx, key, value });
-    const newFields = fields.map((f) =>
-      f.id === idx ? { ...f, [key]: value } : f
+  function handleChange(id, key, value) {
+    setFields((fields) =>
+      fields.map((f) => (f.id === id ? { ...f, [key]: value } : f))
     );
-    console.debug("handleChange", newFields);
-    setFields(newFields);
   }
 
-  function handleRemove(idx) {
-    console.debug("handleRemove", { idx });
-    const newFields = (fields) => fields.filter((f) => f.id !== idx);
-    console.debug("handleRemove", newFields);
-    setFields(newFields);
+  function handleRemove(id) {
+    setFields((fields) => fields.filter((f) => f.id !== id));
   }
 
   function handleDragEnd(event) {
@@ -93,6 +87,7 @@ export default function BitFieldEditor({ fields, setFields }) {
 }
 
 function SortableField({ id, field, onChange, onRemove }) {
+  console.debug("SortableField", { onRemove });
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
   const style = {
