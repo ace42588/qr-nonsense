@@ -21,7 +21,6 @@ import { bitsNeeded } from "./utils";
 const DEFAULT_FIELD = { label: "", min: 0, max: 255 };
 
 export default function BitFieldEditor({ fields, setFields }) {
-  console.debug("BitFieldEditor",{fields, setFields})
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -51,7 +50,8 @@ export default function BitFieldEditor({ fields, setFields }) {
       setFields(arrayMove(fields, oldIndex, newIndex));
     }
   }
-
+  
+   console.debug("BitFieldEditor",{fields});
   // Add ids to each field if not present
   const fieldsWithIds = fields.map((field, idx) => ({
     id: field.id ?? idx.toString(),
@@ -80,7 +80,7 @@ export default function BitFieldEditor({ fields, setFields }) {
               id={field.id}
               idx={idx}
               field={field}
-              onChange={handleChange}
+              onChange={() => handleChange()}
               onRemove={handleRemove}
             />
           ))}

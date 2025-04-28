@@ -23,6 +23,7 @@ export default function OrderBitFieldEditor() {
   });
 
   function updateSchema(name, newFields) {
+    console.debug("updateSchema", {name, newFields});
     setSchemas((prev) => ({
       ...prev,
       [name]: newFields,

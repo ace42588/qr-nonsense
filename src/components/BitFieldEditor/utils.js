@@ -3,15 +3,16 @@ export function bitsNeeded(max) {
 }
 
 export function generateBitLayout(fields) {
-  const withBits = fields.map(field => ({
+  console.debug("generateBitLayout", { fields });
+  const withBits = fields.map((field) => ({
     ...field,
-    bits: bitsNeeded(field.max)
+    bits: bitsNeeded(field.max),
   }));
 
   const totalBits = withBits.reduce((sum, field) => sum + field.bits, 0);
 
   let currentBit = totalBits - 1;
-  const layout = withBits.map(field => {
+  const layout = withBits.map((field) => {
     const start = currentBit;
     const end = currentBit - field.bits + 1;
     currentBit -= field.bits;
@@ -21,7 +22,7 @@ export function generateBitLayout(fields) {
       max: field.max,
       startBit: start,
       endBit: end,
-      width: field.bits
+      width: field.bits,
     };
   });
 
@@ -31,13 +32,15 @@ export function generateBitLayout(fields) {
 export function encodeFieldsToBytes(fieldsLayout, values) {
   let result = 0;
 
-  fieldsLayout.forEach(field => {
+  fieldsLayout.forEach((field) => {
     const value = values[field.label];
     if (value === undefined) {
       throw new Error(`Missing value for field: ${field.label}`);
     }
     if (value < field.min || value > field.max) {
-      throw new Error(`Value for ${field.label} out of allowed range (${field.min} to ${field.max})`);
+      throw new Error(
+        `Value for ${field.label} out of allowed range (${field.min} to ${field.max})`
+      );
     }
 
     result |= (value & ((1 << field.width) - 1)) << field.endBit;
@@ -48,7 +51,7 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
 
   const bytes = new Uint8Array(totalBytes);
   for (let i = 0; i < totalBytes; i++) {
-    bytes[i] = (result >> (8 * (totalBytes - i - 1))) & 0xFF;
+    bytes[i] = (result >> (8 * (totalBytes - i - 1))) & 0xff;
   }
 
   return bytes;
@@ -56,8 +59,8 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
 
 export function bytesToHex(bytes) {
   return Array.from(bytes)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function randomInt(min, max) {
@@ -78,7 +81,9 @@ export function generateRandomPacket({ headerFields, itemFields, itemCount }) {
   const headerValues = generateRandomObject(headerFields);
 
   // Step 2: Generate items
-  const items = Array.from({ length: itemCount }, () => generateRandomObject(itemFields));
+  const items = Array.from({ length: itemCount }, () =>
+    generateRandomObject(itemFields)
+  );
 
   // Step 3: Encode
   const headerLayout = generateBitLayout(headerFields).layout;
@@ -87,8 +92,13 @@ export function generateRandomPacket({ headerFields, itemFields, itemCount }) {
   const headerBytes = encodeFieldsToBytes(headerLayout, headerValues);
 
   // Encode each item and concatenate
-  const itemBytesArray = items.map(item => encodeFieldsToBytes(itemLayout, item));
-  const totalItemBytes = itemBytesArray.reduce((acc, arr) => acc + arr.length, 0);
+  const itemBytesArray = items.map((item) =>
+    encodeFieldsToBytes(itemLayout, item)
+  );
+  const totalItemBytes = itemBytesArray.reduce(
+    (acc, arr) => acc + arr.length,
+    0
+  );
 
   const packet = new Uint8Array(headerBytes.length + totalItemBytes);
 
@@ -101,7 +111,7 @@ export function generateRandomPacket({ headerFields, itemFields, itemCount }) {
   }
 
   return {
-    packet,      // Final Uint8Array
+    packet, // Final Uint8Array
     headerValues,
     items,
   };
