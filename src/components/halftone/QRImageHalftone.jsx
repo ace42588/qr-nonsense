@@ -2,6 +2,27 @@ import React, { useRef, useEffect } from "react";
 //import QRCode from "qrcode";
 import { useQRData } from "../../state";
 
+// Generate all possible 3x3 patterns with given center value
+function generatePatterns(center) {
+  const patterns = [];
+  for (let mask = 0; mask < 256; ++mask) {
+    const pat = [
+      [(mask >> 7) & 1, (mask >> 6) & 1, (mask >> 5) & 1],
+      [(mask >> 0) & 1, center, (mask >> 4) & 1],
+      [(mask >> 1) & 1, (mask >> 2) & 1, (mask >> 3) & 1],
+    ];
+    patterns.push(pat);
+  }
+  return patterns;
+}
+
+// Dummy reliability: e.g., patterns with more black pixels are more "reliable"
+function getDummyReliability(pattern) {
+  // You could use something more clever, but this works for demo
+  let blacks = pattern.flat().reduce((a, b) => a + b, 0);
+  return blacks / 9; // 0 to 1
+}
+
 function getBrightness(r, g, b) {
   // Perceived brightness, 0=black, 255=white
   return 0.299 * r + 0.587 * g + 0.114 * b;
@@ -64,6 +85,39 @@ const PATTERNS = {
   ],
 };
 
+// Simple importance map using edge detection (Sobel)
+function computeImportanceMap(imgData, size) {
+  // For brevity, a very basic "edge" detector
+  const data = imgData.data;
+  const importance = new Float32Array(size * size);
+  for (let y = 1; y < size - 1; ++y) {
+    for (let x = 1; x < size - 1; ++x) {
+      const i = (y * size + x) * 4;
+      const gx =
+        getBrightness(data[i + 4], data[i + 5], data[i + 6]) -
+        getBrightness(data[i - 4], data[i - 3], data[i - 2]);
+      const gy =
+        getBrightness(
+          data[i + size * 4],
+          data[i + size * 4 + 1],
+          data[i + size * 4 + 2]
+        ) -
+        getBrightness(
+          data[i - size * 4],
+          data[i - size * 4 + 1],
+          data[i - size * 4 + 2]
+        );
+      importance[y * size + x] = Math.sqrt(gx * gx + gy * gy) / 255;
+    }
+  }
+  // Normalize importance map to 0-1
+  let maxImp = Math.max(...importance);
+  if (maxImp > 0) {
+    for (let i = 0; i < importance.length; ++i) importance[i] /= maxImp;
+  }
+  return importance;
+}
+
 // Choose pattern by which has number of black subpixels closest to (1-brightness) * 9
 function choosePattern(patterns, brightness) {
   let best = patterns[0],
@@ -108,6 +162,15 @@ export default function QRImageHalftone({
       ctx.clearRect(0, 0, size, size);
       ctx.drawImage(img, 0, 0, size, size);
       const imgData = ctx.getImageData(0, 0, size, size);
+
+      // Compute importance map
+      const importanceMap = computeImportanceMap(imgData, size);
+
+      // Generate patterns
+      const patternsDark = generatePatterns(1);
+      const patternsLight = generatePatterns(0);
+      const reliabilitiesDark = patternsDark.map(getDummyReliability);
+      const reliabilitiesLight = patternsLight.map(getDummyReliability);
 
       ctx.clearRect(0, 0, size, size);
 
