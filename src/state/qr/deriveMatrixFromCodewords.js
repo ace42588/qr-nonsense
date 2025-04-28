@@ -7,12 +7,15 @@ import {
   makeModule,
 } from "../../domain/qr";
 
+const remainderBit = { value: 0, source: "Remainder" };
+
 export function deriveMatrixFromCodewords({
   version,
   errorCorrectionLevel,
   dataMask,
   codewords,
 }) {
+  console.debug("deriveMatrixFromCodewords", { codewords });
   const dimension = version * 4 + 17;
 
   function createBaseMatrix() {
@@ -63,7 +66,6 @@ export function deriveMatrixFromCodewords({
 
   function addCodewords(matrix) {
     const bits = codewords.flatMap((cw) => cw.bits);
-    const remainderBit = { value: 0, source: "Remainder" };
     //console.debug("applyCodewords", { bits });
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
       const bit = bits[idx] || remainderBit;

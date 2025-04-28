@@ -28,15 +28,16 @@ function patternReliability(pattern) {
   for (let dy = -1; dy <= 1; ++dy) {
     for (let dx = -1; dx <= 1; ++dx) {
       if (dx === 0 && dy === 0) continue;
-      if (pattern[1+dy][1+dx] === center) reinforcement++;
+      if (pattern[1 + dy][1 + dx] === center) reinforcement++;
     }
   }
   // Transition penalty: count transitions (neighbor pairs)
   let transitions = 0;
-  for (let y = 0; y < 3; ++y) for (let x = 0; x < 3; ++x) {
-    if (x < 2 && pattern[y][x] !== pattern[y][x+1]) transitions++;
-    if (y < 2 && pattern[y][x] !== pattern[y+1][x]) transitions++;
-  }
+  for (let y = 0; y < 3; ++y)
+    for (let x = 0; x < 3; ++x) {
+      if (x < 2 && pattern[y][x] !== pattern[y][x + 1]) transitions++;
+      if (y < 2 && pattern[y][x] !== pattern[y + 1][x]) transitions++;
+    }
   // Reliability heuristic: more reinforcement, fewer transitions
   return (reinforcement + 1) / (transitions + 1);
 }
@@ -137,13 +138,16 @@ function computeImportanceMap(imgData, size) {
 }
 
 function choosePattern(patterns, brightness, importance, reliabilityWeight) {
-  let best, bestScore = Infinity;
+  let best,
+    bestScore = Infinity;
   for (let pat of patterns) {
     const blacks = pat.flat().reduce((a, b) => a + b, 0);
     const reliability = patternReliability(pat);
     const imageScore = Math.abs(blacks / 9 - (1 - brightness));
     // Lower score is better; importance modulates between image fit and reliability
-    const score = (importance * imageScore) + ((1 - importance) * (1 - reliability) * reliabilityWeight);
+    const score =
+      importance * imageScore +
+      (1 - importance) * (1 - reliability) * reliabilityWeight;
     if (score < bestScore) {
       best = pat;
       bestScore = score;
@@ -213,8 +217,12 @@ export default function QRImageHalftone({
           // Is this module dark or light?
           const { isDark, nonData } = m;
           const patterns = isDark ? patternsDark : patternsLight;
-          const pattern = choosePattern(patterns, brightness, importance, reliabilityWeight);
-
+          const pattern = choosePattern(
+            patterns,
+            brightness,
+            1,
+            reliabilityWeight
+          );
 
           if (nonData) {
             ctx.fillStyle = m.isDark ? "black" : "white";
@@ -227,36 +235,10 @@ export default function QRImageHalftone({
             continue;
           }
 
-          // Candidate patterns
-          const patterns = isDark ? patternsDark : patternsLight;
-          const pattern = choosePatternWithGap(
-            patterns,
-            isDark ? 1 : 0,
-            brightness
-          );
-
-          let best,
-            bestScore = Infinity;
-          for (let pat of patterns) {
-            let blacks = pat.flat().reduce((a, b) => a + b, 0);
-
-            // Enforce the contrast gap constraint:
-            if ((isDark && blacks < 5) || (!isDark && blacks > 4)) continue;
-
-            let imageDiff = Math.abs(blacks / 9 - (1 - brightness)); // (1-brightness) because 0=white, 1=black
-            if (imageDiff < bestScore) {
-              best = pat;
-              bestScore = imageDiff;
-            }
-          }
-          // fallback to the first pattern if none matched (shouldn't happen in practice)
-          if (!best) best = patterns[0];
-
           // Draw 3x3 pattern for this module
           for (let sy = 0; sy < modulePixel; ++sy) {
             for (let sx = 0; sx < modulePixel; ++sx) {
-              const color = best[sy][sx] ? "#111" : "#fff";
-              ctx.fillStyle = color;
+              ctx.fillStyle = pattern[sy][sx] ? "#111" : "#fff";
               ctx.fillRect(
                 qx * moduleSize + sx * subSize,
                 qy * moduleSize + sy * subSize,
