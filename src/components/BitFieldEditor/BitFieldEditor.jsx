@@ -33,13 +33,17 @@ export default function BitFieldEditor({ fields, setFields }) {
   }
 
   function handleChange(idx, key, value) {
-    setFields((fields) =>
-      fields.map((f, i) => (i === idx ? { ...f, [key]: value } : f))
-    );
+    console.debug("handleChange", {idx, key, value});
+    const newFields = fields.map((f, i) => (i === idx ? { ...f, [key]: value } : f));
+    console.debug("handleChange", newFields);
+    setFields(newFields);
   }
 
   function handleRemove(idx) {
-    setFields((fields) => fields.filter((_, i) => i !== idx));
+    console.debug("handleRemove", {idx});
+    const newFields = (fields) => fields.filter((_, i) => i !== idx);
+    console.debug("handleRemove", newFields);
+    setFields(newFields);
   }
 
   function handleDragEnd(event) {
@@ -120,7 +124,10 @@ function SortableField({ id, idx, field, onChange, onRemove }) {
         type="text"
         placeholder="Label"
         value={field.label}
-        onChange={(e) => onChange(idx, "label", e.target.value)}
+        onChange={(e) => {
+          console.debug("SortableField", {idx, e, onChange});
+          onChange(idx, "label", e.target.value)
+        }}
         style={{ width: 100, marginRight: 8 }}
       />
       <input
@@ -136,7 +143,9 @@ function SortableField({ id, idx, field, onChange, onRemove }) {
         style={{ width: 60 }}
       />
       <button
-        onClick={() => onRemove(idx)}
+        onClick={() => {
+          console.debug("SortableField:onRemove", {idx});
+          onRemove(idx)}}
         style={{
           marginLeft: 8,
           color: "red",
