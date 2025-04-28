@@ -67,7 +67,7 @@ export default function OrderBitFieldEditor() {
           maxWidth: 900,
         }}
       >
-        <h2
+        <h3
           style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
           onClick={() => toggleSection("header")}
         >
@@ -75,7 +75,7 @@ export default function OrderBitFieldEditor() {
             {expandedSections.header ? "▾" : "▸"}
           </span>
           Header Definition
-        </h2>
+        </h3>
         {expandedSections.header && (
           <>
             <BitFieldEditor
@@ -99,16 +99,29 @@ export default function OrderBitFieldEditor() {
           maxWidth: 900,
         }}
       >
-        <h2>Item Definition (Single Item Preview)</h2>
-        <BitFieldEditor
-          fields={schemas.item}
-          setFields={(newFields) => updateSchema("item", newFields)}
-        />
-        {/* Show only the first generated item */}
-        <BitFieldPreviewer
-          fields={schemas.item}
-          sampleValues={sampleValues.items[0] ?? {}}
-        />
+        <h3
+          style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+          onClick={() => toggleSection("item")}
+        >
+          <span style={{ marginRight: 8 }}>
+            {expandedSections.item ? "▾" : "▸"}
+          </span>
+          Item Definition (Single Item Preview)
+        </h3>
+
+        {expandedSections.item && (
+          <>
+            <BitFieldEditor
+              fields={schemas.item}
+              setFields={(newFields) => updateSchema("item", newFields)}
+            />
+            {/* Show only the first generated item */}
+            <BitFieldPreviewer
+              fields={schemas.item}
+              sampleValues={sampleValues.items[0] ?? {}}
+            />
+          </>
+        )}
       </div>
       <button onClick={handleGenerateRandom}>🎲 Generate Random Order</button>
     </div>
