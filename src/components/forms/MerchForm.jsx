@@ -41,10 +41,9 @@ export function MerchForm() {
     setOrder(newInputs);
   };
 
-  const handleModeChange = (index, { mode, encoding }) => {
+  const handleModeChange = (inputs, input, index, { mode, encoding }) => {
     console.debug("handleModeChange", { index, mode });
-    const newInputs = [...order];
-    const input = newInputs[index];
+    const newInputs = [...inputs];
     newInputs[index] = { ...input, mode, encoding };
     console.debug("handleModeChange", { newInputs });
     setOrder(newInputs);
@@ -92,12 +91,14 @@ export function MerchForm() {
               <InputModeSelector
                 mode={header.mode}
                 encoding={header.encoding}
-                onChange={(e) => handleModeChange(index, e)}
+                onChange={(e) => {
+                  const newHeaders = [...headers]
+                }}
               />
               <div className="input-button-row">
                 <input
                   type="text"
-                  value={input.data}
+                  value={header.data}
                   onChange={(e) => handleInputChange(index, e)}
                   placeholder={`Header ${index + 1}`}
                 />
@@ -125,17 +126,17 @@ export function MerchForm() {
               setEncoding={setEncoding}
             />
           </div>
-          {trailers.map((input, index) => (
+          {trailers.map((trailer, index) => (
             <div key={index} className="input-group">
               <InputModeSelector
-                mode={input.mode}
-                encoding={input.encoding}
+                mode={trailer.mode}
+                encoding={trailer.encoding}
                 onChange={(e) => handleModeChange(index, e)}
               />
               <div className="input-button-row">
                 <input
                   type="text"
-                  value={input.data}
+                  value={trailer.data}
                   onChange={(e) => handleInputChange(index, e)}
                   placeholder={`Trailer ${index + 1}`}
                 />
