@@ -12,6 +12,8 @@ export const initialData = {
   segments: [],
   codewords: [],
   matrix: [[]],
+  source: "inputs",
+  error: ""
 };
 
 function getModulesToHighlight(segment, state) {
@@ -58,7 +60,7 @@ function highlightSegment(module, state) {
 export function dataReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInput: {
-      return deriveFromInputs(state, { inputs: action.inputs });
+      return deriveFromInputs(state, ...actions.payload);
     }
     case Actions.ChangeDataMask: {
       return deriveFromInputs(state, { dataMask: action.dataMask });
@@ -71,7 +73,7 @@ export function dataReducer(state, action) {
         errorCorrectionLevel: action.errorCorrectionLevel,
       });
     }
-    case Actions.HighlightModules: {
+    case Actions.Highlight: {
       try {
         if (action.payload.type === "module") {
           // we got a module, highlight segments

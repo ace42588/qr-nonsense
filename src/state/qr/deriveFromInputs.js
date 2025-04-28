@@ -82,10 +82,6 @@ export function deriveFromInputs(state, override = {}) {
       idMap
     };
 
-    console.debug("deriveFromInputs", {
-      newQRData,
-    });
-
     return { ...state, ...newQRData, ...override };
   } catch (e) {
     console.error(e);

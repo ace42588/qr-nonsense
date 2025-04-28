@@ -28,7 +28,7 @@ export function DataMaskSelector() {
           setDataMask(newDataMask);
           dispatch({
             type: Actions.ChangeDataMask,
-            dataMask: newDataMask,
+            payload: { dataMask: newDataMask },
           });
         }}
       >

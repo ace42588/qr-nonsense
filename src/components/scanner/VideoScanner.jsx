@@ -22,10 +22,12 @@ export function VideoScanner({
       console.debug("updateQRData", { chunks, version, formatInfo });
       dispatch({
         type: Actions.ChangeInput,
-        inputs: chunks.map(({ type, text, data }) => ({
-          mode: type,
-          data: text || data,
-        })),
+        payload: {
+          inputs: chunks.map(({ type, text, data }) => ({
+            mode: type,
+            data: text || data,
+          })),
+        },
       });
     },
     [dispatch]
@@ -75,7 +77,6 @@ export function VideoScanner({
         if (code && code.data !== "") {
           setScanning(false); // Stop scanning when a QR code is found
           updateQRData(code);
-          
         } else {
           requestAnimationFrame(scanQR);
         }

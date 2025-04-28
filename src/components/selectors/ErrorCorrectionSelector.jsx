@@ -23,7 +23,7 @@ export function ErrorCorrectionSelector() {
           setEcLevel(newEcLevel);
           dispatch({
             type: Actions.ChangeErrorCorretionLevel,
-            errorCorrectionLevel: newEcLevel,
+            payload: { errorCorrectionLevel: newEcLevel },
           });
         }}
       >

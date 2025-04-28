@@ -15,7 +15,7 @@ export function deriveMatrixFromCodewords({
   dataMask,
   codewords,
 }) {
-  console.debug("deriveMatrixFromCodewords", { codewords });
+  //console.debug("deriveMatrixFromCodewords", { codewords });
   const dimension = version * 4 + 17;
 
   function createBaseMatrix() {

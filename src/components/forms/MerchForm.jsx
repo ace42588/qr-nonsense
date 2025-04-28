@@ -26,7 +26,7 @@ export function MerchForm() {
       if (!output) return;
       dispatch({
         type: Actions.ChangeInput,
-        inputs: [output],
+        payload: { inputs: [output] },
       });
     },
     [dispatch, input, encoding]
@@ -62,8 +62,11 @@ export function MerchForm() {
             />
           </div>
           <div>
-        <OrderEncodingSelector encoding={encoding} setEncoding={setEncoding} />
-      </div>
+            <OrderEncodingSelector
+              encoding={encoding}
+              setEncoding={setEncoding}
+            />
+          </div>
         </div>
       </div>
     </div>

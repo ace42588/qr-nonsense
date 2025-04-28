@@ -82,7 +82,7 @@ export function DynamicOrderEditor() {
       if (!output) return;
       dispatch({
         type: Actions.ChangeInput,
-        inputs: [output],
+        payload: { inputs: [output]},
       });
     },
     [dispatch, schema, data, encoding]

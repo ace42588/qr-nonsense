@@ -23,7 +23,7 @@ export function VersionSelector() {
           setVersion(newVersion);
           dispatch({
             type: Actions.ChangeVersion,
-            version: newVersion,
+            payload: { version: newVersion },
           });
         }}
       >
