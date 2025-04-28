@@ -17,4 +17,4 @@ function encoder(data) {
 }
 
 const itrFn = (data) => createNonByte(data, mode, encoder);
-export const encodeAlphanumeric = (input) => encodeSegment(input, mode, itrFn);
+export const encodeAlphanumeric = (input) => encodeSegment(input.toUpperCase(), mode, itrFn);

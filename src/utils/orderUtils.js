@@ -14,10 +14,10 @@ export const encodeOrder = (
   encoding,
   fieldNames = defaultFieldNames
 ) => {
-  console.debug("encodeOrder", { order, encoding, fieldNames });
+  //console.debug("encodeOrder", { order, encoding, fieldNames });
   //const stdOrder = standardizeOrder(order, fieldNames);
   const stdOrder = order;
-  console.debug("encodeOrder", { stdOrder });
+  //console.debug("encodeOrder", { stdOrder });
   let encodedOrder = {};
   switch (encoding) {
     case "Alphanumeric": {
@@ -37,17 +37,13 @@ export const encodeOrder = (
         ""
       );
       delete stdOrder.items;
-      console.debug("encodeOrder, Alphanumeric", {
-        order,
-        stdOrder,
-        encodedItems,
-      });
+
 
       let data = `$1`;
       Object.values(stdOrder).forEach((v) => (data = `${data}%${v}`));
       data = `${data}%${encodedItems}$`;
 
-      console.debug("encodeOrder, Alphanumeric", { data });
+      //console.debug("encodeOrder, Alphanumeric", { data });
       encodedOrder.data = data;
       break;
     }
@@ -61,11 +57,11 @@ export const encodeOrder = (
     }
     case "PER-ModHex": {
       let data = BitPacked.encode(stdOrder);
-      console.debug("PER-ModHex", { data });
+      //console.debug("PER-ModHex", { data });
       if (data % 2 === 1) data = `0${data}`;
-      console.debug("PER-ModHex", { data });
+      //console.debug("PER-ModHex", { data });
       const modhex = ModHex.encode(data);
-      console.debug("PER-ModHex", { data, modhex });
+      //console.debug("PER-ModHex", { data, modhex });
       encodedOrder.encoding = "modHex";
       encodedOrder.mode = "alphanumeric";
       encodedOrder.data = modhex;
@@ -79,9 +75,9 @@ export const encodeOrder = (
         bytes.push(parseInt(data.substring(i, i + 2), 16));
       }
       const moduli = bytes.map(() => 256);
-      console.debug("PER-NTRU", { bytes, moduli });
+      //console.debug("PER-NTRU", { bytes, moduli });
       const encoded = NTRU.encode(bytes, moduli);
-      console.debug("PER-ModHex", { data, encoded });
+      //console.debug("PER-ModHex", { data, encoded });
       encodedOrder.encoding = "ntru";
       encodedOrder.mode = "alphanumeric";
       encodedOrder.data = encoded.join("");
@@ -146,8 +142,8 @@ export const parseOrderJson = (raw) => {
       items: items.map(({ q, v }) => ({ quantity: q, variant: v })),
     };
   } catch (e) {
-    console.debug("parseInput", `Error parsing ${raw}`);
+    console.error("parseInput", `Error parsing ${raw}`);
   }
-  console.debug("parsedOrderJson", { parsedInput });
+  //console.debug("parsedOrderJson", { parsedInput });
   return parsedInput;
 };

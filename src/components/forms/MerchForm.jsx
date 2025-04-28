@@ -53,8 +53,9 @@ export function MerchForm() {
   };
 
   const handleRemoveHeader = (index) => {
-    const newInputs = headers.filter((_, i) => i !== index);
-    setHeaders(newInputs);
+    const newHeaders = headers.filter((_, i) => i !== index);
+    setHeaders(newHeaders);
+    updateQRData();
   };
 
   const handleAddTrailer = () => {
@@ -62,8 +63,9 @@ export function MerchForm() {
   };
 
   const handleRemoveTrailer = (index) => {
-    const newInputs = trailers.filter((_, i) => i !== index);
-    setTrailers(newInputs);
+    const newTrailers = trailers.filter((_, i) => i !== index);
+    setTrailers(newTrailers);
+    updateQRData();
   };
 
   useEffect(() => {
@@ -94,7 +96,6 @@ export function MerchForm() {
                   const newHeaders = [...headers];
                   newHeaders[index] = { ...header, mode, encoding };
                   setHeaders(newHeaders);
-                  updateQRData();
                 }}
               />
               <div className="input-button-row">
@@ -137,7 +138,11 @@ export function MerchForm() {
               <InputModeSelector
                 mode={trailer.mode}
                 encoding={trailer.encoding}
-                onChange={(e) => handleModeChange(index, e)}
+                onChange={({ mode, encoding }) => {
+                  const newTrailers = [...trailers];
+                  newTrailers[index] = { ...trailers, mode, encoding };
+                  setTrailers(newTrailers);
+                }}
               />
               <div className="input-button-row">
                 <input

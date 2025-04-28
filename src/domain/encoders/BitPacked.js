@@ -31,7 +31,7 @@ const buildHeader = (txn, confId, platform) => {
 };
 
 export function encode(order) {
-  console.debug("BitPacked:encode",{order})
+  //console.debug("BitPacked:encode",{order})
   let { transactionId, conferenceCode, platform, items } = order;
   let hex = "";
   let headerBytes = buildHeader(transactionId, conferenceCode, platform);
@@ -50,7 +50,7 @@ export function encode(order) {
   hex = itemsBytes.reduce((acc, curr) => {
     return acc.concat(curr.toString(16));
   }, hex);
-  console.debug("BitPacked:encode", {hex});
+  //console.debug("BitPacked:encode", {hex});
 
   return hex;
 }
