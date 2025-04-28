@@ -65,7 +65,7 @@ export function deriveMatrixFromCodewords({
   }
 
   function addCodewords(matrix) {
-    const bits = codewords.flatMap((cw) => cw.bits);
+    const bits = codewords.flatMap((cw = remainderBit) => cw.bits);
     //console.debug("applyCodewords", { bits });
     return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
       const bit = bits[idx] || remainderBit;
