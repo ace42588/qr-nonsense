@@ -12,8 +12,7 @@ import {
 } from "../components";
 import HalftoneDemo from "../components/halftone/HalftoneDemo";
 import QRImageHalftone from "../components/halftone/QRImageHalftone";
-import BitFieldEditor from "../components/BitFieldEditor/BitFieldEditor";
-import BitFieldPreviewer from "../components/BitFieldEditor/BitFieldPreviewer";
+import OrderBitFieldEditor from "../components/BitFieldEditor/OrderBitFieldEditor";
 
 import { QRDataProvider } from "../state";
 
@@ -23,9 +22,9 @@ export default function App() {
   const [inputMode, setInputMode] = useState("merch"); // Default to merch mode
 
   const [fields, setFields] = useState([
-    { label: "platform", min: 0, max: 3 },
-    { label: "confId", min: 0, max: 255 },
-    { label: "transactionId", min: 0, max: 1048575 },
+    { id: "0", label: "platform", min: 0, max: 3 },
+    { id: "1", label: "confId", min: 0, max: 255 },
+    { id: "2", label: "transactionId", min: 0, max: 1048575 },
   ]);
 
   const selectUI = () => {
@@ -48,8 +47,7 @@ export default function App() {
       <QRDataProvider>
         <div className="row">
           <div className="column">
-            <BitFieldEditor fields={fields} setFields={setFields} />
-            <BitFieldPreviewer fields={fields} />
+            <OrderBitFieldEditor />
             <div className="row">{selectUI()}</div>
             <QRImageHalftone />
           </div>

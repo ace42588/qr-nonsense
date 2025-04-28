@@ -66,7 +66,6 @@ export default function BitFieldEditor({ fields, setFields }) {
 
   return (
     <div style={{ marginBottom: 32 }}>
-      <h2>Bit Field Editor</h2>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
