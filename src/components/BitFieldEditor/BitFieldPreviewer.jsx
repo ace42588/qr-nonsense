@@ -1,42 +1,12 @@
 import React, { useMemo, useState } from "react";
 import BitFieldVisualizer from "./BitFieldVisualizer";
-import { generateBitLayout, encodeFieldsToBytes, bytesToHex } from "./utils"
-
-
-function encodeFieldsToBytes(fieldsLayout, values) {
-  let result = 0;
-
-  fieldsLayout.forEach(field => {
-    const value = values[field.label];
-    if (value === undefined) {
-      throw new Error(`Missing value for field: ${field.label}`);
-    }
-    if (value < field.min || value > field.max) {
-      throw new Error(`Value for ${field.label} out of allowed range (${field.min} to ${field.max})`);
-    }
-
-    result |= (value & ((1 << field.width) - 1)) << field.endBit;
-  });
-
-  const totalBits = fieldsLayout[0].startBit + 1;
-  const totalBytes = Math.ceil(totalBits / 8);
-
-  const bytes = new Uint8Array(totalBytes);
-  for (let i = 0; i < totalBytes; i++) {
-    bytes[i] = (result >> (8 * (totalBytes - i - 1))) & 0xFF;
-  }
-
-  return bytes;
-}
-
-function bytesToHex(bytes) {
-  return Array.from(bytes)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-}
+import { generateBitLayout, encodeFieldsToBytes, bytesToHex } from "./utils";
 
 export default function BitFieldPreviewer({ fields }) {
-  const { layout, totalBits } = useMemo(() => generateBitLayout(fields), [fields]);
+  const { layout, totalBits } = useMemo(
+    () => generateBitLayout(fields),
+    [fields]
+  );
   const [values, setValues] = useState({});
 
   const encodedBytes = useMemo(() => {
@@ -51,13 +21,19 @@ export default function BitFieldPreviewer({ fields }) {
     <div>
       <h2>Live Preview</h2>
 
-      {layout.map(field => (
+      {layout.map((field) => (
         <div key={field.label} style={{ marginBottom: 8 }}>
           <label style={{ marginRight: 8 }}>{field.label}</label>
           <input
             type="number"
             value={values[field.label] ?? ""}
-            onChange={e => setValues(v => ({ ...v, [field.label]: e.target.value === "" ? undefined : Number(e.target.value) }))}
+            onChange={(e) =>
+              setValues((v) => ({
+                ...v,
+                [field.label]:
+                  e.target.value === "" ? undefined : Number(e.target.value),
+              }))
+            }
             style={{ width: 80 }}
           />
           <span style={{ marginLeft: 8, color: "#888" }}>
@@ -79,7 +55,7 @@ export default function BitFieldPreviewer({ fields }) {
           Cannot encode (missing or invalid values).
         </div>
       )}
-      
+
       <BitFieldVisualizer layout={layout} totalBits={totalBits} />
     </div>
   );

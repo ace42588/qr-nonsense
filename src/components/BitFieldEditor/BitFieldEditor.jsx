@@ -6,29 +6,27 @@ import {
   KeyboardSensor,
   PointerSensor,
   useSensor,
-  useSensors
+  useSensors,
 } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
-  verticalListSortingStrategy
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-
-function bitsNeeded(max) {
-  return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
-}
+import { bitsNeeded } from "./utils";
 
 const DEFAULT_FIELD = { label: "", min: 0, max: 255 };
 
 export default function BitFieldEditor({ fields, setFields }) {
+  console.debug("BitFieldEditor",{fields, setFields})
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
-  
+
   const nextId = useRef(fields.length); // ⬅️ Start after initial fields
 
   function handleAddField() {
@@ -36,22 +34,20 @@ export default function BitFieldEditor({ fields, setFields }) {
   }
 
   function handleChange(idx, key, value) {
-    setFields(fields =>
-      fields.map((f, i) =>
-        i === idx ? { ...f, [key]: value } : f
-      )
+    setFields((fields) =>
+      fields.map((f, i) => (i === idx ? { ...f, [key]: value } : f))
     );
   }
 
   function handleRemove(idx) {
-    setFields(fields => fields.filter((_, i) => i !== idx));
+    setFields((fields) => fields.filter((_, i) => i !== idx));
   }
 
   function handleDragEnd(event) {
     const { active, over } = event;
     if (active.id !== over.id) {
-      const oldIndex = fields.findIndex(f => f.id === active.id);
-      const newIndex = fields.findIndex(f => f.id === over.id);
+      const oldIndex = fields.findIndex((f) => f.id === active.id);
+      const newIndex = fields.findIndex((f) => f.id === over.id);
       setFields(arrayMove(fields, oldIndex, newIndex));
     }
   }
@@ -59,10 +55,13 @@ export default function BitFieldEditor({ fields, setFields }) {
   // Add ids to each field if not present
   const fieldsWithIds = fields.map((field, idx) => ({
     id: field.id ?? idx.toString(),
-    ...field
+    ...field,
   }));
 
-  const totalBits = fieldsWithIds.reduce((sum, f) => sum + bitsNeeded(f.max), 0);
+  const totalBits = fieldsWithIds.reduce(
+    (sum, f) => sum + bitsNeeded(f.max),
+    0
+  );
 
   return (
     <div style={{ marginBottom: 32 }}>
@@ -72,7 +71,7 @@ export default function BitFieldEditor({ fields, setFields }) {
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={fieldsWithIds.map(f => f.id)}
+          items={fieldsWithIds.map((f) => f.id)}
           strategy={verticalListSortingStrategy}
         >
           {fieldsWithIds.map((field, idx) => (
@@ -99,7 +98,8 @@ export default function BitFieldEditor({ fields, setFields }) {
 }
 
 function SortableField({ id, idx, field, onChange, onRemove }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -120,26 +120,34 @@ function SortableField({ id, idx, field, onChange, onRemove }) {
         type="text"
         placeholder="Label"
         value={field.label}
-        onChange={e => onChange(idx, "label", e.target.value)}
+        onChange={(e) => onChange(idx, "label", e.target.value)}
         style={{ width: 100, marginRight: 8 }}
       />
       <input
         type="number"
         value={field.min}
-        onChange={e => onChange(idx, "min", Number(e.target.value))}
+        onChange={(e) => onChange(idx, "min", Number(e.target.value))}
         style={{ width: 60, marginRight: 8 }}
       />
       <input
         type="number"
         value={field.max}
-        onChange={e => onChange(idx, "max", Number(e.target.value))}
+        onChange={(e) => onChange(idx, "max", Number(e.target.value))}
         style={{ width: 60 }}
       />
       <button
         onClick={() => onRemove(idx)}
-        style={{ marginLeft: 8, color: "red", background: "none", border: "none", cursor: "pointer" }}
+        style={{
+          marginLeft: 8,
+          color: "red",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+        }}
         title="Remove"
-      >✕</button>
+      >
+        ✕
+      </button>
     </div>
   );
 }

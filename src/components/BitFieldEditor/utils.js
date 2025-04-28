@@ -1,4 +1,4 @@
-function bitsNeeded(max) {
+export function bitsNeeded(max) {
   return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
 }
 

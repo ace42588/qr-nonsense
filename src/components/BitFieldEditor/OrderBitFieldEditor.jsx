@@ -14,18 +14,44 @@ export default function OrderBitFieldEditor() {
     item: [
       { id: "0", label: "variant", min: 0, max: 65535 },
       { id: "1", label: "quantity", min: 0, max: 255 },
-    ]
+    ],
+  });
+
+  const [sampleValues, setSampleValues] = useState({
+    header: {},
+    items: [],
   });
 
   function updateSchema(name, newFields) {
-    setSchemas(prev => ({
+    setSchemas((prev) => ({
       ...prev,
-      [name]: newFields
+      [name]: newFields,
     }));
   }
 
-  return (
+  function handleGenerateRandom() {
+    const { headerValues, items } = generateRandomPacket({
+      headerFields: schemas.header,
+      itemFields: schemas.item,
+      itemCount: 5, // or let user specify number later
+    });
+    console.debug("handleGenerateRandom",{ headerValues, items });
+
+    setSampleValues({
+      header: headerValues,
+      items: items,
+    });
+  }
+
+return (
     <div style={{ padding: 32 }}>
+
+      <button
+        onClick={handleGenerateRandom}
+        style={{ marginBottom: 32, padding: "8px 16px", fontSize: 16 }}
+      >
+        🎲 Generate Random Order
+      </button>
 
       {/* Header definition */}
       <section style={{ marginBottom: 48 }}>
@@ -36,21 +62,23 @@ export default function OrderBitFieldEditor() {
         />
         <BitFieldPreviewer
           fields={schemas.header}
+          sampleValues={sampleValues.header}
         />
       </section>
 
       {/* Item definition */}
       <section style={{ marginBottom: 48 }}>
-        <h2>Item Definition</h2>
+        <h2>Item Definition (Single Item Preview)</h2>
         <BitFieldEditor
           fields={schemas.item}
           setFields={newFields => updateSchema("item", newFields)}
         />
+        {/* Show only the first generated item */}
         <BitFieldPreviewer
           fields={schemas.item}
+          sampleValues={sampleValues.items[0] ?? {}}
         />
       </section>
-
     </div>
   );
 }
