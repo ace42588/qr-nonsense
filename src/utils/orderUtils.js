@@ -49,7 +49,7 @@ export const encodeOrder = (
     }
     case "PER": {
       const data = BitPacked.encode(stdOrder);
-      console.debug("PER-ModHex", { data });
+      //console.debug("PER-ModHex", { data });
       encodedOrder.encoding = "hex";
       encodedOrder.mode = "byte";
       encodedOrder.data = BitPacked.encode(stdOrder);

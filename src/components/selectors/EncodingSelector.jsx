@@ -1,3 +1,7 @@
+const encs = [
+  {encoding: "", label: ""}
+]
+
 const Encodings = ["JSON", "Alphanumeric", "PER", "PER-ModHex", "PER-NTRU"];
 export function OrderEncodingSelector({ encoding, setEncoding, onChange }) {
   const handleChange = (e) => {
