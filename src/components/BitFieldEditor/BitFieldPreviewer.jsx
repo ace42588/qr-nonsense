@@ -19,7 +19,7 @@ export default function BitFieldPreviewer({ fields }) {
 
   return (
     <div>
-      <h3>Sample Values</h3>
+      <h3>Preview</h3>
       {layout.map((field) => (
         <div key={field.label} style={{ marginBottom: 8 }}>
           <label style={{ marginRight: 8 }}>{field.label}</label>

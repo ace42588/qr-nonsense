@@ -41,7 +41,7 @@ export default function OrderBitFieldEditor() {
     const { headerValues, items } = generateRandomPacket({
       headerFields: schemas.header,
       itemFields: schemas.item,
-      itemCount: 5, // or let user specify number later
+      itemCount: numItems,
     });
     console.debug("handleGenerateRandom", { headerValues, items });
 
@@ -143,7 +143,10 @@ export default function OrderBitFieldEditor() {
           maxWidth: 900,
         }}
       >
-        <div >
+        <div className="input-button-row">
+          <button style={{ width: 220, maxWidth: 220 }} onClick={handleGenerateRandom}>
+            🎲 Generate Random Order
+          </button>
           <label htmlFor="numItems">Number of items:</label>
           <input
             id="numItems"
@@ -152,9 +155,6 @@ export default function OrderBitFieldEditor() {
             onChange={(e) => setNumItems(e.target.value)}
             placeholder={5}
           />
-          <button onClick={handleGenerateRandom}>
-            🎲 Generate Random Order
-          </button>
         </div>
       </div>
     </div>
