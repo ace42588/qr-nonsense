@@ -28,6 +28,8 @@ export default function OrderBitFieldEditor() {
 
     setHeaderSample(headerValues);
     setItemSamples(items);
+    const {layout} = generateBitLayout();
+    encodeFieldsToBytes(layout, values)
   }
 
   return (
