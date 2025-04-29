@@ -30,6 +30,7 @@ export function generateBitLayout(fields) {
 }
 
 export function encodeFieldsToBytes(fieldsLayout, values) {
+  console.debug("encodeFieldsToBytes", { fieldsLayout, values });
   let result = 0;
 
   fieldsLayout.forEach((field) => {
@@ -76,7 +77,7 @@ function generateRandomObject(fields) {
   return obj;
 }
 
-export function generateRandomPacket({ headerFields, itemFields, itemCount }) {
+export function generateRandomOrder({ headerFields, itemFields, itemCount }) {
   // Step 1: Generate header
   const headerValues = generateRandomObject(headerFields);
 

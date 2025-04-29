@@ -3,7 +3,7 @@ import BitFieldSection from "./BitFieldSection";
 
 import {
   generateBitLayout,
-  generateRandomPacket,
+  generateRandomOrder,
   encodeFieldsToBytes,
   bytesToHex,
 } from "./utils"; // utility functions
@@ -25,7 +25,7 @@ export default function OrderBitFieldEditor() {
   const [itemCount, setItemCount] = useState(5);
 
   function handleGenerateRandom() {
-    const { headerValues, items } = generateRandomPacket({
+    const { headerValues, items } = generateRandomOrder({
       headerFields,
       itemFields,
       itemCount,
@@ -39,7 +39,7 @@ export default function OrderBitFieldEditor() {
       encodeFieldsToBytes(generateBitLayout(headerFields).layout, headerValues)
     );
     const itemsBytes = bytesToHex(
-      encodeFieldsToBytes(generateBitLayout(headerFields).layout, items)
+      encodeFieldsToBytes(generateBitLayout(itemFields).layout, items)
     );
     console.debug("handleGenerateRandom", { headerBytes, itemsBytes });
   }
