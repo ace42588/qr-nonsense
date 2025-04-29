@@ -19,10 +19,14 @@ export default function BitFieldPreviewer({ fields }) {
 
   return (
     <div>
+      <BitFieldVisualizer layout={layout} totalBits={totalBits} />
       <h3>Preview</h3>
       {layout.map((field) => (
         <div key={field.label} style={{ marginBottom: 8 }}>
           <label style={{ marginRight: 8 }}>{field.label}</label>
+          <span style={{ marginLeft: 8, color: "#888" }}>
+            ({field.width} bits, {field.startBit}→{field.endBit})
+          </span>
           <input
             type="number"
             value={values[field.label] ?? ""}
@@ -35,9 +39,7 @@ export default function BitFieldPreviewer({ fields }) {
             }
             style={{ width: 80 }}
           />
-          <span style={{ marginLeft: 8, color: "#888" }}>
-            ({field.width} bits, {field.startBit}→{field.endBit})
-          </span>
+
         </div>
       ))}
 
@@ -54,8 +56,6 @@ export default function BitFieldPreviewer({ fields }) {
           Cannot encode (missing or invalid values).
         </div>
       )}
-
-      <BitFieldVisualizer layout={layout} totalBits={totalBits} />
     </div>
   );
 }
