@@ -58,6 +58,9 @@ export default function OrderBitFieldEditor() {
     }));
   }
 
+  const headerLayoutData = generateBitLayout(schemas.header);
+  const itemLayoutData = generateBitLayout(schemas.item);
+
   return (
     <div className="input-form">
       {/* Header definition */}
@@ -83,6 +86,10 @@ export default function OrderBitFieldEditor() {
           </span>
           Header Definition
         </h3>
+        <BitFieldVisualizer
+          layout={headerLayoutData.layout}
+          totalBits={headerLayoutData.totalBits}
+        />
         {expandedSections.header && (
           <>
             <BitFieldEditor
@@ -92,6 +99,8 @@ export default function OrderBitFieldEditor() {
             <BitFieldPreviewer
               fields={schemas.header}
               sampleValues={sampleValues.header}
+              layout={headerLayoutData.layout}
+              totalBits={headerLayoutData.totalBits}
             />
           </>
         )}
@@ -121,6 +130,11 @@ export default function OrderBitFieldEditor() {
           Item Definition
         </h3>
 
+        <BitFieldVisualizer
+          layout={itemLayoutData.layout}
+          totalBits={itemLayoutData.totalBits}
+        />
+
         {expandedSections.item && (
           <>
             <BitFieldEditor
@@ -131,6 +145,8 @@ export default function OrderBitFieldEditor() {
             <BitFieldPreviewer
               fields={schemas.item}
               sampleValues={sampleValues.items[0] ?? {}}
+              layout={itemLayoutData.layout}
+              totalBits={itemLayoutData.totalBits}
             />
           </>
         )}
@@ -144,7 +160,10 @@ export default function OrderBitFieldEditor() {
         }}
       >
         <div className="input-button-row">
-          <button style={{ width: 220, maxWidth: 220 }} onClick={handleGenerateRandom}>
+          <button
+            style={{ width: 220, maxWidth: 220 }}
+            onClick={handleGenerateRandom}
+          >
             🎲 Generate Random Order
           </button>
           <label htmlFor="numItems">Number of items:</label>

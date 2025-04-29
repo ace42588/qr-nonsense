@@ -1,13 +1,9 @@
 import React, { useMemo, useState } from "react";
 import BitFieldVisualizer from "./BitFieldVisualizer";
-import { generateBitLayout, encodeFieldsToBytes, bytesToHex } from "./utils";
+import { encodeFieldsToBytes, bytesToHex } from "./utils";
 
-export default function BitFieldPreviewer({ fields }) {
-  const { layout, totalBits } = useMemo(
-    () => generateBitLayout(fields),
-    [fields]
-  );
-  const [values, setValues] = useState({});
+export default function BitFieldPreviewer({ fields, sampleValues, layout, totalBits }) {
+  const [values, setValues] = useState(sampleValues);
 
   const encodedBytes = useMemo(() => {
     try {
@@ -19,7 +15,6 @@ export default function BitFieldPreviewer({ fields }) {
 
   return (
     <div>
-      <BitFieldVisualizer layout={layout} totalBits={totalBits} />
       <h3>Preview</h3>
       {layout.map((field) => (
         <div key={field.label} style={{ marginBottom: 8 }}>
