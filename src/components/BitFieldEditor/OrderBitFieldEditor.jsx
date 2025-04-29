@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import BitFieldSection from "./BitFieldSection";
 
-import { generateBitLayout, generateRandomPacket, encodeFieldsToBytes, bytesToHex } from "./utils"; // utility functions
+import {
+  generateBitLayout,
+  generateRandomPacket,
+  encodeFieldsToBytes,
+  bytesToHex,
+} from "./utils"; // utility functions
 
 export default function OrderBitFieldEditor() {
   const [headerFields, setHeaderFields] = useState([
@@ -25,11 +30,18 @@ export default function OrderBitFieldEditor() {
       itemFields,
       itemCount,
     });
+    console.debug("handleGenerateRandom", { headerValues, items });
 
     setHeaderSample(headerValues);
     setItemSamples(items);
-    const {layout} = generateBitLayout();
-    encodeFieldsToBytes(layout, values)
+
+    const headerBytes = bytesToHex(
+      encodeFieldsToBytes(generateBitLayout(headerFields).layout, headerValues)
+    );
+    const itemsBytes = bytesToHex(
+      encodeFieldsToBytes(generateBitLayout(headerFields).layout, items)
+    );
+    console.debug("handleGenerateRandom", { headerBytes, itemsBytes });
   }
 
   return (
