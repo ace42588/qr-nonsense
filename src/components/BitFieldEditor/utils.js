@@ -30,7 +30,7 @@ export function generateBitLayout(fields) {
 }
 
 export function encodeFieldsToBytes(fieldsLayout, values) {
-  console.debug("encodeFieldsToBytes", { fieldsLayout, values });
+  //console.debug("encodeFieldsToBytes", { fieldsLayout, values });
   let result = 0;
 
   fieldsLayout.forEach((field) => {

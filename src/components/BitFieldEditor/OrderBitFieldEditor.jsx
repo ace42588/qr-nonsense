@@ -38,9 +38,8 @@ export default function OrderBitFieldEditor() {
     const headerBytes = bytesToHex(
       encodeFieldsToBytes(generateBitLayout(headerFields).layout, headerValues)
     );
-    const itemsBytes = bytesToHex(
-      encodeFieldsToBytes(generateBitLayout(itemFields).layout, items)
-    );
+    const itemLayout = generateBitLayout(itemFields).layout
+    const itemsBytes = items.map((item) => bytesToHex(encodeFieldsToBytes(itemLayout, item))).join("");
     console.debug("handleGenerateRandom", { headerBytes, itemsBytes });
   }
 
