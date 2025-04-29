@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import BitFieldEditor from "./BitFieldEditor";
 import BitFieldPreviewer from "./BitFieldPreviewer";
+import BitFieldVisualizer from "./BitFieldVisualizer";
 
 import { generateBitLayout, generateRandomPacket, bytesToHex } from "./utils"; // utility functions
 

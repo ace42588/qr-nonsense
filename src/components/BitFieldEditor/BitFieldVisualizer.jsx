@@ -18,7 +18,6 @@ export default function BitFieldVisualizer({ layout, totalBits }) {
 
   return (
     <div style={{ marginTop: 24 }}>
-      <h3>Bit Layout</h3>
       <div
         style={{
           display: "flex",

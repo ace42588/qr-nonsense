@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react";
-import BitFieldVisualizer from "./BitFieldVisualizer";
 import { encodeFieldsToBytes, bytesToHex } from "./utils";
 
 export default function BitFieldPreviewer({ fields, sampleValues, layout, totalBits }) {
