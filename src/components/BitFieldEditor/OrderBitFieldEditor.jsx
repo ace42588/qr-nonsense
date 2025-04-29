@@ -41,7 +41,7 @@ export default function OrderBitFieldEditor() {
     );
     const itemLayout = generateBitLayout(itemFields).layout;
     const itemsBytes = items.flatMap((item) =>
-      encodeFieldsToBytes(itemLayout, item)
+      Array.from(encodeFieldsToBytes(itemLayout, item))
     );
     console.debug("handleGenerateRandom", { headerBytes, itemsBytes });
     const orderBytes = [...headerBytes, ...itemsBytes];
