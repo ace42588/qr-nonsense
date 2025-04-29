@@ -35,12 +35,20 @@ export default function OrderBitFieldEditor() {
     setHeaderSample(headerValues);
     setItemSamples(items);
 
-    const headerBytes = bytesToHex(
-      encodeFieldsToBytes(generateBitLayout(headerFields).layout, headerValues)
+    const headerBytes = encodeFieldsToBytes(
+      generateBitLayout(headerFields).layout,
+      headerValues
     );
-    const itemLayout = generateBitLayout(itemFields).layout
-    const itemsBytes = items.map((item) => bytesToHex(encodeFieldsToBytes(itemLayout, item))).join("");
+    const itemLayout = generateBitLayout(itemFields).layout;
+    const itemsBytes = items.flatMap((item) =>
+      encodeFieldsToBytes(itemLayout, item)
+    );
     console.debug("handleGenerateRandom", { headerBytes, itemsBytes });
+    const orderBytes = [...headerBytes, ...itemsBytes];
+    console.debug("handleGenerateRandom", {
+      orderBytes,
+      bytes: bytesToHex(orderBytes),
+    });
   }
 
   return (
