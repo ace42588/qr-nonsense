@@ -1,7 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { encodeFieldsToBytes, bytesToHex } from "./utils";
 
-export default function BitFieldPreviewer({ fields, sampleValues, layout, totalBits }) {
+export default function BitFieldPreviewer({
+  fields,
+  sampleValues,
+  layout,
+  totalBits,
+}) {
   const [values, setValues] = useState(sampleValues);
 
   const encodedBytes = useMemo(() => {
@@ -16,7 +21,17 @@ export default function BitFieldPreviewer({ fields, sampleValues, layout, totalB
     <div>
       <h3>Preview</h3>
       {layout.map((field) => (
-        <div key={field.label} style={{ marginBottom: 8 }}>
+        <div
+          key={field.label}
+          style={{
+            marginBottom: 8,
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            justifyContent: "space-between",
+            justifyItems: "stretch",
+          }}
+        >
           <label style={{ marginRight: 8 }}>{field.label}</label>
           <span style={{ marginLeft: 8, color: "#888" }}>
             ({field.width} bits, {field.startBit}→{field.endBit})
@@ -31,9 +46,8 @@ export default function BitFieldPreviewer({ fields, sampleValues, layout, totalB
                   e.target.value === "" ? undefined : Number(e.target.value),
               }))
             }
-            style={{ width: 80 }}
+            style={{ maxWidth: 80 }}
           />
-
         </div>
       ))}
 
