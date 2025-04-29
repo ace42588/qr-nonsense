@@ -10,7 +10,6 @@
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
-
 .input-form input,
 .input-form select {
   padding: 10px;
@@ -67,7 +66,7 @@ canvas {
 
 .modeIndicator-button {
   padding: 10px 15px;
-  background-color: #BEB625;
+  background-color: #beb625;
   color: white;
   border: none;
   border-radius: 4px;
@@ -77,7 +76,7 @@ canvas {
 
 .characterCountIndicator-button {
   padding: 10px 15px;
-  background-color: #25BE45;
+  background-color: #25be45;
   color: white;
   border: none;
   border-radius: 4px;
@@ -195,8 +194,8 @@ canvas {
 
 .input-button-row {
   display: flex;
-  align-items: center;      /* Vertically centers label and select */
-  gap: 0.5rem;              /* Space between label and select */
+  align-items: center; /* Vertically centers label and select */
+  gap: 0.5rem; /* Space between label and select */
   justify-content: space-between;
   margin: 4px auto;
 }
@@ -213,10 +212,10 @@ canvas {
 
 .label-select-row {
   display: flex;
-  align-items: center;      /* Vertically centers label and select */
-  gap: 0.5rem;              /* Space between label and select */
+  align-items: center; /* Vertically centers label and select */
+  gap: 0.5rem; /* Space between label and select */
   justify-content: space-between;
-   margin: 4px auto;
+  margin: 4px auto;
 }
 
 /* Optional: ensure the label has no right margin if using gap */
@@ -233,8 +232,8 @@ canvas {
 
 .label-select-checkbox-row {
   display: flex;
-  align-items: center;      /* Vertically centers label and select */
-  gap: 0.5rem;              /* Space between label and select */
+  align-items: center; /* Vertically centers label and select */
+  gap: 0.5rem; /* Space between label and select */
   justify-content: space-between;
   margin: 4px auto;
 }

@@ -27,6 +27,8 @@ export default function OrderBitFieldEditor() {
     item: false,
   });
 
+  const [numItems, setNumItems] = useState(5);
+
   function updateSchema(name, newFields) {
     console.debug("updateSchema", { name, newFields });
     setSchemas((prev) => ({
@@ -68,7 +70,12 @@ export default function OrderBitFieldEditor() {
         }}
       >
         <h3
-          style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+            margin: "0px",
+          }}
           onClick={() => toggleSection("header")}
         >
           <span style={{ marginRight: 8 }}>
@@ -100,13 +107,18 @@ export default function OrderBitFieldEditor() {
         }}
       >
         <h3
-          style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+            margin: "0px",
+          }}
           onClick={() => toggleSection("item")}
         >
           <span style={{ marginRight: 8 }}>
             {expandedSections.item ? "▾" : "▸"}
           </span>
-          Item Definition (Single Item Preview)
+          Item Definition
         </h3>
 
         {expandedSections.item && (
@@ -123,7 +135,28 @@ export default function OrderBitFieldEditor() {
           </>
         )}
       </div>
-      <button onClick={handleGenerateRandom}>🎲 Generate Random Order</button>
+      <div
+        style={{
+          border: "1px solid #aaa",
+          borderRadius: 8,
+          padding: 16,
+          maxWidth: 900,
+        }}
+      >
+        <div >
+          <label htmlFor="numItems">Number of items:</label>
+          <input
+            id="numItems"
+            type="text"
+            value={numItems}
+            onChange={(e) => setNumItems(e.target.value)}
+            placeholder={5}
+          />
+          <button onClick={handleGenerateRandom}>
+            🎲 Generate Random Order
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
