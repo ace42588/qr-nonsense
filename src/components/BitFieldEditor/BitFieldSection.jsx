@@ -21,7 +21,7 @@ export default function BitFieldSection({ title, fields, setFields, sampleValues
       maxWidth: 900,
     }}>
       <h2
-        style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+        style={{ display: "flex", alignItems: "center", cursor: "pointer", margin: 0 }}
         onClick={toggleExpanded}
       >
         <span style={{ marginRight: 8 }}>

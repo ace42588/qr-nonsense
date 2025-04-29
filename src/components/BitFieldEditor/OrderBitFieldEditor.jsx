@@ -1,157 +1,53 @@
 import React, { useState } from "react";
-import BitFieldEditor from "./BitFieldEditor";
-import BitFieldPreviewer from "./BitFieldPreviewer";
-import BitFieldVisualizer from "./BitFieldVisualizer";
+import BitFieldSection from "./BitFieldSection";
 
-import { generateBitLayout, generateRandomPacket, bytesToHex } from "./utils"; // utility functions
+import { generateBitLayout, generateRandomPacket, encodeFieldsToBytes, bytesToHex } from "./utils"; // utility functions
 
 export default function OrderBitFieldEditor() {
-  const [schemas, setSchemas] = useState({
-    header: [
-      { id: "0", label: "platform", min: 0, max: 3 },
-      { id: "1", label: "confId", min: 0, max: 255 },
-      { id: "2", label: "transactionId", min: 0, max: 1048575 },
-    ],
-    item: [
-      { id: "0", label: "variant", min: 0, max: 65535 },
-      { id: "1", label: "quantity", min: 0, max: 255 },
-    ],
-  });
+  const [headerFields, setHeaderFields] = useState([
+    { id: "0", label: "platform", min: 0, max: 3 },
+    { id: "1", label: "confId", min: 0, max: 255 },
+    { id: "2", label: "transactionId", min: 0, max: 1048575 },
+  ]);
 
-  const [sampleValues, setSampleValues] = useState({
-    header: {},
-    items: [],
-  });
+  const [itemFields, setItemFields] = useState([
+    { id: "0", label: "variant", min: 0, max: 65535 },
+    { id: "1", label: "quantity", min: 0, max: 255 },
+  ]);
 
-  const [expandedSections, setExpandedSections] = useState({
-    header: false,
-    item: false,
-  });
-
-  const [numItems, setNumItems] = useState(5);
-
-  function updateSchema(name, newFields) {
-    console.debug("updateSchema", { name, newFields });
-    setSchemas((prev) => ({
-      ...prev,
-      [name]: newFields,
-    }));
-  }
+  const [headerSample, setHeaderSample] = useState({});
+  const [itemSamples, setItemSamples] = useState([]);
+  const [itemCount, setItemCount] = useState(5);
 
   function handleGenerateRandom() {
     const { headerValues, items } = generateRandomPacket({
-      headerFields: schemas.header,
-      itemFields: schemas.item,
-      itemCount: numItems,
+      headerFields,
+      itemFields,
+      itemCount,
     });
-    console.debug("handleGenerateRandom", { headerValues, items });
 
-    setSampleValues({
-      header: headerValues,
-      items: items,
-    });
+    setHeaderSample(headerValues);
+    setItemSamples(items);
   }
-
-  function toggleSection(name) {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [name]: !prev[name],
-    }));
-  }
-
-  const headerLayoutData = generateBitLayout(schemas.header);
-  const itemLayoutData = generateBitLayout(schemas.item);
 
   return (
     <div className="input-form">
       {/* Header definition */}
-      <div
-        style={{
-          border: "1px solid #aaa",
-          borderRadius: 8,
-          padding: 16,
-          maxWidth: 900,
-        }}
-      >
-        <h3
-          style={{
-            display: "flex",
-            alignItems: "center",
-            cursor: "pointer",
-            margin: "0px",
-          }}
-          onClick={() => toggleSection("header")}
-        >
-          <span style={{ marginRight: 8 }}>
-            {expandedSections.header ? "▾" : "▸"}
-          </span>
-          Header Definition
-        </h3>
-        <BitFieldVisualizer
-          layout={headerLayoutData.layout}
-          totalBits={headerLayoutData.totalBits}
-        />
-        {expandedSections.header && (
-          <>
-            <BitFieldEditor
-              fields={schemas.header}
-              setFields={(newFields) => updateSchema("header", newFields)}
-            />
-            <BitFieldPreviewer
-              fields={schemas.header}
-              sampleValues={sampleValues.header}
-              layout={headerLayoutData.layout}
-              totalBits={headerLayoutData.totalBits}
-            />
-          </>
-        )}
-      </div>
+
+      <BitFieldSection
+        title="Header Definition"
+        fields={headerFields}
+        setFields={setHeaderFields}
+        sampleValues={headerSample}
+      />
 
       {/* Item definition */}
-      <div
-        style={{
-          border: "1px solid #aaa",
-          borderRadius: 8,
-          padding: 16,
-          maxWidth: 900,
-        }}
-      >
-        <h3
-          style={{
-            display: "flex",
-            alignItems: "center",
-            cursor: "pointer",
-            margin: "0px",
-          }}
-          onClick={() => toggleSection("item")}
-        >
-          <span style={{ marginRight: 8 }}>
-            {expandedSections.item ? "▾" : "▸"}
-          </span>
-          Item Definition
-        </h3>
-
-        <BitFieldVisualizer
-          layout={itemLayoutData.layout}
-          totalBits={itemLayoutData.totalBits}
-        />
-
-        {expandedSections.item && (
-          <>
-            <BitFieldEditor
-              fields={schemas.item}
-              setFields={(newFields) => updateSchema("item", newFields)}
-            />
-            {/* Show only the first generated item */}
-            <BitFieldPreviewer
-              fields={schemas.item}
-              sampleValues={sampleValues.items[0] ?? {}}
-              layout={itemLayoutData.layout}
-              totalBits={itemLayoutData.totalBits}
-            />
-          </>
-        )}
-      </div>
+      <BitFieldSection
+        title="Item Definition"
+        fields={itemFields}
+        setFields={setItemFields}
+        sampleValues={itemSamples[0] ?? {}}
+      />
       <div
         style={{
           border: "1px solid #aaa",
@@ -170,9 +66,10 @@ export default function OrderBitFieldEditor() {
           <label htmlFor="numItems">Number of items:</label>
           <input
             id="numItems"
-            type="text"
-            value={numItems}
-            onChange={(e) => setNumItems(e.target.value)}
+            type="number"
+            min={1}
+            value={itemCount}
+            onChange={(e) => setItemCount(parseInt(e.target.value, 10) || 1)}
             placeholder={5}
           />
         </div>

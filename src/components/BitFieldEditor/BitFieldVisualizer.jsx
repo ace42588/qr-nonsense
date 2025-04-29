@@ -17,7 +17,7 @@ export default function BitFieldVisualizer({ layout, totalBits }) {
   if (totalBits === 0) return null;
 
   return (
-    <div style={{ marginTop: 24 }}>
+    <div style={{ marginTop: 12 }}>
       <div
         style={{
           display: "flex",
