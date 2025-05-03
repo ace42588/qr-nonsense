@@ -8,9 +8,22 @@ export default function BitFieldSection({
   fields,
   setFields,
   values,
-  setValues,
+  onChange,
 }) {
   const { layout, totalBits } = generateBitLayout(fields);
+
+  const handleValuesChange = (newValues) => {
+    try {
+      const encoded = encodeFieldsToBytes(layout, newValues);
+      onChange?.({
+        data: encoded, // raw bytes or hex string if needed
+        fields,
+        values: newValues,
+      });
+    } catch (err) {
+
+    }
+  };
 
   const encodedBytes = useMemo(() => {
     try {
@@ -30,7 +43,11 @@ export default function BitFieldSection({
       }}
     >
       <BitFieldEditor fields={fields} setFields={setFields} />
-      <BitFieldValues values={values} setValues={setValues} layout={layout} />
+      <BitFieldValues
+        values={values}
+        setValues={handleValuesChange}
+        layout={layout}
+      />
       <BitFieldVisualizer layout={layout} totalBits={totalBits} />
       {encodedBytes ? (
         <div style={{ marginTop: 8 }}>

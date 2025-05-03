@@ -65,11 +65,13 @@ export function InputSection({ initial, onChange, onRemove }) {
         )}
         {type === "bitField" && (
           <BitFieldSection
-            title="BitField"
             fields={fields}
             setFields={handleFieldsChange}
             values={values}
-            setValues={handleValuesChange}
+            onChange={(bitFieldInput) => {
+              setValues(bitFieldInput.values);
+              onChange?.(bitFieldInput);
+            }}
           />
         )}
       </div>
