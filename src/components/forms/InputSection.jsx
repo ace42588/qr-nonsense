@@ -12,7 +12,7 @@ export function InputSection({ key, onChange, onRemove }) {
     { id: "0", label: "label", min: 0, max: 255 },
   ]);
   const [values, setValues] = useState({});
-  const [input, setInput] = useState();
+  const [input, setInput] = useState("");
   return (
     <div className="row">
       <div
@@ -23,32 +23,38 @@ export function InputSection({ key, onChange, onRemove }) {
           maxWidth: 900,
         }}
       >
-        <label htmlFor="inputMode">Input Mode:</label>
-        <select
-          id="inputMode"
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-        >
-          {types.map((t, idx) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-        <button type="button" onClick={onRemove}>
-          ✖
-        </button>
+        <div className="input-button-row">
+          <label htmlFor="inputMode">Input Type:</label>
+          <select
+            id="inputMode"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            {types.map((t, idx) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+          <button type="button" onClick={onRemove}>
+            ✖
+          </button>
+        </div>
+        {type === "basic" && (
+          <BasicInput key={key} initial={input} onChange={setInput} />
+        )}
+        {type === "json" && (
+          <JsonInput key={key} initial={input} onChange={setInput} />
+        )}
+        {type === "bitField" && (
+          <BitFieldSection
+            title="BitField"
+            fields={fields}
+            setFields={setFields}
+            sampleValues={values}
+          />
+        )}
       </div>
-      {type === "basic" && <BasicInput key={key} initial={input} onChange={setInput} />}
-      {type === "json" && <JsonInput key={initial={input} onChange={setInput} />}
-      {type === "bitField" && (
-        <BitFieldSection
-          title="BitField"
-          fields={fields}
-          setFields={setFields}
-          sampleValues={values}
-        />
-      )}
     </div>
   );
 }

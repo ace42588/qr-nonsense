@@ -4,9 +4,9 @@ import "../styles/styles.css";
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
 export function BasicInput({ key, initial, onChange }) {
-  const [mode, setMode] = useState(initial.byte || "byte");
-  const [encoding, setEncoding] = useState(initial.encoding || "");
-  const [data, setData] = useState(initial.data || "");
+  const [mode, setMode] = useState(initial?.byte || "byte");
+  const [encoding, setEncoding] = useState(initial?.encoding || "");
+  const [data, setData] = useState(initial?.data || "");
 
   const handleDataChange = (e) => {
     const newData = e.target.value;

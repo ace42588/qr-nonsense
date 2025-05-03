@@ -7,6 +7,7 @@ import {
   VideoScanner,
   InputForm,
   MerchForm,
+  InputSection
 } from "../components";
 import HalftoneDemo from "../components/halftone/HalftoneDemo";
 import QRImageHalftone from "../components/halftone/QRImageHalftone";
@@ -38,6 +39,7 @@ export default function App() {
       </div>
       <QRDataProvider>
         <div className="row">
+          <InputSection />
           <div className="column">
             <OrderBitFieldEditor />
             <div className="row">{selectUI()}</div>
