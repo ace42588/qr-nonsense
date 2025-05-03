@@ -47,12 +47,12 @@ export function InputForm() {
   const handleAddInput = () => {
     setInputs([...inputs, { mode: "byte", value: "" }]);
   };
-  
+
   const handleChange = (index, input) => {
     const newInputs = [...inputs];
     newInputs[index] = input;
-    setInputs()
-  }
+    setInputs(newInputs);
+  };
 
   const handleRemoveInput = (index) => {
     const newInputs = inputs.filter((_, i) => i !== index);
@@ -72,7 +72,12 @@ export function InputForm() {
           }}
         >
           {inputs.map((input, index) => (
-            <InputSection onChange={(e) => handleInputChange(index, e)} onRemove={handleRemoveInput(index)}/>
+            <InputSection
+              key={index}
+              
+              onChange={(e) => handleChange(index, e)}
+              onRemove={handleRemoveInput(index)}
+            />
           ))}
         </div>
         <div className="row">

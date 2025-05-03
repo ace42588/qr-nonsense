@@ -11,11 +11,11 @@ const encodings = [
   { value: "PER-NTRU", label: "Packed Encoding Rule, NTRU" },
 ];
 
-export function JsonInput({ key, initial, onChange }) {
-  const [input, setInput] = useState(initial);
+export function JsonInput({ key, input, onChange }) {
+  const [value, setValue] = useState(input);
   const [encoding, setEncoding] = useState("PER");
 
-  const handleChange = () => onChange(encodeJson(input, encoding));
+  const handleChange = () => onChange(encodeJson(value, encoding));
 
   return (
     <div
@@ -30,9 +30,9 @@ export function JsonInput({ key, initial, onChange }) {
         <textarea
           type="text"
           rows={16}
-          value={input}
+          value={value}
           onChange={(e) => {
-            setInput(e.target.value);
+            setValue(e.target.value);
             handleChange();
           }}
         />

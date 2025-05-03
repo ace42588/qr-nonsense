@@ -3,10 +3,10 @@ import "../styles/styles.css";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
-export function BasicInput({ initial, onChange }) {
-  const [mode, setMode] = useState(initial?.byte || "byte");
-  const [encoding, setEncoding] = useState(initial?.encoding || "");
-  const [data, setData] = useState(initial?.data || "");
+export function BasicInput({ input, onChange }) {
+  const [mode, setMode] = useState(input?.byte || "byte");
+  const [encoding, setEncoding] = useState(input?.encoding || "");
+  const [data, setData] = useState(input?.data || "");
 
   const handleDataChange = (e) => {
     const newData = e.target.value;
