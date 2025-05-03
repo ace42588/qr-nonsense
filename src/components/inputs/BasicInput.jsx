@@ -6,14 +6,14 @@ import { parseInput } from "./inputUtils";
 import { Actions } from "../../state/qr/Constants";
 
 export function BasicInput({ key, input, onChange, onRemove }) {
-  const handleInputChange = (event) => {
-    const newInput = {...input, data: event.target.value};
-    onChange(newInput);
-  };
+  const handleInputChange = (e) => onChange({ ...input, data: e.target.value });
 
-  const handleModeChange = ({ mode, encoding }) => {
-    const newInput = { ...input, mode, encoding };
-    onChange(newInput);
+  const handleModeChange = (e) => onChange({ ...input, mode: e.target.value });
+
+  const handleEncodingChange = (e) => onChange({
+      ...input,
+      encoding: e.target.checked ? "utf-8" : undefined,
+    });
   };
 
   return (
@@ -21,14 +21,11 @@ export function BasicInput({ key, input, onChange, onRemove }) {
       <InputModeSelector
         mode={input.mode}
         encoding={input.encoding}
-        onChange={(e) => handleModeChange(e)}
+        setMode={handleModeChange}
+        setEncoding={handleEncodingChange}
       />
       <div className="input-button-row">
-        <input
-          type="text"
-          value={input.data}
-          onChange={(e) => handleInputChange(e)}
-        />
+        <input type="text" value={input.data} onChange={handleInputChange} />
         <button type="button" onClick={onRemove}>
           ✖
         </button>
@@ -45,17 +42,11 @@ const modes = [
   "eci",
 ];
 
-function InputModeSelector({ mode, encoding, onChange }) {
+function InputModeSelector({ mode, encoding, setMode, setEncoding }) {
   return (
     <div className="label-select-checkbox-row">
       <label htmlFor="inputMode">Input Mode:</label>
-      <select
-        id="inputMode"
-        value={mode}
-        onChange={(e) => {
-          onChange({ mode: e.target.value, encoding });
-        }}
-      >
+      <select id="inputMode" value={mode} onChange={setMode}>
         {modes.map((m, idx) => (
           <option key={m} value={m}>
             {m}
@@ -69,12 +60,7 @@ function InputModeSelector({ mode, encoding, onChange }) {
             id="forceUtf8"
             type="checkbox"
             checked={encoding === "utf-8"}
-            onChange={(e) =>
-              onChange({
-                mode,
-                encoding: e.target.checked ? "utf-8" : undefined,
-              })
-            }
+            onChange={setEncoding}
           />
         </>
       )}
