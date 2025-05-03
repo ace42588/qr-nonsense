@@ -14,14 +14,26 @@ export function InputSection({ initial, onChange, onRemove }) {
   ]);
   const [values, setValues] = useState({});
   const [input, setInput] = useState(initial || "");
-  
-  useEffect(() => {
-    if (type === "basic" || type === "json") {
-      onChange({ type, data: input });
-    } else if (type === "bitField") {
-      onChange({ type, fields, values });
-    }
-  }, [type, input, fields, values, onChange]);
+
+  const handleBasicOrJsonChange = (newInput) => {
+    setInput(newInput);
+    onChange?.({ type, data: newInput });
+  };
+
+  const handleFieldsChange = (newFields) => {
+    setFields(newFields);
+    onChange?.({ type, fields: newFields, values });
+  };
+
+  const handleValuesChange = (newValues) => {
+    setValues(newValues);
+    onChange?.({ type, fields, values: newValues });
+  };
+
+  const handleTypeChange = (newType) => {
+    setType(newType);
+    onChange?.({ type: newType, data: input, fields, values });
+  };
 
   return (
     <div className="row">
@@ -38,9 +50,9 @@ export function InputSection({ initial, onChange, onRemove }) {
           <select
             id="inputType"
             value={type}
-            onChange={(e) => setType(e.target.value)}
+            onChange={(e) => handleTypeChange(e.target.value)}
           >
-            {types.map((t, idx) => (
+            {types.map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>
@@ -50,14 +62,19 @@ export function InputSection({ initial, onChange, onRemove }) {
             ✖
           </button>
         </div>
-        {type === "basic" && <BasicInput input={input} onChange={setInput} />}
-        {type === "json" && <JsonInput input={input} onChange={setInput} />}
+        {type === "basic" && (
+          <BasicInput input={input} onChange={handleBasicOrJsonChange} />
+        )}
+        {type === "json" && (
+          <JsonInput input={input} onChange={handleBasicOrJsonChange} />
+        )}
         {type === "bitField" && (
           <BitFieldSection
             title="BitField"
             fields={fields}
-            setFields={setFields}
-            values={values}
+            setFields={handleFieldsChange}
+            sampleValues={values}
+            setSampleValues={handleValuesChange}
           />
         )}
       </div>

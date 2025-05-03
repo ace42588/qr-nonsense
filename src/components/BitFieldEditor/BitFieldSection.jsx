@@ -4,7 +4,7 @@ import BitFieldPreviewer from "./BitFieldPreviewer";
 import BitFieldVisualizer from "./BitFieldVisualizer";
 import { generateBitLayout } from "./utils";
 
-export default function BitFieldSection({ title, fields, setFields, sampleValues }) {
+export default function BitFieldSection({ title, fields, setFields, values, setValues }) {
   const [expanded, setExpanded] = useState(true);
 
   const { layout, totalBits } = generateBitLayout(fields);
@@ -40,7 +40,7 @@ export default function BitFieldSection({ title, fields, setFields, sampleValues
           />
           <BitFieldPreviewer
             fields={fields}
-            sampleValues={sampleValues}
+            sampleValues={values}
             layout={layout}
             totalBits={totalBits}
           />
