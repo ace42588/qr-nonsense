@@ -4,12 +4,10 @@ import "../styles/styles.css";
 import { BasicInput, JsonInput } from "../inputs";
 import BitFieldSection from "../BitFieldEditor/BitFieldSection";
 
-export function InputSection() {
-  const [input, setInput] = useState();
-  const [method, setMethod] = useState();
+const types = ["basic", "json", "bitField"];
 
-  const handleMethodChange = () => {};
-
+export function InputSection({ onChange, onRemove }) {
+  const [type, setType] = useState();
   return (
     <div className="row">
       <div
@@ -19,7 +17,26 @@ export function InputSection() {
           padding: 16,
           maxWidth: 900,
         }}
-      ></div>
+      >
+        <label htmlFor="inputMode">Input Mode:</label>
+        <select
+          id="inputMode"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+        >
+          {types.map((t, idx) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+        <button type="button" onClick={onRemove}>
+          ✖
+        </button>
+      </div>
+      {type === "basic" && (<BasicInput />)}
+      {type === "json" && (<JsonInput />)}
+      {type === "json" && (<JsonInput />)}
     </div>
   );
 }
