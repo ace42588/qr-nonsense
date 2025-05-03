@@ -39,7 +39,6 @@ export default function App() {
       </div>
       <QRDataProvider>
         <div className="row">
-          <InputSection />
           <div className="column">
             <OrderBitFieldEditor />
             <div className="row">{selectUI()}</div>

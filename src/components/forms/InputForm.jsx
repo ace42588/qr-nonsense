@@ -3,6 +3,8 @@ import "../styles/styles.css";
 import { QRInfoInput } from "../qr/QRInfoInput";
 import { InputModeSelector } from "../selectors";
 import { BasicInput } from "../inputs";
+import { InputSection } from "./InputSection";
+
 import { useQRDataDispatch } from "../../state";
 import { parseInput } from "./inputUtils";
 import { Actions } from "../../state/qr/Constants";
@@ -45,6 +47,12 @@ export function InputForm() {
   const handleAddInput = () => {
     setInputs([...inputs, { mode: "byte", value: "" }]);
   };
+  
+  const handleChange = (index, input) => {
+    const newInputs = [...inputs];
+    newInputs[index] = input;
+    setInputs()
+  }
 
   const handleRemoveInput = (index) => {
     const newInputs = inputs.filter((_, i) => i !== index);
@@ -64,16 +72,7 @@ export function InputForm() {
           }}
         >
           {inputs.map((input, index) => (
-            <>
-              <BasicInput
-                key={index}
-                initial={input}
-                onChange={handleInputChange}
-              />
-              <button type="button" onClick={() => handleRemoveInput(index)}>
-                ✖
-              </button>
-            </>
+            <InputSection onChange={(e) => handleInputChange(index, e)} onRemove={handleRemoveInput(index)}/>
           ))}
         </div>
         <div className="row">
@@ -90,22 +89,22 @@ export default InputForm;
 
 /*
 <div key={index} className="input-group">
-              <InputModeSelector
-                mode={input.mode}
-                encoding={input.encoding}
-                onChange={(e) => handleModeChange(index, e)}
-              />
-              
-              <div className="input-button-row">
-                <input
-                  type="text"
-                  value={input.data}
-                  onChange={(e) => handleInputChange(index, e)}
-                  placeholder={`Input ${index + 1}`}
-                />
-                <button type="button" onClick={() => handleRemoveInput(index)}>
-                  ✖
-                </button>
-              </div>
-            </div>
-            */
+  <InputModeSelector
+    mode={input.mode}
+    encoding={input.encoding}
+    onChange={(e) => handleModeChange(index, e)}
+  />
+
+  <div className="input-button-row">
+    <input
+      type="text"
+      value={input.data}
+      onChange={(e) => handleInputChange(index, e)}
+      placeholder={`Input ${index + 1}`}
+    />
+    <button type="button" onClick={() => handleRemoveInput(index)}>
+      ✖
+    </button>
+  </div>
+</div>
+*/
