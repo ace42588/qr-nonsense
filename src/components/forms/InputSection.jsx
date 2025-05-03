@@ -1,14 +1,13 @@
 import { useState, useContext, useEffect, useCallback } from "react";
-import "../styles/styles.css"; // Import your component-specific styles
+import "../styles/styles.css";
 import { QRInfoInput } from "../qr/QRInfoInput";
-import { InputModeSelector } from "../selectors";
 import { useQRDataDispatch } from "../../state";
 
 export function InputForm() {
   const [input, setInput] = useState();
   const [method, setMethod] = useState();
 
-  const handleModeChange = (index, { mode, encoding }) => {};
+  const handleModeChange = () => {};
 
   return (
     <div className="row">

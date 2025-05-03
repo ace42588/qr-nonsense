@@ -11,49 +11,50 @@ export function BasicInput({ key, input, onChange, onRemove }) {
   const [mode, setMode] = useState(input.byte || "byte");
   const [encoding, setEncoding] = useState(input.encoding || "");
   const [data, setData] = useState(input.data || "");
-  
-  const handleChange = () => {
-    
-  }
-  
+
+  const handleDataChange = (e) => {
+    const newData = e.target.value;
+    setData(newData);
+    onChange({ data: newData, mode, encoding });
+  };
+
+  const handleModeChange = (e) => {
+    const newMode = e.target.value;
+    setMode(newMode);
+    onChange({ data, mode: newMode, encoding });
+  };
+
+  const handleEncodingChange = (e) => {
+    const newEncoding = e.target.checked ? "utf-8" : undefined;
+    setEncoding(newEncoding);
+    onChange({ data, mode, encoding: newEncoding });
+  };
+
   return (
     <div key={key} className="input-group">
       <div className="label-select-checkbox-row">
         <label htmlFor="inputMode">Input Mode:</label>
-        <select
-          id="inputMode"
-          value={input.mode}
-          onChange={(e) => onChange({ ...input, mode: e.target.value })}
-        >
+        <select id="inputMode" value={mode} onChange={handleModeChange}>
           {modes.map((m, idx) => (
             <option key={m} value={m}>
               {m}
             </option>
           ))}
         </select>
-        {input.mode === "byte" && (
+        {mode === "byte" && (
           <>
             <label htmlFor="forceUtf8">Force UTF-8</label>
             <input
               id="forceUtf8"
               type="checkbox"
-              checked={input.encoding === "utf-8"}
-              onChange={(e) =>
-                onChange({
-                  ...input,
-                  encoding: e.target.checked ? "utf-8" : undefined,
-                })
-              }
+              checked={encoding === "utf-8"}
+              onChange={handleEncodingChange}
             />
           </>
         )}
       </div>
       <div className="input-button-row">
-        <input
-          type="text"
-          value={input.data}
-          onChange={(e) => onChange({ ...input, data: e.target.value })}
-        />
+        <input type="text" value={data} onChange={handleDataChange} />
         <button type="button" onClick={onRemove}>
           ✖
         </button>
