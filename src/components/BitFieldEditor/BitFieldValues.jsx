@@ -13,7 +13,7 @@ export default function BitFieldValues({
   }
 
   return (
-    <div>
+    <>
       <h3 onClick={toggleExpanded}>
         <span style={{ marginRight: 8 }}>{expanded ? "▾" : "▸"}</span>Values
       </h3>
@@ -55,6 +55,6 @@ export default function BitFieldValues({
 
         </>
       )}
-    </div>
+    </>
   );
 }

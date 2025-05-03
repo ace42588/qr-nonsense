@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -23,6 +23,11 @@ function bitsNeeded(max) {
 const DEFAULT_FIELD = { label: "", min: 0, max: 255 };
 
 export default function BitFieldEditor({ fields, setFields }) {
+  const [expanded, setExpanded] = useState(false);
+
+  function toggleExpanded() {
+    setExpanded((prev) => !prev);
+  }
   const nextId = useRef(
     Math.max(0, ...fields.map((f) => parseInt(f.id ?? "-1"))) + 1
   );
@@ -42,7 +47,7 @@ export default function BitFieldEditor({ fields, setFields }) {
   }
 
   function handleRemove(id) {
-    console.debug("handleRemove", {id});
+    console.debug("handleRemove", { id });
     setFields(fields.filter((f) => f.id !== id));
   }
 
@@ -59,31 +64,45 @@ export default function BitFieldEditor({ fields, setFields }) {
   const totalBits = fields.reduce((sum, f) => sum + bitsNeeded(f.max), 0);
 
   return (
-    <div style={{ marginBottom: 32 }}>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
+    <>
+      <h3
+        style={{
+          display: "flex",
+          alignItems: "center",
+          cursor: "pointer",
+          margin: 0,
+        }}
+        onClick={toggleExpanded}
       >
-        <SortableContext
-          items={fields.map((f) => f.id)}
-          strategy={verticalListSortingStrategy}
+        <span style={{ marginRight: 8 }}>{expanded ? "▾" : "▸"}</span>
+        Fields
+      </h3>
+      <div style={{ marginBottom: 32 }}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
         >
-          {fields.map((field) => (
-            <SortableField
-              key={field.id}
-              field={field}
-              onChange={handleChange}
-              onRemove={handleRemove}
-            />
-          ))}
-        </SortableContext>
-      </DndContext>
+          <SortableContext
+            items={fields.map((f) => f.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {fields.map((field) => (
+              <SortableField
+                key={field.id}
+                field={field}
+                onChange={handleChange}
+                onRemove={handleRemove}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
 
-      <button onClick={handleAddField} style={{ marginTop: 8 }}>
-        + Add Field
-      </button>
-    </div>
+        <button onClick={handleAddField} style={{ marginTop: 8 }}>
+          + Add Field
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -106,7 +125,9 @@ function SortableField({ field, onChange, onRemove }) {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
-      <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>☰</span>
+      <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
+        ☰
+      </span>
       <input
         type="text"
         placeholder="Label"

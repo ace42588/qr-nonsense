@@ -10,14 +10,8 @@ export default function BitFieldSection({
   values,
   setValues,
 }) {
-  const [fieldsExpanded, setFieldsExpanded] = useState(false);
-  const [valuesExpanded, setValuesExpanded] = useState(false);
 
   const { layout, totalBits } = generateBitLayout(fields);
-
-  function toggleExpanded(fn) {
-    fn((prev) => !prev);
-  }
 
   const encodedBytes = useMemo(() => {
     try {
@@ -36,43 +30,20 @@ export default function BitFieldSection({
         maxWidth: 900,
       }}
     >
-      <h2
-        style={{
-          display: "flex",
-          alignItems: "center",
-          cursor: "pointer",
-          margin: 0,
-        }}
-        onClick={toggleExpanded}
-      >
-        <span style={{ marginRight: 8 }}>{fieldsExpanded ? "▾" : "▸"}</span>
-        Fields
-      </h2>
+      <BitFieldVisualizer layout={layout} totalBits={totalBits} />
 
-      {fieldsExpanded && (
-        <>
-          <BitFieldVisualizer layout={layout} totalBits={totalBits} />
-          <BitFieldEditor fields={fields} setFields={setFields} />
-        </>
-      )}
-      {valuesExpanded && (
-        <>
-          <BitFieldValues
-            values={values}
-            setValues={setValues}
-            layout={layout}
-          />
+      <BitFieldEditor fields={fields} setFields={setFields} />
 
-          {encodedBytes ? (
-            <div style={{ marginTop: 8 }}>
-              <b>Encoded Bytes:</b> {bytesToHex(encodedBytes)}
-            </div>
-          ) : (
-            <div style={{ marginTop: 8, color: "red" }}>
-              Cannot encode (missing or invalid values).
-            </div>
-          )}
-        </>
+      <BitFieldValues values={values} setValues={setValues} layout={layout} />
+
+      {encodedBytes ? (
+        <div style={{ marginTop: 8 }}>
+          <b>Encoded Bytes:</b> {bytesToHex(encodedBytes)}
+        </div>
+      ) : (
+        <div style={{ marginTop: 8, color: "red" }}>
+          Cannot encode (missing or invalid values).
+        </div>
       )}
 
       <div style={{ marginTop: 16 }}>
