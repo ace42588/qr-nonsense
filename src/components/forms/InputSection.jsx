@@ -1,45 +1,45 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "../styles/styles.css";
 
 import { BasicInput, JsonInput } from "../inputs";
 import BitFieldSection from "../BitFieldEditor/BitFieldSection";
 
-const types = ["basic", "json", "bitField"];
+const INPUT_TYPES = ["basic", "json", "bitField"];
 
-export function InputSection({ initial, onChange, onRemove }) {
-  //console.debug("InputSection", { initial, onChange, onRemove });
-  const [type, setType] = useState("basic");
-  const [fields, setFields] = useState([
+export function InputSection({ initial = {}, onChange, onRemove }) {
+  const [type, setType] = useState(initial.type || "basic");
+  const [fields, setFields] = useState(initial.fields || [
     { id: "0", label: "label", min: 0, max: 255 },
   ]);
-  const [values, setValues] = useState({});
-  const [input, setInput] = useState(initial || "");
+  const [values, setValues] = useState(initial.values || {});
+  const [input, setInput] = useState(initial.data || "");
 
-  const handleBasicOrJsonChange = (newInput) => {
+  const handlePrimitiveChange = (newInput) => {
     setInput(newInput);
-    onChange?.(newInput);
+    onChange?.({ type, data: newInput });
   };
 
-  const handleFieldsChange = (newFields) => {
+  const handleBitFieldChange = ({ fields: newFields, values: newValues, data }) => {
     setFields(newFields);
-    onChange?.({ fields: newFields, values });
-  };
-
-  const handleValuesChange = (newValues) => {
     setValues(newValues);
-    onChange?.({ fields, values: newValues });
+    onChange?.({
+      type: "bitField",
+      mode: "byte",
+      encoding: "hex",
+      data,
+      fields: newFields,
+      values: newValues,
+    });
   };
 
   return (
     <div className="row">
-      <div
-        style={{
-          border: "1px solid #aaa",
-          borderRadius: 8,
-          padding: 16,
-          maxWidth: 900,
-        }}
-      >
+      <div style={{
+        border: "1px solid #aaa",
+        borderRadius: 8,
+        padding: 16,
+        maxWidth: 900,
+      }}>
         <div className="input-button-row">
           <label htmlFor="inputType">Input Type:</label>
           <select
@@ -47,35 +47,25 @@ export function InputSection({ initial, onChange, onRemove }) {
             value={type}
             onChange={(e) => setType(e.target.value)}
           >
-            {types.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
+            {INPUT_TYPES.map((t) => (
+              <option key={t} value={t}>{t}</option>
             ))}
           </select>
-          <button type="button" onClick={onRemove}>
-            ✖
-          </button>
+          <button type="button" onClick={onRemove}>✖</button>
         </div>
+
         {type === "basic" && (
-          <BasicInput input={input} onChange={handleBasicOrJsonChange} />
+          <BasicInput input={input} onChange={handlePrimitiveChange} />
         )}
         {type === "json" && (
-          <JsonInput input={input} onChange={handleBasicOrJsonChange} />
+          <JsonInput input={input} onChange={handlePrimitiveChange} />
         )}
         {type === "bitField" && (
           <BitFieldSection
             fields={fields}
-            setFields={handleFieldsChange}
+            setFields={setFields}
             values={values}
-            onChange={(bitFieldInput) => {
-              setValues(bitFieldInput.values);
-              onChange?.({
-                ...bitFieldInput,
-                mode: "byte",
-                encoding: "hex",
-              });
-            }}
+            onChange={handleBitFieldChange}
           />
         )}
       </div>

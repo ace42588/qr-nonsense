@@ -8,7 +8,7 @@ export function BasicInput({ input, onChange }) {
   const [encoding, setEncoding] = useState(input?.encoding || "");
   const [data, setData] = useState(input?.data || "");
 
-  const handleDataChange = (e) => {
+  const handleDataChange = ({data, mode, encoding}) => {
     const newData = e.target.value;
     setData(newData);
     onChange({ data: newData, mode, encoding });
