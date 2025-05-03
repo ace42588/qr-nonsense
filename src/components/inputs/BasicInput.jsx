@@ -3,7 +3,7 @@ import "../styles/styles.css";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
-export function BasicInput({ key, initial, onChange, onRemove }) {
+export function BasicInput({ key, initial, onChange }) {
   const [mode, setMode] = useState(initial.byte || "byte");
   const [encoding, setEncoding] = useState(initial.encoding || "");
   const [data, setData] = useState(initial.data || "");
@@ -51,9 +51,6 @@ export function BasicInput({ key, initial, onChange, onRemove }) {
       </div>
       <div className="input-button-row">
         <input type="text" value={data} onChange={handleDataChange} />
-        <button type="button" onClick={onRemove}>
-          ✖
-        </button>
       </div>
     </div>
   );
