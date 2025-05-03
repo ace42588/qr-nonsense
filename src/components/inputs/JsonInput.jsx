@@ -19,9 +19,9 @@ export function JsonInput({ input, onChange }) {
     try {
       return typeof input?.data === "string"
         ? JSON.parse(input.data)
-        : input?.data || {};
+        : input?.data || { hello: "world" };
     } catch (e) {
-      return {};
+      return { hello: "world" };
     }
   });
 
@@ -52,6 +52,15 @@ export function JsonInput({ input, onChange }) {
               // optionally show validation error
             }
           }}
+          options={{
+            minimap: { enabled: false },
+            scrollbar: {
+              vertical: "hidden",
+              horizontal: "hidden",
+            },
+            overviewRulerLanes: 0,
+            lineNumbers: "off",
+          }}
         />
       </div>
       <div className="label-select-row">
@@ -74,7 +83,7 @@ export function JsonInput({ input, onChange }) {
       {encoding !== "None" && (
         <div>
           <label htmlFor="preview">Preview:</label>
-          <pre id="preview">{encodeJson(value, encoding)}</pre>
+          <pre id="preview">{JSON.stringify(encodeJson(value, encoding)?.data)}</pre>
         </div>
       )}
     </div>
