@@ -12,8 +12,9 @@ const encodings = [
 ];
 
 export function JsonInput({ input, onChange }) {
-  const [value, setValue] = useState(input);
-  const [encoding, setEncoding] = useState("PER");
+  console.debug("JsonInput", {input});
+  const [value, setValue] = useState(input?.data || {});
+  const [encoding, setEncoding] = useState("None");
 
   const handleChange = () => onChange(encodeJson(value, encoding));
 
@@ -54,9 +55,12 @@ export function JsonInput({ input, onChange }) {
           ))}
         </select>
       </div>
-      {}
-      <div>
-      </div>
+      {encoding !== "None" && (
+        <div>
+          <label htmlFor="preview">Preview:</label>
+          <pre id="preview">{encodeJson(value, encoding)}</pre>
+        </div>
+      )}
     </div>
   );
 }

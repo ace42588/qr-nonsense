@@ -1,3 +1,5 @@
+import { BitPacked, ModHex, NTRU } from "../../domain/encoders";
+
 // ENCAPSULATOR = "$";
 // FIELD_SEPARATOR = "%";
 // QTY_SEPARATOR = ":";
@@ -36,15 +38,14 @@ export const encodeJson = (
   switch (encoding) {
     case "Alphanumeric": {
       encoded.mode = "alphanumeric";
-      const encodedItems = stdOrder.items.reduce(
+      const encodedItems = json.items?.reduce(
         (str, { variant, quantity }) => `${str}${variant}:${quantity}/`,
         ""
       );
-      delete stdOrder.items;
-
+      delete json.items;
 
       let data = `$1`;
-      Object.values(stdOrder).forEach((v) => (data = `${data}%${v}`));
+      Object.values(json).forEach((v) => (data = `${data}%${v}`));
       data = `${data}%${encodedItems}$`;
 
       //console.debug("encodeOrder, Alphanumeric", { data });
@@ -52,15 +53,15 @@ export const encodeJson = (
       break;
     }
     case "PER": {
-      const data = BitPacked.encode(stdOrder);
+      const data = BitPacked.encode(json);
       //console.debug("PER-ModHex", { data });
       encoded.encoding = "hex";
       encoded.mode = "byte";
-      encoded.data = BitPacked.encode(stdOrder);
+      encoded.data = BitPacked.encode(json);
       break;
     }
     case "PER-ModHex": {
-      let data = BitPacked.encode(stdOrder);
+      let data = BitPacked.encode(json);
       //console.debug("PER-ModHex", { data });
       if (data % 2 === 1) data = `0${data}`;
       //console.debug("PER-ModHex", { data });
@@ -72,7 +73,7 @@ export const encodeJson = (
       break;
     }
     case "PER-NTRU": {
-      let data = BitPacked.encode(stdOrder);
+      let data = BitPacked.encode(json);
       const bytes = [];
       for (let i = 0; i < data.length; i += 2) {
         const hex = data.substring(i, i + 2);
@@ -90,7 +91,7 @@ export const encodeJson = (
     default: {
       encoded.encoding = "utf-8";
       encoded.mode = "byte";
-      encoded.data = JSON.stringify(order);
+      encoded.data = JSON.stringify(json);
     }
   }
   return encoded;
