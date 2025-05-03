@@ -6,7 +6,7 @@ import {
   generateRandomOrder,
   encodeFieldsToBytes,
   bytesToHex,
-} from "./utils"; // utility functions
+} from "./utils";
 
 export default function OrderBitFieldEditor() {
   const [headerFields, setHeaderFields] = useState([
@@ -53,8 +53,6 @@ export default function OrderBitFieldEditor() {
 
   return (
     <div className="input-form">
-      {/* Header definition */}
-
       <BitFieldSection
         title="Header Definition"
         fields={headerFields}
@@ -62,13 +60,13 @@ export default function OrderBitFieldEditor() {
         sampleValues={headerSample}
       />
 
-      {/* Item definition */}
       <BitFieldSection
         title="Item Definition"
         fields={itemFields}
         setFields={setItemFields}
         sampleValues={itemSamples[0] ?? {}}
       />
+      
       <div
         style={{
           border: "1px solid #aaa",
