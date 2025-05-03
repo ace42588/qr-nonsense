@@ -1,31 +1,21 @@
 import React, { useMemo, useState } from "react";
 import { encodeFieldsToBytes, bytesToHex } from "./utils";
 
-export default function BitFieldPreviewer({
-  fields,
-  sampleValues,
+export default function BitFieldValues({
+  values,
+  setValues,
   layout,
-  totalBits,
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [values, setValues] = useState(sampleValues|| {});
 
   function toggleExpanded() {
     setExpanded((prev) => !prev);
   }
 
-  const encodedBytes = useMemo(() => {
-    try {
-      return encodeFieldsToBytes(layout, values);
-    } catch (err) {
-      return null;
-    }
-  }, [layout, values]);
-
   return (
     <div>
       <h3 onClick={toggleExpanded}>
-        <span style={{ marginRight: 8 }}>{expanded ? "▾" : "▸"}</span>Preview
+        <span style={{ marginRight: 8 }}>{expanded ? "▾" : "▸"}</span>Values
       </h3>
       {expanded && (
         <>
@@ -63,19 +53,6 @@ export default function BitFieldPreviewer({
             </div>
           ))}
 
-          <div style={{ marginTop: 16 }}>
-            <b>Total bits:</b> {totalBits}
-          </div>
-
-          {encodedBytes ? (
-            <div style={{ marginTop: 8 }}>
-              <b>Encoded Bytes:</b> {bytesToHex(encodedBytes)}
-            </div>
-          ) : (
-            <div style={{ marginTop: 8, color: "red" }}>
-              Cannot encode (missing or invalid values).
-            </div>
-          )}
         </>
       )}
     </div>

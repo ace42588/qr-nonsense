@@ -1,32 +1,51 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import BitFieldEditor from "./BitFieldEditor";
-import BitFieldPreviewer from "./BitFieldPreviewer";
+import BitFieldValues from "./BitFieldValues";
 import BitFieldVisualizer from "./BitFieldVisualizer";
-import { generateBitLayout } from "./utils";
+import { bytesToHex, encodeFieldsToBytes, generateBitLayout } from "./utils";
 
-export default function BitFieldSection({ title, fields, setFields, values, setValues }) {
+export default function BitFieldSection({
+  title,
+  fields,
+  setFields,
+  values,
+  setValues,
+}) {
   const [expanded, setExpanded] = useState(true);
 
   const { layout, totalBits } = generateBitLayout(fields);
 
   function toggleExpanded() {
-    setExpanded(prev => !prev);
+    setExpanded((prev) => !prev);
   }
 
+  const encodedBytes = useMemo(() => {
+    try {
+      return encodeFieldsToBytes(layout, values);
+    } catch (err) {
+      return null;
+    }
+  }, [layout, values]);
+
   return (
-    <div style={{
-      border: "1px solid #aaa",
-      borderRadius: 8,
-      padding: 16,
-      maxWidth: 900,
-    }}>
+    <div
+      style={{
+        border: "1px solid #aaa",
+        borderRadius: 8,
+        padding: 16,
+        maxWidth: 900,
+      }}
+    >
       <h2
-        style={{ display: "flex", alignItems: "center", cursor: "pointer", margin: 0 }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          cursor: "pointer",
+          margin: 0,
+        }}
         onClick={toggleExpanded}
       >
-        <span style={{ marginRight: 8 }}>
-          {expanded ? "▾" : "▸"}
-        </span>
+        <span style={{ marginRight: 8 }}>{expanded ? "▾" : "▸"}</span>
         {title}
       </h2>
 
@@ -34,16 +53,24 @@ export default function BitFieldSection({ title, fields, setFields, values, setV
 
       {expanded && (
         <>
-          <BitFieldEditor
-            fields={fields}
-            setFields={setFields}
-          />
-          <BitFieldPreviewer
-            fields={fields}
-            sampleValues={values}
+          <BitFieldEditor fields={fields} setFields={setFields} />
+          <BitFieldValues
+            values={values}
+            setValues={setValues}
             layout={layout}
-            totalBits={totalBits}
           />
+          <div style={{ marginTop: 16 }}>
+            <b>Total bits:</b> {totalBits}
+          </div>
+          {encodedBytes ? (
+            <div style={{ marginTop: 8 }}>
+              <b>Encoded Bytes:</b> {bytesToHex(encodedBytes)}
+            </div>
+          ) : (
+            <div style={{ marginTop: 8, color: "red" }}>
+              Cannot encode (missing or invalid values).
+            </div>
+          )}
         </>
       )}
     </div>
