@@ -1,4 +1,6 @@
 import { useState } from "react";
+//import ReactJson from "react-json-view";
+import Editor from "@monaco-editor/react";
 import "../styles/styles.css";
 
 import { encodeJson } from "./utils";
@@ -12,8 +14,17 @@ const encodings = [
 ];
 
 export function JsonInput({ input, onChange }) {
-  console.debug("JsonInput", {input});
-  const [value, setValue] = useState(input?.data || {});
+  console.debug("JsonInput", { input });
+  const [value, setValue] = useState(() => {
+    try {
+      return typeof input?.data === "string"
+        ? JSON.parse(input.data)
+        : input?.data || {};
+    } catch (e) {
+      return {};
+    }
+  });
+
   const [encoding, setEncoding] = useState("None");
 
   const handleChange = () => onChange(encodeJson(value, encoding));
@@ -28,13 +39,18 @@ export function JsonInput({ input, onChange }) {
       }}
     >
       <div className="input-group">
-        <textarea
-          type="text"
-          rows={16}
-          value={value}
-          onChange={(e) => {
-            setValue(e.target.value);
-            handleChange();
+        <Editor
+          height="400px"
+          defaultLanguage="json"
+          value={JSON.stringify(value, null, 2)}
+          onChange={(val) => {
+            try {
+              const parsed = JSON.parse(val);
+              setValue(parsed);
+              handleChange();
+            } catch (e) {
+              // optionally show validation error
+            }
           }}
         />
       </div>
