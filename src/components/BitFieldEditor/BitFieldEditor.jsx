@@ -77,31 +77,33 @@ export default function BitFieldEditor({ fields, setFields }) {
         <span style={{ marginRight: 8 }}>{expanded ? "▾" : "▸"}</span>
         Fields
       </h3>
-      <div style={{ marginBottom: 32 }}>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={fields.map((f) => f.id)}
-            strategy={verticalListSortingStrategy}
+      {expanded && (
+        <div style={{ marginBottom: 32 }}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            {fields.map((field) => (
-              <SortableField
-                key={field.id}
-                field={field}
-                onChange={handleChange}
-                onRemove={handleRemove}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
+            <SortableContext
+              items={fields.map((f) => f.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {fields.map((field) => (
+                <SortableField
+                  key={field.id}
+                  field={field}
+                  onChange={handleChange}
+                  onRemove={handleRemove}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
 
-        <button onClick={handleAddField} style={{ marginTop: 8 }}>
-          + Add Field
-        </button>
-      </div>
+          <button onClick={handleAddField} style={{ marginTop: 8 }}>
+            + Add Field
+          </button>
+        </div>
+      )}
     </>
   );
 }

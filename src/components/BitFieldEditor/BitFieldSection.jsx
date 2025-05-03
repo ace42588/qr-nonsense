@@ -10,7 +10,6 @@ export default function BitFieldSection({
   values,
   setValues,
 }) {
-
   const { layout, totalBits } = generateBitLayout(fields);
 
   const encodedBytes = useMemo(() => {
@@ -30,25 +29,18 @@ export default function BitFieldSection({
         maxWidth: 900,
       }}
     >
-      <BitFieldVisualizer layout={layout} totalBits={totalBits} />
-
       <BitFieldEditor fields={fields} setFields={setFields} />
-
       <BitFieldValues values={values} setValues={setValues} layout={layout} />
-
+      <BitFieldVisualizer layout={layout} totalBits={totalBits} />
       {encodedBytes ? (
         <div style={{ marginTop: 8 }}>
           <b>Encoded Bytes:</b> {bytesToHex(encodedBytes)}
         </div>
       ) : (
         <div style={{ marginTop: 8, color: "red" }}>
-          Cannot encode (missing or invalid values).
+          (missing or invalid values)
         </div>
       )}
-
-      <div style={{ marginTop: 16 }}>
-        <b>Total bits:</b> {totalBits}
-      </div>
     </div>
   );
 }
