@@ -20,7 +20,18 @@ function bitsNeeded(max) {
   return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
 }
 
-const DEFAULT_FIELD = { label: "", min: 0, max: 255 };
+function maxFromBits(bits) {
+  return Math.pow(2, bits) - 1;
+}
+
+const DEFAULT_FIELD = {
+  id: "",
+  label: "",
+  min: 0,
+  max: 255,
+  bitWidth: 8,
+  mode: "bits", // or "max"
+};
 
 export default function BitFieldEditor({ fields, setFields }) {
   const [expanded, setExpanded] = useState(false);
@@ -61,7 +72,10 @@ export default function BitFieldEditor({ fields, setFields }) {
     }
   }
 
-  const totalBits = fields.reduce((sum, f) => sum + bitsNeeded(f.max), 0);
+  const totalBits = fields.reduce(
+    (sum, f) => sum + (f.mode === "bits" ? f.bitWidth || 0 : bitsNeeded(f.max)),
+    0
+  );
 
   return (
     <>
@@ -123,7 +137,8 @@ function SortableField({ field, onChange, onRemove }) {
     padding: "8px",
   };
 
-  const bitCount = bitsNeeded(field.max);
+  const bitCount =
+    field.mode === "max" ? bitsNeeded(field.max) : field.bitWidth || 1;
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
@@ -137,21 +152,39 @@ function SortableField({ field, onChange, onRemove }) {
         onChange={(e) => onChange(field.id, "label", e.target.value)}
         style={{ width: 100, marginRight: 8 }}
       />
-      <input
-        type="number"
-        value={field.min}
-        onChange={(e) => onChange(field.id, "min", Number(e.target.value))}
-        style={{ width: 60, marginRight: 8 }}
-      />
-      <input
-        type="number"
-        value={field.max}
-        onChange={(e) => onChange(field.id, "max", Number(e.target.value))}
-        style={{ width: 60 }}
-      />
-      <div style={{ marginLeft: 8, fontSize: 12, color: "#666" }}>
-        ({bitCount} bits)
-      </div>
+
+      <select
+        value={field.mode}
+        onChange={(e) => onChange(field.id, "mode", e.target.value)}
+        style={{ marginRight: 8 }}
+      >
+        <option value="max">Max Value</option>
+        <option value="bits">Bit Width</option>
+      </select>
+      {field.mode === "max" ? (
+        <input
+          type="number"
+          value={field.max}
+          onChange={(e) => onChange(field.id, "max", Number(e.target.value))}
+          style={{ width: 80 }}
+        />
+      ) : (
+        <input
+          type="number"
+          value={field.bitWidth}
+          onChange={(e) => {
+            const bw = Number(e.target.value);
+            onChange(field.id, "bitWidth", bw);
+            onChange(field.id, "max", maxFromBits(bw));
+          }}
+          style={{ width: 80 }}
+        />
+      )}
+      {field.mode === "max" && (
+        <div style={{ marginLeft: 8, fontSize: 12, color: "#666" }}>
+          ({bitCount} bits)
+        </div>
+      )}
       <button
         onClick={() => onRemove(field.id)}
         style={{
