@@ -61,31 +61,22 @@ export function InputForm() {
     <div className="input-form">
       <QRInfoInput />
       <div className="row">
-        <div
-          style={{
-            border: "1px solid #aaa",
-            borderRadius: 8,
-            padding: 16,
-            maxWidth: 900,
-          }}
-        >
-          {inputs.map((input, index) => {
-            console.debug("InputForm", { input, index });
-            return (
-              <InputSection
-                key={index}
-                initial={input}
-                onChange={(e) => handleChange(index, e)}
-                onRemove={handleRemoveInput(index)}
-              />
-            );
-          })}
-        </div>
-        <div className="row">
-          <button type="button" onClick={handleAddInput}>
-            Add Input
-          </button>
-        </div>
+        {inputs.map((input, index) => {
+          console.debug("InputForm", { input, index });
+          return (
+            <InputSection
+              key={index}
+              initial={input}
+              onChange={(e) => handleChange(index, e)}
+              onRemove={() => handleRemoveInput(index)}
+            />
+          );
+        })}
+      </div>
+      <div className="row">
+        <button type="button" onClick={handleAddInput}>
+          Add Input
+        </button>
       </div>
     </div>
   );

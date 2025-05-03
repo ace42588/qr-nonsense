@@ -11,7 +11,7 @@ const encodings = [
   { value: "PER-NTRU", label: "Packed Encoding Rule, NTRU" },
 ];
 
-export function JsonInput({ key, input, onChange }) {
+export function JsonInput({ input, onChange }) {
   const [value, setValue] = useState(input);
   const [encoding, setEncoding] = useState("PER");
 
@@ -26,7 +26,7 @@ export function JsonInput({ key, input, onChange }) {
         maxWidth: 900,
       }}
     >
-      <div key={key} className="input-group">
+      <div className="input-group">
         <textarea
           type="text"
           rows={16}

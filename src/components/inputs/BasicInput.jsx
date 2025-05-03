@@ -27,6 +27,14 @@ export function BasicInput({ input, onChange }) {
   };
 
   return (
+    <div
+      style={{
+        border: "1px solid #aaa",
+        borderRadius: 8,
+        padding: 16,
+        maxWidth: 900,
+      }}
+    >
     <div className="input-group">
       <div className="label-select-checkbox-row">
         <label htmlFor="inputMode">Input Mode:</label>
@@ -52,6 +60,7 @@ export function BasicInput({ input, onChange }) {
       <div className="input-button-row">
         <input type="text" value={data} onChange={handleDataChange} />
       </div>
+    </div>
     </div>
   );
 }

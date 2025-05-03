@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../styles/styles.css";
 
 import { BasicInput, JsonInput } from "../inputs";
@@ -6,17 +6,25 @@ import BitFieldSection from "../BitFieldEditor/BitFieldSection";
 
 const types = ["basic", "json", "bitField"];
 
-export function InputSection({ key, initial, onChange, onRemove }) {
-  console.debug("InputSection", { key, initial, onChange, onRemove });
+export function InputSection({ initial, onChange, onRemove }) {
+  console.debug("InputSection", { initial, onChange, onRemove });
   const [type, setType] = useState("basic");
   const [fields, setFields] = useState([
     { id: "0", label: "label", min: 0, max: 255 },
   ]);
   const [values, setValues] = useState({});
   const [input, setInput] = useState(initial || "");
+  
+  useEffect(() => {
+    if (type === "basic" || type === "json") {
+      onChange({ type, data: input });
+    } else if (type === "bitField") {
+      onChange({ type, fields, values });
+    }
+  }, [type, input, fields, values, onChange]);
 
   return (
-    <div key={key} className="row">
+    <div className="row">
       <div
         style={{
           border: "1px solid #aaa",
@@ -49,7 +57,7 @@ export function InputSection({ key, initial, onChange, onRemove }) {
             title="BitField"
             fields={fields}
             setFields={setFields}
-            sampleValues={values}
+            values={values}
           />
         )}
       </div>
