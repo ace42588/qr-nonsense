@@ -6,9 +6,7 @@ import {
   ModeSelector,
   VideoScanner,
   InputForm,
-  DynamicOrderEditor,
   MerchForm,
-  RecursiveSchemaEditor,
 } from "../components";
 import HalftoneDemo from "../components/halftone/HalftoneDemo";
 import QRImageHalftone from "../components/halftone/QRImageHalftone";
