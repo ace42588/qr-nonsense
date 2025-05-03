@@ -7,7 +7,7 @@ import BitFieldSection from "../BitFieldEditor/BitFieldSection";
 const types = ["basic", "json", "bitField"];
 
 export function InputSection({ initial, onChange, onRemove }) {
-  console.debug("InputSection", { initial, onChange, onRemove });
+  //console.debug("InputSection", { initial, onChange, onRemove });
   const [type, setType] = useState("basic");
   const [fields, setFields] = useState([
     { id: "0", label: "label", min: 0, max: 255 },
@@ -26,6 +26,8 @@ export function InputSection({ initial, onChange, onRemove }) {
   };
 
   const handleValuesChange = (newValues) => {
+    const { layout } = generateBitLayout(fields);
+    encodeFieldsToBytes(layout, values);
     setValues(newValues);
     onChange?.({ fields, values: newValues });
   };

@@ -8,7 +8,7 @@ export default function BitFieldPreviewer({
   totalBits,
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [values, setValues] = useState(sampleValues);
+  const [values, setValues] = useState(sampleValues|| {});
 
   function toggleExpanded() {
     setExpanded((prev) => !prev);

@@ -14,7 +14,7 @@ const encodings = [
 ];
 
 export function JsonInput({ input, onChange }) {
-  console.debug("JsonInput", { input });
+  //console.debug("JsonInput", { input });
   const [value, setValue] = useState(() => {
     try {
       return typeof input?.data === "string"
