@@ -1,14 +1,20 @@
+// ENCAPSULATOR = "$";
+// FIELD_SEPARATOR = "%";
+// QTY_SEPARATOR = ":";
+// TERMINATOR = "/";
+const replacers = {
+  "{": "$",
+  "}": "$",
+  "[field]": "%",
+  ":": ":",
+  ",": "/"
+}
+
 export const parseJson = (raw) => {
   let safe = raw.replace(/(?<!\\)\\?(\n|\r\n)/g, "");
   let parsedInput = null;
   //console.debug("parseInput", { raw, safe });
   try {
-    let {
-      txn: transactionId,
-      cc: conferenceCode,
-      p: platform,
-      i: items,
-    } = JSON.parse(safe);
     parsedInput = JSON.parse(safe);
   } catch (e) {
     console.error("parseInput", `Error parsing ${raw}`);
@@ -25,12 +31,7 @@ export const encodeJson = (
   let encoded = {};
   switch (encoding) {
     case "Alphanumeric": {
-      const { itemsKey } = fieldNames;
       encoded.mode = "alphanumeric";
-      // ENCAPSULATOR = "$";
-      // FIELD_SEPARATOR = "%";
-      // QTY_SEPARATOR = ":";
-      // TERMINATOR = "/";
       const encodedItems = stdOrder.items.reduce(
         (str, { variant, quantity }) => `${str}${variant}:${quantity}/`,
         ""
