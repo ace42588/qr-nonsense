@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import BitFieldEditor from "./BitFieldEditor";
 import BitFieldValues from "./BitFieldValues";
 import BitFieldVisualizer from "./BitFieldVisualizer";
@@ -10,25 +10,37 @@ export default function BitFieldSection({
   values,
   onChange,
 }) {
-  const { layout, totalBits } = generateBitLayout(fields);
+  const { layout, totalBits } = useMemo(
+    () => generateBitLayout(fields),
+    [fields]
+  );
 
-  const handleValuesChange = (newValues) => {
+  const handleUpdate = (updatedFields, updatedValues) => {
     try {
-      const encoded = encodeFieldsToBytes(layout, newValues);
+      const encoded = encodeFieldsToBytes(layout, updatedValues);
       onChange?.({
         data: bytesToHex(encoded),
-        fields,
-        values: newValues,
+        fields: updatedFields,
+        values: updatedValues,
       });
-    } catch (err) {
-
+    } catch {
+      // Encoding failed — skip update or optionally notify
     }
+  };
+
+  const handleFieldsChange = (newFields) => {
+    setFields(newFields);
+    handleUpdate(newFields, values);
+  };
+
+  const handleValuesChange = (newValues) => {
+    handleUpdate(fields, newValues);
   };
 
   const encodedBytes = useMemo(() => {
     try {
       return encodeFieldsToBytes(layout, values);
-    } catch (err) {
+    } catch {
       return null;
     }
   }, [layout, values]);
@@ -42,22 +54,22 @@ export default function BitFieldSection({
         maxWidth: 900,
       }}
     >
-      <BitFieldEditor fields={fields} setFields={setFields} />
+      <BitFieldEditor fields={fields} setFields={handleFieldsChange} />
       <BitFieldValues
         values={values}
         setValues={handleValuesChange}
         layout={layout}
       />
       <BitFieldVisualizer layout={layout} totalBits={totalBits} />
-      {encodedBytes ? (
-        <div style={{ marginTop: 8 }}>
-          <b>Encoded Bytes:</b> {bytesToHex(encodedBytes)}
-        </div>
-      ) : (
-        <div style={{ marginTop: 8, color: "red" }}>
-          (missing or invalid values)
-        </div>
-      )}
+      <div style={{ marginTop: 8 }}>
+        {encodedBytes ? (
+          <>
+            <b>Encoded Bytes:</b> {bytesToHex(encodedBytes)}
+          </>
+        ) : (
+          <span style={{ color: "red" }}>(missing or invalid values)</span>
+        )}
+      </div>
     </div>
   );
 }
