@@ -6,18 +6,23 @@ import {
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
-  OrderEncodingSelector,
-  InputModeSelector,
+  EncodingSelector,
 } from "../selectors";
-import { useQRDataDispatch } from "../../state";
-import { Actions } from "../../state/qr/Constants";
 
 import { encodeOrder, parseOrderJson } from "../../utils/orderUtils";
+
+const encodings = [
+  {value: "JSON", label: "Direct JSON"},
+  {value: "Alphanumeric", label: "Alphanumeric Only"},
+  {value: "PER", label: "Packed Encoding Rule"},
+  {value: "PER-ModHex", label: "Packed Encoding Rule, ModHex"},
+  {value: "PER-NTRU", label: "Packed Encoding Rule, NTRU"},
+]
 
 export function MerchForm({ key, input, onChange, onRemove }) {
   const [encoding, setEncoding] = useState("PER");
   
-    const handleInputChange = (event) => {
+  const handleInputChange = (event) => {
     const newInput = {...input, data: event.target.value};
     onChange(newInput);
   };
@@ -45,11 +50,15 @@ return (
               onChange={(e) => {handleInputChange(e)}}
             />
           </div>
-          <div>
-            <OrderEncodingSelector
-              encoding={encoding}
-              setEncoding={setEncoding}
-            />
-          </div>
+          <div className="label-select-row">
+      <label htmlFor="encoding">Encoding:</label>
+      <select id="encoding" value={encoding} onChange={handleEncodingChange}>
+        {encodings.map((encoding, idx) => (
+          <option key={encoding.value} value={encoding.value}>
+            {encoding.label}
+          </option>
+        ))}
+      </select>
+    </div>
   </div>);
 }

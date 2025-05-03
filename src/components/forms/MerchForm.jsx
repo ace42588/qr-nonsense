@@ -6,7 +6,7 @@ import {
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
-  OrderEncodingSelector,
+  EncodingSelector,
   InputModeSelector,
 } from "../selectors";
 import { useQRDataDispatch } from "../../state";
@@ -137,7 +137,7 @@ export function MerchForm() {
             />
           </div>
           <div>
-            <OrderEncodingSelector
+            <EncodingSelector
               encoding={encoding}
               setEncoding={setEncoding}
             />
