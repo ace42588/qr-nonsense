@@ -11,14 +11,11 @@ const encodings = [
   { value: "PER-NTRU", label: "Packed Encoding Rule, NTRU" },
 ];
 
-export function MerchForm({ key, initial, onChange, onRemove }) {
+export function JsonInput({ key, initial, onChange, onRemove }) {
   const [input, setInput] = useState(initial);
   const [encoding, setEncoding] = useState("PER");
 
-  const handleChange = () => {
-    const encoded = (input, encoding);
-    onChange(encoded);
-  };
+  const handleChange = () => onChange(encodeJson(input, encoding));
 
   return (
     <div
