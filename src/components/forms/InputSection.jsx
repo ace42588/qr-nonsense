@@ -70,7 +70,11 @@ export function InputSection({ initial, onChange, onRemove }) {
             values={values}
             onChange={(bitFieldInput) => {
               setValues(bitFieldInput.values);
-              onChange?.(bitFieldInput);
+              onChange?.({
+                ...bitFieldInput,
+                mode: "byte",
+                encoding: "hex",
+              });
             }}
           />
         )}

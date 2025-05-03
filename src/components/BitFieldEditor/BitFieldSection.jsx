@@ -16,7 +16,7 @@ export default function BitFieldSection({
     try {
       const encoded = encodeFieldsToBytes(layout, newValues);
       onChange?.({
-        data: encoded, // raw bytes or hex string if needed
+        data: bytesToHex(encoded),
         fields,
         values: newValues,
       });

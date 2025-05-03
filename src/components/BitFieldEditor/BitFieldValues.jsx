@@ -1,11 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { encodeFieldsToBytes, bytesToHex } from "./utils";
 
-export default function BitFieldValues({
-  values,
-  setValues,
-  layout,
-}) {
+export default function BitFieldValues({ values, setValues, layout }) {
   const [expanded, setExpanded] = useState(false);
 
   function toggleExpanded() {
@@ -39,20 +35,20 @@ export default function BitFieldValues({
               <input
                 type="number"
                 value={values[field.label] ?? ""}
-                onChange={(e) =>
-                  setValues((v) => ({
-                    ...v,
+                onChange={(e) => {
+                  const next = {
+                    ...values,
                     [field.label]:
                       e.target.value === ""
                         ? undefined
                         : Number(e.target.value),
-                  }))
-                }
+                  };
+                  setValues(next);
+                }}
                 style={{ maxWidth: 100 }}
               />
             </div>
           ))}
-
         </>
       )}
     </>
