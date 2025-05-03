@@ -83,10 +83,6 @@ export default function BitFieldEditor({ fields, setFields }) {
       <button onClick={handleAddField} style={{ marginTop: 8 }}>
         + Add Field
       </button>
-
-      <div style={{ marginTop: 8, color: "#888" }}>
-        Total bits: <b>{totalBits}</b>
-      </div>
     </div>
   );
 }

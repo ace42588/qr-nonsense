@@ -5,18 +5,18 @@ import BitFieldVisualizer from "./BitFieldVisualizer";
 import { bytesToHex, encodeFieldsToBytes, generateBitLayout } from "./utils";
 
 export default function BitFieldSection({
-  title,
   fields,
   setFields,
   values,
   setValues,
 }) {
-  const [expanded, setExpanded] = useState(true);
+  const [fieldsExpanded, setFieldsExpanded] = useState(false);
+  const [valuesExpanded, setValuesExpanded] = useState(false);
 
   const { layout, totalBits } = generateBitLayout(fields);
 
-  function toggleExpanded() {
-    setExpanded((prev) => !prev);
+  function toggleExpanded(fn) {
+    fn((prev) => !prev);
   }
 
   const encodedBytes = useMemo(() => {
@@ -45,23 +45,24 @@ export default function BitFieldSection({
         }}
         onClick={toggleExpanded}
       >
-        <span style={{ marginRight: 8 }}>{expanded ? "▾" : "▸"}</span>
-        {title}
+        <span style={{ marginRight: 8 }}>{fieldsExpanded ? "▾" : "▸"}</span>
+        Fields
       </h2>
 
-      <BitFieldVisualizer layout={layout} totalBits={totalBits} />
-
-      {expanded && (
+      {fieldsExpanded && (
         <>
+          <BitFieldVisualizer layout={layout} totalBits={totalBits} />
           <BitFieldEditor fields={fields} setFields={setFields} />
+        </>
+      )}
+      {valuesExpanded && (
+        <>
           <BitFieldValues
             values={values}
             setValues={setValues}
             layout={layout}
           />
-          <div style={{ marginTop: 16 }}>
-            <b>Total bits:</b> {totalBits}
-          </div>
+
           {encodedBytes ? (
             <div style={{ marginTop: 8 }}>
               <b>Encoded Bytes:</b> {bytesToHex(encodedBytes)}
@@ -73,6 +74,10 @@ export default function BitFieldSection({
           )}
         </>
       )}
+
+      <div style={{ marginTop: 16 }}>
+        <b>Total bits:</b> {totalBits}
+      </div>
     </div>
   );
 }

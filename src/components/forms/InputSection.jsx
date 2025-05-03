@@ -26,8 +26,6 @@ export function InputSection({ initial, onChange, onRemove }) {
   };
 
   const handleValuesChange = (newValues) => {
-    const { layout } = generateBitLayout(fields);
-    encodeFieldsToBytes(layout, values);
     setValues(newValues);
     onChange?.({ fields, values: newValues });
   };
@@ -70,8 +68,8 @@ export function InputSection({ initial, onChange, onRemove }) {
             title="BitField"
             fields={fields}
             setFields={handleFieldsChange}
-            sampleValues={values}
-            setSampleValues={handleValuesChange}
+            values={values}
+            setValues={handleValuesChange}
           />
         )}
       </div>
