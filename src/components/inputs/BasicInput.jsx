@@ -6,19 +6,19 @@ import { useQRDataDispatch } from "../../state";
 import { parseInput } from "./inputUtils";
 import { Actions } from "../../state/qr/Constants";
 
-export function BasicInput({ input, setInput, handleRemove }) {
+export function BasicInput({ key, input, onChange, onRemove }) {
   const handleInputChange = (event) => {
     const newInput = {...input, data: event.target.value};
-    setInput(newInput);
+    onChange(newInput);
   };
 
   const handleModeChange = ({ mode, encoding }) => {
     const newInput = { ...input, mode, encoding };
-    setInput(newInput);
+    onChange(newInput);
   };
 
   return (
-    <div className="input-group">
+    <div key={key} className="input-group">
       <InputModeSelector
         mode={input.mode}
         encoding={input.encoding}
@@ -30,7 +30,7 @@ export function BasicInput({ input, setInput, handleRemove }) {
           value={input.data}
           onChange={(e) => handleInputChange(e)}
         />
-        <button type="button" onClick={handleRemove}>
+        <button type="button" onClick={onRemove}>
           ✖
         </button>
       </div>

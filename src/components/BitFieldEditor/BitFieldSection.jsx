@@ -30,7 +30,6 @@ export default function BitFieldSection({ title, fields, setFields, sampleValues
         {title}
       </h2>
 
-      {/* Always visible visualizer */}
       <BitFieldVisualizer layout={layout} totalBits={totalBits} />
 
       {expanded && (
