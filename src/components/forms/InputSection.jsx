@@ -6,13 +6,14 @@ import BitFieldSection from "../BitFieldEditor/BitFieldSection";
 
 const types = ["basic", "json", "bitField"];
 
-export function InputSection({ key, onChange, onRemove }) {
+export function InputSection({ key, initial, onChange, onRemove }) {
+  console.debug("InputSection", { key, initial, onChange, onRemove });
   const [type, setType] = useState("basic");
   const [fields, setFields] = useState([
     { id: "0", label: "label", min: 0, max: 255 },
   ]);
   const [values, setValues] = useState({});
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(initial || "");
 
   return (
     <div key={key} className="row">

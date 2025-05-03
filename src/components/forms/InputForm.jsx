@@ -1,8 +1,6 @@
 import { useState, useContext, useEffect, useCallback } from "react";
 import "../styles/styles.css";
 import { QRInfoInput } from "../qr/QRInfoInput";
-import { InputModeSelector } from "../selectors";
-import { BasicInput } from "../inputs";
 import { InputSection } from "./InputSection";
 
 import { useQRDataDispatch } from "../../state";
@@ -71,14 +69,17 @@ export function InputForm() {
             maxWidth: 900,
           }}
         >
-          {inputs.map((input, index) => (
-            <InputSection
-              key={index}
-              
-              onChange={(e) => handleChange(index, e)}
-              onRemove={handleRemoveInput(index)}
-            />
-          ))}
+          {inputs.map((input, index) => {
+            console.debug("InputForm", { input, index });
+            return (
+              <InputSection
+                key={index}
+                initial={input}
+                onChange={(e) => handleChange(index, e)}
+                onRemove={handleRemoveInput(index)}
+              />
+            );
+          })}
         </div>
         <div className="row">
           <button type="button" onClick={handleAddInput}>

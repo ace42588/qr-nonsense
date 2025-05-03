@@ -18,7 +18,7 @@ import { QRDataProvider } from "../state";
 import "../assets/styles/App.css";
 
 export default function App() {
-  const [inputMode, setInputMode] = useState("merch"); // Default to merch mode
+  const [inputMode, setInputMode] = useState(""); // Default to merch mode
 
   const selectUI = () => {
     if (inputMode === "merch") {
@@ -40,7 +40,6 @@ export default function App() {
       <QRDataProvider>
         <div className="row">
           <div className="column">
-            <OrderBitFieldEditor />
             <div className="row">{selectUI()}</div>
             <QRImageHalftone />
           </div>
