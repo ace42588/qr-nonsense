@@ -6,7 +6,7 @@ const encodings = [
   {value: "PER-NTRU", label: "Packed Encoding Rule, NTRU"},
 ]
 
-export function OrderEncodingSelector({ encoding, setEncoding, onChange }) {
+export function EncodingSelector({ encoding, setEncoding, onChange }) {
   const handleChange = (e) => {
     const newEncoding = e.target.value;
     setEncoding(newEncoding);
