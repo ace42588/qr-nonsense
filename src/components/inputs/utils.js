@@ -10,6 +10,10 @@ const replacers = {
   ",": "/"
 }
 
+function jsonToAlphanumeric(obj) {
+  
+}
+
 export const parseJson = (raw) => {
   let safe = raw.replace(/(?<!\\)\\?(\n|\r\n)/g, "");
   let parsedInput = null;
