@@ -9,13 +9,14 @@ import { Actions } from "../../state/qr/Constants";
 
 export function InputForm() {
   const [inputs, setInputs] = useState([
-    { mode: "byte", data: "Hello world!" },
+    { id: crypto.randomUUID(), mode: "byte", data: "Hello world!" },
   ]);
+
   const dispatch = useQRDataDispatch();
 
   const updateQRData = useCallback(
     (inputValue = inputs) => {
-      const parsed = inputs.map((i) => parseInput(i));
+      const parsed = inputs.map(({mode, data, encoding}) => parseInput({mode, data, encoding}));
       console.debug("updateQRData", { inputValue });
       dispatch({
         type: Actions.ChangeInputs,
@@ -43,35 +44,31 @@ export function InputForm() {
   };
 
   const handleAddInput = () => {
-    setInputs([...inputs, { mode: "byte", value: "" }]);
+    setInputs([...inputs, { id: crypto.randomUUID(), mode: "byte", data: "" }]);
   };
 
-  const handleChange = (index, input) => {
-    const newInputs = [...inputs];
-    newInputs[index] = input;
-    setInputs(newInputs);
+  const handleChange = (id, newInput) => {
+    setInputs((prev) =>
+      prev.map((input) => (input.id === id ? { ...input, ...newInput } : input))
+    );
   };
 
-  const handleRemoveInput = (index) => {
-    const newInputs = inputs.filter((_, i) => i !== index);
-    setInputs(newInputs);
+  const handleRemoveInput = (id) => {
+    setInputs((prev) => prev.filter((input) => input.id !== id));
   };
 
   return (
     <div className="input-form">
       <QRInfoInput />
       <div className="row">
-        {inputs.map((input, index) => {
-          console.debug("InputForm", { input, index });
-          return (
-            <InputSection
-              key={index}
-              initial={input}
-              onChange={(e) => handleChange(index, e)}
-              onRemove={() => handleRemoveInput(index)}
-            />
-          );
-        })}
+        {inputs.map((input) => (
+          <InputSection
+            key={input.id}
+            initial={input}
+            onChange={(e) => handleChange(input.id, e)}
+            onRemove={() => handleRemoveInput(input.id)}
+          />
+        ))}
       </div>
       <div className="row">
         <button type="button" onClick={handleAddInput}>

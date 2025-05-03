@@ -54,6 +54,9 @@ export function JsonInput({ input, onChange }) {
           ))}
         </select>
       </div>
+      {}
+      <div>
+      </div>
     </div>
   );
 }

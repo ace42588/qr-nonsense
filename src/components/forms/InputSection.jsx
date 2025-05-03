@@ -17,22 +17,17 @@ export function InputSection({ initial, onChange, onRemove }) {
 
   const handleBasicOrJsonChange = (newInput) => {
     setInput(newInput);
-    onChange?.({ type, data: newInput });
+    onChange?.(newInput);
   };
 
   const handleFieldsChange = (newFields) => {
     setFields(newFields);
-    onChange?.({ type, fields: newFields, values });
+    onChange?.({ fields: newFields, values });
   };
 
   const handleValuesChange = (newValues) => {
     setValues(newValues);
-    onChange?.({ type, fields, values: newValues });
-  };
-
-  const handleTypeChange = (newType) => {
-    setType(newType);
-    onChange?.({ type: newType, data: input, fields, values });
+    onChange?.({ fields, values: newValues });
   };
 
   return (
@@ -50,7 +45,7 @@ export function InputSection({ initial, onChange, onRemove }) {
           <select
             id="inputType"
             value={type}
-            onChange={(e) => handleTypeChange(e.target.value)}
+            onChange={(e) => setType(e.target.value)}
           >
             {types.map((t) => (
               <option key={t} value={t}>
