@@ -19,12 +19,6 @@ import "../assets/styles/App.css";
 export default function App() {
   const [inputMode, setInputMode] = useState("merch"); // Default to merch mode
 
-  const [fields, setFields] = useState([
-    { id: "0", label: "platform", min: 0, max: 3 },
-    { id: "1", label: "confId", min: 0, max: 255 },
-    { id: "2", label: "transactionId", min: 0, max: 1048575 },
-  ]);
-
   const selectUI = () => {
     if (inputMode === "merch") {
       return <MerchForm />;
