@@ -1,7 +1,8 @@
 import { useState, useContext, useEffect, useCallback } from "react";
-import "../styles/styles.css"; // Import your component-specific styles
+import "../styles/styles.css";
 import { QRInfoInput } from "../qr/QRInfoInput";
 import { InputModeSelector } from "../selectors";
+import { BasicInput } from "../inputs";
 import { useQRDataDispatch } from "../../state";
 import { parseInput } from "./inputUtils";
 import { Actions } from "../../state/qr/Constants";
@@ -63,24 +64,16 @@ export function InputForm() {
           }}
         >
           {inputs.map((input, index) => (
-            <div key={index} className="input-group">
-              <InputModeSelector
-                mode={input.mode}
-                encoding={input.encoding}
-                onChange={(e) => handleModeChange(index, e)}
+            <>
+              <BasicInput
+                key={index}
+                initial={input}
+                onChange={handleInputChange}
               />
-              <div className="input-button-row">
-                <input
-                  type="text"
-                  value={input.data}
-                  onChange={(e) => handleInputChange(index, e)}
-                  placeholder={`Input ${index + 1}`}
-                />
-                <button type="button" onClick={() => handleRemoveInput(index)}>
-                  ✖
-                </button>
-              </div>
-            </div>
+              <button type="button" onClick={() => handleRemoveInput(index)}>
+                ✖
+              </button>
+            </>
           ))}
         </div>
         <div className="row">
@@ -94,3 +87,25 @@ export function InputForm() {
 }
 
 export default InputForm;
+
+/*
+<div key={index} className="input-group">
+              <InputModeSelector
+                mode={input.mode}
+                encoding={input.encoding}
+                onChange={(e) => handleModeChange(index, e)}
+              />
+              
+              <div className="input-button-row">
+                <input
+                  type="text"
+                  value={input.data}
+                  onChange={(e) => handleInputChange(index, e)}
+                  placeholder={`Input ${index + 1}`}
+                />
+                <button type="button" onClick={() => handleRemoveInput(index)}>
+                  ✖
+                </button>
+              </div>
+            </div>
+            */

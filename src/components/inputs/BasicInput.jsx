@@ -3,7 +3,7 @@ import "../styles/styles.css";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
-export function BasicInput({ key, initial, onChange }) {
+export function BasicInput({ initial, onChange }) {
   const [mode, setMode] = useState(initial?.byte || "byte");
   const [encoding, setEncoding] = useState(initial?.encoding || "");
   const [data, setData] = useState(initial?.data || "");
@@ -27,7 +27,7 @@ export function BasicInput({ key, initial, onChange }) {
   };
 
   return (
-    <div key={key} className="input-group">
+    <div className="input-group">
       <div className="label-select-checkbox-row">
         <label htmlFor="inputMode">Input Mode:</label>
         <select id="inputMode" value={mode} onChange={handleModeChange}>
