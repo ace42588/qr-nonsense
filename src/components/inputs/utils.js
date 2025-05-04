@@ -4,94 +4,91 @@ import { BitPacked, ModHex, NTRU } from "../../domain/encoders";
 // FIELD_SEPARATOR = "%";
 // QTY_SEPARATOR = ":";
 // TERMINATOR = "/";
-const replacers = {
-  "{": "$",
-  "}": "$",
-  "[field]": "%",
-  ":": ":",
-  ",": "/",
+
+const defaultFieldMap = {
+  transactionKey: "transactionId",
+  conferenceKey: "conferenceCode",
+  platformKey: "platform",
+  itemsKey: "items",
+  variantKey: "variant",
+  quantityKey: "quantity",
 };
 
-function jsonToAlphanumeric(obj) {}
 
-const parseJson = (raw) => {
-  let safe = raw.replace(/(?<!\\)\\?(\n|\r\n)/g, "");
-  let parsedInput = null;
-  //console.debug("parseInput", { raw, safe });
-  try {
-    parsedInput = JSON.parse(safe);
-  } catch (e) {
-    console.error("parseInput", `Error parsing ${raw}`);
+export function encodeJson(input, format = "None", fieldMap = {}) {
+  
+  const fullMap = { ...defaultFieldMap, ...fieldMap };
+
+  if (typeof input !== "object" || input == null) {
+    return {
+      data: String(input ?? ""),
+      mode: "byte",
+      encoding: "utf-8",
+    };
   }
-  //console.debug("parsedOrderJson", { parsedInput });
-  return parsedInput;
-};
 
-export const encodeJson = (json, encoding) => {
-  //console.debug("encodeOrder", { stdOrder });
-  let encoded = {};
-  try {
-    switch (encoding) {
-      case "Alphanumeric": {
-        encoded.mode = "alphanumeric";
-        const encodedItems = json.items?.reduce(
-          (str, { variant, quantity }) => `${str}${variant}:${quantity}/`,
-          ""
-        );
-        delete json.items;
+  switch (format) {
+    case "Alphanumeric": {
+      if (!Array.isArray(input.items)) {
+        console.warn("Alphanumeric format requires input.items[]");
+        return { data: "", mode: "alphanumeric" };
+      }
 
-        let data = `$1`;
-        Object.values(json).forEach((v) => (data = `${data}%${v}`));
-        data = `${data}%${encodedItems}$`;
+      const encodedItems = input.items
+        .map(({ variant, quantity }) => `${variant}:${quantity}`)
+        .join("/");
 
-        //console.debug("encodeOrder, Alphanumeric", { data });
-        encoded.data = data;
-        break;
-      }
-      case "PER": {
-        const data = BitPacked.encode(json);
-        //console.debug("PER-ModHex", { data });
-        encoded.encoding = "hex";
-        encoded.mode = "byte";
-        encoded.data = BitPacked.encode(json);
-        break;
-      }
-      case "PER-ModHex": {
-        let data = BitPacked.encode(json);
-        //console.debug("PER-ModHex", { data });
-        if (data % 2 === 1) data = `0${data}`;
-        //console.debug("PER-ModHex", { data });
-        const modhex = ModHex.encode(data);
-        //console.debug("PER-ModHex", { data, modhex });
-        encoded.encoding = "modHex";
-        encoded.mode = "alphanumeric";
-        encoded.data = modhex;
-        break;
-      }
-      case "PER-NTRU": {
-        let data = BitPacked.encode(json);
-        const bytes = [];
-        for (let i = 0; i < data.length; i += 2) {
-          const hex = data.substring(i, i + 2);
-          bytes.push(parseInt(data.substring(i, i + 2), 16));
-        }
-        const moduli = bytes.map(() => 256);
-        //console.debug("PER-NTRU", { bytes, moduli });
-        const encoded = NTRU.encode(bytes, moduli);
-        //console.debug("PER-ModHex", { data, encoded });
-        encoded.encoding = "ntru";
-        encoded.mode = "alphanumeric";
-        encoded.data = encoded.join("");
-        break;
-      }
-      default: {
-        encoded.encoding = "utf-8";
-        encoded.mode = "byte";
-        encoded.data = JSON.stringify(json);
-      }
+      const fields = Object.entries(input)
+        .filter(([key]) => key !== "items")
+        .map(([_, value]) => value);
+
+      const data = `$1%${fields.join("%")}%${encodedItems}/$`;
+
+      return {
+        data,
+        mode: "alphanumeric",
+      };
     }
-  } catch (e) {
-    console.debug("encodeJson", e);
+
+    case "PER": {
+      const data = BitPacked.encode(input);
+      return {
+        data,
+        mode: "byte",
+        encoding: "hex",
+      };
+    }
+
+    case "PER-ModHex": {
+      let hex = BitPacked.encode(input);
+      if (hex.length % 2 === 1) hex = `0${hex}`;
+      const modhex = ModHex.encode(hex);
+      return {
+        data: modhex,
+        mode: "alphanumeric",
+        encoding: "modhex",
+      };
+    }
+
+    case "PER-NTRU": {
+      let hex = BitPacked.encode(input);
+      const bytes = hex.match(/.{1,2}/g)?.map((h) => parseInt(h, 16)) ?? [];
+      const moduli = bytes.map(() => 256);
+      const encoded = NTRU.encode(bytes, moduli);
+      return {
+        data: encoded.join(""),
+        mode: "alphanumeric",
+        encoding: "ntru",
+      };
+    }
+
+    case "None":
+    default: {
+      return {
+        data: JSON.stringify(input),
+        mode: "byte",
+        encoding: "utf-8",
+      };
+    }
   }
-  return encoded;
-};
+}
