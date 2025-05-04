@@ -27,7 +27,7 @@ export function encodeJson(input, format = "None", fieldMap = {}) {
 
   switch (format) {
     case "Alphanumeric": {
-      if (!Array.isArray(input.items)) {
+      if (!Array.isArray(input[fullMap.itemsKey])) {
         console.warn("Alphanumeric format requires input.items[]");
         return { data: "", mode: "alphanumeric" };
       }

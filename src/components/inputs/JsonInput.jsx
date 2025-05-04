@@ -113,7 +113,7 @@ export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
       </div>
 
       <Editor
-        height="400px"
+        height="300px"
         defaultLanguage="json"
         value={JSON.stringify(value, null, 2)}
         onChange={handleEditorChange}

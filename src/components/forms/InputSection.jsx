@@ -85,14 +85,29 @@ export function InputSection({ initial = {}, onChange, onRemove }) {
           <BasicInput input={input} onChange={handlePrimitiveChange} />
         )}
         {type === "json" && (
-          <JsonInput input={input} onChange={handlePrimitiveChange} />
-        )}
-        {type === "bitField" && (
-          <BitFieldSection
-            fields={fields}
-            setFields={setFields}
-            values={values}
-            onChange={handleBitFieldChange}
+          <JsonInput
+            input={{
+              data: {
+                p: "A",
+                cc: 133,
+                txn: "99999",
+                i: [
+                  {
+                    v: 5432,
+                    q: 1,
+                  },
+                  {
+                    v: 6666,
+                    q: 3,
+                  },
+                  {
+                    v: 1234,
+                    q: 2,
+                  },
+                ],
+              },
+            }}
+            onChange={handlePrimitiveChange}
             fieldMap={{
               transactionKey: "txn",
               conferenceKey: "cc",
@@ -101,6 +116,14 @@ export function InputSection({ initial = {}, onChange, onRemove }) {
               variantKey: "v",
               quantityKey: "q",
             }}
+          />
+        )}
+        {type === "bitField" && (
+          <BitFieldSection
+            fields={fields}
+            setFields={setFields}
+            values={values}
+            onChange={handleBitFieldChange}
           />
         )}
       </div>
