@@ -30,6 +30,11 @@ export function InputForm() {
 
   const dispatch = useQRDataDispatch();
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
   const updateQRData = useCallback(
     (inputValue = inputs) => {
       const parsed = inputs.map(({ mode, data, encoding }) =>
@@ -71,7 +76,7 @@ export function InputForm() {
     );
   };
 
-  const handleRemoveInput = (id) => {
+  const handleRemove = (id) => {
     setInputs((prev) => prev.filter((input) => input.id !== id));
   };
 
@@ -88,19 +93,29 @@ export function InputForm() {
   return (
     <div className="input-form">
       <QRInfoInput />
-      <div className="row">
-        {inputs.map((input) => (
-          <InputSection
-            key={input.id}
-            initial={input}
-            onChange={(e) => handleChange(input.id, e)}
-            onRemove={() => handleRemoveInput(input.id)}
-          />
-        ))}
-      </div>
-      <div className="row">
-        <button type="button" onClick={handleAddInput}>
-          Add Input
+      <div style={{ marginBottom: 32 }}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={inputs.map((f) => f.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {inputs.map((field) => (
+              <SortableField
+                key={field.id}
+                field={field}
+                onChange={handleChange}
+                onRemove={handleRemove}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+
+        <button onClick={handleAddInput} style={{ marginTop: 8 }}>
+          + Add Input
         </button>
       </div>
     </div>
