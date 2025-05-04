@@ -4,7 +4,7 @@ import BitFieldValues from "./BitFieldValues";
 import BitFieldVisualizer from "./BitFieldVisualizer";
 import { bytesToHex, encodeFieldsToBytes, generateBitLayout } from "./utils";
 
-export default function BitFieldInput({ input, onChange }) {
+export function BitFieldInput({ input, onChange }) {
   const [fields, setFields] = useState(input.fields || []);
   const [values, setValues] = useState(input.values || {});
 

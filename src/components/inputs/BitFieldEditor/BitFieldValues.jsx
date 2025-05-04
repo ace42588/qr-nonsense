@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react";
-import { encodeFieldsToBytes, bytesToHex } from "./utils";
 
 export default function BitFieldValues({ values, setValues, layout }) {
   const [expanded, setExpanded] = useState(false);

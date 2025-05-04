@@ -3,9 +3,10 @@ import { useState, useMemo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { BasicInput, JsonInput } from "../inputs";
-import BitFieldInput from "../BitFieldEditor/BitFieldInput";
-import { INPUT_TYPES, inferType } from "./inputUtils";
+import { BasicInput } from "./BasicInput";
+import { JsonInput } from "./JsonInput";
+import { BitFieldInput} from "./BitFieldInput";
+import { INPUT_TYPES, inferType } from "./utils";
 
 export default function SortableInput({ input, onChange, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
