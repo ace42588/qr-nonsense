@@ -25,23 +25,24 @@ export function encodeJson(input, format = "None", fieldMap = {}) {
     };
   }
 
+  const items =
+    input[fullMap.itemsKey]?.map((item) => ({
+      variant: item[fullMap.variantKey],
+      quantity: item[fullMap.quantityKey],
+    })) || [];
+
+  const flatValues = [
+    input[fullMap.transactionKey],
+    input[fullMap.conferenceKey],
+    input[fullMap.platformKey],
+  ];
+
   switch (format) {
     case "Alphanumeric": {
-      if (!Array.isArray(input[fullMap.itemsKey])) {
+      if (!Array.isArray(items)) {
         console.warn("Alphanumeric format requires input.items[]");
         return { data: "", mode: "alphanumeric" };
       }
-      const items =
-        input[fullMap.itemsKey]?.map((item) => ({
-          variant: item[fullMap.variantKey],
-          quantity: item[fullMap.quantityKey],
-        })) || [];
-
-      const flatValues = [
-        input[fullMap.transactionKey],
-        input[fullMap.conferenceKey],
-        input[fullMap.platformKey],
-      ];
 
       const encodedItems = items
         .map(({ variant, quantity }) => `${variant}:${quantity}`)
