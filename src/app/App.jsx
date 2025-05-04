@@ -3,10 +3,8 @@ import {
   QRMetaInfo,
   QRCodeCanvas,
   SegmentDisplay,
-  ModeSelector,
   VideoScanner,
   InputForm,
-  MerchForm,
 } from "../components";
 import HalftoneDemo from "../components/halftone/HalftoneDemo";
 import QRImageHalftone from "../components/halftone/QRImageHalftone";
