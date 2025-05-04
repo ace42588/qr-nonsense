@@ -1,14 +1,21 @@
 import React, { useMemo, useState, useEffect } from "react";
-import BitFieldEditor from "./BitField/BitFieldEditor";
-import BitFieldValues from "./BitField/BitFieldValues";
-import BitFieldVisualizer from "./BitField/BitFieldVisualizer";
-import { bytesToHex, encodeFieldsToBytes, generateBitLayout } from "./BitField/utils";
+import {
+  BitFieldEditor,
+  BitFieldValues,
+  BitFieldVisualizer,
+  bytesToHex,
+  encodeFieldsToBytes,
+  generateBitLayout,
+} from "./BitField";
 
 export function BitFieldInput({ input, onChange }) {
   const [fields, setFields] = useState(input.fields || []);
   const [values, setValues] = useState(input.values || {});
 
-  const { layout, totalBits } = useMemo(() => generateBitLayout(fields), [fields]);
+  const { layout, totalBits } = useMemo(
+    () => generateBitLayout(fields),
+    [fields]
+  );
 
   const encodedBytes = useMemo(() => {
     try {
@@ -46,9 +53,20 @@ export function BitFieldInput({ input, onChange }) {
   };
 
   return (
-    <div style={{ border: "1px solid #aaa", borderRadius: 8, padding: 16, maxWidth: 900 }}>
+    <div
+      style={{
+        border: "1px solid #aaa",
+        borderRadius: 8,
+        padding: 16,
+        maxWidth: 900,
+      }}
+    >
       <BitFieldEditor fields={fields} setFields={handleFieldsChange} />
-      <BitFieldValues values={values} setValues={handleValuesChange} layout={layout} />
+      <BitFieldValues
+        values={values}
+        setValues={handleValuesChange}
+        layout={layout}
+      />
       <BitFieldVisualizer layout={layout} totalBits={totalBits} />
       <div style={{ marginTop: 8 }}>
         {encodedBytes ? (

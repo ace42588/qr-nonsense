@@ -13,7 +13,7 @@ const COLORS = [
   "#6366f1", // Indigo
 ];
 
-export default function BitFieldVisualizer({ layout, totalBits }) {
+export function BitFieldVisualizer({ layout, totalBits }) {
   if (totalBits === 0) return null;
 
   return (

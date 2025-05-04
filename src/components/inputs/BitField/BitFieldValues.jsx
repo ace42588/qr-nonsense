@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 
-export default function BitFieldValues({ values, setValues, layout }) {
+export function BitFieldValues({ values, setValues, layout }) {
   const [expanded, setExpanded] = useState(false);
 
   function toggleExpanded() {

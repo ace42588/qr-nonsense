@@ -25,7 +25,7 @@ const DEFAULT_FIELD = {
   mode: "bits", // or "max"
 };
 
-export default function BitFieldEditor({ fields, setFields }) {
+export function BitFieldEditor({ fields, setFields }) {
   const [expanded, setExpanded] = useState(false);
 
   function toggleExpanded() {
