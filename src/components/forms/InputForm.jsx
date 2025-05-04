@@ -74,6 +74,7 @@ export function InputForm() {
   };
 
   const handleChange = (id, newInput) => {
+    console.debug("handleChange", { id, newInput });
     setInputs((prev) =>
       prev.map((input) => (input.id === id ? { ...input, ...newInput } : input))
     );
@@ -139,8 +140,8 @@ function SortableInput({ input, onChange, onRemove }) {
   const [values, setValues] = useState(input.values || {});
 
   const handlePrimitiveChange = (newInput) => {
-    console.debug("handlePrimitiveChange", {newInput});
-    onChange?.({ type, ...newInput });
+    console.debug("handlePrimitiveChange", { type, ...newInput });
+    onChange?.(input.id, { type, ...newInput });
   };
 
   const handleBitFieldChange = ({
@@ -150,7 +151,7 @@ function SortableInput({ input, onChange, onRemove }) {
   }) => {
     setFields(newFields);
     setValues(newValues);
-    onChange?.({
+    onChange?.(input.id, {
       type: "bitField",
       mode: "byte",
       encoding: "hex",
@@ -195,10 +196,7 @@ function SortableInput({ input, onChange, onRemove }) {
           <BasicInput input={input.data} onChange={handlePrimitiveChange} />
         )}
         {type === "json" && (
-          <JsonInput
-            input={input.data}
-            onChange={handlePrimitiveChange}
-          />
+          <JsonInput input={input.data} onChange={handlePrimitiveChange} />
         )}
         {type === "bitField" && (
           <BitFieldSection
