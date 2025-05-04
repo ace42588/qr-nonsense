@@ -3,7 +3,6 @@ import {
   ErrorCorrectionSelector,
   VersionSelector,
   DataMaskSelector,
-  InputModeSelector,
 } from "../selectors";
 
 export function QRInfoInput() {
