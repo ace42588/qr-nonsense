@@ -103,13 +103,13 @@ export function InputForm() {
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={inputs.map((f) => f.id)}
+            items={inputs.map((i) => i.id)}
             strategy={verticalListSortingStrategy}
           >
-            {inputs.map((field) => (
-              <SortableField
-                key={field.id}
-                field={field}
+            {inputs.map((input) => (
+              <SortableInput
+                key={input.id}
+                initial={input}
                 onChange={handleChange}
                 onRemove={handleRemove}
               />
@@ -144,7 +144,9 @@ function inferType(initial) {
   return "basic";
 }
 
-function SortableInput({ initial = {}, onChange, onRemove }) {
+function SortableInput({ initial, onChange, onRemove }) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: initial.id });
   const inferredType = useMemo(() => inferType(initial), [initial]);
 
   const [type, setType] = useState(initial.type || "basic");
@@ -152,7 +154,7 @@ function SortableInput({ initial = {}, onChange, onRemove }) {
     initial.fields || [{ id: "0", label: "label", min: 0, max: 255 }]
   );
   const [values, setValues] = useState(initial.values || {});
-  const [input, setInput] = useState(initial.data || "");
+  const inputValue = initial.data || "";
 
   const handlePrimitiveChange = (newInput) => {
     setInput(newInput.data);
@@ -177,10 +179,7 @@ function SortableInput({ initial = {}, onChange, onRemove }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
-      <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
-        ☰
-      </span>
+    <div ref={setNodeRef} {...attributes}>
       <div
         style={{
           border: "1px solid #aaa",
@@ -190,6 +189,9 @@ function SortableInput({ initial = {}, onChange, onRemove }) {
         }}
       >
         <div className="input-button-row">
+          <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
+            ☰
+          </span>
           <label htmlFor="inputType">Input Type:</label>
           <select
             id="inputType"
@@ -202,7 +204,7 @@ function SortableInput({ initial = {}, onChange, onRemove }) {
               </option>
             ))}
           </select>
-          <button type="button" onClick={onRemove}>
+          <button type="button" onClick={() => onRemove(initial.id)}>
             ✖
           </button>
         </div>
@@ -212,27 +214,7 @@ function SortableInput({ initial = {}, onChange, onRemove }) {
         )}
         {type === "json" && (
           <JsonInput
-            input={{
-              data: {
-                p: "A",
-                cc: 133,
-                txn: "99999",
-                i: [
-                  {
-                    v: 5432,
-                    q: 1,
-                  },
-                  {
-                    v: 6666,
-                    q: 3,
-                  },
-                  {
-                    v: 1234,
-                    q: 2,
-                  },
-                ],
-              },
-            }}
+            input={initial}
             onChange={handlePrimitiveChange}
             fieldMap={{
               transactionKey: "txn",
@@ -256,25 +238,3 @@ function SortableInput({ initial = {}, onChange, onRemove }) {
     </div>
   );
 }
-
-/*
-<div key={index} className="input-group">
-  <InputModeSelector
-    mode={input.mode}
-    encoding={input.encoding}
-    onChange={(e) => handleModeChange(index, e)}
-  />
-
-  <div className="input-button-row">
-    <input
-      type="text"
-      value={input.data}
-      onChange={(e) => handleInputChange(index, e)}
-      placeholder={`Input ${index + 1}`}
-    />
-    <button type="button" onClick={() => handleRemoveInput(index)}>
-      ✖
-    </button>
-  </div>
-</div>
-*/
