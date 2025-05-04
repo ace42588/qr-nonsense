@@ -7,11 +7,9 @@ import {
   VideoScanner,
   InputForm,
   MerchForm,
-  InputSection
 } from "../components";
 import HalftoneDemo from "../components/halftone/HalftoneDemo";
 import QRImageHalftone from "../components/halftone/QRImageHalftone";
-import OrderBitFieldEditor from "../components/BitFieldEditor/OrderBitFieldEditor";
 
 import { QRDataProvider } from "../state";
 
