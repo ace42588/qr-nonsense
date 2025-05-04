@@ -61,6 +61,7 @@ export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
     JSON.stringify(fieldMap, null, 2)
   );
   const [mapVisible, setMapVisible] = useState(false);
+  const [valuesVisible, setValuesVisible] = useState(true);
 
   const emitChange = (obj = value, fmt = format, map = fieldMap) => {
     const encoded = encodeJson(obj, fmt, map);
@@ -112,7 +113,7 @@ export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
     >
       <div>
         <p onClick={() => setMapVisible((v) => !v)}>
-          {mapVisible ? "▾ Edit Field Map" : "▸ Edit Field Map"}
+          {mapVisible ? "▾ Field Map" : "▸ Field Map"}
         </p>
         {mapVisible && (
           <div style={{ marginTop: 8 }}>
@@ -131,6 +132,11 @@ export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
           </div>
         )}
       </div>
+      
+      <p onClick={() => setValuesVisible((v) => !v)}>
+          {valuesVisible ? "▾ Value" : "▸ Value"}
+        </p>
+        {valuesVisible && (
 
       <Editor
         height="300px"
@@ -143,7 +149,7 @@ export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
           overviewRulerLanes: 0,
           lineNumbers: "off",
         }}
-      />
+      />)
 
       <div className="label-select-row">
         <label htmlFor="format">Encoding Format:</label>
