@@ -10,9 +10,9 @@ export default function BitFieldValues({ values, setValues, layout }) {
 
   return (
     <>
-      <h3 onClick={toggleExpanded}>
+      <p onClick={toggleExpanded}>
         <span style={{ marginRight: 8 }}>{expanded ? "▾" : "▸"}</span>Values
-      </h3>
+      </p>
       {expanded && (
         <>
           {layout.map((field) => (

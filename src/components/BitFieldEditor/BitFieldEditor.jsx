@@ -76,7 +76,7 @@ export default function BitFieldEditor({ fields, setFields }) {
 
   return (
     <>
-      <h3
+      <p
         style={{
           display: "flex",
           alignItems: "center",
@@ -87,7 +87,7 @@ export default function BitFieldEditor({ fields, setFields }) {
       >
         <span style={{ marginRight: 8 }}>{expanded ? "▾" : "▸"}</span>
         Fields
-      </h3>
+      </p>
       {expanded && (
         <div style={{ marginBottom: 32 }}>
           <DndContext

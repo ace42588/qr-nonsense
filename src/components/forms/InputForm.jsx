@@ -53,8 +53,8 @@ export function InputForm() {
   );
 
   useEffect(() => {
-    updateQRData();
-  }, [updateQRData]);
+    updateQRData(inputs);
+  }, [inputs, updateQRData]);
 
   const handleInputChange = (index, event) => {
     const newInputs = [...inputs];
@@ -109,7 +109,7 @@ export function InputForm() {
             {inputs.map((input) => (
               <SortableInput
                 key={input.id}
-                initial={input}
+                input={input}
                 onChange={handleChange}
                 onRemove={handleRemove}
               />
@@ -144,20 +144,19 @@ function inferType(initial) {
   return "basic";
 }
 
-function SortableInput({ initial, onChange, onRemove }) {
+function SortableInput({ input, onChange, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: initial.id });
-  const inferredType = useMemo(() => inferType(initial), [initial]);
+    useSortable({ id: input.id });
+  const inferredType = useMemo(() => inferType(input), [input]);
 
-  const [type, setType] = useState(initial.type || "basic");
+  const [type, setType] = useState(input.type || "basic");
   const [fields, setFields] = useState(
-    initial.fields || [{ id: "0", label: "label", min: 0, max: 255 }]
+    input.fields || [{ id: "0", label: "label", min: 0, max: 255 }]
   );
-  const [values, setValues] = useState(initial.values || {});
-  const inputValue = initial.data || "";
+  const [values, setValues] = useState(input.values || {});
+  const inputValue = input.data || "";
 
   const handlePrimitiveChange = (newInput) => {
-    setInput(newInput.data);
     onChange?.({ type, ...newInput });
   };
 
@@ -204,17 +203,17 @@ function SortableInput({ initial, onChange, onRemove }) {
               </option>
             ))}
           </select>
-          <button type="button" onClick={() => onRemove(initial.id)}>
+          <button type="button" onClick={() => onRemove(input.id)}>
             ✖
           </button>
         </div>
 
         {type === "basic" && (
-          <BasicInput input={input} onChange={handlePrimitiveChange} />
+          <BasicInput input={inputValue} onChange={handlePrimitiveChange} />
         )}
         {type === "json" && (
           <JsonInput
-            input={initial}
+            input={input.data}
             onChange={handlePrimitiveChange}
             fieldMap={{
               transactionKey: "txn",
