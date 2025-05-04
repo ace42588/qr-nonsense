@@ -12,7 +12,16 @@ const formats = [
   { value: "PER-NTRU", label: "Packed Encoding Rule, NTRU" },
 ];
 
-export function JsonInput({ input = {}, onChange, fieldMap = {} }) {
+const defaultFieldMap = {
+  transactionKey: "txn",
+  conferenceKey: "cc",
+  platformKey: "p",
+  itemsKey: "i",
+  variantKey: "v",
+  quantityKey: "q",
+};
+
+export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
   const [value, setValue] = useState(() => {
     try {
       return typeof input.data === "string"
@@ -24,9 +33,17 @@ export function JsonInput({ input = {}, onChange, fieldMap = {} }) {
   });
 
   const [format, setFormat] = useState("None");
+  const [fieldMap, setFieldMap] = useState({
+    ...defaultFieldMap,
+    ...initialMap,
+  });
+  const [fieldMapRaw, setFieldMapRaw] = useState(
+    JSON.stringify(fieldMap, null, 2)
+  );
+  const [mapVisible, setMapVisible] = useState(false);
 
-  const emitChange = (obj = value, fmt = format) => {
-    const encoded = encodeJson(obj, fmt, fieldMap);
+  const emitChange = (obj = value, fmt = format, map = fieldMap) => {
+    const encoded = encodeJson(obj, fmt, map);
     if (!encoded?.data) return;
 
     onChange?.({
@@ -41,16 +58,27 @@ export function JsonInput({ input = {}, onChange, fieldMap = {} }) {
     try {
       const parsed = JSON.parse(text);
       setValue(parsed);
-      emitChange(parsed, format);
+      emitChange(parsed, format, fieldMap);
     } catch {
-      // invalid JSON, optional error display
+      // Optionally show error
     }
   };
 
   const handleFormatChange = (e) => {
-    const nextFormat = e.target.value;
-    setFormat(nextFormat);
-    emitChange(value, nextFormat);
+    const next = e.target.value;
+    setFormat(next);
+    emitChange(value, next, fieldMap);
+  };
+
+  const handleFieldMapChange = (text) => {
+    setFieldMapRaw(text);
+    try {
+      const parsed = JSON.parse(text);
+      setFieldMap(parsed);
+      emitChange(value, format, parsed);
+    } catch {
+      // Ignore until valid JSON
+    }
   };
 
   return (
@@ -62,20 +90,40 @@ export function JsonInput({ input = {}, onChange, fieldMap = {} }) {
         maxWidth: 900,
       }}
     >
-      <div className="input-group">
-        <Editor
-          height="400px"
-          defaultLanguage="json"
-          value={JSON.stringify(value, null, 2)}
-          onChange={handleEditorChange}
-          options={{
-            minimap: { enabled: false },
-            scrollbar: { vertical: "hidden", horizontal: "hidden" },
-            overviewRulerLanes: 0,
-            lineNumbers: "off",
-          }}
-        />
+      <div>
+        <p onClick={() => setMapVisible((v) => !v)}>
+          {mapVisible ? "▾ Edit Field Map" : "▸ Edit Field Map"}
+        </p>
+        {mapVisible && (
+          <div style={{ marginTop: 8 }}>
+            <Editor
+              height="180px"
+              defaultLanguage="json"
+              value={fieldMapRaw}
+              onChange={handleFieldMapChange}
+              options={{
+                minimap: { enabled: false },
+                scrollbar: { vertical: "hidden", horizontal: "hidden" },
+                overviewRulerLanes: 0,
+                lineNumbers: "off",
+              }}
+            />
+          </div>
+        )}
       </div>
+
+      <Editor
+        height="400px"
+        defaultLanguage="json"
+        value={JSON.stringify(value, null, 2)}
+        onChange={handleEditorChange}
+        options={{
+          minimap: { enabled: false },
+          scrollbar: { vertical: "hidden", horizontal: "hidden" },
+          overviewRulerLanes: 0,
+          lineNumbers: "off",
+        }}
+      />
 
       <div className="label-select-row">
         <label htmlFor="format">Encoding Format:</label>
@@ -92,7 +140,7 @@ export function JsonInput({ input = {}, onChange, fieldMap = {} }) {
         <div style={{ marginTop: 12 }}>
           <label htmlFor="preview">Preview:</label>
           <pre id="preview">
-            {JSON.stringify(encodeJson(value, format)?.data, null, 2)}
+            {JSON.stringify(encodeJson(value, format, fieldMap)?.data, null, 2)}
           </pre>
         </div>
       )}
