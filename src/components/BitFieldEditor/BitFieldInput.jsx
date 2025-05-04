@@ -1,41 +1,14 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import BitFieldEditor from "./BitFieldEditor";
 import BitFieldValues from "./BitFieldValues";
 import BitFieldVisualizer from "./BitFieldVisualizer";
 import { bytesToHex, encodeFieldsToBytes, generateBitLayout } from "./utils";
 
-export default function BitFieldSection({
-  fields,
-  setFields,
-  values,
-  onChange,
-}) {
-  const { layout, totalBits } = useMemo(
-    () => generateBitLayout(fields),
-    [fields]
-  );
+export default function BitFieldInput({ input, onChange }) {
+  const [fields, setFields] = useState(input.fields || []);
+  const [values, setValues] = useState(input.values || {});
 
-  const handleUpdate = (updatedFields, updatedValues) => {
-    try {
-      const encoded = encodeFieldsToBytes(layout, updatedValues);
-      onChange?.({
-        data: bytesToHex(encoded),
-        fields: updatedFields,
-        values: updatedValues,
-      });
-    } catch {
-      // Encoding failed — skip update or optionally notify
-    }
-  };
-
-  const handleFieldsChange = (newFields) => {
-    setFields(newFields);
-    handleUpdate(newFields, values);
-  };
-
-  const handleValuesChange = (newValues) => {
-    handleUpdate(fields, newValues);
-  };
+  const { layout, totalBits } = useMemo(() => generateBitLayout(fields), [fields]);
 
   const encodedBytes = useMemo(() => {
     try {
@@ -45,21 +18,37 @@ export default function BitFieldSection({
     }
   }, [layout, values]);
 
+  const emitChange = (updatedFields, updatedValues) => {
+    try {
+      const encoded = encodeFieldsToBytes(layout, updatedValues);
+      onChange?.({
+        data: bytesToHex(encoded),
+        fields: updatedFields,
+        values: updatedValues,
+      });
+    } catch {
+      // Ignore encoding failures
+    }
+  };
+
+  useEffect(() => {
+    emitChange(fields, values);
+  }, []);
+
+  const handleFieldsChange = (newFields) => {
+    setFields(newFields);
+    emitChange(newFields, values);
+  };
+
+  const handleValuesChange = (newValues) => {
+    setValues(newValues);
+    emitChange(fields, newValues);
+  };
+
   return (
-    <div
-      style={{
-        border: "1px solid #aaa",
-        borderRadius: 8,
-        padding: 16,
-        maxWidth: 900,
-      }}
-    >
+    <div style={{ border: "1px solid #aaa", borderRadius: 8, padding: 16, maxWidth: 900 }}>
       <BitFieldEditor fields={fields} setFields={handleFieldsChange} />
-      <BitFieldValues
-        values={values}
-        setValues={handleValuesChange}
-        layout={layout}
-      />
+      <BitFieldValues values={values} setValues={handleValuesChange} layout={layout} />
       <BitFieldVisualizer layout={layout} totalBits={totalBits} />
       <div style={{ marginTop: 8 }}>
         {encodedBytes ? (

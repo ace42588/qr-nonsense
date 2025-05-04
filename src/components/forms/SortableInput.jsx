@@ -4,7 +4,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { BasicInput, JsonInput } from "../inputs";
-import BitFieldSection from "../BitFieldEditor/BitFieldSection";
+import BitFieldInput from "../BitFieldEditor/BitFieldInput";
 import { INPUT_TYPES, inferType } from "./inputUtils";
 
 export default function SortableInput({ input, onChange, onRemove }) {
@@ -69,10 +69,8 @@ export default function SortableInput({ input, onChange, onRemove }) {
         <JsonInput input={input.data} onChange={handlePrimitiveChange} />
       )}
       {type === "bitField" && (
-        <BitFieldSection
-          fields={fields}
-          setFields={setFields}
-          values={values}
+        <BitFieldInput
+          input={{ fields: input.fields, values: input.values }}
           onChange={handleBitFieldChange}
         />
       )}
