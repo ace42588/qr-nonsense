@@ -39,11 +39,11 @@ export function InputForm() {
   );
 
   const updateQRData = useCallback(
-    (inputValue = inputs) => {
-      const parsed = inputs.map(({ mode, data, encoding }) =>
+    (inputValues = inputs) => {
+      const parsed = inputValues.map(({ mode, data, encoding }) =>
         parseInput({ mode, data, encoding })
       );
-      console.debug("updateQRData", { inputValue });
+      console.debug("updateQRData", { inputValues });
       dispatch({
         type: Actions.ChangeInputs,
         payload: { inputs: parsed },
@@ -129,13 +129,13 @@ export default InputForm;
 
 const INPUT_TYPES = ["basic", "json", "bitField"];
 
-function inferType(initial) {
-  if (initial?.type && INPUT_TYPES.includes(initial.type)) return initial.type;
-  if (initial?.fields && initial?.values) return "bitField";
-  if (typeof initial?.data === "object") return "json";
-  if (typeof initial?.data === "string") {
+function inferType(input) {
+  if (input?.type && INPUT_TYPES.includes(input.type)) return input.type;
+  if (input?.fields && input?.values) return "bitField";
+  if (typeof input?.data === "object") return "json";
+  if (typeof input?.data === "string") {
     try {
-      JSON.parse(initial.data);
+      JSON.parse(input.data);
       return "json";
     } catch {
       return "basic";

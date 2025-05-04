@@ -132,24 +132,26 @@ export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
           </div>
         )}
       </div>
-      
-      <p onClick={() => setValuesVisible((v) => !v)}>
-          {valuesVisible ? "▾ Value" : "▸ Value"}
-        </p>
-        {valuesVisible && (
 
-      <Editor
-        height="300px"
-        defaultLanguage="json"
-        value={JSON.stringify(value, null, 2)}
-        onChange={handleEditorChange}
-        options={{
-          minimap: { enabled: false },
-          scrollbar: { vertical: "hidden", horizontal: "hidden" },
-          overviewRulerLanes: 0,
-          lineNumbers: "off",
-        }}
-      />)
+      <p onClick={() => setValuesVisible((v) => !v)}>
+        {valuesVisible ? "▾ Value" : "▸ Value"}
+      </p>
+      {valuesVisible && (
+        <div style={{ marginTop: 8 }}>
+          <Editor
+            height="300px"
+            defaultLanguage="json"
+            value={JSON.stringify(value, null, 2)}
+            onChange={handleEditorChange}
+            options={{
+              minimap: { enabled: false },
+              scrollbar: { vertical: "hidden", horizontal: "hidden" },
+              overviewRulerLanes: 0,
+              lineNumbers: "off",
+            }}
+          />
+        </div>
+      )}
 
       <div className="label-select-row">
         <label htmlFor="format">Encoding Format:</label>
