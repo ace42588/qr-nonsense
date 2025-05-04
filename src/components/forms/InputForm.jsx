@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useReducer, useEffect } from "react";
 import {
   DndContext,
   closestCenter,
@@ -11,7 +11,7 @@ import {
   SortableContext,
   arrayMove,
   verticalListSortingStrategy,
-  sortableKeyboardCoordinates
+  sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 
 import "../styles/styles.css";
@@ -19,50 +19,61 @@ import { QRInfoInput } from "../qr/QRInfoInput";
 import { useQRDataDispatch } from "../../state";
 import { parseInput } from "./inputUtils";
 import { Actions } from "../../state/qr/Constants";
-import SortableInput from "./SortableInput"; // moved out for clarity
+import SortableInput from "./SortableInput";
 
-export default function InputForm() {
-  const [inputs, setInputs] = useState([
+function inputReducer(state, action) {
+  switch (action.type) {
+    case "add":
+      return [...state, { id: crypto.randomUUID(), mode: "byte", data: "" }];
+    case "remove":
+      return state.filter((input) => input.id !== action.id);
+    case "update":
+      return state.map((input) =>
+        input.id === action.id ? { ...input, ...action.payload } : input
+      );
+    case "reorder": {
+      const { oldIndex, newIndex } = action;
+      return arrayMove(state, oldIndex, newIndex);
+    }
+    default:
+      return state;
+  }
+}
+
+export function InputForm() {
+  const [inputs, dispatchLocal] = useReducer(inputReducer, [
     { id: crypto.randomUUID(), mode: "byte", data: "Hello world!" },
   ]);
 
-  const dispatch = useQRDataDispatch();
+  const dispatchQR = useQRDataDispatch();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const updateQRData = useCallback((inputValues) => {
-    const parsed = inputValues.map(({ mode, data, encoding }) =>
+  useEffect(() => {
+    const parsed = inputs.map(({ mode, data, encoding }) =>
       parseInput({ mode, data, encoding })
     );
-    dispatch({ type: Actions.ChangeInputs, payload: { inputs: parsed } });
-  }, [dispatch]);
+    dispatchQR({
+      type: Actions.ChangeInputs,
+      payload: { inputs: parsed },
+    });
+  }, [inputs, dispatchQR]);
 
-  useEffect(() => {
-    updateQRData(inputs);
-  }, [inputs, updateQRData]);
+  const handleChange = (id, payload) =>
+    dispatchLocal({ type: "update", id, payload });
 
-  const handleAddInput = () =>
-    setInputs((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), mode: "byte", data: "" },
-    ]);
+  const handleRemove = (id) => dispatchLocal({ type: "remove", id });
 
-  const handleChange = (id, updated) =>
-    setInputs((prev) =>
-      prev.map((input) => (input.id === id ? { ...input, ...updated } : input))
-    );
-
-  const handleRemove = (id) =>
-    setInputs((prev) => prev.filter((input) => input.id !== id));
+  const handleAddInput = () => dispatchLocal({ type: "add" });
 
   const handleDragEnd = ({ active, over }) => {
     if (!over || active.id === over.id) return;
     const oldIndex = inputs.findIndex((i) => i.id === active.id);
     const newIndex = inputs.findIndex((i) => i.id === over.id);
-    setInputs(arrayMove(inputs, oldIndex, newIndex));
+    dispatchLocal({ type: "reorder", oldIndex, newIndex });
   };
 
   return (

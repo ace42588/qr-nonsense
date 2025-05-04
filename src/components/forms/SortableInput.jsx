@@ -1,8 +1,6 @@
+// SortableInput.jsx
 import { useState, useMemo } from "react";
-import {
-  useSortable,
-  sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { BasicInput, JsonInput } from "../inputs";
@@ -25,14 +23,14 @@ export default function SortableInput({ input, onChange, onRemove }) {
 
   const inferredType = useMemo(() => inferType(input), [input]);
   const [type, setType] = useState(input.type || inferredType);
-
   const [fields, setFields] = useState(input.fields || [
     { id: "0", label: "", min: 0, max: 255 },
   ]);
   const [values, setValues] = useState(input.values || {});
 
-  const handlePrimitiveChange = (payload) =>
+  const handlePrimitiveChange = (payload) => {
     onChange(input.id, { type, ...payload });
+  };
 
   const handleBitFieldChange = ({ fields: newFields, values: newValues, data }) => {
     setFields(newFields);

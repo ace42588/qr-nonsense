@@ -1,19 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../styles/styles.css";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
-export function BasicInput({ input = {}, onChange }) {
-  const [mode, setMode] = useState(input.mode || "byte");
-  const [encoding, setEncoding] = useState(input.encoding || "");
-  const [data, setData] = useState(input.data || "");
+export function BasicInput({ input = "", onChange }) {
+  const [mode, setMode] = useState("byte");
+  const [encoding, setEncoding] = useState(undefined);
+  const [data, setData] = useState(input);
 
-  const emitChange = (updated) => {
+  useEffect(() => {
+    // ensure parent receives the correct initial state
+    onChange?.({ mode, encoding, data });
+  }, []);
+
+  const emitChange = (updated = {}) => {
     onChange?.({
-      type: "basic",
       mode: updated.mode ?? mode,
-      data: updated.data ?? data,
       encoding: updated.encoding ?? encoding,
+      data: updated.data ?? data,
     });
   };
 

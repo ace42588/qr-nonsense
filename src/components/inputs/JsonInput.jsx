@@ -26,69 +26,52 @@ const sampleValue = {
   cc: 133,
   txn: "99999",
   i: [
-    {
-      v: 5432,
-      q: 1,
-    },
-    {
-      v: 6666,
-      q: 3,
-    },
-    {
-      v: 1234,
-      q: 2,
-    },
+    { v: 5432, q: 1 },
+    { v: 6666, q: 3 },
+    { v: 1234, q: 2 },
   ],
 };
 
 export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
   const [value, setValue] = useState(() => {
     try {
-      return typeof input.data === "string"
-        ? JSON.parse(input.data)
-        : input.data ?? sampleValue;
+      return typeof input === "string" ? JSON.parse(input) : input ?? sampleValue;
     } catch {
       return sampleValue;
     }
   });
 
   const [format, setFormat] = useState("None");
-  const [fieldMap, setFieldMap] = useState({
-    ...defaultFieldMap,
-    ...initialMap,
-  });
-  const [fieldMapRaw, setFieldMapRaw] = useState(
-    JSON.stringify(fieldMap, null, 2)
-  );
+  const [fieldMap, setFieldMap] = useState({ ...defaultFieldMap, ...initialMap });
+  const [fieldMapRaw, setFieldMapRaw] = useState(JSON.stringify(fieldMap, null, 2));
   const [mapVisible, setMapVisible] = useState(false);
   const [valuesVisible, setValuesVisible] = useState(true);
 
   const emitChange = (obj = value, fmt = format, map = fieldMap) => {
     const encoded = encodeJson(obj, fmt, map);
-    if (!encoded?.data) return;
-
-    onChange?.({
-      type: "json",
-      data: encoded.data,
-      mode: encoded.mode,
-      encoding: encoded.encoding,
-    });
+    if (encoded?.data) {
+      onChange?.({
+        data: encoded.data,
+        mode: encoded.mode,
+        encoding: encoded.encoding,
+      });
+    }
   };
 
   const handleEditorChange = (text) => {
     try {
       const parsed = JSON.parse(text);
       setValue(parsed);
-      emitChange(parsed, format, fieldMap);
+      emitChange(parsed);
     } catch {
-      // Optionally show error
+      // Invalid JSON; ignore or show error
     }
   };
 
   const handleFormatChange = (e) => {
     const next = e.target.value;
     setFormat(next);
-    emitChange(value, next, fieldMap);
+    emitChange(value, next);
   };
 
   const handleFieldMapChange = (text) => {
@@ -98,40 +81,31 @@ export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
       setFieldMap(parsed);
       emitChange(value, format, parsed);
     } catch {
-      // Ignore until valid JSON
+      // invalid field map; ignore
     }
   };
 
   return (
-    <div
-      style={{
-        border: "1px solid #aaa",
-        borderRadius: 8,
-        padding: 16,
-        maxWidth: 900,
-      }}
-    >
-      <div>
-        <p onClick={() => setMapVisible((v) => !v)}>
-          {mapVisible ? "▾ Field Map" : "▸ Field Map"}
-        </p>
-        {mapVisible && (
-          <div style={{ marginTop: 8 }}>
-            <Editor
-              height="180px"
-              defaultLanguage="json"
-              value={fieldMapRaw}
-              onChange={handleFieldMapChange}
-              options={{
-                minimap: { enabled: false },
-                scrollbar: { vertical: "hidden", horizontal: "hidden" },
-                overviewRulerLanes: 0,
-                lineNumbers: "off",
-              }}
-            />
-          </div>
-        )}
-      </div>
+    <div style={{ border: "1px solid #aaa", borderRadius: 8, padding: 16, maxWidth: 900 }}>
+      <p onClick={() => setMapVisible((v) => !v)}>
+        {mapVisible ? "▾ Field Map" : "▸ Field Map"}
+      </p>
+      {mapVisible && (
+        <div style={{ marginTop: 8 }}>
+          <Editor
+            height="180px"
+            defaultLanguage="json"
+            value={fieldMapRaw}
+            onChange={handleFieldMapChange}
+            options={{
+              minimap: { enabled: false },
+              scrollbar: { vertical: "hidden", horizontal: "hidden" },
+              overviewRulerLanes: 0,
+              lineNumbers: "off",
+            }}
+          />
+        </div>
+      )}
 
       <p onClick={() => setValuesVisible((v) => !v)}>
         {valuesVisible ? "▾ Value" : "▸ Value"}
