@@ -1,4 +1,20 @@
 import { useState, useContext, useEffect, useCallback } from "react";
+import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  KeyboardSensor,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  arrayMove,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import "../styles/styles.css";
 import { QRInfoInput } from "../qr/QRInfoInput";
 import { InputSection } from "./InputSection";
@@ -16,7 +32,9 @@ export function InputForm() {
 
   const updateQRData = useCallback(
     (inputValue = inputs) => {
-      const parsed = inputs.map(({mode, data, encoding}) => parseInput({mode, data, encoding}));
+      const parsed = inputs.map(({ mode, data, encoding }) =>
+        parseInput({ mode, data, encoding })
+      );
       console.debug("updateQRData", { inputValue });
       dispatch({
         type: Actions.ChangeInputs,
@@ -56,6 +74,16 @@ export function InputForm() {
   const handleRemoveInput = (id) => {
     setInputs((prev) => prev.filter((input) => input.id !== id));
   };
+
+  function handleDragEnd(event) {
+    const { active, over } = event;
+    if (!over) return;
+    if (active.id !== over.id) {
+      const oldIndex = inputs.findIndex((f) => f.id === active.id);
+      const newIndex = inputs.findIndex((f) => f.id === over.id);
+      setInputs(arrayMove(inputs, oldIndex, newIndex));
+    }
+  }
 
   return (
     <div className="input-form">

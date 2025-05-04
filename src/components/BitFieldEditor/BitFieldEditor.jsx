@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -39,9 +39,6 @@ export default function BitFieldEditor({ fields, setFields }) {
   function toggleExpanded() {
     setExpanded((prev) => !prev);
   }
-  const nextId = useRef(
-    Math.max(0, ...fields.map((f) => parseInt(f.id ?? "-1"))) + 1
-  );
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -49,7 +46,7 @@ export default function BitFieldEditor({ fields, setFields }) {
   );
 
   function handleAddField() {
-    const newField = { ...DEFAULT_FIELD, id: String(nextId.current++) };
+    const newField = { ...DEFAULT_FIELD, id: crypto.randomUUID() };
     setFields([...fields, newField]);
   }
 
