@@ -139,6 +139,7 @@ function SortableInput({ input, onChange, onRemove }) {
   const [values, setValues] = useState(input.values || {});
 
   const handlePrimitiveChange = (newInput) => {
+    console.debug("handlePrimitiveChange", {newInput});
     onChange?.({ type, ...newInput });
   };
 
