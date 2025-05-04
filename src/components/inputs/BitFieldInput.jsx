@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
-import BitFieldEditor from "./BitFieldEditor";
-import BitFieldValues from "./BitFieldValues";
-import BitFieldVisualizer from "./BitFieldVisualizer";
-import { bytesToHex, encodeFieldsToBytes, generateBitLayout } from "./utils";
+import BitFieldEditor from "./BitField/BitFieldEditor";
+import BitFieldValues from "./BitField/BitFieldValues";
+import BitFieldVisualizer from "./BitField/BitFieldVisualizer";
+import { bytesToHex, encodeFieldsToBytes, generateBitLayout } from "./BitField/utils";
 
 export function BitFieldInput({ input, onChange }) {
   const [fields, setFields] = useState(input.fields || []);

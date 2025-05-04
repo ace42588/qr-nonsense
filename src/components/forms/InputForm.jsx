@@ -19,7 +19,7 @@ import { QRInfoInput } from "../qr/QRInfoInput";
 import { useQRDataDispatch } from "../../state";
 import { parseInput } from "./inputUtils";
 import { Actions } from "../../state/qr/Constants";
-import SortableInput from "./SortableInput";
+import { SortableInput} from "../inputs/SortableInput";
 
 function inputReducer(state, action) {
   switch (action.type) {

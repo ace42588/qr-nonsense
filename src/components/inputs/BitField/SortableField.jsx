@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { bitsNeeded } from "./utils";
 
 function maxFromBits(bits) {
@@ -58,8 +59,10 @@ export function SortableField({ field, onChange, onRemove }) {
           value={field.bitWidth}
           onChange={(e) => {
             const bw = Number(e.target.value);
-            onChange(field.id, "bitWidth", bw);
-            onChange(field.id, "max", maxFromBits(bw));
+            onChange(field.id, null, {
+              bitWidth: bw,
+              max: maxFromBits(bw),
+            });
           }}
           style={{ width: 80 }}
         />

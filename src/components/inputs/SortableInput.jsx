@@ -8,7 +8,7 @@ import { JsonInput } from "./JsonInput";
 import { BitFieldInput} from "./BitFieldInput";
 import { INPUT_TYPES, inferType } from "./utils";
 
-export default function SortableInput({ input, onChange, onRemove }) {
+export function SortableInput({ input, onChange, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: input.id });
 

@@ -13,7 +13,6 @@ import {
   verticalListSortingStrategy,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { SortableField } from "./SortableField";
 import { bitsNeeded } from "./utils";
 
@@ -44,7 +43,11 @@ export default function BitFieldEditor({ fields, setFields }) {
   }
 
   function handleChange(id, key, value) {
-    setFields(fields.map((f) => (f.id === id ? { ...f, [key]: value } : f)));
+    setFields(
+      fields.map((f) =>
+        f.id === id ? { ...f, ...(key ? { [key]: value } : value) } : f
+      )
+    );
   }
 
   function handleRemove(id) {
