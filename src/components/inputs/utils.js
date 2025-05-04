@@ -14,9 +14,7 @@ const defaultFieldMap = {
   quantityKey: "quantity",
 };
 
-
 export function encodeJson(input, format = "None", fieldMap = {}) {
-  
   const fullMap = { ...defaultFieldMap, ...fieldMap };
 
   if (typeof input !== "object" || input == null) {
@@ -33,16 +31,22 @@ export function encodeJson(input, format = "None", fieldMap = {}) {
         console.warn("Alphanumeric format requires input.items[]");
         return { data: "", mode: "alphanumeric" };
       }
+      const items =
+        input[fullMap.itemsKey]?.map((item) => ({
+          variant: item[fullMap.variantKey],
+          quantity: item[fullMap.quantityKey],
+        })) || [];
 
-      const encodedItems = input.items
+      const flatValues = [
+        input[fullMap.transactionKey],
+        input[fullMap.conferenceKey],
+        input[fullMap.platformKey],
+      ];
+
+      const encodedItems = items
         .map(({ variant, quantity }) => `${variant}:${quantity}`)
         .join("/");
-
-      const fields = Object.entries(input)
-        .filter(([key]) => key !== "items")
-        .map(([_, value]) => value);
-
-      const data = `$1%${fields.join("%")}%${encodedItems}/$`;
+      const data = `$1%${flatValues.join("%")}%${encodedItems}/$`;
 
       return {
         data,

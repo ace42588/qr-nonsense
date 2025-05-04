@@ -93,6 +93,14 @@ export function InputSection({ initial = {}, onChange, onRemove }) {
             setFields={setFields}
             values={values}
             onChange={handleBitFieldChange}
+            fieldMap={{
+              transactionKey: "txn",
+              conferenceKey: "cc",
+              platformKey: "p",
+              itemsKey: "i",
+              variantKey: "v",
+              quantityKey: "q",
+            }}
           />
         )}
       </div>

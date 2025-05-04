@@ -12,7 +12,7 @@ const formats = [
   { value: "PER-NTRU", label: "Packed Encoding Rule, NTRU" },
 ];
 
-export function JsonInput({ input = {}, onChange }) {
+export function JsonInput({ input = {}, onChange, fieldMap = {} }) {
   const [value, setValue] = useState(() => {
     try {
       return typeof input.data === "string"
@@ -26,12 +26,14 @@ export function JsonInput({ input = {}, onChange }) {
   const [format, setFormat] = useState("None");
 
   const emitChange = (obj = value, fmt = format) => {
-    const encoded = encodeJson(obj, fmt);
+    const encoded = encodeJson(obj, fmt, fieldMap);
     if (!encoded?.data) return;
 
     onChange?.({
       type: "json",
-      ...encoded
+      data: encoded.data,
+      mode: encoded.mode,
+      encoding: encoded.encoding,
     });
   };
 
@@ -52,12 +54,14 @@ export function JsonInput({ input = {}, onChange }) {
   };
 
   return (
-    <div style={{
-      border: "1px solid #aaa",
-      borderRadius: 8,
-      padding: 16,
-      maxWidth: 900,
-    }}>
+    <div
+      style={{
+        border: "1px solid #aaa",
+        borderRadius: 8,
+        padding: 16,
+        maxWidth: 900,
+      }}
+    >
       <div className="input-group">
         <Editor
           height="400px"
