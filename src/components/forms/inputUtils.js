@@ -3,6 +3,24 @@ const isBinary = (str) =>
 const isHex = (str) =>
   /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(str);
 
+export const INPUT_TYPES = ["basic", "json", "bitField"];
+
+export function inferType(input) {
+  if (input?.type && INPUT_TYPES.includes(input.type)) return input.type;
+  if (input?.fields && input?.values) return "bitField";
+  if (typeof input?.data === "object") return "json";
+  if (typeof input?.data === "string") {
+    try {
+      JSON.parse(input.data);
+      return "json";
+    } catch {
+      return "basic";
+    }
+  }
+  return "basic";
+}
+
+
 export function parseInput(input) {
   //console.debug("parseInput",{input});
   if (!input || !input.data || !input.mode) return {};

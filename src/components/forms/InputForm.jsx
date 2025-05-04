@@ -20,7 +20,7 @@ import { QRInfoInput } from "../qr/QRInfoInput";
 import { InputSection } from "./InputSection";
 
 import { useQRDataDispatch } from "../../state";
-import { parseInput } from "./inputUtils";
+import { parseInput, inferType, INPUT_TYPES } from "./inputUtils";
 import { Actions } from "../../state/qr/Constants";
 
 import { BasicInput, JsonInput } from "../inputs";
@@ -127,23 +127,6 @@ export function InputForm() {
 
 export default InputForm;
 
-const INPUT_TYPES = ["basic", "json", "bitField"];
-
-function inferType(input) {
-  if (input?.type && INPUT_TYPES.includes(input.type)) return input.type;
-  if (input?.fields && input?.values) return "bitField";
-  if (typeof input?.data === "object") return "json";
-  if (typeof input?.data === "string") {
-    try {
-      JSON.parse(input.data);
-      return "json";
-    } catch {
-      return "basic";
-    }
-  }
-  return "basic";
-}
-
 function SortableInput({ input, onChange, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: input.id });
@@ -154,7 +137,6 @@ function SortableInput({ input, onChange, onRemove }) {
     input.fields || [{ id: "0", label: "label", min: 0, max: 255 }]
   );
   const [values, setValues] = useState(input.values || {});
-  const inputValue = input.data || "";
 
   const handlePrimitiveChange = (newInput) => {
     onChange?.({ type, ...newInput });
@@ -209,20 +191,12 @@ function SortableInput({ input, onChange, onRemove }) {
         </div>
 
         {type === "basic" && (
-          <BasicInput input={inputValue} onChange={handlePrimitiveChange} />
+          <BasicInput input={input.data} onChange={handlePrimitiveChange} />
         )}
         {type === "json" && (
           <JsonInput
             input={input.data}
             onChange={handlePrimitiveChange}
-            fieldMap={{
-              transactionKey: "txn",
-              conferenceKey: "cc",
-              platformKey: "p",
-              itemsKey: "i",
-              variantKey: "v",
-              quantityKey: "q",
-            }}
           />
         )}
         {type === "bitField" && (
