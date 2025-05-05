@@ -3,31 +3,7 @@ import { Actions, useQRData, useQRDataDispatch, useQRMessage } from "../../state
 import "../styles/styles.css";
 
 export function SegmentDisplay({ bitStream }) {
-  const { segments, setSegments } = useQRMessage();
-  const dispatch = useQRDataDispatch();
-
-  const handleSegmentClick = (segment) => {
-    dispatch({
-      type: Actions.HighlightModules,
-      payload: segment,
-    });
-  };
-
-  const handleMouseEnter = (segment) => {
-    if (!segment.isHighlighted) {
-      dispatch({
-        type: Actions.HighlightModules,
-        payload: segment,
-      });
-    }
-  };
-
-  const handleMouseLeave = (segment) => {
-    dispatch({
-      type: Actions.HighlightModules,
-      payload: segment,
-    });
-  };
+  const { segments, setSegments, highlightModules } = useQRMessage();
 
   const getClassName = (segment) => {
     return `${segment.type}-button${
@@ -43,9 +19,9 @@ export function SegmentDisplay({ bitStream }) {
           <button
             key={segment.id}
             className={getClassName(segment)}
-            onClick={() => handleSegmentClick(segment)}
-            onMouseEnter={() => handleSegmentClick(segment)}
-            onMouseLeave={() => handleSegmentClick(segment)}
+            onClick={() => highlightModules(segment)}
+            onMouseEnter={() => highlightModules(segment)}
+            onMouseLeave={() => highlightModules(segment)}
             title={`Segment ${segment.id}`}
           >
             {segment.type !== "codon"

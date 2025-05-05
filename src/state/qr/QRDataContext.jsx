@@ -65,28 +65,28 @@ export function QRDataProvider({ children }) {
 
   const highlightSegment = (payload) => {
     dispatch({
-      type: Actions.ChangeInputs,
+      type: Actions.HighlightSegment,
       payload,
     });
   };
 
   const highlightModules = (payload) => {
     dispatch({
-      type: Actions.ChangeInputs,
+      type: Actions.HighlightModules,
       payload,
     });
   };
 
   const dehighlightSegment = (payload) => {
     dispatch({
-      type: Actions.ChangeInputs,
+      type: Actions.HighlightSegment,
       payload,
     });
   };
 
   const dehighlightModules = (payload) => {
     dispatch({
-      type: Actions.ChangeInputs,
+      type: Actions.HighlightModules,
       payload,
     });
   };
@@ -104,7 +104,7 @@ export function QRDataProvider({ children }) {
         }}
       >
         <QRMessageContext.Provider
-          value={{ segments, matrix, setSegment, setInputs }}
+          value={{ segments, matrix, setSegment, setInputs, highlightModules }}
         >
           {children}
         </QRMessageContext.Provider>
