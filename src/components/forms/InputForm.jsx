@@ -16,9 +16,8 @@ import {
 
 import "../styles/styles.css";
 import { QRInfoInput } from "../qr/QRInfoInput";
-import { useQRDataDispatch } from "../../state";
+import { Actions, useQRDataDispatch } from "../../state";
 import { parseInput } from "./inputUtils";
-import { Actions } from "../../state/qr/Constants";
 import { SortableInput} from "../inputs/SortableInput";
 
 function inputReducer(state, action) {
