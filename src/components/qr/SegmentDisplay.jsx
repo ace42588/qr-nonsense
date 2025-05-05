@@ -1,9 +1,9 @@
 import { useRef, useEffect, useState } from "react";
-import { Actions, useQRData, useQRDataDispatch } from "../../state";
+import { Actions, useQRData, useQRDataDispatch, useQRMessage } from "../../state";
 import "../styles/styles.css";
 
 export function SegmentDisplay({ bitStream }) {
-  const { segments, segmentMap, bitMap } = useQRData();
+  const { segments, setSegments } = useQRMessage();
   const dispatch = useQRDataDispatch();
 
   const handleSegmentClick = (segment) => {
