@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { Actions, useQRData, useQRDataDispatch, useQRMessage } from "../../state";
+import { useQRMessage } from "../../state";
 import "../styles/styles.css";
 
 export function SegmentDisplay({ bitStream }) {
