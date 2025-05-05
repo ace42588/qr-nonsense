@@ -1,4 +1,10 @@
-import { createContext, useCallback, useContext, useMemo, useReducer } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useReducer,
+} from "react";
 import { Actions, qrReducer, initialQRState } from "./qrReducer";
 
 import {
@@ -24,31 +30,29 @@ export function QRDataProvider({ children }) {
     errorCorrectionLevel,
     version,
     dataMask,
-    calculatedDataMask, matrix
+    calculatedDataMask,
+    matrix,
   } = state;
-  
-  const segments = useMemo(() => inputs.flatMap(({ data, mode, encoding }) =>
-    encodeInput(mode, data, {inputEncoding: encoding})
-  ));
-  
-  const bits = useMemo(() => segments.flatMap((s) => getBits(s.value, s.length)));
-  
-  const calculatedVersion = deriveVersionFromInputs(
-      bits.length,
-      version,
-      errorCorrectionLevel
-    );
-  
-  const calculatedVersion = useMemo(() => {})numBits, inputVersion, errorCorrectionLevel) {
-  let version = parseInt(inputVersion) || -1;
-  if (1 <= version && version <= 40) {
-    return version;
-  } else if (version == -1) {
-    return getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
-  }
-  throw new Error(`Invalid version: ${inputVersion.toString()}`);
-}
 
+  const segments = useMemo(() =>
+    state.inputs.flatMap(({ data, mode, encoding }) =>
+      encodeInput(mode, data, { inputEncoding: encoding })
+    )
+  );
+
+  const bits = useMemo(() =>
+    segments.flatMap((s) => getBits(s.value, s.length))
+  );
+
+  const calculatedVersion = useMemo(() => {
+    let version = parseInt(state.version) || -1;
+    if (1 <= version && version <= 40) {
+      return version;
+    } else if (version == -1) {
+      return getMinimumQRCodeVersion(bits.length, errorCorrectionLevel);
+    }
+    throw new Error(`Invalid version: ${state.version.toString()}`);
+  });
 
   const setErrorCorrection = (payload) => {
     dispatch({
