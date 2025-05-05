@@ -1,8 +1,7 @@
-import { CodewordLength } from "./Constants";
 import { ReedSolomonEncoder } from "./reedsolomon/";
 import { getBits } from "./bitUtils";
 import { gerVersionInfo } from "./versionUtils";
-import { finalizeEncoding } from "./encoders/Encoders";
+import { finalizeEncoding } from "./encoders";
 
 const CodewordLength = 8;
 

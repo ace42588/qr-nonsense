@@ -1,4 +1,6 @@
-import { EC_INFO, CodewordLength } from "./Constants";
+import { EC_INFO } from "./constants";
+
+const CodewordLength = 8;
 
 export function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   // Try each version until one is found that fits the data.

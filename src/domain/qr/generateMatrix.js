@@ -1,4 +1,4 @@
-import { DATA_MASKS, FINDER_PATTERN } from "../Constants";
+import { DATA_MASKS } from "./constants";
 import {
   addFormatInfoModules,
   addNonDataModules,
