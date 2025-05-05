@@ -16,15 +16,8 @@ import {
 
 import "../styles/styles.css";
 import { QRInfoInput } from "../qr/QRInfoInput";
-import { Actions, useQRDataDispatch, useQRMessage } from "../../state";
-import { parseInput } from "./inputUtils";
+import { useQRMessage } from "../../state";
 import { SortableInput } from "../inputs/SortableInput";
-
-const { setInputs } = useQRMessage();
-
-  useEffect(() => {
-    setInputs(inputs);
-  });
 
 function inputReducer(state, action) {
   switch (action.type) {
@@ -54,21 +47,7 @@ export function InputForm() {
 
   useEffect(() => {
     setInputs(inputs);
-  });
-
-  /*const dispatchQR = useQRDataDispatch();
-  console.debug("InputForm", { dispatchQR });
-
-  useEffect(() => {
-    const parsed = inputs.map(({ mode, data, encoding }) =>
-      parseInput({ mode, data, encoding })
-    );
-    dispatchQR({
-      type: Actions.ChangeInputs,
-      payload: { inputs: parsed },
-    });
-  }, [inputs, dispatchQR]);
-  */
+  }, [inputs]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
