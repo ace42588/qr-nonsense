@@ -4,6 +4,8 @@ import { getBits } from "./bitUtils";
 import { gerVersionInfo } from "./versionUtils";
 import { finalizeEncoding } from "./encoders/Encoders";
 
+const CodewordLength = 8;
+
 let lastCodewordId = 0;
 
 function getId() {

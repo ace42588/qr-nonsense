@@ -4,5 +4,3 @@ export * from "./codewordUtils";
 export * from "./encoders";
 export * from "./moduleUtils";
 export * from "./versionUtils";
-
-export * from "./Constants";
