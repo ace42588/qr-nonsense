@@ -1,6 +1,6 @@
 // TabSwitcher.jsx
 import React from "react";
-import "./TabSwitcher.css";
+import "../styles/TabSwitcher.css";
 
 export function TabSwitcher({ options, active, onChange }) {
   return (

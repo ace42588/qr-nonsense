@@ -3,6 +3,7 @@ import Editor from "@monaco-editor/react";
 import "../styles/styles.css";
 
 import { encodeJson } from "./utils";
+import { TabSwitcher } from "../shared/TabSwitcher";
 
 const formats = [
   { value: "None", label: "Direct JSON" },

@@ -1,3 +1,3 @@
-export * from "MainViewTabs";
-export * from "MultiSelectDropdown";
-export * from "TabSwitcher";
+export * from "./MainViewTabs";
+export * from "./MultiSelectDropdown";
+export * from "./TabSwitcher";
