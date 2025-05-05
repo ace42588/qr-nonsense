@@ -13,18 +13,6 @@ export const Actions = {
   ToggleModule: "TOGGLE_MODULE"
 };
 
-export const initialData = {
-  errorCorrectionLevel: 0,
-  version: -1,
-  calculatedVersion: 1,
-  dataMask: -1,
-  calculatedDataMask: 0,
-  segments: [],
-  codewords: [],
-  matrix: [[]],
-  source: "inputs",
-  error: ""
-};
 
 function getModulesToHighlight(segment, state) {
   const { id } = segment;
@@ -67,7 +55,7 @@ function highlightSegment(module, state) {
   return newSegments;
 }
 
-export function dataReducer(state, action) {
+export function qrReducer(state, action) {
   //console.debug("dataReducer", {action})
   switch (action.type) {
     case Actions.ChangeInputs: {
@@ -124,3 +112,16 @@ export function dataReducer(state, action) {
     }
   }
 }
+
+export const initialQRState = {
+  errorCorrectionLevel: 0,
+  version: -1,
+  calculatedVersion: 1,
+  dataMask: -1,
+  calculatedDataMask: 0,
+  segments: [],
+  codewords: [],
+  matrix: [[]],
+  source: "inputs",
+  error: ""
+};

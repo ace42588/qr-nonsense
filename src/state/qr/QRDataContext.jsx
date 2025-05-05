@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useReducer } from "react";
-import { qrReducer, initialData } from "./qrReducer";
+import { qrReducer, initialQRState } from "./qrReducer";
 
 //QRDataDispatchContext
 const QRDataContext = createContext();
 const QRDataDispatchContext = createContext();
 
 export function QRDataProvider({ children }) {
-  const [state, dispatch] = useReducer(qrReducer, initialData);
+  const [state, dispatch] = useReducer(qrReducer, initialQRState);
 
   return (
     <QRDataContext.Provider value={state}>
