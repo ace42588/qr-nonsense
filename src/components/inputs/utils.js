@@ -1,20 +1,5 @@
 export const INPUT_TYPES = ["basic", "json", "bitField", "mac"];
 
-export function inferType(input) {
-  if (input?.type && INPUT_TYPES.includes(input.type)) return input.type;
-  if (input?.fields && input?.values) return "bitField";
-  if (typeof input?.data === "object") return "json";
-  if (typeof input?.data === "string") {
-    try {
-      JSON.parse(input.data);
-      return "json";
-    } catch {
-      return "basic";
-    }
-  }
-  return "basic";
-}
-
 // ENCAPSULATOR = "$";
 // FIELD_SEPARATOR = "%";
 // QTY_SEPARATOR = ":";

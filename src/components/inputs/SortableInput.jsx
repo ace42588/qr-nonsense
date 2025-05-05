@@ -5,8 +5,14 @@ import { CSS } from "@dnd-kit/utilities";
 
 import { BasicInput } from "./BasicInput";
 import { JsonInput } from "./JsonInput";
-import { BitFieldInput} from "./BitFieldInput";
-import { INPUT_TYPES } from "./utils";
+import { BitFieldInput } from "./BitFieldInput";
+
+const INPUT_TYPES = [
+  { value: "basic", label: "Basic" },
+  { value: "json", label: "JSON" },
+  { value: "bitField", label: "BitField" },
+  { value: "mac", label: "MAC" },
+];
 
 export function SortableInput({ input, onChange, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -23,26 +29,18 @@ export function SortableInput({ input, onChange, onRemove }) {
   };
 
   const [type, setType] = useState(input.type);
+  const [tab, setTab] = useState("basic");
 
-
-  const handlePrimitiveChange = (payload) => {
+  const handleChange = (payload) => {
     onChange(input.id, { ...payload });
-  };
-
-  const handleBitFieldChange = ({ fields: newFields, values: newValues, data }) => {
-    onChange(input.id, {
-      mode: "byte",
-      encoding: "hex",
-      data,
-      fields: newFields,
-      values: newValues,
-    });
   };
 
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
       <div className="input-button-row">
-        <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>☰</span>
+        <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
+          ☰
+        </span>
         <label htmlFor="inputType">Input Type:</label>
         <select
           id="inputType"
@@ -50,22 +48,31 @@ export function SortableInput({ input, onChange, onRemove }) {
           onChange={(e) => setType(e.target.value)}
         >
           {INPUT_TYPES.map((t) => (
-            <option key={t} value={t}>{t}</option>
+            <option key={t} value={t}>
+              {t}
+            </option>
           ))}
         </select>
-        <button type="button" onClick={() => onRemove(input.id)}>✖</button>
+        <TabSwitcher
+        options={INPUT_TYPES}
+        active={tab}
+        onChange={setTab}
+      />
+        <button type="button" onClick={() => onRemove(input.id)}>
+          ✖
+        </button>
       </div>
 
-      {type === "basic" && (
-        <BasicInput input={input.data} onChange={handlePrimitiveChange} />
+      {tab === "basic" && (
+        <BasicInput input={input.data} onChange={handleChange} />
       )}
-      {type === "json" && (
-        <JsonInput input={input.data} onChange={handlePrimitiveChange} />
+      {tab === "json" && (
+        <JsonInput input={input.data} onChange={handleChange} />
       )}
       {type === "bitField" && (
         <BitFieldInput
           input={{ fields: input.fields, values: input.values }}
-          onChange={handleBitFieldChange}
+          onChange={handleChange}
         />
       )}
     </div>

@@ -39,10 +39,7 @@ function inputReducer(state, action) {
 }
 
 export function InputForm() {
-  const [inputs, dispatch] = useReducer(inputReducer, [
-    { id: crypto.randomUUID(), mode: "byte", data: "Hello world!" },
-  ]);
-
+  const [inputs, dispatch] = useReducer(inputReducer, []);
   const { setInputs } = useQRMessage();
 
   useEffect(() => {
@@ -61,13 +58,6 @@ export function InputForm() {
 
   const handleAddInput = () => dispatch({ type: "add" });
 
-  const handleDragEnd = ({ active, over }) => {
-    if (!over || active.id === over.id) return;
-    const oldIndex = inputs.findIndex((i) => i.id === active.id);
-    const newIndex = inputs.findIndex((i) => i.id === over.id);
-    dispatch({ type: "reorder", oldIndex, newIndex });
-  };
-
   return (
     <div className="input-form">
       <QRInfoInput />
@@ -75,7 +65,12 @@ export function InputForm() {
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
+          onDragEnd={({ active, over }) => {
+            if (!over || active.id === over.id) return;
+            const oldIndex = inputs.findIndex((i) => i.id === active.id);
+            const newIndex = inputs.findIndex((i) => i.id === over.id);
+            dispatch({ type: "reorder", oldIndex, newIndex });
+          }}
         >
           <SortableContext
             items={inputs.map((i) => i.id)}
