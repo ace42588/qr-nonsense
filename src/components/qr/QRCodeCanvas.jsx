@@ -1,12 +1,12 @@
 import { useRef, useEffect, useState } from "react";
 import "../styles/styles.css";
 
-import { Actions, useQRData, useQRDataDispatch } from "../../state";
+import { Actions, useQRData, useQRDataDispatch, useQRMessage } from "../../state";
 
 export function QRCodeCanvas() {
   const canvasRef = useRef(null);
   const { matrix } = useQRData();
-  const { highlightSegment } = useQRDataDispatch();
+  const { highlightSegment } = useQRMessage();
 
   useEffect(() => {
     if (!canvasRef.current || !matrix) return;
@@ -78,14 +78,7 @@ export function QRCodeCanvas() {
 
     console.debug(module);
 
-    let type =
-      event.type === "contextmenu"
-        ? Actions.ToggleModule
-        : Actions.HighlightSegment;
-    dispatch({
-      type,
-      payload: module,
-    });
+    highlightSegment(module);
   };
 
   return (
