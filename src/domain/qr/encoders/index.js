@@ -1,9 +1,11 @@
+import { getBits } from "../bitUtils";
+
 import { encodeNumeric } from "./numeric";
 import { encodeAlphanumeric } from "./alphanumeric";
 import { encodeByte } from "./byte";
-import { CodewordLength, PAD_BYTES } from "./Constants";
-import { getBits } from "../bitUtils";
-import { getTerminatorLength } from "./utility";
+import { CodewordLength, getTerminatorLength } from "./utility";
+
+const PAD_BYTES = [236, 17];
 
 export function encodeInput(mode, input, options = {}) {
   //console.debug("encodeInput", { mode, input, options });

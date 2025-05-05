@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Actions, useQRDataDispatch } from "../../state";
+import { Actions, useQRDataDispatch } from "../../../state";
 
 const levels = [
   { label: "Low (L) – 7% redundancy", value: 0 },

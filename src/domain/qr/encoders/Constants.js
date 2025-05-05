@@ -1,5 +1,3 @@
-export const AlphanumericCharMap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
-
 export const CodewordLength = 8;
 
 export const PAD_BYTES = [236, 17];

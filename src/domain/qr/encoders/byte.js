@@ -1,7 +1,13 @@
-import { MODE } from "../Constants";
 import { encodeSegment, validateLength, createCodon } from "./utility.js";
 
-const mode = MODE.Byte;
+const mode = {
+  name: "byte",
+  bits: 0x4,
+  thresholds: [
+    { max: 256, length: 8 },
+    { max: Infinity, length: 16 },
+  ],
+};
 
 const createByte = (value, text, inputEncoding = "utf-8") => {
   const codon = createCodon(value, text, mode.name, 8);

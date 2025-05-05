@@ -1,20 +1,28 @@
 import { encodeSegment, validateLength, createNonByte } from "./utility.js";
-import { AlphanumericCharMap, MODE } from "./Constants";
 
-const mode = MODE.Alphanumeric;
-const charMap = AlphanumericCharMap;
+const mode = {
+  name: "alphanumeric",
+  bits: 0x2,
+  thresholds: [
+    { max: 45, length: 9 },
+    { max: 1225, length: 11 },
+    { max: Infinity, length: 13 },
+  ],
+  groupingRegex: /[0-9A-Z \$\%\*\+\-\.\/\:]{1,2}/g,
+};
+const charMap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
 function encoder(data) {
   validateLength(data, 1, 2, "Alphanumeric");
   let value = charMap.indexOf(data[0]);
   let length = 6;
   if (data.length === 2) {
-    value =
-      charMap.indexOf(data[0]) * 45 + charMap.indexOf(data[1]);
+    value = charMap.indexOf(data[0]) * 45 + charMap.indexOf(data[1]);
     length = 11;
   }
   return { value, length };
 }
 
 const itrFn = (data) => createNonByte(data, mode, encoder);
-export const encodeAlphanumeric = (input) => encodeSegment(input.toUpperCase(), mode, itrFn);
+export const encodeAlphanumeric = (input) =>
+  encodeSegment(input.toUpperCase(), mode, itrFn);

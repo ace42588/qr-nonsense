@@ -1,7 +1,15 @@
 import { encodeSegment, validateLength, createNonByte } from "./utility.js";
-import { MODE } from "./Constants";
 
-const mode = MODE.Numeric;
+const mode = {
+  name: "numeric",
+  bits: 0x1,
+  thresholds: [
+    { max: 10, length: 10 },
+    { max: 1000, length: 12 },
+    { max: Infinity, length: 14 },
+  ],
+  groupingRegex: /\d{1,3}/g,
+};
 
 function encoder(data) {
   validateLength(data, 1, 3, "Numeric");

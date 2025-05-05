@@ -3,8 +3,6 @@ import { Actions, useQRDataDispatch } from "../../state";
 import jsQR from "jsqr";
 import "../styles/styles.css";
 
-import { getEncoder } from "../../domain/qr/encoders/Encoders";
-
 export function VideoScanner({
   setBitStream,
   setVersion,

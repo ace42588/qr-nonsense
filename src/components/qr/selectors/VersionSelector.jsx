@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Actions, useQRDataDispatch } from "../../state";
+import { Actions, useQRDataDispatch } from "../../../state";
 
 const versions = [{ label: "Auto", value: -1 }].concat(
   Array.from({ length: 40 }, (_, i) => ({

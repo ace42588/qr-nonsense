@@ -1,5 +1,6 @@
-import { CodewordLength, PAD_BYTES } from "./Constants";
 import { getBits } from "../bitUtils";
+
+export const CodewordLength = 8;
 
 let lastSegmentId = 0;
 
