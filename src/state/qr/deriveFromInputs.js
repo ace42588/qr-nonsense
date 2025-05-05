@@ -1,4 +1,3 @@
-//import { getCodewords, getEncoder, getMinimumQRCodeVersion } from "../../domain/qr";
 import {
   encodeInput,
   finalizeEncoding,
@@ -35,7 +34,6 @@ function deriveCodewordsFromBits(bits, version, ecLevel) {
 }
 
 export function deriveFromInputs(state, override = {}) {
-  //console.debug("deriveFromInputs", {state, override});
   const {
     inputs = state.inputs,
     errorCorrectionLevel = state.errorCorrectionLevel,
@@ -45,7 +43,6 @@ export function deriveFromInputs(state, override = {}) {
 
   try {
     const segments = deriveSegmentsFromInputs(inputs);
-    //console.debug("deriveFromInputs", { segments });
     const idMap = new Map();
     const bits = segments.flatMap((s) => {
       const bits = getBits(s.value, s.length);
@@ -67,7 +64,7 @@ export function deriveFromInputs(state, override = {}) {
       calculatedVersion,
       errorCorrectionLevel
     );
-    //console.debug("deriveFromInputs", { codewords });
+
     const { matrix, dataMask: calculatedDataMask } = generateMatrix({
       version: calculatedVersion,
       errorCorrectionLevel,
