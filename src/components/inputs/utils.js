@@ -1,6 +1,6 @@
 import { BitPacked, ModHex, NTRU } from "../../domain/encoders";
 
-export const INPUT_TYPES = ["basic", "json", "bitField"];
+export const INPUT_TYPES = ["basic", "json", "bitField", "mac"];
 
 export function inferType(input) {
   if (input?.type && INPUT_TYPES.includes(input.type)) return input.type;
