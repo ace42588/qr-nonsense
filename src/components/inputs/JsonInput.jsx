@@ -36,18 +36,23 @@ const sampleValue = {
 export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
   const [value, setValue] = useState(() => {
     try {
-      return typeof input === "string" ? JSON.parse(input) : input ?? sampleValue;
+      return typeof input === "string"
+        ? JSON.parse(input)
+        : input ?? sampleValue;
     } catch {
       return sampleValue;
     }
   });
 
   const [format, setFormat] = useState("None");
-  const [fieldMap, setFieldMap] = useState({ ...defaultFieldMap, ...initialMap });
-  const [fieldMapRaw, setFieldMapRaw] = useState(JSON.stringify(fieldMap, null, 2));
+  const [fieldMap, setFieldMap] = useState({
+    ...defaultFieldMap,
+    ...initialMap,
+  });
+  const [fieldMapRaw, setFieldMapRaw] = useState(
+    JSON.stringify(fieldMap, null, 2)
+  );
   const [tab, setTab] = useState("values");
-  const [mapVisible, setMapVisible] = useState(false);
-  const [valuesVisible, setValuesVisible] = useState(true);
 
   const emitChange = (obj = value, fmt = format, map = fieldMap) => {
     const encoded = encodeJson(obj, fmt, map);
@@ -88,25 +93,29 @@ export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
   };
 
   return (
-    <div style={{ border: "1px solid #aaa", borderRadius: 8, padding: 16, maxWidth: 900 }}>
+    <div
+      style={{
+        border: "1px solid #aaa",
+        borderRadius: 8,
+        padding: 16,
+        maxWidth: 900,
+      }}
+    >
       <TabSwitcher
-          options={[
-            { value: "fields", label: "Schema" },
-            { value: "values", label: "JSON" },
-          ]}
-          active={tab}
-          onChange={setTab}
-        />
-      <p onClick={() => setMapVisible((v) => !v)}>
-        {mapVisible ? "▾ Field Map" : "▸ Field Map"}
-      </p>
-      {mapVisible && (
+        options={[
+          { value: "fields", label: "Schema" },
+          { value: "values", label: "JSON" },
+        ]}
+        active={tab}
+        onChange={setTab}
+      />
+      {tab === "values" ? (
         <div style={{ marginTop: 8 }}>
           <Editor
-            height="180px"
+            height="300px"
             defaultLanguage="json"
-            value={fieldMapRaw}
-            onChange={handleFieldMapChange}
+            value={JSON.stringify(value, null, 2)}
+            onChange={handleEditorChange}
             options={{
               minimap: { enabled: false },
               scrollbar: { vertical: "hidden", horizontal: "hidden" },
@@ -115,18 +124,13 @@ export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
             }}
           />
         </div>
-      )}
-
-      <p onClick={() => setValuesVisible((v) => !v)}>
-        {valuesVisible ? "▾ Value" : "▸ Value"}
-      </p>
-      {valuesVisible && (
+      ) : (
         <div style={{ marginTop: 8 }}>
           <Editor
-            height="300px"
+            height="180px"
             defaultLanguage="json"
-            value={JSON.stringify(value, null, 2)}
-            onChange={handleEditorChange}
+            value={fieldMapRaw}
+            onChange={handleFieldMapChange}
             options={{
               minimap: { enabled: false },
               scrollbar: { vertical: "hidden", horizontal: "hidden" },
