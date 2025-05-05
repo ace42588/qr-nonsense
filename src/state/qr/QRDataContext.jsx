@@ -1,5 +1,16 @@
-import { createContext, useCallback, useContext, useReducer } from "react";
+import { createContext, useCallback, useContext, useMemo, useReducer } from "react";
 import { Actions, qrReducer, initialQRState } from "./qrReducer";
+
+import {
+  encodeInput,
+  finalizeEncoding,
+  generateMatrix,
+  getBits,
+  getCodewords,
+  getMinimumQRCodeVersion,
+  getRequiredDataCodewords,
+} from "../../domain/qr";
+
 import { parseInput } from "./utils";
 
 const QRDataContext = createContext();
@@ -12,11 +23,32 @@ export function QRDataProvider({ children }) {
   const {
     errorCorrectionLevel,
     version,
-    calculatedVersion,
     dataMask,
-    calculatedDataMask,
+    calculatedDataMask, matrix
   } = state;
-  const { segments, codewords, matrix } = state;
+  
+  const segments = useMemo(() => inputs.flatMap(({ data, mode, encoding }) =>
+    encodeInput(mode, data, {inputEncoding: encoding})
+  ));
+  
+  const bits = useMemo(() => segments.flatMap((s) => getBits(s.value, s.length)));
+  
+  const calculatedVersion = deriveVersionFromInputs(
+      bits.length,
+      version,
+      errorCorrectionLevel
+    );
+  
+  const calculatedVersion = useMemo(() => {})numBits, inputVersion, errorCorrectionLevel) {
+  let version = parseInt(inputVersion) || -1;
+  if (1 <= version && version <= 40) {
+    return version;
+  } else if (version == -1) {
+    return getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
+  }
+  throw new Error(`Invalid version: ${inputVersion.toString()}`);
+}
+
 
   const setErrorCorrection = (payload) => {
     dispatch({
