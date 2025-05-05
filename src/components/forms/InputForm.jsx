@@ -16,7 +16,7 @@ import {
 
 import "../styles/styles.css";
 import { QRInfoInput } from "../qr/QRInfoInput";
-import { Actions, useQRDataDispatch } from "../../state";
+import { Actions, useQRDataDispatch, useQRMessage } from "../../state";
 import { parseInput } from "./inputUtils";
 import { SortableInput } from "../inputs/SortableInput";
 
@@ -44,13 +44,18 @@ export function InputForm() {
     { id: crypto.randomUUID(), mode: "byte", data: "Hello world!" },
   ]);
 
-  const dispatchQR = useQRDataDispatch();
-  console.debug("InputForm", { dispatchQR });
+  const { setInputs } = useQRMessage();
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
+  useEffect(() => {
+    const parsed = inputs.map(({ mode, data, encoding }) =>
+      parseInput({ mode, data, encoding })
+    );
+    console.debug("InputForm",{parsed});
+    setInputs(parsed);
+  });
+
+  /*const dispatchQR = useQRDataDispatch();
+  console.debug("InputForm", { dispatchQR });
 
   useEffect(() => {
     const parsed = inputs.map(({ mode, data, encoding }) =>
@@ -61,6 +66,12 @@ export function InputForm() {
       payload: { inputs: parsed },
     });
   }, [inputs, dispatchQR]);
+  */
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const handleChange = (id, payload) =>
     dispatchLocal({ type: "update", id, payload });

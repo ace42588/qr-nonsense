@@ -90,25 +90,21 @@ export function QRDataProvider({ children }) {
   return (
     <QRDataContext.Provider value={state}>
       <QRFormatContext.Provider
-        value={
-          (errorCorrectionLevel,
+        value={{
+          errorCorrectionLevel,
           version,
           dataMask,
           setErrorCorrection,
           setVersion,
-          setDataMask)
-        }
+          setDataMask,
+        }}
       >
-        {children}
+        <QRMessageContext.Provider
+          value={{ segments, matrix, setSegment, setInputs }}
+        >
+          {children}
+        </QRMessageContext.Provider>
       </QRFormatContext.Provider>
-      <QRMessageContext.Provider
-        value={(segments, matrix, setSegment, setInputs)}
-      >
-        {children}
-      </QRMessageContext.Provider>
-      <QRDataDispatchContext.Provider value={dispatch}>
-        {children}
-      </QRDataDispatchContext.Provider>
     </QRDataContext.Provider>
   );
 }
