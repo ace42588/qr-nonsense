@@ -26,13 +26,7 @@ const QRDataDispatchContext = createContext();
 
 export function QRDataProvider({ children }) {
   const [state, dispatch] = useReducer(qrReducer, initialQRState);
-  const {
-    errorCorrectionLevel,
-    version,
-    dataMask,
-    calculatedDataMask,
-    matrix,
-  } = state;
+  const { errorCorrectionLevel } = state;
 
   const segments = useMemo(() =>
     state.inputs.flatMap(({ data, mode, encoding }) =>
@@ -44,7 +38,7 @@ export function QRDataProvider({ children }) {
     segments.flatMap((s) => getBits(s.value, s.length))
   );
 
-  const calculatedVersion = useMemo(() => {
+  const version = useMemo(() => {
     let version = parseInt(state.version) || -1;
     if (1 <= version && version <= 40) {
       return version;
@@ -52,6 +46,25 @@ export function QRDataProvider({ children }) {
       return getMinimumQRCodeVersion(bits.length, errorCorrectionLevel);
     }
     throw new Error(`Invalid version: ${state.version.toString()}`);
+  });
+
+  const { matrix, dataMask } = useMemo(() => {
+    const requiredDataCodewords = getRequiredDataCodewords(
+      version,
+      errorCorrectionLevel
+    );
+    const finalizedBits = finalizeEncoding(bits, requiredDataCodewords);
+    const codewords = getCodewords(
+      finalizedBits,
+      version,
+      errorCorrectionLevel
+    );
+    return generateMatrix({
+      version,
+      errorCorrectionLevel,
+      dataMask: state.dataMask,
+      codewords,
+    });
   });
 
   const setErrorCorrection = (payload) => {
@@ -107,20 +120,6 @@ export function QRDataProvider({ children }) {
   };
 
   const highlightModules = (payload) => {
-    dispatch({
-      type: Actions.HighlightModules,
-      payload,
-    });
-  };
-
-  const dehighlightSegment = (payload) => {
-    dispatch({
-      type: Actions.HighlightSegment,
-      payload,
-    });
-  };
-
-  const dehighlightModules = (payload) => {
     dispatch({
       type: Actions.HighlightModules,
       payload,
