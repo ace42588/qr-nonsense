@@ -21,21 +21,21 @@ export function QRDataProvider({ children }) {
   const setErrorCorrection = (payload) => {
     dispatch({
       type: Actions.ChangeInputs,
-      payload,
+      payload: { errorCorrectionLevel: payload },
     });
   };
 
   const setVersion = (payload) => {
     dispatch({
       type: Actions.ChangeInputs,
-      payload,
+      payload: { version: payload },
     });
   };
 
   const setDataMask = (payload) => {
     dispatch({
       type: Actions.ChangeInputs,
-      payload,
+      payload: { dataMask: payload },
     });
   };
 

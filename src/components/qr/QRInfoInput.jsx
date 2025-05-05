@@ -1,9 +1,5 @@
 import "../styles/styles.css"; // Import your component-specific styles
-import {
-  ErrorCorrectionSelector,
-  VersionSelector,
-  DataMaskSelector,
-} from "./selectors";
+import { useQRFormat } from "../../state";
 
 const levels = [
   { label: "Low (L) – 7% redundancy", value: 0 },
@@ -29,43 +25,68 @@ const masks = [
   { label: "Mask 5", value: 5 },
   { label: "Mask 6", value: 6 },
   { label: "Mask 7", value: 7 },
-  { label: "None", value: null},
+  { label: "None", value: null },
 ];
 
 export function QRInfoInput() {
+  const {
+    errorCorrectionLevel,
+    version,
+    dataMask,
+    setErrorCorrection,
+    setVersion,
+    setDataMask,
+  } = useQRFormat();
   return (
-    <div className="row">
-      <div
-        style={{
-          border: "1px solid #aaa",
-          borderRadius: 8,
-          padding: 16,
-          maxWidth: 900,
-        }}
-      >
-        <div className="label-select-row">
-      <label htmlFor="ec-level">Error Correction Level:</label>
-      <select
-        id="ec-level"
-        value={ecLevel}
-        onChange={(e) => {
-          const newEcLevel = parseInt(e.target.value);
-          setEcLevel(newEcLevel);
-          dispatch({
-            type: Actions.ChangeErrorCorretionLevel,
-            payload: { errorCorrectionLevel: newEcLevel },
-          });
-        }}
-      >
-        {levels.map((level) => (
-          <option key={level.value} value={level.value}>
-            {level.label}
-          </option>
-        ))}
-      </select>
-    </div>
-        <VersionSelector />
-        <DataMaskSelector />
+    <div
+      style={{
+        border: "1px solid #aaa",
+        borderRadius: 8,
+        padding: 16,
+        maxWidth: 900,
+      }}
+    >
+      <div className="label-select-row">
+        <label htmlFor="ec-level">Error Correction Level:</label>
+        <select
+          id="ec-level"
+          value={errorCorrectionLevel}
+          onChange={(e) => setErrorCorrection(e.target.value)}
+        >
+          {levels.map((level) => (
+            <option key={level.value} value={level.value}>
+              {level.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="label-select-row">
+        <label htmlFor="qr-version">QR Code Version:</label>
+        <select
+          id="qr-version"
+          value={version}
+          onChange={(e) => setVersion(e.target.value)}
+        >
+          {versions.map((ver) => (
+            <option key={ver.value} value={ver.value}>
+              {ver.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="label-select-row">
+        <label htmlFor="data-mask">Data Mask:</label>
+        <select
+          id="data-mask"
+          value={dataMask}
+          onChange={(e) => setDataMask(e.target.value)}
+        >
+          {masks.map((mask) => (
+            <option key={mask.value} value={mask.value}>
+              {mask.label}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );
