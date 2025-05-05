@@ -54,7 +54,9 @@ export function SortableInput({ input, onChange, onRemove }) {
             </button>
           </>
         ) : (
-          <p>{INPUT_TYPES.filter(({value}) => value = tab).label}</p>
+          <h3 onClick={() => setExpanded((e) => !e)}>
+            {INPUT_TYPES.find((i) => i.value === tab).label}
+          </h3>
         )}
       </div>
 
@@ -70,6 +72,7 @@ export function SortableInput({ input, onChange, onRemove }) {
           onChange={handleChange}
         />
       )}
+      {expanded && <p onClick={() => setExpanded((e) => !e)}>Collapse</p>}
     </div>
   );
 }
