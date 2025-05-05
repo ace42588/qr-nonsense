@@ -104,7 +104,14 @@ export function QRDataProvider({ children }) {
         }}
       >
         <QRMessageContext.Provider
-          value={{ segments, matrix, setSegment, setInputs, highlightModules }}
+          value={{
+            segments,
+            matrix,
+            setSegment,
+            setInputs,
+            highlightModules,
+            highlightSegment,
+          }}
         >
           {children}
         </QRMessageContext.Provider>

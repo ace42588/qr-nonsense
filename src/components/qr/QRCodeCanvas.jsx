@@ -6,7 +6,7 @@ import { Actions, useQRData, useQRDataDispatch } from "../../state";
 export function QRCodeCanvas() {
   const canvasRef = useRef(null);
   const { matrix } = useQRData();
-  const dispatch = useQRDataDispatch();
+  const { highlightSegment } = useQRDataDispatch();
 
   useEffect(() => {
     if (!canvasRef.current || !matrix) return;
