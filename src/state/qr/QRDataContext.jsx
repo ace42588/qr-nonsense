@@ -35,6 +35,30 @@ export function QRDataProvider({ children }) {
       payload,
     })
   };
+  
+  const highlightSegment = (payload) => {
+    
+  };
+  
+  const highlightModules = (payload) => {
+    
+  };
+  
+  const dehighlightSegment = (payload) => {
+    
+  };
+  
+  const dehighlightModules = (payload) => {
+    
+  };
+  
+  const setSegment = (payload) => {
+    
+  };
+  
+  const setModule = (payload) => {
+    
+  };
 
   return (
     <QRDataContext.Provider value={state}>
