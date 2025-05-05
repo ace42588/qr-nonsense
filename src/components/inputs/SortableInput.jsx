@@ -6,7 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { BasicInput } from "./BasicInput";
 import { JsonInput } from "./JsonInput";
 import { BitFieldInput} from "./BitFieldInput";
-import { INPUT_TYPES, inferType } from "./utils";
+import { INPUT_TYPES } from "./utils";
 
 export function SortableInput({ input, onChange, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -22,22 +22,15 @@ export function SortableInput({ input, onChange, onRemove }) {
     marginBottom: 8,
   };
 
-  const inferredType = useMemo(() => inferType(input), [input]);
-  const [type, setType] = useState(input.type || inferredType);
-  const [fields, setFields] = useState(input.fields || [
-    { id: "0", label: "", min: 0, max: 255 },
-  ]);
-  const [values, setValues] = useState(input.values || {});
+  const [type, setType] = useState(input.type);
+
 
   const handlePrimitiveChange = (payload) => {
-    onChange(input.id, { type, ...payload });
+    onChange(input.id, { ...payload });
   };
 
   const handleBitFieldChange = ({ fields: newFields, values: newValues, data }) => {
-    setFields(newFields);
-    setValues(newValues);
     onChange(input.id, {
-      type: "bitField",
       mode: "byte",
       encoding: "hex",
       data,

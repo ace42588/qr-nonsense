@@ -32,19 +32,13 @@ export function BitFieldInput({ input, onChange }) {
       const encoded = encodeFieldsToBytes(layout, updatedValues);
       onChange?.({
         data: bytesToHex(encoded),
-        fields: updatedFields,
-        values: updatedValues,
+        mode: "byte",
+        encoding: "hex",
       });
     } catch {
       // Ignore encoding failures
     }
   };
-
-  /*
-  useEffect(() => {
-    emitChange(fields, values);
-  }, []);
-  */
 
   const handleFieldsChange = (newFields) => {
     setFields(newFields);
