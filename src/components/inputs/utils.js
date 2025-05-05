@@ -1,5 +1,3 @@
-import { BitPacked, ModHex, NTRU } from "../../domain/encoders";
-
 export const INPUT_TYPES = ["basic", "json", "bitField", "mac"];
 
 export function inferType(input) {
