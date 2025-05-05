@@ -26,12 +26,6 @@ const DEFAULT_FIELD = {
 };
 
 export function BitFieldEditor({ fields, setFields }) {
-  const [expanded, setExpanded] = useState(false);
-
-  function toggleExpanded() {
-    setExpanded((prev) => !prev);
-  }
-
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })

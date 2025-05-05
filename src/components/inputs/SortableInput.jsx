@@ -6,6 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { BasicInput } from "./BasicInput";
 import { JsonInput } from "./JsonInput";
 import { BitFieldInput } from "./BitFieldInput";
+import { TabSwitcher } from "../shared/TabSwitcher";
 
 const INPUT_TYPES = [
   { value: "basic", label: "Basic" },
@@ -18,6 +19,13 @@ export function SortableInput({ input, onChange, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: input.id });
 
+  const [tab, setTab] = useState("basic");
+  const [expanded, setExpanded] = useState(false);
+
+  function toggleExpanded() {
+    setExpanded((prev) => !prev);
+  }
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -27,9 +35,6 @@ export function SortableInput({ input, onChange, onRemove }) {
     maxWidth: 900,
     marginBottom: 8,
   };
-
-  const [type, setType] = useState(input.type);
-  const [tab, setTab] = useState("basic");
 
   const handleChange = (payload) => {
     onChange(input.id, { ...payload });
@@ -41,35 +46,25 @@ export function SortableInput({ input, onChange, onRemove }) {
         <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
           ☰
         </span>
-        <label htmlFor="inputType">Input Type:</label>
-        <select
-          id="inputType"
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-        >
-          {INPUT_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-        <TabSwitcher
-        options={INPUT_TYPES}
-        active={tab}
-        onChange={setTab}
-      />
-        <button type="button" onClick={() => onRemove(input.id)}>
-          ✖
-        </button>
+        {expanded ? (
+          <>
+            <TabSwitcher options={INPUT_TYPES} active={tab} onChange={setTab} />
+            <button type="button" onClick={() => onRemove(input.id)}>
+              ✖
+            </button>
+          </>
+        ) : (
+          <p>{INPUT_TYPES.filter(({value}) => value = tab).label}</p>
+        )}
       </div>
 
-      {tab === "basic" && (
+      {expanded && tab === "basic" && (
         <BasicInput input={input.data} onChange={handleChange} />
       )}
-      {tab === "json" && (
+      {expanded && tab === "json" && (
         <JsonInput input={input.data} onChange={handleChange} />
       )}
-      {type === "bitField" && (
+      {expanded && tab === "bitField" && (
         <BitFieldInput
           input={{ fields: input.fields, values: input.values }}
           onChange={handleChange}
