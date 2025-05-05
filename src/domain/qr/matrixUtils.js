@@ -1,15 +1,14 @@
+import { DATA_MASKS } from "./constants";
+import { calculatePenalty } from "./calculatePenalty";
 import {
-  FINDER_PATTERN,
-  DATA_MASKS,
-  calculatePenalty,
   addFormatInfoModules,
   addNonDataModules,
   makeModule,
-} from "../../domain/qr";
+} from "./moduleUtils";
 
 const remainderBit = { value: 0, source: "Remainder" };
 
-export function deriveMatrixFromCodewords({
+export function generateMatrix({
   version,
   errorCorrectionLevel,
   dataMask,

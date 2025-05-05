@@ -6,9 +6,9 @@ export const Actions = {
   ChangeDataMask: "UPDATE_DATAMASK",
   ChangeVersion: "UPDATE_VERSION",
   ChangeErrorCorretionLevel: "UPDATE_ECL",
-  Highlight: "HIGHLIGHT",
+  HighlightSegment: "HIGHLIGHT_SEGMENT",
   ClearSegmentHighlight: "RESET_SEGMENT_HIGHLIGHT",
-  HighlightModules: "HIGHLIGHT",
+  HighlightModules: "HIGHLIGHT_MODULES",
   ClearSegmentHighlight: "RESET_MODULE_HIGHLIGHT",
   ToggleModule: "TOGGLE_MODULE"
 };
@@ -70,7 +70,7 @@ export function qrReducer(state, action) {
     case Actions.ChangeErrorCorretionLevel: {
       return deriveFromInputs(state, action.payload);
     }
-    case Actions.Highlight: {
+    case Actions.HighlightSegment: {
       try {
         if (action.payload.type === "module") {
           // we got a module, highlight segments
@@ -107,6 +107,7 @@ export function qrReducer(state, action) {
       }
       return state;
     }
+      case Actions.HighlightModule
     default: {
       return state;
     }

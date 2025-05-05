@@ -2,12 +2,12 @@
 import {
   encodeInput,
   finalizeEncoding,
+  generateMatrix,
   getBits,
   getCodewords,
   getMinimumQRCodeVersion,
   getRequiredDataCodewords,
 } from "../../domain/qr";
-import { deriveMatrixFromCodewords } from "./deriveMatrixFromCodewords";
 
 function deriveVersionFromInputs(numBits, inputVersion, errorCorrectionLevel) {
   let version = parseInt(inputVersion) || -1;
@@ -67,7 +67,7 @@ export function deriveFromInputs(state, override = {}) {
       errorCorrectionLevel
     );
     //console.debug("deriveFromInputs", { codewords });
-    const { matrix, dataMask: calculatedDataMask } = deriveMatrixFromCodewords({
+    const { matrix, dataMask: calculatedDataMask } = generateMatrix({
       version: calculatedVersion,
       errorCorrectionLevel,
       dataMask,

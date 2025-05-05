@@ -37,27 +37,45 @@ export function QRDataProvider({ children }) {
   };
   
   const highlightSegment = (payload) => {
-    
+    dispatch({
+      type: Actions.ChangeInputs,
+      payload,
+    })
   };
   
   const highlightModules = (payload) => {
-    
+    dispatch({
+      type: Actions.ChangeInputs,
+      payload,
+    })
   };
   
   const dehighlightSegment = (payload) => {
-    
+    dispatch({
+      type: Actions.ChangeInputs,
+      payload,
+    })
   };
   
   const dehighlightModules = (payload) => {
-    
+    dispatch({
+      type: Actions.ChangeInputs,
+      payload,
+    })
   };
   
   const setSegment = (payload) => {
-    
+    dispatch({
+      type: Actions.ChangeInputs,
+      payload,
+    })
   };
   
   const setModule = (payload) => {
-    
+    dispatch({
+      type: Actions.ChangeInputs,
+      payload,
+    })
   };
 
   return (
