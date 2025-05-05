@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useReducer } from "react";
 import { Actions, qrReducer, initialQRState } from "./qrReducer";
+import { parseInput } from "./utils";
 
 const QRDataContext = createContext();
 const QRFormatContext = createContext();
@@ -39,9 +40,12 @@ export function QRDataProvider({ children }) {
   };
 
   const setInputs = (payload) => {
+    const parsed = payload.map(({ mode, data, encoding }) =>
+      parseInput({ mode, data, encoding })
+    );
     dispatch({
       type: Actions.ChangeInputs,
-      payload,
+      payload: { inputs: payload },
     });
   };
 

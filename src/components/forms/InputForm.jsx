@@ -20,6 +20,12 @@ import { Actions, useQRDataDispatch, useQRMessage } from "../../state";
 import { parseInput } from "./inputUtils";
 import { SortableInput } from "../inputs/SortableInput";
 
+const { setInputs } = useQRMessage();
+
+  useEffect(() => {
+    setInputs(inputs);
+  });
+
 function inputReducer(state, action) {
   switch (action.type) {
     case "add":
@@ -40,18 +46,14 @@ function inputReducer(state, action) {
 }
 
 export function InputForm() {
-  const [inputs, dispatchLocal] = useReducer(inputReducer, [
+  const [inputs, dispatch] = useReducer(inputReducer, [
     { id: crypto.randomUUID(), mode: "byte", data: "Hello world!" },
   ]);
 
   const { setInputs } = useQRMessage();
 
   useEffect(() => {
-    const parsed = inputs.map(({ mode, data, encoding }) =>
-      parseInput({ mode, data, encoding })
-    );
-    console.debug("InputForm",{parsed});
-    setInputs(parsed);
+    setInputs(inputs);
   });
 
   /*const dispatchQR = useQRDataDispatch();
@@ -74,17 +76,17 @@ export function InputForm() {
   );
 
   const handleChange = (id, payload) =>
-    dispatchLocal({ type: "update", id, payload });
+    dispatch({ type: "update", id, payload });
 
-  const handleRemove = (id) => dispatchLocal({ type: "remove", id });
+  const handleRemove = (id) => dispatch({ type: "remove", id });
 
-  const handleAddInput = () => dispatchLocal({ type: "add" });
+  const handleAddInput = () => dispatch({ type: "add" });
 
   const handleDragEnd = ({ active, over }) => {
     if (!over || active.id === over.id) return;
     const oldIndex = inputs.findIndex((i) => i.id === active.id);
     const newIndex = inputs.findIndex((i) => i.id === over.id);
-    dispatchLocal({ type: "reorder", oldIndex, newIndex });
+    dispatch({ type: "reorder", oldIndex, newIndex });
   };
 
   return (

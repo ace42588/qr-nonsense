@@ -20,7 +20,6 @@ export const Actions = {
 };
 
 export function qrReducer(state, action) {
-  //console.debug("dataReducer", {action})
   switch (action.type) {
     case Actions.ChangeInputs: {
       return deriveFromInputs(state, action.payload);

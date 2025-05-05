@@ -35,6 +35,7 @@ function deriveCodewordsFromBits(bits, version, ecLevel) {
 }
 
 export function deriveFromInputs(state, override = {}) {
+  console.debug("deriveFromInputs", {state, override});
   const {
     inputs = state.inputs,
     errorCorrectionLevel = state.errorCorrectionLevel,
