@@ -9,12 +9,7 @@ export function MainViewTabs() {
 
   return (
     <div>
-      <TabSwitcher options={[{value: "input", label: "Input Form"}, {{value: "input", label: "Input Form"}]}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <button onClick={() => setTab("input")} disabled={tab === "input"}>Input Form</button>
-        <button onClick={() => setTab("scanner")} disabled={tab === "scanner"}>Video Scanner</button>
-      </div>
-
+      <TabSwitcher options={[{value: "input", label: "Input Form"}, {value: "scanner", label: "Scanner"}]} active={tab} onChange={setTab} />
       {tab === "input" ? <InputForm /> : <VideoScanner />}
     </div>
   );

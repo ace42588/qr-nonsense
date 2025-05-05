@@ -7,6 +7,7 @@ import {
   encodeFieldsToBytes,
   generateBitLayout,
 } from "./BitField";
+import { TabSwitcher } from "../shared/TabSwitcher";
 
 export function BitFieldInput({ input, onChange }) {
   const [fields, setFields] = useState(input.fields || []);

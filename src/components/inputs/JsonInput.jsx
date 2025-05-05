@@ -45,6 +45,7 @@ export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
   const [format, setFormat] = useState("None");
   const [fieldMap, setFieldMap] = useState({ ...defaultFieldMap, ...initialMap });
   const [fieldMapRaw, setFieldMapRaw] = useState(JSON.stringify(fieldMap, null, 2));
+  const [tab, setTab] = useState("values");
   const [mapVisible, setMapVisible] = useState(false);
   const [valuesVisible, setValuesVisible] = useState(true);
 
@@ -88,6 +89,14 @@ export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
 
   return (
     <div style={{ border: "1px solid #aaa", borderRadius: 8, padding: 16, maxWidth: 900 }}>
+      <TabSwitcher
+          options={[
+            { value: "fields", label: "Schema" },
+            { value: "values", label: "JSON" },
+          ]}
+          active={tab}
+          onChange={setTab}
+        />
       <p onClick={() => setMapVisible((v) => !v)}>
         {mapVisible ? "▾ Field Map" : "▸ Field Map"}
       </p>

@@ -2,26 +2,23 @@ import { useState } from "react";
 import { QRImageHalftone } from "../halftone/QRImageHalftone";
 import { QRCodeCanvas } from "./QRCodeCanvas";
 import { QRMetaInfo } from "./QRMetaInfo";
+import { TabSwitcher } from "../shared/TabSwitcher";
 
 export function QRDisplayTabs() {
-  const [tab, setTab] = useState("canvas");
+  const [tab, setTab] = useState("default");
 
   return (
     <>
       <div>
-        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <button onClick={() => setTab("canvas")} disabled={tab === "canvas"}>
-            QR Canvas
-          </button>
-          <button
-            onClick={() => setTab("halftone")}
-            disabled={tab === "halftone"}
-          >
-            Halftone Preview
-          </button>
-        </div>
-
-        {tab === "canvas" ? <QRCodeCanvas /> : <QRImageHalftone />}
+        <TabSwitcher
+          options={[
+            { value: "default", label: "Vanilla" },
+            { value: "halftone", label: "Halftone" },
+          ]}
+          active={tab}
+          onChange={setTab}
+        />
+        {tab === "default" ? <QRCodeCanvas /> : <QRImageHalftone />}
       </div>
       <div className="row">
         <QRMetaInfo />
