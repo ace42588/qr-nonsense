@@ -78,6 +78,10 @@ export function qrReducer(state, action) {
   }
 }
 
+/* calculatedVersion,
+ * calculatedDataMask,
+ * and codewords should be removed
+*/
 export const initialQRState = {
   errorCorrectionLevel: 0,
   version: -1,
