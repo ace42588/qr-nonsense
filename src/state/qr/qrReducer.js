@@ -84,6 +84,7 @@ export const initialQRState = {
   calculatedVersion: 1,
   dataMask: -1,
   calculatedDataMask: 0,
+  inputs: [],
   segments: [],
   codewords: [],
   matrix: [[]],
