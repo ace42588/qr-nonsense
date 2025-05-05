@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { QRImageHalftone } from "../halftone/QRImageHalftone";
 import { QRCodeCanvas } from "./QRCodeCanvas";
-import { QRMetaInfo } from "./QRMetaInfo";
 import { TabSwitcher } from "../shared/TabSwitcher";
 
 export function QRDisplayTabs() {
@@ -19,9 +18,6 @@ export function QRDisplayTabs() {
           onChange={setTab}
         />
         {tab === "default" ? <QRCodeCanvas /> : <QRImageHalftone />}
-      </div>
-      <div className="row">
-        <QRMetaInfo />
       </div>
     </>
   );

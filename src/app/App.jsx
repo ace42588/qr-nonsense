@@ -2,12 +2,9 @@ import { useState } from "react";
 import {
   QRDisplayTabs,
   SegmentDisplay,
-  VideoScanner,
-  InputForm,
+  QRMetaInfo,
   MainViewTabs,
 } from "../components";
-import HalftoneDemo from "../components/halftone/HalftoneDemo";
-import QRImageHalftone from "../components/halftone/QRImageHalftone";
 
 import { QRDataProvider } from "../state";
 
@@ -29,6 +26,9 @@ export default function App() {
             </div>
             <div className="row">
               <SegmentDisplay />
+            </div>
+            <div className="row">
+              <QRMetaInfo />
             </div>
           </div>
         </div>

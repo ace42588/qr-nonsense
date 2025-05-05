@@ -53,7 +53,7 @@ const MAC_FUNCTIONS = {
 
 // --- React Component ---
 
-export default function MACGenerator() {
+export function MACGenerator() {
   const [data, setData] = useState({ txn: "99999", amt: "1337", user: "bob" });
   const [selectedFields, setSelectedFields] = useState(["txn", "amt"]);
   const [algorithm, setAlgorithm] = useState("HMAC-SHA256");

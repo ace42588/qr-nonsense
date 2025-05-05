@@ -43,7 +43,27 @@ export function QRInfoInput() {
           maxWidth: 900,
         }}
       >
-        <ErrorCorrectionSelector />
+        <div className="label-select-row">
+      <label htmlFor="ec-level">Error Correction Level:</label>
+      <select
+        id="ec-level"
+        value={ecLevel}
+        onChange={(e) => {
+          const newEcLevel = parseInt(e.target.value);
+          setEcLevel(newEcLevel);
+          dispatch({
+            type: Actions.ChangeErrorCorretionLevel,
+            payload: { errorCorrectionLevel: newEcLevel },
+          });
+        }}
+      >
+        {levels.map((level) => (
+          <option key={level.value} value={level.value}>
+            {level.label}
+          </option>
+        ))}
+      </select>
+    </div>
         <VersionSelector />
         <DataMaskSelector />
       </div>

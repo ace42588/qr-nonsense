@@ -6,6 +6,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { BasicInput } from "./BasicInput";
 import { JsonInput } from "./JsonInput";
 import { BitFieldInput } from "./BitFieldInput";
+import { MACGenerator } from "./MAC";
+
 import { TabSwitcher } from "../shared/TabSwitcher";
 
 const INPUT_TYPES = [
@@ -71,6 +73,9 @@ export function SortableInput({ input, onChange, onRemove }) {
           input={{ fields: input.fields, values: input.values }}
           onChange={handleChange}
         />
+      )}
+      {expanded && tab === "mac" && (
+        <MACGenerator />
       )}
       {expanded && <p onClick={() => setExpanded((e) => !e)}>Collapse</p>}
     </div>
