@@ -1,4 +1,5 @@
 export * from "./QRCodeCanvas";
-export * from "./QRInfo";
+export * from "./QRMetaInfo";
 export * from "./QRInfoInput";
 export * from "./SegmentDisplay";
+export * from "./QRDisplayTabs";

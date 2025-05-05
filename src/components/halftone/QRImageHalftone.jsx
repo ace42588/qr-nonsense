@@ -156,7 +156,7 @@ function choosePattern(patterns, brightness, importance, reliabilityWeight) {
   return best;
 }
 
-export default function QRImageHalftone({
+export function QRImageHalftone({
   text = "https://defcon.org/images/defcon-33/dc33-logo.webp",
   imageUrl = "https://cdn.glitch.global/18921864-7cab-44f6-a895-dad8926b3c21/defcon_k_skull-reg_cropped.jpg?v=1745787807417",
   size = 480,
@@ -332,3 +332,5 @@ export default function QRImageHalftone({
     </>
   );
 }
+
+export default QRImageHalftone;

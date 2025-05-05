@@ -1,10 +1,10 @@
 import { useState } from "react";
 import {
-  QRMetaInfo,
-  QRCodeCanvas,
+  QRDisplayTabs,
   SegmentDisplay,
   VideoScanner,
   InputForm,
+  MainViewTabs,
 } from "../components";
 import HalftoneDemo from "../components/halftone/HalftoneDemo";
 import QRImageHalftone from "../components/halftone/QRImageHalftone";
@@ -47,17 +47,16 @@ export default function App() {
         <div className="row">
           <div className="column">
             <div className="row">
+              <MainViewTabs />
+            </div>
+            <div className="row">
               {inputMode === "manual" && <InputForm />}
               {inputMode === "scan" && <VideoScanner />}
             </div>
-            <QRImageHalftone />
           </div>
           <div className="column">
             <div className="row">
-              <QRCodeCanvas />
-            </div>
-            <div className="row">
-              <QRMetaInfo />
+              <QRDisplayTabs />
             </div>
             <div className="row">
               <SegmentDisplay />
