@@ -1,1 +1,2 @@
-export * "./encoders"
+export * from "./encoders";
+export * from "./mac";
