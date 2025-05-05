@@ -57,7 +57,7 @@ export function SortableInput({ input, onChange, onRemove }) {
           </>
         ) : (
           <h3 onClick={() => setExpanded((e) => !e)}>
-            {INPUT_TYPES.find((i) => i.value === tab).label}
+            {input.label}
           </h3>
         )}
       </div>
