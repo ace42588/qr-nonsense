@@ -18,6 +18,7 @@ function getBit(value, parentId) {
 
 // ~24k bits possible
 export function getBits(value, length, parentId) {
+  if (!parentId) throw new Error("Missing parent ID")
   if (!!value && length) {
     value = value.toString(2).padStart(length, "0");
   }
