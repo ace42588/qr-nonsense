@@ -20,16 +20,8 @@ export const Actions = {
 export function qrReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInputs: {
-      return deriveFromInputs(state, action.payload);
-    }
-    case Actions.ChangeDataMask: {
-      return deriveFromInputs(state, action.payload);
-    }
-    case Actions.ChangeVersion: {
-      return deriveFromInputs(state, action.payload);
-    }
-    case Actions.ChangeErrorCorretionLevel: {
-      return deriveFromInputs(state, action.payload);
+      //return deriveFromInputs(state, action.payload);
+      return {...state, ...action.payload}
     }
     case Actions.HighlightSegment: {
       try {
