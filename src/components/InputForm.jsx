@@ -48,7 +48,7 @@ function inputReducer(state, action) {
 
 export function InputForm() {
   const [inputs, dispatch] = useReducer(inputReducer, []);
-  const [label, setLabel] = useState("");
+  const [label, setLabel] = useState("Input 1");
   const { setInputs } = useQRMessage();
 
   useEffect(() => {

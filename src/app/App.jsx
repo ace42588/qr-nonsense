@@ -24,13 +24,10 @@ export default function App() {
             <div className="row">
               <QRDisplayTabs />
             </div>
-            <div className="row">
-              <SegmentDisplay />
-            </div>
-            <div className="row">
-              <QRMetaInfo />
-            </div>
           </div>
+        </div>
+        <div className="row">
+          <SegmentDisplay />
         </div>
       </QRDataProvider>
     </div>
