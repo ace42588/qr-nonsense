@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { getSegments, getVersion, getMatrix } from "./utils";
+import { getSegments, getMappedBits, getVersion, getMatrix } from "./utils";
 import { getBits } from "../../domain/qr";
 
 /**
@@ -27,15 +27,10 @@ export function useDerivedQRData({
 }) {
   const segments = useMemo(() => getSegments(inputs), [inputs]);
 
-  const bits = useMemo(
-    () => segments.flatMap((s) => getBits(s.value, s.length)),
+  const {bits, idMap} = useMemo(
+    () => getMappedBits(segments),
     [segments]
   );
-  
-  const idMap = useMemo(() => {
-    const map = new Map();
-    segments.forEach((s) => map.set(s.id, ))
-  }, [segments, bits]);
 
   const version = useMemo(
     () => getVersion(bits.length, selectedVersion, errorCorrectionLevel),

@@ -1,5 +1,3 @@
-import { deriveFromInputs } from "./deriveFromInputs";
-import { deriveInputsFromMatrix } from "./deriveFromMatrix";
 import {
   highlightModules,
   highlightSegment,

@@ -25,7 +25,16 @@ export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
   throw new Error(`Invalid version: ${inputVersion.toString()}`);
 }
 
-
+export function getMappedBits(segments) {
+  const idMap = new Map();
+  const bits = segments.flatMap((s) => {
+    const bits = getBits(s.value, s.length);
+    idMap.set(s.id, bits.map((b => b.id)));
+    bits.forEach((b) => idMap.set(b.id, s.id));
+    return bits;
+  })
+  return { bits, idMap };
+}
 
 export function getMatrix(
   errorCorrectionLevel,
@@ -47,13 +56,6 @@ export function getMatrix(
   });
 }
 
-function getModulesToHighlight(segment, state) {
-  console.debug("getModulesToHighlight", { segment, state });
-  const { id } = segment;
-  const { idMap } = state;
-  return idMap.get(id);
-}
-
 export function highlightModules(segment, idMap, matrix) {
   console.debug("highlightModules", { segment, idMap, matrix });
   const modulesToUpdate = idMap.get(segment.id);
@@ -70,18 +72,10 @@ export function highlightModules(segment, idMap, matrix) {
   return newMatrix;
 }
 
-function getSegmentToHighlight(module, state) {
-  const {
-    bit: { id },
-  } = module;
-  const { idMap } = state;
-  return idMap.get(id);
-}
-
-export function highlightSegment(module, state) {
-  const segmentToUpdate = getSegmentToHighlight(module, state);
+export function highlightSegment(module, idMap, segments) {
+  const segmentToUpdate = idMap.get(module.id);
   //console.debug("highlightSegment", {segmentToUpdate});
-  const newSegments = state.segments.map((segment) => {
+  const newSegments = segments.map((segment) => {
     let { id, isHighlighted } = segment;
     const newSegment = { ...segment };
     if (id === segmentToUpdate) newSegment.isHighlighted = !isHighlighted;
