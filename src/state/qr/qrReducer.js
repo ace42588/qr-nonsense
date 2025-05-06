@@ -7,26 +7,35 @@ import {
 
 export const Actions = {
   ChangeInputs: "UPDATE_INPUTS",
-  ChangeDataMask: "UPDATE_DATAMASK",
-  ChangeVersion: "UPDATE_VERSION",
-  ChangeErrorCorretionLevel: "UPDATE_ECL",
   HighlightSegment: "HIGHLIGHT_SEGMENT",
-  ClearSegmentHighlight: "RESET_SEGMENT_HIGHLIGHT",
   HighlightModules: "HIGHLIGHT_MODULES",
-  ClearSegmentHighlight: "RESET_MODULE_HIGHLIGHT",
+  ClearSegmentHighlight: "RESET_SEGMENT_HIGHLIGHT",
+  ClearModuleHighlight: "RESET_MODULE_HIGHLIGHT",
   ToggleModule: "TOGGLE_MODULE",
+};
+
+export const initialQRState = {
+  errorCorrectionLevel: 0,
+  version: -1, // -1 means "auto"
+  dataMask: -1, // -1 means "auto"
+  inputs: [],
+  matrix: [[]], // used when modified manually
+  source: "inputs",
+  error: "",
 };
 
 export function qrReducer(state, action) {
   switch (action.type) {
     case Actions.ChangeInputs: {
-      //return deriveFromInputs(state, action.payload);
-      return {...state, ...action.payload}
+      return {
+        ...state,
+        ...action.payload,
+      };
     }
+
     case Actions.HighlightSegment: {
       try {
         const module = action.payload;
-        // highlight the other nondata modules
         if (module.nonData) {
           const {
             source: { name },
@@ -41,15 +50,14 @@ export function qrReducer(state, action) {
           );
           return { ...state, matrix: newMatrix };
         }
-        return {
-          ...state,
-          segments: highlightSegment(module, state),
-        };
+        // If it's a data segment, leave it to the derived layer
+        return state;
       } catch (e) {
         console.error(e);
+        return state;
       }
-      return state;
     }
+
     case Actions.HighlightModules: {
       try {
         const segment = action.payload;
@@ -59,29 +67,12 @@ export function qrReducer(state, action) {
         };
       } catch (e) {
         console.error(e);
+        return state;
       }
-      return state;
     }
+
     default: {
       return state;
     }
   }
 }
-
-/* calculatedVersion,
- * calculatedDataMask,
- * and codewords should be removed or
-*/
-export const initialQRState = {
-  errorCorrectionLevel: 0,
-  version: -1,
-  calculatedVersion: 1,
-  dataMask: -1,
-  calculatedDataMask: 0,
-  inputs: [],
-  segments: [],
-  codewords: [],
-  matrix: [[]],
-  source: "inputs",
-  error: "",
-};

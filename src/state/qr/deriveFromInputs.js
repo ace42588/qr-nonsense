@@ -1,88 +1,54 @@
-import {
-  encodeInput,
-  finalizeEncoding,
-  generateMatrix,
-  getBits,
-  getCodewords,
-  getMinimumQRCodeVersion,
-  getRequiredDataCodewords,
-} from "../../domain/qr";
+import { useMemo } from "react";
+import { getSegments, getVersion, getMatrix } from "./utils";
+import { getBits } from "../../domain/qr";
 
-function deriveVersionFromInputs(numBits, inputVersion, errorCorrectionLevel) {
-  let version = parseInt(inputVersion) || -1;
-  if (1 <= version && version <= 40) {
-    return version;
-  } else if (version == -1) {
-    return getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
-  }
-  throw new Error(`Invalid version: ${inputVersion.toString()}`);
-}
+/**
+ * Derives intermediate and final QR code data from reducer state inputs.
+ * 
+ * @param {Object} state - The reducer state
+ * @param {Array} state.inputs - Parsed inputs
+ * @param {number} state.version - Selected version or -1 for auto
+ * @param {number} state.dataMask - Selected data mask or -1 for auto
+ * @param {number} state.errorCorrectionLevel - Level 0 (L) to 3 (H)
+ * 
+ * @returns {{
+ *   segments: Array,
+ *   bits: Array,
+ *   version: number,
+ *   matrix: 2D array of QR modules,
+ *   dataMask: number,
+ *   codewords: Array
+ * }}
+ */
+export function useDerivedQRData({
+  inputs,
+  version: selectedVersion,
+  dataMask: selectedDataMask,
+  errorCorrectionLevel,
+}) {
+  const segments = useMemo(() => getSegments(inputs), [inputs]);
 
-function deriveSegmentsFromInputs(inputs) {
-  const segments = inputs.flatMap(({ data, mode, encoding }) =>
-    encodeInput(mode, data, {inputEncoding: encoding})
+  const bits = useMemo(
+    () => segments.flatMap((s) => getBits(s.value, s.length)),
+    [segments]
   );
-  return segments;
-}
 
-function deriveCodewordsFromBits(bits, version, ecLevel) {
-  //console.debug("deriveCodewordsFromBits", { bitMap, version, ecLevel });
-  const requiredDataCodewords = getRequiredDataCodewords(version, ecLevel);
-  const finalizedBits = finalizeEncoding(bits, requiredDataCodewords);
-  //console.debug("deriveCodewordsFromBits", { finalizedBits });
-  return getCodewords(finalizedBits, version, ecLevel);
-}
+  const version = useMemo(
+    () => getVersion(bits.length, selectedVersion, errorCorrectionLevel),
+    [bits, selectedVersion, errorCorrectionLevel]
+  );
 
-export function deriveFromInputs(state, override = {}) {
-  const {
-    inputs = state.inputs,
-    errorCorrectionLevel = state.errorCorrectionLevel,
-    version = state.version,
-    dataMask = state.dataMask,
-  } = override;
+  const { matrix, dataMask, codewords } = useMemo(
+    () => getMatrix(errorCorrectionLevel, version, selectedDataMask, bits),
+    [errorCorrectionLevel, version, selectedDataMask, bits]
+  );
 
-  try {
-    const segments = deriveSegmentsFromInputs(inputs);
-    const idMap = new Map();
-    const bits = segments.flatMap((s) => {
-      const bits = getBits(s.value, s.length);
-      idMap.set(
-        s.id,
-        bits.map((b) => b.id)
-      );
-      bits.forEach((b) => idMap.set(b.id, s.id));
-      return bits;
-    });
-
-    const calculatedVersion = deriveVersionFromInputs(
-      bits.length,
-      version,
-      errorCorrectionLevel
-    );
-    const codewords = deriveCodewordsFromBits(
-      bits,
-      calculatedVersion,
-      errorCorrectionLevel
-    );
-
-    const { matrix, dataMask: calculatedDataMask } = generateMatrix({
-      version: calculatedVersion,
-      errorCorrectionLevel,
-      dataMask,
-      codewords,
-    });
-
-    const newQRData = {
-      segments,
-      calculatedVersion,
-      matrix,
-      calculatedDataMask,
-      idMap
-    };
-
-    return { ...state, ...newQRData, ...override };
-  } catch (e) {
-    console.error(e);
-    return state;
-  }
+  return {
+    segments,
+    bits,
+    version,
+    matrix,
+    dataMask,
+    codewords,
+  };
 }

@@ -1,9 +1,7 @@
 import { createContext, useContext, useMemo, useReducer } from "react";
 import { Actions, qrReducer, initialQRState } from "./qrReducer";
 
-import { getBits } from "../../domain/qr";
-
-import { parseInput, getSegments, getVersion, getMatrix } from "./utils";
+import { useDerivedQRData } from "./useDerivedQRData";
 
 const QRDataContext = createContext();
 const QRFormatContext = createContext();
@@ -11,111 +9,47 @@ const QRMessageContext = createContext();
 
 export function QRDataProvider({ children }) {
   const [state, dispatch] = useReducer(qrReducer, initialQRState);
-  let {
+  const {
     inputs,
-    dataMask: selectedDataMask,
     version: selectedVersion,
+    dataMask: selectedDataMask,
     errorCorrectionLevel,
   } = state;
 
-  const segments = useMemo(() => getSegments(inputs), [inputs]);
+  const derived = useDerivedQRData({
+    inputs,
+    version: selectedVersion,
+    dataMask: selectedDataMask,
+    errorCorrectionLevel,
+  });
 
-  const bits = useMemo(
-    () => segments.flatMap((s) => getBits(s.value, s.length)),
-    [segments]
-  );
+  const formatContextValue = useMemo(() => ({
+    errorCorrectionLevel,
+    version: derived.version,
+    dataMask: derived.dataMask,
+    setErrorCorrection: (payload) => dispatch({ type: Actions.ChangeInputs, payload: { errorCorrectionLevel: payload } }),
+    setVersion: (payload) => dispatch({ type: Actions.ChangeInputs, payload: { version: payload } }),
+    setDataMask: (payload) => dispatch({ type: Actions.ChangeInputs, payload: { dataMask: payload } }),
+  }), [errorCorrectionLevel, derived.version, derived.dataMask]);
 
-  const version = useMemo(
-    () => getVersion(bits.length, selectedVersion, errorCorrectionLevel),
-    [bits, selectedVersion, errorCorrectionLevel]
-  );
-
-  const { matrix, dataMask } = useMemo(
-    () => getMatrix(errorCorrectionLevel, version, selectedDataMask, bits),
-    [errorCorrectionLevel, version, selectedDataMask, bits]
-  );
-
-  const setErrorCorrection = (payload) => {
-    dispatch({
-      type: Actions.ChangeInputs,
-      payload: { errorCorrectionLevel: payload },
-    });
-  };
-
-  const setVersion = (payload) => {
-    dispatch({
-      type: Actions.ChangeInputs,
-      payload: { version: payload },
-    });
-  };
-
-  const setDataMask = (payload) => {
-    dispatch({
-      type: Actions.ChangeInputs,
-      payload: { dataMask: payload },
-    });
-  };
-
-  const setInputs = (payload) => {
-    const parsed = payload.map(({ mode, data, encoding }) =>
-      parseInput({ mode, data, encoding })
-    );
-    dispatch({
-      type: Actions.ChangeInputs,
-      payload: { inputs: parsed },
-    });
-  };
-
-  const setSegment = (payload) => {
-    dispatch({
-      type: Actions.ChangeInputs,
-      payload,
-    });
-  };
-
-  const setModule = (payload) => {
-    dispatch({
-      type: Actions.ChangeInputs,
-      payload,
-    });
-  };
-
-  const highlightSegment = (payload) => {
-    dispatch({
-      type: Actions.HighlightSegment,
-      payload,
-    });
-  };
-
-  const highlightModules = (payload) => {
-    dispatch({
-      type: Actions.HighlightModules,
-      payload,
-    });
-  };
+  const messageContextValue = useMemo(() => ({
+    segments: derived.segments,
+    matrix: derived.matrix,
+    setSegment: (payload) => dispatch({ type: Actions.ChangeInputs, payload }),
+    setInputs: (payload) => {
+      const parsed = payload.map(({ mode, data, encoding }) =>
+        parseInput({ mode, data, encoding })
+      );
+      dispatch({ type: Actions.ChangeInputs, payload: { inputs: parsed } });
+    },
+    highlightModules: (payload) => dispatch({ type: Actions.HighlightModules, payload }),
+    highlightSegment: (payload) => dispatch({ type: Actions.HighlightSegment, payload }),
+  }), [derived.segments, derived.matrix]);
 
   return (
     <QRDataContext.Provider value={state}>
-      <QRFormatContext.Provider
-        value={{
-          errorCorrectionLevel,
-          version,
-          dataMask,
-          setErrorCorrection,
-          setVersion,
-          setDataMask,
-        }}
-      >
-        <QRMessageContext.Provider
-          value={{
-            segments,
-            matrix,
-            setSegment,
-            setInputs,
-            highlightModules,
-            highlightSegment,
-          }}
-        >
+      <QRFormatContext.Provider value={formatContextValue}>
+        <QRMessageContext.Provider value={messageContextValue}>
           {children}
         </QRMessageContext.Provider>
       </QRFormatContext.Provider>
