@@ -32,6 +32,7 @@ export function BitFieldEditor({ fields, setFields }) {
   );
 
   function handleAddField() {
+    console.debug("BitFieldEditor: handleAddField", {});
     const newField = { ...DEFAULT_FIELD, id: crypto.randomUUID() };
     setFields([...fields, newField]);
   }

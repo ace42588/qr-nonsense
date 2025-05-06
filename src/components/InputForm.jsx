@@ -62,8 +62,10 @@ export function InputForm() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const handleChange = (id, payload) =>
+  const handleChange = (id, payload) =>{
+    console.debug("InputForm: handleChange", {payload});
     dispatch({ type: "update", id, payload });
+  }
 
   const handleRemove = (id) => dispatch({ type: "remove", id });
 

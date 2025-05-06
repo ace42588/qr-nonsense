@@ -10,9 +10,10 @@ import {
 import { TabSwitcher } from "../shared/TabSwitcher";
 
 export function BitFieldInput({ input, onChange }) {
-  const [fields, setFields] = useState(input.fields || []);
-  const [values, setValues] = useState(input.values || {});
   const [tab, setTab] = useState("fields");
+  
+  const fields = input.fields || [];
+  const values = input.values || {};
 
   const { layout, totalBits } = useMemo(
     () => generateBitLayout(fields),
@@ -28,6 +29,7 @@ export function BitFieldInput({ input, onChange }) {
   }, [layout, values]);
 
   const emitChange = (updatedFields, updatedValues) => {
+    console.debug("BitFieldInput: emitChange", {updatedFields, updatedValues});
     try {
       const encoded = encodeFieldsToBytes(layout, updatedValues);
       onChange?.({
@@ -35,20 +37,19 @@ export function BitFieldInput({ input, onChange }) {
         mode: "byte",
         encoding: "hex",
         fields: updatedFields,
-        values
+        values: updatedValues
       });
-    } catch {
-      // Ignore encoding failures
+    } catch (e) {
+      console.error(e);
     }
   };
 
   const handleFieldsChange = (newFields) => {
-    setFields(newFields);
+    console.debug("BitFieldInput: handleFieldsChange", {newFields});
     emitChange(newFields, values);
   };
 
   const handleValuesChange = (newValues) => {
-    setValues(newValues);
     emitChange(fields, newValues);
   };
 
