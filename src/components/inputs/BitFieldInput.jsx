@@ -34,6 +34,8 @@ export function BitFieldInput({ input, onChange }) {
         data: bytesToHex(encoded),
         mode: "byte",
         encoding: "hex",
+        fields: updatedFields,
+        values
       });
     } catch {
       // Ignore encoding failures
