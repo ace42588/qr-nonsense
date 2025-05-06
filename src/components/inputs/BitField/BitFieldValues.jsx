@@ -2,9 +2,40 @@ import React, { useMemo, useState } from "react";
 
 const encoder = new TextEncoder("utf-8");
 
-const types = [{value:"base10", label: "Dec"},{value:"base16", label: "Hex"},{value:"string", label: "String"}];
+const types = [
+  { value: "base10", label: "Dec" },
+  { value: "base16", label: "Hex" },
+  { value: "string", label: "String" },
+];
 
 export function BitFieldValues({ values, setValues, layout }) {
+  const {type, setType} = useState("base10");
+  
+  const handleInputChange = (e, field) => {
+    let newValue = e.target.value;
+    switch (type) {
+      case "base10": {
+        newValue = Number(newValue);
+        break;
+      }
+      case "base16": {
+        newValue = parseInt(newValue, 16);
+        break;
+      }
+      case "string": {
+        newValue = encoder.encode(newValue);
+        break;
+      }
+      default: {
+        newValue = undefined;
+      }
+    }
+    setValues({
+      ...values,
+      [field.label]: newValue,
+    });
+  };
+
   return (
     <>
       {layout.map((field) => (
@@ -20,27 +51,20 @@ export function BitFieldValues({ values, setValues, layout }) {
         >
           <label style={{ marginRight: 8, minWidth: 100 }}>{field.label}</label>
           <select
-              id="fieldType"
-              value={field.type || }
-              onChange={(e) => setErrorCorrection(e.target.value)}
-            >
-              {levels.map((level) => (
-                <option key={level.value} value={level.value}>
-                  {level.label}
-                </option>
-              ))}
-            </select>
+            id="fieldType"
+            value={type}
+            onChange={(e) => (field.type = e.target.value)}
+          >
+            {types.map((level) => (
+              <option key={level.value} value={level.value}>
+                {level.label}
+              </option>
+            ))}
+          </select>
           <input
             type="text"
             value={values[field.label] ?? ""}
-            onChange={(e) => {
-              const next = {
-                ...values,
-                [field.label]:
-                  e.target.value === "" ? undefined : encoder.encode(e.target.value),
-              };
-              setValues(next);
-            }}
+            onChange={(e) => handleInputChange(e, field)}
             style={{ maxWidth: 100 }}
           />
         </div>
