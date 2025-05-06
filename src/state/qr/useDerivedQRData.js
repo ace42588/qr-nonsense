@@ -17,7 +17,6 @@ import { getBits } from "../../domain/qr";
  *   version: number,
  *   matrix: 2D array of QR modules,
  *   dataMask: number,
- *   codewords: Array
  * }}
  */
 export function useDerivedQRData({
@@ -32,13 +31,18 @@ export function useDerivedQRData({
     () => segments.flatMap((s) => getBits(s.value, s.length)),
     [segments]
   );
+  
+  const idMap = useMemo(() => {
+    const map = new Map();
+    segments.forEach((s) => map.set(s.id, ))
+  }, [segments, bits]);
 
   const version = useMemo(
     () => getVersion(bits.length, selectedVersion, errorCorrectionLevel),
     [bits, selectedVersion, errorCorrectionLevel]
   );
 
-  const { matrix, dataMask, codewords } = useMemo(
+  const { matrix, dataMask } = useMemo(
     () => getMatrix(errorCorrectionLevel, version, selectedDataMask, bits),
     [errorCorrectionLevel, version, selectedDataMask, bits]
   );
@@ -49,6 +53,5 @@ export function useDerivedQRData({
     version,
     matrix,
     dataMask,
-    codewords,
   };
 }

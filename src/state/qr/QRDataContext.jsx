@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useReducer } from "react";
 import { Actions, qrReducer, initialQRState } from "./qrReducer";
 
 import { useDerivedQRData } from "./useDerivedQRData";
+import { parseInput } from "./utils";
 
 const QRDataContext = createContext();
 const QRFormatContext = createContext();
@@ -23,28 +24,46 @@ export function QRDataProvider({ children }) {
     errorCorrectionLevel,
   });
 
-  const formatContextValue = useMemo(() => ({
-    errorCorrectionLevel,
-    version: derived.version,
-    dataMask: derived.dataMask,
-    setErrorCorrection: (payload) => dispatch({ type: Actions.ChangeInputs, payload: { errorCorrectionLevel: payload } }),
-    setVersion: (payload) => dispatch({ type: Actions.ChangeInputs, payload: { version: payload } }),
-    setDataMask: (payload) => dispatch({ type: Actions.ChangeInputs, payload: { dataMask: payload } }),
-  }), [errorCorrectionLevel, derived.version, derived.dataMask]);
+  const formatContextValue = useMemo(
+    () => ({
+      errorCorrectionLevel,
+      version: derived.version,
+      dataMask: derived.dataMask,
+      setErrorCorrection: (payload) =>
+        dispatch({
+          type: Actions.ChangeInputs,
+          payload: { errorCorrectionLevel: payload },
+        }),
+      setVersion: (payload) =>
+        dispatch({ type: Actions.ChangeInputs, payload: { version: payload } }),
+      setDataMask: (payload) =>
+        dispatch({
+          type: Actions.ChangeInputs,
+          payload: { dataMask: payload },
+        }),
+    }),
+    [errorCorrectionLevel, derived.version, derived.dataMask]
+  );
 
-  const messageContextValue = useMemo(() => ({
-    segments: derived.segments,
-    matrix: derived.matrix,
-    setSegment: (payload) => dispatch({ type: Actions.ChangeInputs, payload }),
-    setInputs: (payload) => {
-      const parsed = payload.map(({ mode, data, encoding }) =>
-        parseInput({ mode, data, encoding })
-      );
-      dispatch({ type: Actions.ChangeInputs, payload: { inputs: parsed } });
-    },
-    highlightModules: (payload) => dispatch({ type: Actions.HighlightModules, payload }),
-    highlightSegment: (payload) => dispatch({ type: Actions.HighlightSegment, payload }),
-  }), [derived.segments, derived.matrix]);
+  const messageContextValue = useMemo(
+    () => ({
+      segments: derived.segments,
+      matrix: derived.matrix,
+      setSegment: (payload) =>
+        dispatch({ type: Actions.ChangeInputs, payload }),
+      setInputs: (payload) => {
+        const parsed = payload.map(({ mode, data, encoding }) =>
+          parseInput({ mode, data, encoding })
+        );
+        dispatch({ type: Actions.ChangeInputs, payload: { inputs: parsed } });
+      },
+      highlightModules: (payload) =>
+        dispatch({ type: Actions.HighlightModules, payload }),
+      highlightSegment: (payload) =>
+        dispatch({ type: Actions.HighlightSegment, payload }),
+    }),
+    [derived.segments, derived.matrix]
+  );
 
   return (
     <QRDataContext.Provider value={state}>

@@ -25,6 +25,8 @@ export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
   throw new Error(`Invalid version: ${inputVersion.toString()}`);
 }
 
+
+
 export function getMatrix(
   errorCorrectionLevel,
   version,
