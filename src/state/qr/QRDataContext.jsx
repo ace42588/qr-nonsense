@@ -17,7 +17,7 @@ import {
   getRequiredDataCodewords,
 } from "../../domain/qr";
 
-import { parseInput } from "./utils";
+import { parseInput, getVersion } from "./utils";
 
 const QRDataContext = createContext();
 const QRFormatContext = createContext();
@@ -26,27 +26,27 @@ const QRDataDispatchContext = createContext();
 
 export function QRDataProvider({ children }) {
   const [state, dispatch] = useReducer(qrReducer, initialQRState);
-  let { inputs, errorCorrectionLevel } = state;
+  let {
+    inputs,
+    dataMask: selectedDataMask,
+    version: selectedVersion,
+    errorCorrectionLevel,
+  } = state;
 
-  const segments = useMemo(() =>
-    inputs.flatMap(({ data, mode, encoding }) =>
-      encodeInput(mode, data, { inputEncoding: encoding })
-    ), [inputs]
+  const segments = useMemo(
+    () =>
+      inputs.flatMap(({ data, mode, encoding }) =>
+        encodeInput(mode, data, { inputEncoding: encoding })
+      ),
+    [inputs]
   );
 
-  const bits = useMemo(() =>
-    segments.flatMap((s) => getBits(s.value, s.length))
-  ,[segments]);
+  const bits = useMemo(
+    () => segments.flatMap((s) => getBits(s.value, s.length)),
+    [segments]
+  );
 
-  const version = useMemo(() => {
-    let version = parseInt(state.version) || -1;
-    if (1 <= version && version <= 40) {
-      return version;
-    } else if (version == -1) {
-      return getMinimumQRCodeVersion(bits.length, errorCorrectionLevel);
-    }
-    throw new Error(`Invalid version: ${state.version.toString()}`);
-  }, []);
+  const version = useMemo(() => getVersion, [selectedVersion, bits, errorCorrectionLevel]);
 
   const { matrix, dataMask } = useMemo(() => {
     const requiredDataCodewords = getRequiredDataCodewords(
@@ -62,10 +62,10 @@ export function QRDataProvider({ children }) {
     return generateMatrix({
       version,
       errorCorrectionLevel,
-      dataMask: state.dataMask,
+      dataMask: selectedDataMask,
       codewords,
     });
-  });
+  }, [version, errorCorrectionLevel, bits, selectedDataMask]);
 
   const setErrorCorrection = (payload) => {
     dispatch({

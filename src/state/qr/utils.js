@@ -1,3 +1,23 @@
+import {
+  encodeInput,
+  finalizeEncoding,
+  generateMatrix,
+  getBits,
+  getCodewords,
+  getMinimumQRCodeVersion,
+  getRequiredDataCodewords,
+} from "../../domain/qr";
+
+function getVersion(numBits, inputVersion, errorCorrectionLevel) {
+  let version = parseInt(inputVersion) || -1;
+  if (1 <= version && version <= 40) {
+    return version;
+  } else if (version == -1) {
+    return getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
+  }
+  throw new Error(`Invalid version: ${inputVersion.toString()}`);
+}
+
 function getModulesToHighlight(segment, state) {
   console.debug("getModulesToHighlight", {segment, state});
   const { id } = segment;
