@@ -17,12 +17,11 @@ import {
   getRequiredDataCodewords,
 } from "../../domain/qr";
 
-import { parseInput, getVersion } from "./utils";
+import { parseInput, getSegments, getVersion, getMatrix } from "./utils";
 
 const QRDataContext = createContext();
 const QRFormatContext = createContext();
 const QRMessageContext = createContext();
-const QRDataDispatchContext = createContext();
 
 export function QRDataProvider({ children }) {
   const [state, dispatch] = useReducer(qrReducer, initialQRState);
@@ -33,39 +32,22 @@ export function QRDataProvider({ children }) {
     errorCorrectionLevel,
   } = state;
 
-  const segments = useMemo(
-    () =>
-      inputs.flatMap(({ data, mode, encoding }) =>
-        encodeInput(mode, data, { inputEncoding: encoding })
-      ),
-    [inputs]
-  );
+  const segments = useMemo(() => getSegments(inputs), [inputs]);
 
   const bits = useMemo(
     () => segments.flatMap((s) => getBits(s.value, s.length)),
     [segments]
   );
 
-  const version = useMemo(() => getVersion, [selectedVersion, bits, errorCorrectionLevel]);
+  const version = useMemo(
+    () => getVersion(bits.length, selectedVersion, errorCorrectionLevel),
+    [bits, selectedVersion, errorCorrectionLevel]
+  );
 
-  const { matrix, dataMask } = useMemo(() => {
-    const requiredDataCodewords = getRequiredDataCodewords(
-      version,
-      errorCorrectionLevel
-    );
-    const finalizedBits = finalizeEncoding(bits, requiredDataCodewords);
-    const codewords = getCodewords(
-      finalizedBits,
-      version,
-      errorCorrectionLevel
-    );
-    return generateMatrix({
-      version,
-      errorCorrectionLevel,
-      dataMask: selectedDataMask,
-      codewords,
-    });
-  }, [version, errorCorrectionLevel, bits, selectedDataMask]);
+  const { matrix, dataMask } = useMemo(
+    () => getMatrix(errorCorrectionLevel, version, selectedDataMask, bits),
+    [errorCorrectionLevel, version, selectedDataMask, bits]
+  );
 
   const setErrorCorrection = (payload) => {
     dispatch({
@@ -158,4 +140,3 @@ export function QRDataProvider({ children }) {
 export const useQRData = () => useContext(QRDataContext);
 export const useQRFormat = () => useContext(QRFormatContext);
 export const useQRMessage = () => useContext(QRMessageContext);
-export const useQRDataDispatch = () => useContext(QRDataDispatchContext);

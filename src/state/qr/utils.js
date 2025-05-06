@@ -8,7 +8,14 @@ import {
   getRequiredDataCodewords,
 } from "../../domain/qr";
 
-function getVersion(numBits, inputVersion, errorCorrectionLevel) {
+export function getSegments(inputs) {
+  const segments = inputs.flatMap(({ data, mode, encoding }) =>
+    encodeInput(mode, data, { inputEncoding: encoding })
+  );
+  return segments;
+}
+
+export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
   let version = parseInt(inputVersion) || -1;
   if (1 <= version && version <= 40) {
     return version;
@@ -18,15 +25,35 @@ function getVersion(numBits, inputVersion, errorCorrectionLevel) {
   throw new Error(`Invalid version: ${inputVersion.toString()}`);
 }
 
+export function getMatrix(
+  errorCorrectionLevel,
+  version,
+  selectedDataMask,
+  bits
+) {
+  const requiredDataCodewords = getRequiredDataCodewords(
+    version,
+    errorCorrectionLevel
+  );
+  const finalizedBits = finalizeEncoding(bits, requiredDataCodewords);
+  const codewords = getCodewords(finalizedBits, version, errorCorrectionLevel);
+  return generateMatrix({
+    version,
+    errorCorrectionLevel,
+    dataMask: selectedDataMask,
+    codewords,
+  });
+}
+
 function getModulesToHighlight(segment, state) {
-  console.debug("getModulesToHighlight", {segment, state});
+  console.debug("getModulesToHighlight", { segment, state });
   const { id } = segment;
   const { idMap } = state;
   return idMap.get(id);
 }
 
 export function highlightModules(segment, idMap, matrix) {
-  console.debug("highlightModules", {segment, idMap, matrix});
+  console.debug("highlightModules", { segment, idMap, matrix });
   const modulesToUpdate = idMap.get(segment.id);
   const newMatrix = matrix.map((row) =>
     row.map((module) => {
@@ -67,7 +94,7 @@ const isHex = (str) =>
   /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(str);
 
 export function parseInput(input) {
-  console.debug("parseInput",{input});
+  console.debug("parseInput", { input });
   if (!input || !input.data || !input.mode) return {};
   let { mode, data, encoding } = input;
 
