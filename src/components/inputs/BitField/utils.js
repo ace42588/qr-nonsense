@@ -17,6 +17,7 @@ export function generateBitLayout(fields) {
     const end = currentBit - field.bits + 1;
     currentBit -= field.bits;
     return {
+      type: field.type,
       label: field.label,
       min: field.min,
       max: field.max,

@@ -9,8 +9,8 @@ const types = [
 ];
 
 export function BitFieldValues({ values, setValues, layout }) {
-  const {type, setType} = useState("base10");
-  
+  const [type, setType] = useState("base10");
+
   const handleInputChange = (e, field) => {
     let newValue = e.target.value;
     switch (type) {
@@ -30,6 +30,11 @@ export function BitFieldValues({ values, setValues, layout }) {
         newValue = undefined;
       }
     }
+    const newValues = {
+      ...values,
+      [field.label]: newValue,
+    };
+    console.debug("BitFieldValues: handleInputChange", { newValues });
     setValues({
       ...values,
       [field.label]: newValue,
@@ -53,7 +58,7 @@ export function BitFieldValues({ values, setValues, layout }) {
           <select
             id="fieldType"
             value={type}
-            onChange={(e) => (field.type = e.target.value)}
+            onChange={(e) => setType(e.target.value)}
           >
             {types.map((level) => (
               <option key={level.value} value={level.value}>

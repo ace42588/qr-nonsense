@@ -17,7 +17,6 @@ import { SortableField } from "./SortableField";
 import { bitsNeeded } from "./utils";
 
 const DEFAULT_FIELD = {
-  id: "",
   label: "",
   min: 0,
   max: 255,
