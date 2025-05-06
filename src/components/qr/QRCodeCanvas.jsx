@@ -7,6 +7,8 @@ export function QRCodeCanvas() {
   const canvasRef = useRef(null);
   const { matrix } = useQRData();
   const { highlightSegment } = useQRMessage();
+  
+  console.debug("QRCodeCanvas",useQRData());
 
   useEffect(() => {
     if (!canvasRef.current || !matrix) return;

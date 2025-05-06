@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useEffect, useState } from "react";
-import { Actions, useQRDataDispatch } from "../state";
+import { Actions, useQRMessage } from "../state";
 import jsQR from "jsqr";
 import "./styles/styles.css";
 
@@ -12,22 +12,19 @@ export function VideoScanner({
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [scanning, setScanning] = useState(true);
-  const dispatch = useQRDataDispatch();
+  const { setInputs } = useQRMessage();
 
   const updateQRData = useCallback(
     ({ chunks, version, formatInfo }) => {
       console.debug("updateQRData", { chunks, version, formatInfo });
-      dispatch({
-        type: Actions.ChangeInput,
-        payload: {
-          inputs: chunks.map(({ type, text, data }) => ({
-            mode: type,
-            data: text || data,
-          })),
-        },
-      });
+      setInputs(
+        chunks.map(({ type, text, data }) => ({
+          mode: type,
+          data: text || data,
+        }))
+      );
     },
-    [dispatch]
+    [setInputs]
   );
 
   useEffect(() => {

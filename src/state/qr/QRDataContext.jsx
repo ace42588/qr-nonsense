@@ -1,21 +1,7 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useReducer,
-} from "react";
+import { createContext, useContext, useMemo, useReducer } from "react";
 import { Actions, qrReducer, initialQRState } from "./qrReducer";
 
-import {
-  encodeInput,
-  finalizeEncoding,
-  generateMatrix,
-  getBits,
-  getCodewords,
-  getMinimumQRCodeVersion,
-  getRequiredDataCodewords,
-} from "../../domain/qr";
+import { getBits } from "../../domain/qr";
 
 import { parseInput, getSegments, getVersion, getMatrix } from "./utils";
 
