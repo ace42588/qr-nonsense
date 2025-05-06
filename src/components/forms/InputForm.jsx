@@ -22,7 +22,15 @@ import { SortableInput } from "../inputs/SortableInput";
 function inputReducer(state, action) {
   switch (action.type) {
     case "add":
-      return [...state, { id: crypto.randomUUID(), label: action.label, mode: "byte", data: "" }];
+      return [
+        ...state,
+        {
+          id: crypto.randomUUID(),
+          label: action.label,
+          mode: "byte",
+          data: "",
+        },
+      ];
     case "remove":
       return state.filter((input) => input.id !== action.id);
     case "update":
@@ -60,7 +68,7 @@ export function InputForm() {
   const handleAddInput = () => {
     dispatch({ type: "add", label });
     setLabel("");
-  }
+  };
 
   return (
     <div className="input-form">
@@ -90,17 +98,18 @@ export function InputForm() {
             ))}
           </SortableContext>
         </DndContext>
-        
-        <input
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          placeholder="Label for new input"
-          required
-        />
+        <div className="input-button-row">
+          <input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder="Input Label"
+            required
+          />
 
-        <button onClick={handleAddInput} style={{ marginTop: 8 }}>
-          + Add Input
-        </button>
+          <button onClick={handleAddInput} style={{ marginTop: 8 }}>
+            Add
+          </button>
+        </div>
       </div>
     </div>
   );

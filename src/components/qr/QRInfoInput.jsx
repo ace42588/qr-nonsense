@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "../styles/styles.css"; // Import your component-specific styles
 import { useQRFormat } from "../../state";
 
@@ -29,6 +30,7 @@ const masks = [
 ];
 
 export function QRInfoInput() {
+  const [expanded, setExpanded] = useState(false);
   const {
     errorCorrectionLevel,
     version,
@@ -46,48 +48,55 @@ export function QRInfoInput() {
         maxWidth: 900,
       }}
     >
-      <div className="label-select-row">
-        <label htmlFor="ec-level">Error Correction Level:</label>
-        <select
-          id="ec-level"
-          value={errorCorrectionLevel}
-          onChange={(e) => setErrorCorrection(e.target.value)}
-        >
-          {levels.map((level) => (
-            <option key={level.value} value={level.value}>
-              {level.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="label-select-row">
-        <label htmlFor="qr-version">QR Code Version:</label>
-        <select
-          id="qr-version"
-          value={version}
-          onChange={(e) => setVersion(e.target.value)}
-        >
-          {versions.map((ver) => (
-            <option key={ver.value} value={ver.value}>
-              {ver.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="label-select-row">
-        <label htmlFor="data-mask">Data Mask:</label>
-        <select
-          id="data-mask"
-          value={dataMask}
-          onChange={(e) => setDataMask(e.target.value)}
-        >
-          {masks.map((mask) => (
-            <option key={mask.value} value={mask.value}>
-              {mask.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {expanded ? (
+        <>
+          <div className="label-select-row">
+            <label htmlFor="ec-level">Error Correction Level:</label>
+            <select
+              id="ec-level"
+              value={errorCorrectionLevel}
+              onChange={(e) => setErrorCorrection(e.target.value)}
+            >
+              {levels.map((level) => (
+                <option key={level.value} value={level.value}>
+                  {level.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="label-select-row">
+            <label htmlFor="qr-version">QR Code Version:</label>
+            <select
+              id="qr-version"
+              value={version}
+              onChange={(e) => setVersion(e.target.value)}
+            >
+              {versions.map((ver) => (
+                <option key={ver.value} value={ver.value}>
+                  {ver.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="label-select-row">
+            <label htmlFor="data-mask">Data Mask:</label>
+            <select
+              id="data-mask"
+              value={dataMask}
+              onChange={(e) => setDataMask(e.target.value)}
+            >
+              {masks.map((mask) => (
+                <option key={mask.value} value={mask.value}>
+                  {mask.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p onClick={() => setExpanded((e) => !e)}>Collapse</p>
+        </>
+      ) : (
+        <h3 onClick={() => setExpanded((e) => !e)}>QR Format Settings</h3>
+      )}
     </div>
   );
 }
