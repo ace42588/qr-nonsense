@@ -8,7 +8,7 @@ export function SegmentDisplay({ bitStream }) {
   const { segments, highlightModules } = useQRMessage();
 
   const isHighlighted = (id) => {
-    console.debug("isHighlighted", {highlightedIds, id});
+    //console.debug("isHighlighted", {highlightedIds, id});
     highlightedIds.includes(id);
   }
   
