@@ -26,17 +26,17 @@ const QRDataDispatchContext = createContext();
 
 export function QRDataProvider({ children }) {
   const [state, dispatch] = useReducer(qrReducer, initialQRState);
-  const { errorCorrectionLevel } = state;
+  let { inputs, errorCorrectionLevel } = state;
 
   const segments = useMemo(() =>
-    state.inputs.flatMap(({ data, mode, encoding }) =>
+    inputs.flatMap(({ data, mode, encoding }) =>
       encodeInput(mode, data, { inputEncoding: encoding })
-    )
+    ), [inputs]
   );
 
   const bits = useMemo(() =>
     segments.flatMap((s) => getBits(s.value, s.length))
-  );
+  ,[segments]);
 
   const version = useMemo(() => {
     let version = parseInt(state.version) || -1;
@@ -46,7 +46,7 @@ export function QRDataProvider({ children }) {
       return getMinimumQRCodeVersion(bits.length, errorCorrectionLevel);
     }
     throw new Error(`Invalid version: ${state.version.toString()}`);
-  });
+  }, []);
 
   const { matrix, dataMask } = useMemo(() => {
     const requiredDataCodewords = getRequiredDataCodewords(
