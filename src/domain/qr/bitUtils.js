@@ -17,13 +17,12 @@ function getBit(value, parentId) {
   };
 }
 
-// ~24k bits possible
 export function getBits(value, length, parentId) {
   if (!parentId) throw new Error("Missing parent ID");
   if (!!value && length) {
     value = value.toString(2).padStart(length, "0");
   }
-  console.debug("getBits", { value, length, parentId });
+  //console.debug("getBits", { value, length, parentId });
   switch (typeof value) {
     case "string": {
       const re = /[01]{2,}/gm;
@@ -31,8 +30,7 @@ export function getBits(value, length, parentId) {
         throw new Error(
           `Invalid string value for getBits(): ${JSON.stringify(value)}`
         );
-      const bits = [...value].map((bit) => getBit(parseInt(bit)), parentId);
-      //console.debug({ bits });
+      const bits = [...value].map((bit) => getBit(parseInt(bit), parentId));
       return bits;
     }
     case "number": {
@@ -43,7 +41,6 @@ export function getBits(value, length, parentId) {
       const bits = Array.from({ length }).map((_, idx) =>
         getBit((value >> (7 - idx)) & 1, parentId)
       );
-      //console.debug({ bits });
       return bits;
     }
     default: {
