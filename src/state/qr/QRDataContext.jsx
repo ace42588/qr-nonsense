@@ -58,8 +58,10 @@ export function QRDataProvider({ children }) {
         );
         dispatch({ type: Actions.ChangeInputs, payload: { inputs: parsed } });
       },
-      highlightModules: (payload) =>
-        dispatch({ type: Actions.HighlightIds, payload }),
+      highlightModules: (payload) =>{
+        const moduleIds = derived.idMap.get(payload.id);
+        dispatch({ type: Actions.HighlightIds, payload: moduleIds })
+      },
       highlightSegment: (payload) =>
         dispatch({ type: Actions.HighlightIds, payload }),
     }),

@@ -5,7 +5,13 @@ import { useQRData, useQRMessage } from "../../state";
 
 export function QRCodeCanvas() {
   const canvasRef = useRef(null);
+  const { highlightedIds } = useQRData();
   const { matrix, highlightSegment } = useQRMessage();
+  
+  const isHighlighted = (id) => {
+    console.debug("isHighlighted", {highlightedIds, id});
+    highlightedIds.includes(id);
+  }
 
   useEffect(() => {
     if (!canvasRef.current || !matrix) return;
@@ -36,7 +42,7 @@ export function QRCodeCanvas() {
           moduleSize
         );
 
-        if (m.isHighlighted) {
+        if (isHighlighted(m.bitId)) {
           ctx.strokeStyle = "red";
           ctx.lineWidth = 2;
           ctx.strokeRect(
