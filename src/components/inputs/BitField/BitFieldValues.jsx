@@ -19,7 +19,7 @@ export function BitFieldValues({ values, setValues, layout }) {
             ({field.width} bits, {field.startBit}→{field.endBit})
           </span>
           <input
-            type="number"
+            type="text"
             value={values[field.label] ?? ""}
             onChange={(e) => {
               const next = {
