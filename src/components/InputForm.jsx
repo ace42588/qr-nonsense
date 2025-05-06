@@ -48,10 +48,10 @@ function inputReducer(state, action) {
 
 export function InputForm() {
   const [inputs, dispatch] = useReducer(inputReducer, []);
-  const [label, setLabel] = useState("Input 1");
+  const [label, setLabel] = useState("");
   const { setInputs } = useQRMessage();
-  
-  const nextLabel = useRef(inputs.length + 1);
+
+  const nextLabel = useRef(inputs.length);
 
   useEffect(() => {
     setInputs(inputs);
@@ -68,7 +68,7 @@ export function InputForm() {
   const handleRemove = (id) => dispatch({ type: "remove", id });
 
   const handleAddInput = () => {
-    dispatch({ type: "add", label });
+    dispatch({ type: "add", label: label !== "" ? label : `Input ${++nextLabel.current}` });
     setLabel("");
   };
 
