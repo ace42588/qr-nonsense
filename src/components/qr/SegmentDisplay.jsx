@@ -4,13 +4,14 @@ import "../styles/styles.css";
 
 export function SegmentDisplay({ bitStream }) {
   const { highlightedIds } = useQRData();
-  const { segments, setSegments, highlightModules } = useQRMessage();
+  console.debug("SegmentDisplay", {highlightedIds});
+  const { segments, highlightModules } = useQRMessage();
 
   const isHighlighted = (id) => highlightedIds.includes(id);
   
   const getClassName = (segment) => {
     return `${segment.type}-button${
-      segment.isHighlighted ? "-highlighted" : ""
+      isHighlighted(segment.id) ? "-highlighted" : ""
     }`;
   };
 
