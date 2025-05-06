@@ -57,7 +57,7 @@ export function BitFieldValues({ values, setValues, layout }) {
           <label style={{ marginRight: 8, minWidth: 100 }}>{field.label}</label>
           <select
             id="fieldType"
-            value={type}
+            value={field.type}
             onChange={(e) => setType(e.target.value)}
           >
             {types.map((level) => (

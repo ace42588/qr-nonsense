@@ -21,6 +21,7 @@ const DEFAULT_FIELD = {
   min: 0,
   max: 255,
   bitWidth: 8,
+  type: "base10",
   mode: "bits", // or "max"
 };
 
