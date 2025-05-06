@@ -1,14 +1,9 @@
-import {
-  highlightModules,
-  highlightSegment,
-} from "./utils";
+import { highlightModules, highlightSegment } from "./utils";
 
 export const Actions = {
   ChangeInputs: "UPDATE_INPUTS",
-  HighlightSegment: "HIGHLIGHT_SEGMENT",
-  HighlightModules: "HIGHLIGHT_MODULES",
-  ClearSegmentHighlight: "RESET_SEGMENT_HIGHLIGHT",
-  ClearModuleHighlight: "RESET_MODULE_HIGHLIGHT",
+  HighlightIds: "HIGHLIGHT_IDS",
+  ClearHighlights: "CLEAR_HIGHLIGHTS",
   ToggleModule: "TOGGLE_MODULE",
 };
 
@@ -20,6 +15,7 @@ export const initialQRState = {
   matrix: [[]], // used when modified manually
   source: "inputs",
   error: "",
+  highlightedIds: [],
 };
 
 export function qrReducer(state, action) {
@@ -31,42 +27,20 @@ export function qrReducer(state, action) {
       };
     }
 
-    case Actions.HighlightSegment: {
-      try {
-        const module = action.payload;
-        if (module.nonData) {
-          const {
-            source: { name },
-          } = module;
-          const newMatrix = state.matrix.map((row) =>
-            row.map((m) => {
-              const newModule = { ...m };
-              if (m.source && m.source.name === name)
-                newModule.isHighlighted = !m.isHighlighted;
-              return newModule;
-            })
-          );
-          return { ...state, matrix: newMatrix };
-        }
-        // If it's a data segment, leave it to the derived layer
-        return state;
-      } catch (e) {
-        console.error(e);
-        return state;
-      }
+    case Actions.HighlightIds: {
+      return {
+        ...state,
+        highlightedIds: Array.isArray(action.payload)
+          ? action.payload
+          : [action.payload],
+      };
     }
 
-    case Actions.HighlightModules: {
-      try {
-        const segment = action.payload;
-        return {
-          ...state,
-          matrix: highlightModules(segment, state.idMap, state.matrix),
-        };
-      } catch (e) {
-        console.error(e);
-        return state;
-      }
+    case Actions.ClearHighlights: {
+      return {
+        ...state,
+        highlightedIds: [],
+      };
     }
 
     default: {

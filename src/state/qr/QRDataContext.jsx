@@ -59,9 +59,9 @@ export function QRDataProvider({ children }) {
         dispatch({ type: Actions.ChangeInputs, payload: { inputs: parsed } });
       },
       highlightModules: (payload) =>
-        dispatch({ type: Actions.HighlightModules, payload }),
+        dispatch({ type: Actions.HighlightIds, payload }),
       highlightSegment: (payload) =>
-        dispatch({ type: Actions.HighlightSegment, payload }),
+        dispatch({ type: Actions.HighlightIds, payload }),
     }),
     [derived.segments, derived.matrix]
   );

@@ -11,6 +11,8 @@ export function makeModule({ bit, x, y, isMasked }) {
   value = !!value;
   const isDark = isMasked ? !value : value;
   return {
+    id: `mod-${x}-${y}`,
+    bitId: bit.id
     bit,
     x,
     y,
