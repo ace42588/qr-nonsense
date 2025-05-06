@@ -94,7 +94,7 @@ export function QRDataProvider({ children }) {
     );
     dispatch({
       type: Actions.ChangeInputs,
-      payload: { inputs: payload },
+      payload: { inputs: parsed },
     });
   };
 

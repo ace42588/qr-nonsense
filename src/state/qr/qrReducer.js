@@ -1,8 +1,6 @@
 import { deriveFromInputs } from "./deriveFromInputs";
 import { deriveInputsFromMatrix } from "./deriveFromMatrix";
 import {
-  getModulesToHighlight,
-  getSegmentToHighlight,
   highlightModules,
   highlightSegment,
 } from "./utils";
@@ -65,7 +63,7 @@ export function qrReducer(state, action) {
         const segment = action.payload;
         return {
           ...state,
-          matrix: highlightModules(segment, state),
+          matrix: highlightModules(segment, state.idMap, state.matrix),
         };
       } catch (e) {
         console.error(e);

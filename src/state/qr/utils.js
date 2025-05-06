@@ -1,12 +1,14 @@
-export function getModulesToHighlight(segment, state) {
+function getModulesToHighlight(segment, state) {
+  console.debug("getModulesToHighlight", {segment, state});
   const { id } = segment;
   const { idMap } = state;
   return idMap.get(id);
 }
 
-export function highlightModules(segment, state) {
-  const modulesToUpdate = getModulesToHighlight(segment, state);
-  const newMatrix = state.matrix.map((row) =>
+export function highlightModules(segment, idMap, matrix) {
+  console.debug("highlightModules", {segment, idMap, matrix});
+  const modulesToUpdate = idMap.get(segment.id);
+  const newMatrix = matrix.map((row) =>
     row.map((module) => {
       let { bit, isHighlighted } = module;
       const newModule = { ...module };
@@ -19,7 +21,7 @@ export function highlightModules(segment, state) {
   return newMatrix;
 }
 
-export function getSegmentToHighlight(module, state) {
+function getSegmentToHighlight(module, state) {
   const {
     bit: { id },
   } = module;
@@ -45,7 +47,7 @@ const isHex = (str) =>
   /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(str);
 
 export function parseInput(input) {
-  //console.debug("parseInput",{input});
+  console.debug("parseInput",{input});
   if (!input || !input.data || !input.mode) return {};
   let { mode, data, encoding } = input;
 
@@ -66,13 +68,13 @@ export function parseInput(input) {
       break;
     }
     default: {
-      // defualt to byte
+      // default to byte
       if (encoding === "utf-8") {
         //console.debug("parsedInput", "Forcing UTF-8 interpretation for input");
         break;
       }
       if (isBinary(data)) {
-        //console.debug("parsedInput", "Interpreting input as binary...");
+        console.debug("parsedInput", "Interpreting input as binary...");
         let hex = "";
         let bin = data.replace(/^0b/i, "");
         bin = bin.replace(/\s+/g, "");
@@ -85,7 +87,7 @@ export function parseInput(input) {
         parsedInput.data = hex;
         break;
       } else if (isHex(data)) {
-        //console.debug("parsedInput", "Interpreting input as hex...");
+        console.debug("parsedInput", "Interpreting input as hex...");
         let hex = data.replace(/0x/gi, "");
         hex = hex.replace(/\s+/g, "");
 
