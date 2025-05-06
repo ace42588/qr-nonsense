@@ -48,7 +48,7 @@ export function BitFieldVisualizer({ layout, totalBits }) {
                 whiteSpace: "nowrap",
               }}
             >
-              {field.label}
+              {field.label}: {field.startBit}→{field.endBit}
             </div>
           );
         })}

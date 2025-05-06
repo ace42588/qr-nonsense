@@ -1,5 +1,9 @@
 import React, { useMemo, useState } from "react";
 
+const encoder = new TextEncoder("utf-8");
+
+const types = [{value:"base10", label: "Dec"},{value:"base16", label: "Hex"},{value:"string", label: "String"}];
+
 export function BitFieldValues({ values, setValues, layout }) {
   return (
     <>
@@ -15,9 +19,17 @@ export function BitFieldValues({ values, setValues, layout }) {
           }}
         >
           <label style={{ marginRight: 8, minWidth: 100 }}>{field.label}</label>
-          <span style={{ marginLeft: 8, color: "#888" }}>
-            ({field.width} bits, {field.startBit}→{field.endBit})
-          </span>
+          <select
+              id="fieldType"
+              value={field.type || }
+              onChange={(e) => setErrorCorrection(e.target.value)}
+            >
+              {levels.map((level) => (
+                <option key={level.value} value={level.value}>
+                  {level.label}
+                </option>
+              ))}
+            </select>
           <input
             type="text"
             value={values[field.label] ?? ""}
@@ -25,7 +37,7 @@ export function BitFieldValues({ values, setValues, layout }) {
               const next = {
                 ...values,
                 [field.label]:
-                  e.target.value === "" ? undefined : Number(e.target.value),
+                  e.target.value === "" ? undefined : encoder.encode(e.target.value),
               };
               setValues(next);
             }}
