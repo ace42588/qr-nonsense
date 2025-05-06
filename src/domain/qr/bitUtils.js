@@ -7,20 +7,21 @@ function getId() {
   return `bit-${lastBitId++}`;
 }
 
-function getBit(value) {
+function getBit(value, parentId) {
   return {
     type: "bit",
     value,
     id: getId(),
+    parentId
   };
 }
 
 // ~24k bits possible
-export function getBits(value, length, source) {
+export function getBits(value, length, parentId) {
   if (!!value && length) {
     value = value.toString(2).padStart(length, "0");
   }
-  //console.debug("getBits", { value, length });
+  console.debug("getBits", { value, length, parentId });
   switch (typeof value) {
     case "string": {
       const re = /[01]{2,}/gm;
@@ -28,7 +29,7 @@ export function getBits(value, length, source) {
         throw new Error(
           `Invalid string value for getBits(): ${JSON.stringify(value)}`
         );
-      const bits = [...value].map((bit) => getBit(parseInt(bit)));
+      const bits = [...value].map((bit) => getBit(parseInt(bit)), parentId);
       //console.debug({ bits });
       return bits;
     }
@@ -38,7 +39,7 @@ export function getBits(value, length, source) {
           `Invalid byte value for getBits(): ${value.toString()}`
         );
       const bits = Array.from({ length }).map((_, idx) =>
-        getBit((value >> (7 - idx)) & 1)
+        getBit((value >> (7 - idx)) & 1, parentId)
       );
       //console.debug({ bits });
       return bits;

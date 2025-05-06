@@ -12,7 +12,7 @@ export function makeModule({ bit, x, y, isMasked }) {
   const isDark = isMasked ? !value : value;
   return {
     id: `mod-${x}-${y}`,
-    bitId: bit.id
+    bitId: bit.id,
     bit,
     x,
     y,
@@ -27,6 +27,7 @@ function makeNonDataModule(value, source, x, y) {
   value = parseInt(value);
   const bit = {
     value,
+    id: source,
     source,
   };
   const module = makeModule({ bit, x, y, isMasked: false });

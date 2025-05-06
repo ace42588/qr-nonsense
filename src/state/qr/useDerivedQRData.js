@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { getSegments, getMappedBits, getVersion, getMatrix } from "./utils";
-import { getBits } from "../../domain/qr";
 
 /**
  * Derives intermediate and final QR code data from reducer state inputs.

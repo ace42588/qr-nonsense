@@ -1,4 +1,4 @@
-import { encodeSegment, validateLength, createCodon } from "./utility.js";
+import { encodeSegment, validateLength, createCodon } from "./utils.js";
 
 const mode = {
   name: "byte",

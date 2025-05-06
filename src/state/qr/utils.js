@@ -28,7 +28,7 @@ export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
 export function getMappedBits(segments) {
   const idMap = new Map();
   const bits = segments.flatMap((s) => {
-    const bits = getBits(s.value, s.length);
+    const bits = getBits(s.value, s.length, s.id);
     idMap.set(s.id, bits.map((b => b.id)));
     bits.forEach((b) => idMap.set(b.id, s.id));
     return bits;
