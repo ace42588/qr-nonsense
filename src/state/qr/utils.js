@@ -90,7 +90,7 @@ const isHex = (str) =>
   /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(str);
 
 export function parseInput(input) {
-  console.debug("parseInput", { input });
+  //console.debug("parseInput", { input });
   if (!input || !input.data || !input.mode) return {};
   let { mode, data, encoding } = input;
 

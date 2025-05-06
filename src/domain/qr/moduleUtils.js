@@ -27,7 +27,7 @@ function makeNonDataModule(value, source, x, y) {
   value = parseInt(value);
   const bit = {
     value,
-    id: source,
+    id: source.name,
     source,
   };
   const module = makeModule({ bit, x, y, isMasked: false });
