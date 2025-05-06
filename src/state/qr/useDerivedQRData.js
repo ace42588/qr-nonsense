@@ -45,6 +45,7 @@ export function useDerivedQRData({
   return {
     segments,
     bits,
+    idMap,
     version,
     matrix,
     dataMask,

@@ -49,6 +49,7 @@ export function QRDataProvider({ children }) {
     () => ({
       segments: derived.segments,
       matrix: derived.matrix,
+      idMap: derived.idMap,
       setSegment: (payload) =>
         dispatch({ type: Actions.ChangeInputs, payload }),
       setInputs: (payload) => {
