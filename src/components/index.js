@@ -1,4 +1,5 @@
-export * from "./forms/InputForm";
+export * from "./InputForm";
+export * from "./QRDisplayTabs";
+export * from "./MainViewTabs";
 export * from "./qr";
-export * from "./scanner/VideoScanner";
 export * from "./shared";

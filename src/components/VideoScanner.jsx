@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useEffect, useState } from "react";
-import { Actions, useQRDataDispatch } from "../../state";
+import { Actions, useQRDataDispatch } from "../state";
 import jsQR from "jsqr";
-import "../styles/styles.css";
+import "./styles/styles.css";
 
 export function VideoScanner({
   setBitStream,

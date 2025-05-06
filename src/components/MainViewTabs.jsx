@@ -1,8 +1,8 @@
 // MainViewTabs.jsx
 import { useState } from "react";
-import { InputForm } from "../forms/InputForm";
-import { VideoScanner } from "../scanner/VideoScanner";
-import { TabSwitcher } from "./TabSwitcher";
+import { InputForm } from "./InputForm";
+import { VideoScanner } from "./VideoScanner";
+import { TabSwitcher } from "./shared/TabSwitcher";
 
 export function MainViewTabs() {
   const [tab, setTab] = useState("input");

@@ -14,10 +14,10 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 
-import "../styles/styles.css";
-import { QRInfoInput } from "../qr/QRInfoInput";
-import { useQRMessage } from "../../state";
-import { SortableInput } from "../inputs/SortableInput";
+import "./styles/styles.css";
+import { QRInfoInput } from "./qr/QRInfoInput";
+import { useQRMessage } from "../state";
+import { SortableInput } from "./inputs/SortableInput";
 
 function inputReducer(state, action) {
   switch (action.type) {
