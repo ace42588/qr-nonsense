@@ -117,7 +117,7 @@ export function parseInput(input) {
         break;
       }
       if (isBinary(data)) {
-        console.debug("parsedInput", "Interpreting input as binary...");
+        //console.debug("parsedInput", "Interpreting input as binary...");
         let hex = "";
         let bin = data.replace(/^0b/i, "");
         bin = bin.replace(/\s+/g, "");
@@ -130,7 +130,7 @@ export function parseInput(input) {
         parsedInput.data = hex;
         break;
       } else if (isHex(data)) {
-        console.debug("parsedInput", "Interpreting input as hex...");
+        //console.debug("parsedInput", "Interpreting input as hex...");
         let hex = data.replace(/0x/gi, "");
         hex = hex.replace(/\s+/g, "");
 

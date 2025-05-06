@@ -34,7 +34,7 @@ export function BitFieldValues({ values, setValues, layout }) {
       ...values,
       [field.label]: newValue,
     };
-    console.debug("BitFieldValues: handleInputChange", { newValues });
+    //console.debug("BitFieldValues: handleInputChange", { newValues });
     setValues({
       ...values,
       [field.label]: newValue,

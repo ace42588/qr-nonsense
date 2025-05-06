@@ -1,10 +1,13 @@
 import { useRef, useEffect, useState } from "react";
-import { useQRMessage } from "../../state";
+import { useQRData, useQRMessage } from "../../state";
 import "../styles/styles.css";
 
 export function SegmentDisplay({ bitStream }) {
+  const { highlightedIds } = useQRData();
   const { segments, setSegments, highlightModules } = useQRMessage();
 
+  const isHighlighted = (id) => highlightedIds.includes(id);
+  
   const getClassName = (segment) => {
     return `${segment.type}-button${
       segment.isHighlighted ? "-highlighted" : ""

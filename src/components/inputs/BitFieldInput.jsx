@@ -29,7 +29,7 @@ export function BitFieldInput({ input, onChange }) {
   }, [layout, values]);
 
   const emitChange = (updatedFields, updatedValues) => {
-    console.debug("BitFieldInput: emitChange", {updatedFields, updatedValues});
+    //console.debug("BitFieldInput: emitChange", {updatedFields, updatedValues});
     try {
       const encoded = encodeFieldsToBytes(layout, updatedValues);
       onChange?.({
