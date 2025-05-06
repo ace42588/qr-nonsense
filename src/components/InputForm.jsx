@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useState } from "react";
+import { useReducer, useEffect, useState, useRef } from "react";
 import {
   DndContext,
   closestCenter,
@@ -51,7 +51,7 @@ export function InputForm() {
   const [label, setLabel] = useState("Input 1");
   const { setInputs } = useQRMessage();
   
-  const nextLabel = useRef()
+  const nextLabel = useRef(inputs.length + 1);
 
   useEffect(() => {
     setInputs(inputs);
