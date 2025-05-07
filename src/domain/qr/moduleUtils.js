@@ -18,7 +18,6 @@ export function makeModule({ bit, x, y, isMasked }) {
     y,
     isDark,
     isMasked,
-    isHighlighted: false,
     type: "module",
   };
 }
