@@ -18,11 +18,11 @@ function getCodeword(bits, type) {
   if (!bits || bits.length !== 8)
     throw new Error(`Invalid bits for getCodeword(): ${bits}`);
   return {
-    type: "codeword",
+    //type: "codeword",
     id: getId(),
     type,
     bits,
-    bitIds: bits.map(({ id }) => id),
+    //bitIds: bits.map(({ id }) => id),
   };
 }
 
@@ -107,7 +107,7 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const ecBytes = encoder.encode(dataBytes);
   //console.debug("getEcCodewords", { ecBytes });
   return Array.from(ecBytes, (b, idx) => {
-    //console.debug("getEcCodewords", {b});
+    console.debug("getEcCodewords", {b}, dataCodewords[idx]);
     return getCodeword(getBits(b, 8, dataCodewords[idx].id), "errorCorrection");
   });
 }
