@@ -14,7 +14,7 @@ function getId() {
 }
 
 function getCodeword(bits, type) {
-  if (!bits || bits.length !== 8)
+  if (!bits || bits.length !== CodewordLength)
     throw new Error(`Invalid bits for getCodeword(): ${bits}`);
   return {
     type: "codeword",
@@ -25,8 +25,13 @@ function getCodeword(bits, type) {
 }
 
 function getECCodeword(byte, sourceCodeword) {
-  //console.debug("getEcCodewords", {b}, dataCodewords[idx]);
-  return getCodeword(byte, 8, sourceCodeword, "errorCorrection");
+  console.debug("getEcCodewords", {byte, sourceCodeword});
+  return {
+    type: "codeword",
+    subtype: "errorCorrection",
+    id: getId(),
+    bits: getBits(byte, CodewordLength, sourceCodeword),
+  };
 }
 
 function getBlocks(encodedData, errorCorrectionLevel, version) {

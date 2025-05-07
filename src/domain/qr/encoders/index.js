@@ -44,20 +44,20 @@ export function encodeInput(mode, input, options = {}) {
 export function finalizeEncoding(bits, requiredDataCodewords) {
   // Add terminator bits, based on version capacity
   const numTermBits = getTerminatorLength(requiredDataCodewords, bits.length);
-  const termBits = getBits(0, numTermBits, "terminator");
+  const termBits = getBits(0, numTermBits, terminator);
   bits = [...bits, ...termBits];
 
   // add filler bits to complete the last codeword
   const remainder = bits.length % CodewordLength;
   const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
-  const fillBits = getBits(0, numFillBits, "fill");
+  const fillBits = getBits(0, numFillBits, fill);
   bits = [...bits, ...fillBits];
 
   // add padding to fill the capacity
   const numPadBytes =
     requiredDataCodewords - Math.ceil(bits.length / CodewordLength);
   const padBytes = Array.from({ length: numPadBytes }, (_, i) =>
-    getBits(PAD_BYTES[i % 2], 8, "pad")
+    getBits(PAD_BYTES[i % 2], 8, pad)
   );
 
   return [...bits, ...padBytes.flat()];
