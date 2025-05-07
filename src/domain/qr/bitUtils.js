@@ -13,7 +13,7 @@ function getBit(value, sourceId, sourceType) {
     type: "bit",
     value,
     id: getId(),
-    sourceId,
+    sourceId
   };
 }
 
@@ -30,9 +30,7 @@ export function getBits(value, length, source) {
         throw new Error(
           `Invalid string value for getBits(): ${JSON.stringify(value)}`
         );
-      const bits = [...value].map((bit) =>
-        getBit(parseInt(bit), source.id, source.type)
-      );
+      const bits = [...value].map((bit) => getBit(parseInt(bit), source.id, source.type));
       return bits;
     }
     case "number": {

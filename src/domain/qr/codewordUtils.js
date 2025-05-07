@@ -24,6 +24,11 @@ function getCodeword(bits, type) {
   };
 }
 
+function getECCodeword(byte, sourceCodeword) {
+  //console.debug("getEcCodewords", {b}, dataCodewords[idx]);
+  return getCodeword(byte, 8, sourceCodeword, "errorCorrection");
+}
+
 function getBlocks(encodedData, errorCorrectionLevel, version) {
   const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
     errorCorrectionLevel,
@@ -100,10 +105,7 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
     bits.reduce((byte, { value }, idx) => (byte << 1) | value, 0)
   );
   const ecBytes = encoder.encode(dataBytes);
-  return Array.from(ecBytes, (b, idx) => {
-    //console.debug("getEcCodewords", {b}, dataCodewords[idx]);
-    return getCodeword(getBits(b, 8, dataCodewords[idx]), "errorCorrection");
-  });
+  return Array.from(ecBytes, (b, idx) => getECCodeword(b, dataCodewords[idx]));
 }
 
 export function getCodewords(encodedInputs, version, errorCorrectionLevel) {
