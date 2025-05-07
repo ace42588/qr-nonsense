@@ -1,6 +1,7 @@
+import { getBits } from "../bitUtils";
 import { getRequiredDataCodewords } from "../codewordUtils";
 
-export const CodewordLength = 8;
+const CodewordLength = 8;
 
 let lastSegmentId = 0;
 
@@ -88,8 +89,48 @@ export function* createNonByte(input, mode, encoderFn) {
   }
 }
 
+const PAD_BYTES = [
+  createPart("padding", 236, "padding", CodewordLength),
+  createPart("padding", 17, "padding", CodewordLength),
+];
 
-const requiredDataCodewords = getRequiredDataCodewords(
+export function finalizeEncoding(segments, version, errorCorrectionLevel) {
+  const requiredDataCodewords = getRequiredDataCodewords(
     version,
     errorCorrectionLevel
   );
+
+  const idMap = new Map();
+  const bits = segments.flatMap((s) => {
+    const bits = getBits(s.value, s.length, s);
+    idMap.set(
+      s.id,
+      bits.map((b) => b.id)
+    );
+    bits.forEach((b) => idMap.set(b.id, s.id));
+    return bits;
+  });
+
+  // Add terminator bits, based on version capacity
+  const numTermBits = getTerminatorLength(requiredDataCodewords, bits.length);
+  const terminator = createPart("terminator", 0, "terminator", numTermBits);
+  const termBits = getBits(0, numTermBits, terminator);
+  bits = [...bits, ...termBits];
+
+  // add filler bits to complete the last codeword
+  const remainder = bits.length % CodewordLength;
+  const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
+  const fill = createPart("fill", 0, "fill", numFillBits);
+  const fillBits = getBits(0, numFillBits, fill);
+  bits = [...bits, ...fillBits];
+
+  // add padding to fill the capacity
+  const numPadBytes =
+    requiredDataCodewords - Math.ceil(bits.length / CodewordLength);
+  const padBytes = Array.from({ length: numPadBytes }, (_, i) => {
+    const pad = PAD_BYTES[i % 2]
+    getBits(PAD_BYTES[i % 2], 8, pad)
+  });
+
+  return [...bits, ...padBytes.flat()];
+}
