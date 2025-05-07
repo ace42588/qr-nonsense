@@ -3,6 +3,7 @@ import { highlightModules, highlightSegment } from "./utils";
 export const Actions = {
   ChangeInputs: "UPDATE_INPUTS",
   HighlightIds: "HIGHLIGHT_IDS",
+  RemoveHighlightIds: "REMOVE_HIGHLIGHT_IDS",
   ClearHighlights: "CLEAR_HIGHLIGHTS",
   ToggleModule: "TOGGLE_MODULE",
 };
@@ -33,6 +34,15 @@ export function qrReducer(state, action) {
         highlightedIds: Array.isArray(action.payload)
           ? action.payload
           : [action.payload],
+      };
+    }
+
+    case Actions.RemoveHighlightIds: {
+      return {
+        ...state,
+        highlightedIds: state.highlightedIds.filter(
+          (id) => !action.payload.includes(id)
+        ),
       };
     }
 
