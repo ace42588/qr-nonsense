@@ -6,6 +6,7 @@ import { encodeByte } from "./byte";
 import { CodewordLength, getTerminatorLength } from "./utils";
 
 const PAD_BYTES = [236, 17];
+
 const terminator = {
   name: "terminator",
   id: "terminator",
@@ -16,6 +17,12 @@ const fill = {
   name: "fill",
   id: "fill",
   type: "fill",
+}
+
+const pad = {
+  name: "pad",
+  id: "pad",
+  type: "pad",
 }
 
 export function encodeInput(mode, input, options = {}) {
