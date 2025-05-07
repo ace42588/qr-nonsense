@@ -1,7 +1,7 @@
 import { encodeNumeric } from "./numeric";
 import { encodeAlphanumeric } from "./alphanumeric";
 import { encodeByte } from "./byte";
-import { finalizeEncoding, getTerminatorLength } from "./utils";
+import { finalizeEncoding } from "./utils";
 
 export function encodeInput(mode, input, options = {}) {
   //console.debug("encodeInput", { mode, input, options });
