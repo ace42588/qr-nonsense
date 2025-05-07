@@ -1,15 +1,15 @@
 import { useMemo } from "react";
-import { getSegments, getMappedBits, getVersion, getMatrix } from "./utils";
+import { getSegments, getEncodedMessage, getVersion, getMatrix } from "./utils";
 
 /**
  * Derives intermediate and final QR code data from reducer state inputs.
- * 
+ *
  * @param {Object} state - The reducer state
  * @param {Array} state.inputs - Parsed inputs
  * @param {number} state.version - Selected version or -1 for auto
  * @param {number} state.dataMask - Selected data mask or -1 for auto
  * @param {number} state.errorCorrectionLevel - Level 0 (L) to 3 (H)
- * 
+ *
  * @returns {{
  *   segments: Array,
  *   bits: Array,
@@ -24,16 +24,21 @@ export function useDerivedQRData({
   dataMask: selectedDataMask,
   errorCorrectionLevel,
 }) {
-  const segments = useMemo(() => getSegments(inputs), [inputs]);
-
-  const {bits, idMap} = useMemo(
-    () => getMappedBits(segments),
-    [segments]
-  );
+  const dataSegments = useMemo(() => getSegments(inputs), [inputs]);
 
   const version = useMemo(
-    () => getVersion(segments.reduce((total, s) => total + s.length, 0), selectedVersion, errorCorrectionLevel),
-    [segments, selectedVersion, errorCorrectionLevel]
+    () =>
+      getVersion(
+        dataSegments.reduce((total, s) => total + s.length, 0),
+        selectedVersion,
+        errorCorrectionLevel
+      ),
+    [dataSegments, selectedVersion, errorCorrectionLevel]
+  );
+
+  const { segments, bits, idMap } = useMemo(
+    () => getEncodedMessage(dataSegments, version, errorCorrectionLevel),
+    [dataSegments, version, errorCorrectionLevel]
   );
 
   const { matrix, dataMask } = useMemo(
