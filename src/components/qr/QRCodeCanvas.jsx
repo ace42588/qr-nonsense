@@ -8,10 +8,7 @@ export function QRCodeCanvas() {
   const { highlightedIds } = useQRData();
   const { matrix, highlightSegment } = useQRMessage();
   
-  const isHighlighted = (id) => {
-    console.debug("isHighlighted", {highlightedIds, id});
-    highlightedIds.includes(id);
-  }
+  const isHighlighted = (id) =>  highlightedIds.includes(id);
 
   useEffect(() => {
     if (!canvasRef.current || !matrix) return;
@@ -54,7 +51,7 @@ export function QRCodeCanvas() {
         }
       }
     }
-  }, [matrix]);
+  }, [matrix, highlightedIds]);
 
   const handleClick = (event) => {
     event.preventDefault();
