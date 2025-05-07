@@ -19,9 +19,6 @@ export function encodeInput(mode, input, options = {}) {
   }
 }
 
-export function encodeMessage(inputs = [], version, errorCorrectionLevel) {
-  const segments = inputs.flatMap(({ data, mode, encoding }) =>
-    encodeInput(mode, data, { inputEncoding: encoding })
-  );
-  return finalizeEncoding()
+export function getEncodedMessage(segments, version, errorCorrectionLevel) {
+  return finalizeEncoding(segments, version, errorCorrectionLevel);
 }

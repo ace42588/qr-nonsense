@@ -6,6 +6,7 @@ import {
   getCodewords,
   getMinimumQRCodeVersion,
   getRequiredDataCodewords,
+  getEncodedMessage
 } from "../../domain/qr";
 
 export function getSegments(inputs) {

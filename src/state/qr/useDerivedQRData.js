@@ -32,7 +32,7 @@ export function useDerivedQRData({
   );
 
   const version = useMemo(
-    () => getVersion(bits.length, selectedVersion, errorCorrectionLevel),
+    () => getVersion(segments.reduce((total, s) => total + s.length, 0), selectedVersion, errorCorrectionLevel),
     [bits, selectedVersion, errorCorrectionLevel]
   );
 
