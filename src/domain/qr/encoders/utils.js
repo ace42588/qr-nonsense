@@ -99,7 +99,30 @@ export function finalizeEncoding(segments, version, errorCorrectionLevel) {
     version,
     errorCorrectionLevel
   );
+  const numDataBits = () => segments.reduce((total, s) => total + s.length, 0);
 
+  // Add terminator bits, based on version capacity
+  const numTermBits = getTerminatorLength(requiredDataCodewords, bits.length);
+  const terminator = createPart("terminator", 0, "terminator", numTermBits);
+  segments.push(terminator);
+  const termBits = getBits(0, numTermBits, terminator);
+  bits = [...bits, ...termBits];
+
+  // add filler bits to complete the last codeword
+  const remainder = bits.length % CodewordLength;
+  const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
+  const fill = createPart("fill", 0, "fill", numFillBits);
+  segments.push(fill);
+  const fillBits = getBits(0, numFillBits, fill);
+  bits = [...bits, ...fillBits];
+
+  // add padding to fill the capacity
+  const numPadBytes =
+    requiredDataCodewords - Math.ceil(bits.length / CodewordLength);
+  const padding = Array.from({ length: numPadBytes }, (_, i) => PAD_BYTES[i % 2]);
+  segments = [...segments, ...padding];
+  const padBits = padding.flatMap((p) => getBits(p.value, p.length, p));
+  
   const idMap = new Map();
   const bits = segments.flatMap((s) => {
     const bits = getBits(s.value, s.length, s);
@@ -111,26 +134,5 @@ export function finalizeEncoding(segments, version, errorCorrectionLevel) {
     return bits;
   });
 
-  // Add terminator bits, based on version capacity
-  const numTermBits = getTerminatorLength(requiredDataCodewords, bits.length);
-  const terminator = createPart("terminator", 0, "terminator", numTermBits);
-  const termBits = getBits(0, numTermBits, terminator);
-  bits = [...bits, ...termBits];
-
-  // add filler bits to complete the last codeword
-  const remainder = bits.length % CodewordLength;
-  const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
-  const fill = createPart("fill", 0, "fill", numFillBits);
-  const fillBits = getBits(0, numFillBits, fill);
-  bits = [...bits, ...fillBits];
-
-  // add padding to fill the capacity
-  const numPadBytes =
-    requiredDataCodewords - Math.ceil(bits.length / CodewordLength);
-  const padBytes = Array.from({ length: numPadBytes }, (_, i) => {
-    const pad = PAD_BYTES[i % 2]
-    getBits(PAD_BYTES[i % 2], 8, pad)
-  });
-
-  return [...bits, ...padBytes.flat()];
+  return [...bits, ...padBits];
 }
