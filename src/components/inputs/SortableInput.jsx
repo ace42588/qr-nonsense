@@ -22,7 +22,7 @@ export function SortableInput({ input, onChange, onRemove }) {
     useSortable({ id: input.id });
 
   const [tab, setTab] = useState("basic");
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   function toggleExpanded() {
     setExpanded((prev) => !prev);

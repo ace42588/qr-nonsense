@@ -46,8 +46,15 @@ function inputReducer(state, action) {
   }
 }
 
+const initialInput = {
+  id: crypto.randomUUID(),
+  label: "Input 0",
+  mode: "byte",
+  data: "Hello world",
+};
+
 export function InputForm() {
-  const [inputs, dispatch] = useReducer(inputReducer, []);
+  const [inputs, dispatch] = useReducer(inputReducer, [initialInput]);
   const [label, setLabel] = useState("");
   const { setInputs } = useQRMessage();
 
@@ -62,15 +69,18 @@ export function InputForm() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const handleChange = (id, payload) =>{
+  const handleChange = (id, payload) => {
     //console.debug("InputForm: handleChange", {payload});
     dispatch({ type: "update", id, payload });
-  }
+  };
 
   const handleRemove = (id) => dispatch({ type: "remove", id });
 
   const handleAddInput = () => {
-    dispatch({ type: "add", label: label !== "" ? label : `Input ${++nextLabel.current}` });
+    dispatch({
+      type: "add",
+      label: label !== "" ? label : `Input ${nextLabel.current++}`,
+    });
     setLabel("");
   };
 
