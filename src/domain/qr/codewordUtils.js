@@ -14,20 +14,17 @@ function getId() {
 }
 
 function getCodeword(bits, type) {
-  //console.debug("getCodeword", { bits, type });
   if (!bits || bits.length !== 8)
     throw new Error(`Invalid bits for getCodeword(): ${bits}`);
   return {
-    //type: "codeword",
+    type: "codeword",
+    subtype: type,
     id: getId(),
-    type,
     bits,
-    //bitIds: bits.map(({ id }) => id),
   };
 }
 
 function getBlocks(encodedData, errorCorrectionLevel, version) {
-  //console.debug("getBlocks", { encodedData });
   const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
     errorCorrectionLevel,
     version
@@ -79,7 +76,6 @@ function getCodewordsForBlock(
   numProcessedCodewords,
   encodedData
 ) {
-  //console.debug("getCodewordsForBlock", { encodedData });
   const dataCodewords = Array.from(
     { length: dataCodewordsPerBlock },
     (_, i) => {
@@ -103,12 +99,10 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const dataBytes = Array.from(dataCodewords, ({ bits }) =>
     bits.reduce((byte, { value }, idx) => (byte << 1) | value, 0)
   );
-  //console.debug("getEcCodewords", { dataBytes });
   const ecBytes = encoder.encode(dataBytes);
-  //console.debug("getEcCodewords", { ecBytes });
   return Array.from(ecBytes, (b, idx) => {
-    console.debug("getEcCodewords", {b}, dataCodewords[idx]);
-    return getCodeword(getBits(b, 8, dataCodewords[idx].id), "errorCorrection");
+    //console.debug("getEcCodewords", {b}, dataCodewords[idx]);
+    return getCodeword(getBits(b, 8, dataCodewords[idx]), "errorCorrection");
   });
 }
 
@@ -117,11 +111,7 @@ export function getCodewords(encodedInputs, version, errorCorrectionLevel) {
     version,
     errorCorrectionLevel
   );
-
-  //const encodedData = finalizeEncoding(encodedInputs, requiredDataCodewords);
-  //const qrBlocks = getBlocks(encodedData, errorCorrectionLevel, version);
   const qrBlocks = getBlocks(encodedInputs, errorCorrectionLevel, version);
-  //console.debug("getCodewords", { qrBlocks });
   const totalCodewords = qrBlocks.reduce(
     (total, { codewords }) => total + codewords.length,
     0
@@ -136,6 +126,5 @@ export function getCodewords(encodedInputs, version, errorCorrectionLevel) {
       return codeword;
     }
   });
-  //console.debug("QRUtils.getCodewords", { orderedCodewords });
   return orderedCodewords;
 }

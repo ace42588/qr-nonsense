@@ -7,18 +7,18 @@ function getId() {
   return `bit-${lastBitId++}`;
 }
 
-function getBit(value, parentId) {
-  if (!parentId) throw new Error("Missing parent ID");
+function getBit(value, sourceId, sourceType) {
+  if (!sourceId) throw new Error("Missing source ID");
   return {
     type: "bit",
     value,
     id: getId(),
-    parentId
+    sourceId,
   };
 }
 
-export function getBits(value, length, parentId) {
-  if (!parentId) throw new Error("Missing parent ID");
+export function getBits(value, length, source) {
+  if (!source) throw new Error("Missing source");
   if (!!value && length) {
     value = value.toString(2).padStart(length, "0");
   }
@@ -30,7 +30,9 @@ export function getBits(value, length, parentId) {
         throw new Error(
           `Invalid string value for getBits(): ${JSON.stringify(value)}`
         );
-      const bits = [...value].map((bit) => getBit(parseInt(bit), parentId));
+      const bits = [...value].map((bit) =>
+        getBit(parseInt(bit), source.id, source.type)
+      );
       return bits;
     }
     case "number": {
@@ -39,7 +41,7 @@ export function getBits(value, length, parentId) {
           `Invalid byte value for getBits(): ${value.toString()}`
         );
       const bits = Array.from({ length }).map((_, idx) =>
-        getBit((value >> (7 - idx)) & 1, parentId)
+        getBit((value >> (7 - idx)) & 1, source.id, source.type)
       );
       return bits;
     }
