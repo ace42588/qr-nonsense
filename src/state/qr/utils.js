@@ -1,6 +1,6 @@
 import {
   encodeInput,
-  finalizeEncoding,
+  //finalizeEncoding,
   generateMatrix,
   getBits,
   getCodewords,
@@ -43,12 +43,14 @@ export function getMatrix(
   selectedDataMask,
   bits
 ) {
-  const requiredDataCodewords = getRequiredDataCodewords(
-    version,
-    errorCorrectionLevel
-  );
-  const finalizedBits = finalizeEncoding(bits, requiredDataCodewords);
-  const codewords = getCodewords(finalizedBits, version, errorCorrectionLevel);
+  //const requiredDataCodewords = getRequiredDataCodewords(
+  //  version,
+  //  errorCorrectionLevel
+  //);
+  //const finalizedBits = finalizeEncoding(bits, requiredDataCodewords);
+  
+  console.debug("getMatrix", {bits});
+  const codewords = getCodewords(bits, version, errorCorrectionLevel);
   return generateMatrix({
     version,
     errorCorrectionLevel,
