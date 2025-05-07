@@ -13,6 +13,7 @@ export function getSegments(inputs) {
   const segments = inputs.flatMap(({ data, mode, encoding }) =>
     encodeInput(mode, data, { inputEncoding: encoding })
   );
+  console.debug("getSegments", {segments});
   return segments;
 }
 
