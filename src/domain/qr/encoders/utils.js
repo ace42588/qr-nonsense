@@ -1,3 +1,5 @@
+import { getRequiredDataCodewords } from "../codewordUtils";
+
 export const CodewordLength = 8;
 
 let lastSegmentId = 0;
@@ -85,3 +87,9 @@ export function* createNonByte(input, mode, encoderFn) {
     yield createCodon(value, groups[i], mode.name, length);
   }
 }
+
+
+const requiredDataCodewords = getRequiredDataCodewords(
+    version,
+    errorCorrectionLevel
+  );

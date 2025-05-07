@@ -26,11 +26,13 @@ function getCodeword(bits, type) {
 
 function getECCodeword(byte, sourceCodeword) {
   console.debug("getEcCodewords", {byte, sourceCodeword});
+  const id = getId();
   return {
     type: "codeword",
     subtype: "errorCorrection",
-    id: getId(),
-    bits: getBits(byte, CodewordLength, sourceCodeword),
+    sourceCodeword,
+    id,
+    bits: getBits(byte, CodewordLength, {id}),
   };
 }
 

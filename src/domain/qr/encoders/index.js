@@ -11,12 +11,14 @@ const terminator = {
   name: "terminator",
   id: "terminator",
   type: "terminator",
+  value: 0
 }
 
 const fill = {
   name: "fill",
   id: "fill",
   type: "fill",
+  value: 0
 }
 
 const pad = {
@@ -39,6 +41,12 @@ export function encodeInput(mode, input, options = {}) {
     default:
       throw new Error(`Unsupported QR encoding mode: ${mode}`);
   }
+}
+
+export function encodeMessage(inputs = []) {
+  const segments = inputs.flatMap(({ data, mode, encoding }) =>
+    encodeInput(mode, data, { inputEncoding: encoding })
+  );
 }
 
 export function finalizeEncoding(bits, requiredDataCodewords) {
