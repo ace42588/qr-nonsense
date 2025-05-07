@@ -27,28 +27,12 @@ export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
   throw new Error(`Invalid version: ${inputVersion.toString()}`);
 }
 
-export function getMappedBits(segments) {
-  const idMap = new Map();
-  const bits = segments.flatMap((s) => {
-    const bits = getBits(s.value, s.length, s);
-    idMap.set(s.id, bits.map((b => b.id)));
-    bits.forEach((b) => idMap.set(b.id, s.id));
-    return bits;
-  })
-  return { bits, idMap };
-}
-
 export function getMatrix(
   errorCorrectionLevel,
   version,
   selectedDataMask,
   bits
 ) {
-  //const requiredDataCodewords = getRequiredDataCodewords(
-  //  version,
-  //  errorCorrectionLevel
-  //);
-  //const finalizedBits = finalizeEncoding(bits, requiredDataCodewords);
   if (bits.length === 0) return {};
   console.debug("getMatrix", {bits});
   const codewords = getCodewords(bits, version, errorCorrectionLevel);
