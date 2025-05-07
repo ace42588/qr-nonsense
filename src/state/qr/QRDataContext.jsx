@@ -63,7 +63,8 @@ export function QRDataProvider({ children }) {
         dispatch({ type: Actions.HighlightIds, payload: moduleIds })
       },
       clearHighlightedModules: (payload) => {
-        dispatch({ type: Actions.RemoveHighlightIds, payload })
+        const moduleIds = derived.idMap.get(payload.id);
+        dispatch({ type: Actions.RemoveHighlightIds, payload: moduleIds })
       },
       highlightSegment: (payload) =>
         dispatch({ type: Actions.HighlightIds, payload }),
