@@ -33,7 +33,7 @@ function computeIndicatorLength(charCount, mode) {
   return thresholds[thresholds.length - 1].length;
 }
 
-export function getTerminatorLength(capacityBytes, totalDataBits) {
+function getTerminatorLength(capacityBytes, totalDataBits) {
   const capacityBits = capacityBytes * CodewordLength;
   return Math.min(4, Math.max(0, capacityBits - totalDataBits));
 }
@@ -102,19 +102,19 @@ export function finalizeEncoding(segments, version, errorCorrectionLevel) {
   const numDataBits = () => segments.reduce((total, s) => total + s.length, 0);
 
   // Add terminator bits, based on version capacity
-  const numTermBits = getTerminatorLength(requiredDataCodewords, numDataBits);
+  const numTermBits = getTerminatorLength(requiredDataCodewords, numDataBits());
   const terminator = createPart("terminator", 0, "terminator", numTermBits);
   segments.push(terminator);
 
   // add filler bits to complete the last codeword
-  const remainder = numDataBits % CodewordLength;
+  const remainder = numDataBits() % CodewordLength;
   const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
   const fill = createPart("fill", 0, "fill", numFillBits);
   segments.push(fill);
 
   // add padding to fill the capacity
   const numPadBytes =
-    requiredDataCodewords - Math.ceil(numDataBits / CodewordLength);
+    requiredDataCodewords - Math.ceil(numDataBits() / CodewordLength);
   const padding = Array.from(
     { length: numPadBytes },
     (_, i) => PAD_BYTES[i % 2]

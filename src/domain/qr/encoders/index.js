@@ -19,6 +19,12 @@ export function encodeInput(mode, input, options = {}) {
   }
 }
 
-export function getEncodedMessage(segments, version, errorCorrectionLevel) {
-  return finalizeEncoding(segments, version, errorCorrectionLevel);
+export function getEncodedMessage(dataSegments, version, errorCorrectionLevel) {
+  const { segments, bits, idMap } = finalizeEncoding(
+    dataSegments,
+    version,
+    errorCorrectionLevel
+  );
+  console.debug("getEncodedMessage", { segments, bits, idMap });
+  return { segments, bits, idMap };
 }

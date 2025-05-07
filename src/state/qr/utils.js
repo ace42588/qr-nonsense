@@ -48,7 +48,7 @@ export function getMatrix(
   //  errorCorrectionLevel
   //);
   //const finalizedBits = finalizeEncoding(bits, requiredDataCodewords);
-  
+  if (bits.length === 0) return {};
   console.debug("getMatrix", {bits});
   const codewords = getCodewords(bits, version, errorCorrectionLevel);
   return generateMatrix({
