@@ -75,7 +75,7 @@ export function SortableInput({ input, onChange, onRemove }) {
         />
       )}
       {expanded && tab === "mac" && (
-        <MACGenerator />
+        <MACGenerator input={input.data} onChange={handleChange}/>
       )}
       {expanded && <p onClick={() => setExpanded((e) => !e)}>Collapse</p>}
     </div>

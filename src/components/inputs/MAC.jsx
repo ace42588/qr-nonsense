@@ -53,7 +53,7 @@ const MAC_FUNCTIONS = {
 // --- React Component ---
 
 export function MACGenerator({ input, onChange }) {
-  const allInputs = useInputList();
+  const {inputs: allInputs} = useInputList();
 
   const currentId = input.id;
   const selectedIds = input.includedFields || [];
