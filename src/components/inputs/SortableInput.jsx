@@ -45,7 +45,8 @@ export function SortableInput({ input, onChange, onRemove }) {
   const InputComponent = componentMap[type];
 
   const handleChange = (payload) => {
-    onChange(input.id, { ...payload });
+    console.debug("SortableInput: handleChange", {payload});
+    onChange(payload);
   };
 
   return (
@@ -69,19 +70,19 @@ export function SortableInput({ input, onChange, onRemove }) {
       </div>
 
       {expanded && type === "basic" && (
-        <BasicInput input={input} onChange={handleChange} />
+        <BasicInput input={input} onChange={onChange} />
       )}
       {expanded && type === "json" && (
-        <JsonInput input={input} onChange={handleChange} />
+        <JsonInput input={input} onChange={onChange} />
       )}
       {expanded && type === "bitField" && (
         <BitFieldInput
           input={input}
-          onChange={handleChange}
+          onChange={onChange}
         />
       )}
       {expanded && type === "mac" && (
-        <MACGenerator input={input} onChange={handleChange}/>
+        <MACGenerator input={input} onChange={onChange}/>
       )}
       {expanded && <p onClick={() => setExpanded((e) => !e)}>Collapse</p>}
     </div>
