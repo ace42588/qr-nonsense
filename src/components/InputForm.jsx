@@ -18,7 +18,6 @@ import "./styles/styles.css";
 import { QRInfoInput } from "./qr/QRInfoInput";
 import { useInputList, useQRMessage } from "../state";
 import { SortableInput } from "./inputs/SortableInput";
-import { InputListProvider } from "../state";
 
 function inputReducer(state, action) {
   switch (action.type) {
@@ -56,11 +55,10 @@ const initialInput = {
 
 export function InputForm() {
   //const [inputs, dispatch] = useReducer(inputReducer, [initialInput]);
-  const {inputs, addInput, updateInput, remove}
+  const { inputs, addInput, updateInput, removeInput, reorderInputs } =
+    useInputList();
   const [label, setLabel] = useState("");
   const { setInputs } = useQRMessage();
-
-  const nextLabel = useRef(inputs.length);
 
   useEffect(() => {
     setInputs(inputs);
@@ -71,21 +69,6 @@ export function InputForm() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const handleChange = (id, payload) => {
-    //console.debug("InputForm: handleChange", {payload});
-    dispatch({ type: "update", id, payload });
-  };
-
-  const handleRemove = (id) => dispatch({ type: "remove", id });
-
-  const handleAddInput = () => {
-    dispatch({
-      type: "add",
-      label: label !== "" ? label : `Input ${nextLabel.current++}`,
-    });
-    setLabel("");
-  };
-
   return (
     <div className="input-form">
       <QRInfoInput />
@@ -93,12 +76,7 @@ export function InputForm() {
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragEnd={({ active, over }) => {
-            if (!over || active.id === over.id) return;
-            const oldIndex = inputs.findIndex((i) => i.id === active.id);
-            const newIndex = inputs.findIndex((i) => i.id === over.id);
-            dispatch({ type: "reorder", oldIndex, newIndex });
-          }}
+          onDragEnd={reorderInputs}
         >
           <SortableContext
             items={inputs.map((i) => i.id)}
@@ -108,8 +86,8 @@ export function InputForm() {
               <SortableInput
                 key={input.id}
                 input={input}
-                onChange={handleChange}
-                onRemove={handleRemove}
+                onChange={updateInput}
+                onRemove={removeInput}
               />
             ))}
           </SortableContext>
@@ -122,7 +100,13 @@ export function InputForm() {
             required
           />
 
-          <button onClick={handleAddInput} style={{ marginTop: 8 }}>
+          <button
+            onClick={() => {
+              handleAddInput(label);
+              setLabel("");
+            }}
+            style={{ marginTop: 8 }}
+          >
             Add
           </button>
         </div>

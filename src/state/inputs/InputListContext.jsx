@@ -1,6 +1,6 @@
 // context/InputListContext.js
-import { createContext, useContext, useReducer, useRef, useState} from "react";
-import { Actions, inputReducer, initialInputs } from "./inputRedicer";
+import { createContext, useContext, useReducer, useRef, useState } from "react";
+import { Actions, inputReducer, initialInputs } from "./inputReducer";
 
 const InputListContext = createContext();
 
@@ -16,10 +16,16 @@ export function InputListProvider({ children }) {
         label,
       });
     },
-    updateInput: (id, payload) => {
-      dispatch({ type: Actions.Update, id, payload });
+    updateInput: (payload) => {
+      dispatch({ type: Actions.Update, id: payload.id, payload });
     },
-    removeInput: (id) => dispatch({ type: Actions.Remove, id }),
+    removeInput: (payload) => dispatch({ type: Actions.Remove, id:payload.id }),
+    reorderInputs: ({ active, over }) => {
+      if (!over || active.id === over.id) return;
+      const oldIndex = inputs.findIndex((i) => i.id === active.id);
+      const newIndex = inputs.findIndex((i) => i.id === over.id);
+      dispatch({ type: "reorder", oldIndex, newIndex });
+    },
   };
 
   return (
