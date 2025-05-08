@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { useQRData, useQRMessage } from "../../state";
 import "../styles/styles.css";
 
-export function SegmentDisplay({ bitStream }) {
+export function SegmentDisplay() {
   const { highlightedIds } = useQRData();
   //console.debug("SegmentDisplay", {highlightedIds});
   const { segments, highlightModules, clearHighlightedModules } =

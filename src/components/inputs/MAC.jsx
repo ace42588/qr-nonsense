@@ -59,6 +59,7 @@ export function MACGenerator({ input, onChange }) {
   const selectedIds = input.includedFields || [];
 
   const selectableInputs = allInputs.filter((i) => i.id !== currentId);
+  console.debug("MACGenerator", {input, selectableInputs});
 
   const toggleSelection = (id) => {
     const next = selectedIds.includes(id)
@@ -67,7 +68,6 @@ export function MACGenerator({ input, onChange }) {
     onChange({ ...input, includedFields: next });
   };
 
-  const [data, setData] = useState({ txn: "99999", amt: "1337", user: "bob" });
   const [selectedFields, setSelectedFields] = useState(["txn", "amt"]);
   const [algorithm, setAlgorithm] = useState("HMAC-SHA256");
   const [secret, setSecret] = useState("supersecret");
@@ -82,7 +82,7 @@ export function MACGenerator({ input, onChange }) {
       setMac(result);
     }
     generateMAC();
-  }, [data, selectedFields, algorithm, secret]);
+  }, [selectableInputs, selectedIds, algorithm, secret]);
 
   function toggleField(field) {
     setSelectedFields((prev) =>

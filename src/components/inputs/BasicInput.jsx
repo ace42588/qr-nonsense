@@ -3,10 +3,10 @@ import "../styles/styles.css";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
-export function BasicInput({ input = "", onChange }) {
+export function BasicInput({ input = {}, onChange }) {
   const [mode, setMode] = useState("byte");
   const [encoding, setEncoding] = useState(undefined);
-  const [data, setData] = useState(input);
+  const [data, setData] = useState(input.data || "");
 
   useEffect(() => {
     // ensure parent receives the correct initial state

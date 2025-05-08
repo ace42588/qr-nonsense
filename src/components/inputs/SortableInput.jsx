@@ -69,19 +69,19 @@ export function SortableInput({ input, onChange, onRemove }) {
       </div>
 
       {expanded && type === "basic" && (
-        <BasicInput input={input.data} onChange={handleChange} />
+        <BasicInput input={input} onChange={handleChange} />
       )}
       {expanded && type === "json" && (
-        <JsonInput input={input.data} onChange={handleChange} />
+        <JsonInput input={input} onChange={handleChange} />
       )}
       {expanded && type === "bitField" && (
         <BitFieldInput
-          input={{ fields: input.fields, values: input.values }}
+          input={input}
           onChange={handleChange}
         />
       )}
       {expanded && type === "mac" && (
-        <MACGenerator input={input.data} onChange={handleChange}/>
+        <MACGenerator input={input} onChange={handleChange}/>
       )}
       {expanded && <p onClick={() => setExpanded((e) => !e)}>Collapse</p>}
     </div>
