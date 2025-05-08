@@ -45,5 +45,7 @@ export const initialInputs = [
     label: "Input 0",
     mode: "byte",
     data: "Hello world",
+    fields: [],
+    values: {},
   },
 ];

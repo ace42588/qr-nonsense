@@ -25,7 +25,7 @@ const DEFAULT_FIELD = {
   mode: "bits", // or "max"
 };
 
-export function BitFieldEditor({ fields, setFields }) {
+export function BitFieldEditor({ fields, onChange }) {
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -34,11 +34,11 @@ export function BitFieldEditor({ fields, setFields }) {
   function handleAddField() {
     console.debug("BitFieldEditor: handleAddField", {});
     const newField = { ...DEFAULT_FIELD, id: crypto.randomUUID() };
-    setFields([...fields, newField]);
+    onChange([...fields, newField]);
   }
 
   function handleChange(id, key, value) {
-    setFields(
+    onChange(
       fields.map((f) =>
         f.id === id ? { ...f, ...(key ? { [key]: value } : value) } : f
       )
@@ -47,7 +47,7 @@ export function BitFieldEditor({ fields, setFields }) {
 
   function handleRemove(id) {
     console.debug("handleRemove", { id });
-    setFields(fields.filter((f) => f.id !== id));
+    onChange(fields.filter((f) => f.id !== id));
   }
 
   function handleDragEnd(event) {
@@ -56,7 +56,7 @@ export function BitFieldEditor({ fields, setFields }) {
     if (active.id !== over.id) {
       const oldIndex = fields.findIndex((f) => f.id === active.id);
       const newIndex = fields.findIndex((f) => f.id === over.id);
-      setFields(arrayMove(fields, oldIndex, newIndex));
+      onChange(arrayMove(fields, oldIndex, newIndex));
     }
   }
 

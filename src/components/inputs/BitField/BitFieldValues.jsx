@@ -8,7 +8,7 @@ const types = [
   { value: "string", label: "String" },
 ];
 
-export function BitFieldValues({ values, setValues, layout }) {
+export function BitFieldValues({ values, onChange, layout }) {
   const [type, setType] = useState("base10");
 
   const handleInputChange = (e, field) => {
@@ -35,7 +35,7 @@ export function BitFieldValues({ values, setValues, layout }) {
       [field.label]: newValue,
     };
     //console.debug("BitFieldValues: handleInputChange", { newValues });
-    setValues({
+    onChange({
       ...values,
       [field.label]: newValue,
     });

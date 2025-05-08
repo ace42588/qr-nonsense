@@ -9,7 +9,7 @@ import {
 } from "./BitField";
 import { TabSwitcher } from "../shared/TabSwitcher";
 
-export function BitFieldInput({ input: {fields = []}, onChange }) {
+export function BitFieldInput({ input, onChange }) {
   const [tab, setTab] = useState("fields");
 
   const { layout, totalBits } = useMemo(
@@ -26,17 +26,15 @@ export function BitFieldInput({ input: {fields = []}, onChange }) {
   }, [layout, input.values]);
 
   const emitChange = (updatedFields, updatedValues) => {
-    //console.debug("BitFieldInput: emitChange", {updatedFields, updatedValues});
-    try {
-      const encoded = encodeFieldsToBytes(layout, updatedValues);
-      onChange?.({
-        data: bytesToHex(encoded),
-        mode: "byte",
+    const newInput = {...input, mode: "byte",
         encoding: "hex",
         fields: updatedFields,
-        values: updatedValues,
-      });
+        values: updatedValues,};
+    console.debug("BitFieldInput: emitChange", {newInput});
+    try {
+      newInput.data = encodeFieldsToBytes(layout, updatedValues);
     } catch {}
+    onChange?.(newInput);
   };
 
   const handleFieldsChange = (newFields) => {
@@ -67,11 +65,11 @@ export function BitFieldInput({ input: {fields = []}, onChange }) {
       {tab === "values" ? (
         <BitFieldValues
           values={input.values}
-          setValues={handleValuesChange}
+          onChange={handleValuesChange}
           layout={layout}
         />
       ) : (
-        <BitFieldEditor fields={input.fields} setFields={handleFieldsChange} />
+        <BitFieldEditor fields={input.fields} onChange={handleFieldsChange} />
       )}
 
       <BitFieldVisualizer layout={layout} totalBits={totalBits} />
