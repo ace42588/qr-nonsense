@@ -3,7 +3,7 @@ import { useState } from "react";
 import { InputForm } from "./InputForm";
 import { VideoScanner } from "./VideoScanner";
 import { TabSwitcher } from "./shared/TabSwitcher";
-import { InputContextProvider } from "../state";
+import { InputListProvider } from "../state";
 
 export function MainViewTabs() {
   const [tab, setTab] = useState("input");
@@ -18,9 +18,9 @@ export function MainViewTabs() {
         active={tab}
         onChange={setTab}
       />
-      <InputContextProvider>
+      <InputListProvider>
         {tab === "input" ? <InputForm /> : <VideoScanner />}
-      </InputContextProvider>
+      </InputListProvider>
     </div>
   );
 }
