@@ -9,11 +9,11 @@ import {
 } from "./BitField";
 import { TabSwitcher } from "../shared/TabSwitcher";
 
-export function BitFieldInput({ input, onChange }) {
+export function BitFieldInput({ input: {fields = []}, onChange }) {
   const [tab, setTab] = useState("fields");
 
   const { layout, totalBits } = useMemo(
-    () => generateBitLayout(input.fields),
+    () => generateBitLayout(input.fields || []),
     [input.fields]
   );
 
@@ -34,19 +34,17 @@ export function BitFieldInput({ input, onChange }) {
         mode: "byte",
         encoding: "hex",
         fields: updatedFields,
-        values: updatedValues
+        values: updatedValues,
       });
-    } catch {
-
-    }
+    } catch {}
   };
 
   const handleFieldsChange = (newFields) => {
-    emitChange(newFields, values);
+    emitChange(newFields, input.values);
   };
 
   const handleValuesChange = (newValues) => {
-    emitChange(fields, newValues);
+    emitChange(input.fields, newValues);
   };
 
   return (
