@@ -1,7 +1,7 @@
 import { useInputList } from "../../state";
 
 import { useEffect, useState } from "react";
-import sodium from "libsodium-wrappers";
+import sodium from "libsodium-wrappers-sumo";
 import { keccak_256 } from "js-sha3";
 
 // --- MAC Functions ---
@@ -59,7 +59,6 @@ export function MACGenerator({ input, onChange }) {
   const selectedIds = input.includedFields || [];
 
   const selectableInputs = allInputs.filter((i) => i.id !== currentId);
-  console.debug("MACGenerator", {input, selectableInputs});
 
   const toggleSelection = (id) => {
     const next = selectedIds.includes(id)
@@ -68,7 +67,7 @@ export function MACGenerator({ input, onChange }) {
     onChange({ ...input, includedFields: next });
   };
 
-  const [selectedFields, setSelectedFields] = useState(["txn", "amt"]);
+  const [selectedFields, setSelectedFields] = useState([]);
   const [algorithm, setAlgorithm] = useState("HMAC-SHA256");
   const [secret, setSecret] = useState("supersecret");
   const [mac, setMac] = useState("");

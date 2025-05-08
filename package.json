@@ -20,7 +20,7 @@
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@monaco-editor/react": "^4.7.0",
-    "libsodium-wrappers": "^0.7.15",
+    "libsodium-wrappers-sumo": "^0.7.15",
     "js-sha3": "^0.9.3"
   },
   "devDependencies": {
