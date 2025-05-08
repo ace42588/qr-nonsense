@@ -57,7 +57,7 @@ export function InputForm() {
   //const [inputs, dispatch] = useReducer(inputReducer, [initialInput]);
   const { inputs, addInput, updateInput, removeInput, reorderInputs } =
     useInputList();
-  const [label, setLabel] = useState("");
+  const [label, setLabel] = useState(null);
   const { setInputs } = useQRMessage();
 
   useEffect(() => {
