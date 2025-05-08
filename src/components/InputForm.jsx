@@ -16,9 +16,9 @@ import {
 
 import "./styles/styles.css";
 import { QRInfoInput } from "./qr/QRInfoInput";
-import { useQRMessage } from "../state";
+import { useInputList, useQRMessage } from "../state";
 import { SortableInput } from "./inputs/SortableInput";
-import { InputListProvider } from "./context/InputListContext";
+import { InputListProvider } from "../state";
 
 function inputReducer(state, action) {
   switch (action.type) {

@@ -2,9 +2,16 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 
+export const Actions = {
+  Add: "ADD",
+  Remove: "REMOVE",
+  Update: "UPDATE",
+  Reorder: "REORDER"
+}
+
 export function inputReducer(state, action) {
   switch (action.type) {
-    case "add":
+    case Actions.Add:
       return [
         ...state,
         {
@@ -14,13 +21,13 @@ export function inputReducer(state, action) {
           data: "",
         },
       ];
-    case "remove":
+    case Actions.Remove:
       return state.filter((input) => input.id !== action.id);
-    case "update":
+    case Actions.Update:
       return state.map((input) =>
         input.id === action.id ? { ...input, ...action.payload } : input
       );
-    case "reorder": {
+    case Actions.Reorder: {
       const { oldIndex, newIndex } = action;
       return arrayMove(state, oldIndex, newIndex);
     }
@@ -29,9 +36,9 @@ export function inputReducer(state, action) {
   }
 }
 
-export const initialInput = {
+export const initialInputs = [{
   id: crypto.randomUUID(),
   label: "Input 0",
   mode: "byte",
   data: "Hello world",
-};
+}];

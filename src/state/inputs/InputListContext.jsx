@@ -1,11 +1,13 @@
 // context/InputListContext.js
-import { createContext, useContext } from "react";
+import { createContext, useContext, useReducer } from "react";
+import {Actions, inputReducer, initialInputs } from "./inputRedicer";
 
-const InputListContext = createContext([]);
+const InputListContext = createContext();
 
 export function InputListProvider({ inputs, children }) {
+  const [state, dispatch] = useReducer(inputReducer, initialInputs);
   return (
-    <InputListContext.Provider value={inputs}>
+    <InputListContext.Provider value={state}>
       {children}
     </InputListContext.Provider>
   );
