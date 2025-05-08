@@ -1,3 +1,4 @@
+// state/inputs/inputReducer.js
 import {
   arrayMove,
 } from "@dnd-kit/sortable";

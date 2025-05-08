@@ -102,7 +102,7 @@ export function InputForm() {
 
           <button
             onClick={() => {
-              handleAddInput(label);
+              addInput(label);
               setLabel("");
             }}
             style={{ marginTop: 8 }}
