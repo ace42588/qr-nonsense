@@ -17,11 +17,16 @@ const INPUT_TYPES = [
   { value: "mac", label: "MAC" },
 ];
 
+const componentMap = {
+  "basic": BasicInput,
+  "mac-generator": MACGenerator
+};
+
 export function SortableInput({ input, onChange, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: input.id });
 
-  const [tab, setTab] = useState("basic");
+  const [type, setType] = useState("basic");
   const [expanded, setExpanded] = useState(true);
 
   function toggleExpanded() {
@@ -37,6 +42,7 @@ export function SortableInput({ input, onChange, onRemove }) {
     maxWidth: 900,
     marginBottom: 8,
   };
+  const InputComponent = componentMap[type];
 
   const handleChange = (payload) => {
     onChange(input.id, { ...payload });
