@@ -18,6 +18,11 @@ export function inputReducer(state, action) {
           label: action.label,
           mode: "byte",
           data: "",
+          fields: [],
+          values: {},
+          algo: "HMAC-SHA256",
+          key: "supersecret",
+          mac: "",
         },
       ];
     }
@@ -47,5 +52,8 @@ export const initialInputs = [
     data: "Hello world",
     fields: [],
     values: {},
+    algo: "HMAC-SHA256",
+    key: "supersecret",
+    mac: "",
   },
 ];

@@ -53,7 +53,8 @@ const MAC_FUNCTIONS = {
 // --- React Component ---
 
 export function MACGenerator({ input, onChange }) {
-  const {inputs: allInputs} = useInputList();
+  console.debug("MACGenerator", {input});
+  const { inputs: allInputs } = useInputList();
 
   const currentId = input.id;
   const selectedIds = input.includedFields || [];
@@ -67,27 +68,30 @@ export function MACGenerator({ input, onChange }) {
     onChange({ ...input, includedFields: next });
   };
 
-  const [selectedFields, setSelectedFields] = useState([]);
-  const [algorithm, setAlgorithm] = useState("HMAC-SHA256");
-  const [secret, setSecret] = useState("supersecret");
-  const [mac, setMac] = useState("");
-
   useEffect(() => {
     async function generateMAC() {
-      const selected = selectableInputs.filter((i) => selectedIds.includes(i.id));
+      const selected = selectableInputs.filter((i) =>
+        selectedIds.includes(i.id)
+      );
       const message = selected.map((i) => i.data).join("");
-      const fn = MAC_FUNCTIONS[algorithm];
-      const result = await fn(message, secret, 4); // 4 bytes
-      setMac(result);
+      const fn = MAC_FUNCTIONS[input.algo];
+      const result = await fn(message, input.key, 4); // 4 bytes
+      handleUpdate(result);
     }
     generateMAC();
-  }, [selectableInputs, selectedIds, algorithm, secret]);
+  }, [selectableInputs, selectedIds, input.algo, input.key]);
 
-  function toggleField(field) {
-    setSelectedFields((prev) =>
-      prev.includes(field) ? prev.filter((f) => f !== field) : [...prev, field]
-    );
-  }
+  const handleAlgoChange = (e) => {
+    onChange?.({ ...input, algo: e.target.value });
+  };
+
+  const handleKeyChange = (e) => {
+    onChange?.({ ...input, key: e.target.value });
+  };
+
+  const handleUpdate = (result) => {
+    onChange?.({ ...input, mac: result });
+  };
 
   return (
     <div className="p-4 max-w-md mx-auto">
@@ -96,8 +100,8 @@ export function MACGenerator({ input, onChange }) {
       <label className="block font-medium">Secret Key</label>
       <input
         className="border p-1 w-full mb-2"
-        value={secret}
-        onChange={(e) => setSecret(e.target.value)}
+        value={input.key}
+        onChange={handleKeyChange}
       />
 
       <label className="block font-medium">Select Fields</label>
@@ -115,8 +119,8 @@ export function MACGenerator({ input, onChange }) {
       <label className="block font-medium mt-2">MAC Algorithm</label>
       <select
         className="border p-1 w-full mb-2"
-        value={algorithm}
-        onChange={(e) => setAlgorithm(e.target.value)}
+        value={input.algo}
+        onChange={handleAlgoChange}
       >
         {Object.keys(MAC_FUNCTIONS).map((alg) => (
           <option key={alg} value={alg}>
@@ -126,7 +130,7 @@ export function MACGenerator({ input, onChange }) {
       </select>
 
       <div className="bg-gray-100 p-2 rounded mt-4">
-        <strong>MAC:</strong> <code>{mac}</code>
+        <strong>MAC:</strong> <code>{input.mac}</code>
       </div>
     </div>
   );
