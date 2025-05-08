@@ -56,7 +56,7 @@ export function SortableInput({ input, onChange, onRemove }) {
         </span>
         {expanded ? (
           <>
-            <TabSwitcher options={INPUT_TYPES} active={tab} onChange={setTab} />
+            <TabSwitcher options={INPUT_TYPES} active={type} onChange={setType} />
             <button type="button" onClick={() => onRemove(input.id)}>
               ✖
             </button>
@@ -68,19 +68,19 @@ export function SortableInput({ input, onChange, onRemove }) {
         )}
       </div>
 
-      {expanded && tab === "basic" && (
+      {expanded && type === "basic" && (
         <BasicInput input={input.data} onChange={handleChange} />
       )}
-      {expanded && tab === "json" && (
+      {expanded && type === "json" && (
         <JsonInput input={input.data} onChange={handleChange} />
       )}
-      {expanded && tab === "bitField" && (
+      {expanded && type === "bitField" && (
         <BitFieldInput
           input={{ fields: input.fields, values: input.values }}
           onChange={handleChange}
         />
       )}
-      {expanded && tab === "mac" && (
+      {expanded && type === "mac" && (
         <MACGenerator input={input.data} onChange={handleChange}/>
       )}
       {expanded && <p onClick={() => setExpanded((e) => !e)}>Collapse</p>}
