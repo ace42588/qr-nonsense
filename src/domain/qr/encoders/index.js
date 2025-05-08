@@ -25,6 +25,6 @@ export function getEncodedMessage(dataSegments, version, errorCorrectionLevel) {
     version,
     errorCorrectionLevel
   );
-  console.debug("getEncodedMessage", { segments, bits, idMap });
+  //console.debug("getEncodedMessage", { segments, bits, idMap });
   return { segments, bits, idMap };
 }

@@ -13,21 +13,22 @@ const InputListContext = createContext();
 
 export function InputListProvider({ children }) {
   const [inputs, dispatch] = useReducer(inputReducer, initialInputs);
-  const nextLabel = useRef(inputs.length);
 
   const inputsContextValue = {
     inputs,
-    addInput: useCallback((label = `Input ${nextLabel.current++}`) => {
+    addInput: useCallback((payload) => {
       dispatch({
         type: Actions.Add,
-        label,
+        label: payload,
       });
     }, []),
     updateInput: useCallback((payload) => {
       dispatch({ type: Actions.Update, id: payload.id, payload });
     }, []),
     removeInput: useCallback(
-      (payload) => dispatch({ type: Actions.Remove, id: payload.id }),
+      (payload) => {
+        console.debug("removeInput", {payload});
+        dispatch({ type: Actions.Remove, payload })},
       []
     ),
     reorderInputs: useCallback(({ active, over }) => {

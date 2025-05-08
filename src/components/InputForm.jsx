@@ -57,7 +57,8 @@ export function InputForm() {
   //const [inputs, dispatch] = useReducer(inputReducer, [initialInput]);
   const { inputs, addInput, updateInput, removeInput, reorderInputs } =
     useInputList();
-  const [label, setLabel] = useState(null);
+  const nextLabel = useRef(inputs.length);
+  const [label, setLabel] = useState("");
   const { setInputs } = useQRMessage();
 
   useEffect(() => {
@@ -102,7 +103,7 @@ export function InputForm() {
 
           <button
             onClick={() => {
-              addInput(label);
+              addInput(label !== "" ? label : `Input ${nextLabel.current++}` );
               setLabel("");
             }}
             style={{ marginTop: 8 }}

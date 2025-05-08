@@ -14,7 +14,7 @@ export function generateMatrix({
   dataMask,
   codewords,
 }) {
-  console.debug("generateMatrix", { codewords });
+  //console.debug("generateMatrix", { codewords });
   const dimension = version * 4 + 17;
 
   function createBaseMatrix() {

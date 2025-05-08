@@ -13,7 +13,7 @@ export function getSegments(inputs) {
   const segments = inputs.flatMap(({ data, mode, encoding }) =>
     encodeInput(mode, data, { inputEncoding: encoding })
   );
-  console.debug("getSegments", {segments});
+  //console.debug("getSegments", {segments});
   return segments;
 }
 
@@ -34,7 +34,7 @@ export function getMatrix(
   bits
 ) {
   if (bits.length === 0) return {};
-  console.debug("getMatrix", {bits});
+  //console.debug("getMatrix", {bits});
   const codewords = getCodewords(bits, version, errorCorrectionLevel);
   return generateMatrix({
     version,
