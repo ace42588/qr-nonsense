@@ -26,13 +26,17 @@ export function BitFieldInput({ input, onChange }) {
   }, [layout, input.values]);
 
   const emitChange = (updatedFields, updatedValues) => {
-    const newInput = {...input, mode: "byte",
-        encoding: "hex",
-        fields: updatedFields,
-        values: updatedValues,};
-    console.debug("BitFieldInput: emitChange", {newInput});
+    const newInput = {
+      ...input,
+      mode: "byte",
+      encoding: "hex",
+      fields: updatedFields,
+      values: updatedValues,
+    };
+    console.debug("BitFieldInput: emitChange", { newInput });
     try {
-      newInput.data = encodeFieldsToBytes(layout, updatedValues);
+      const encodedBytes = encodeFieldsToBytes(layout, updatedValues);
+      newInput.data = bytesToHex(encodedBytes);
     } catch {}
     onChange?.(newInput);
   };
