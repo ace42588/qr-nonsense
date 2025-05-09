@@ -47,12 +47,38 @@ export function inputReducer(state, action) {
 export const initialInputs = [
   {
     id: crypto.randomUUID(),
+    type: "basic",
     label: "Input 0",
+    data: {
     mode: "byte",
     data: "Hello world",
+      encoding: "utf-8"
+    },
     fields: [],
     values: {},
     algo: "HMAC-SHA256",
     key: "supersecret",
   },
 ];
+
+const basicExample = {
+    id: crypto.randomUUID(),
+    type: "basic",
+    label: "Input 0",
+    data: {
+    mode: "byte",
+    data: "Hello world",
+    },
+  };
+
+const bitFieldExample = {
+  id: crypto.randomUUID(),
+    type: "basic",
+    label: "Input 0",
+    data: {
+    fields: [],
+    values: {},
+    },
+};
+
+const j

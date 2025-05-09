@@ -4,14 +4,12 @@ import {
   useCallback,
   useContext,
   useReducer,
-  useRef,
-  useState,
 } from "react";
 import { Actions, inputReducer, initialInputs } from "./inputReducer";
 
-const InputListContext = createContext();
+const InputContext = createContext();
 
-export function InputListProvider({ children }) {
+export function InputProvider({ children }) {
   const [inputs, dispatch] = useReducer(inputReducer, initialInputs);
 
   const inputsContextValue = {
@@ -40,12 +38,12 @@ export function InputListProvider({ children }) {
   };
 
   return (
-    <InputListContext.Provider value={inputsContextValue}>
+    <InputContext.Provider value={inputsContextValue}>
       {children}
-    </InputListContext.Provider>
+    </InputContext.Provider>
   );
 }
 
-export function useInputList() {
-  return useContext(InputListContext);
+export function useInputs() {
+  return useContext(InputContext);
 }
