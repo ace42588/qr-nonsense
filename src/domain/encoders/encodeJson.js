@@ -159,39 +159,43 @@ function encodeToBytes(obj, schema) {
   combined.set(itemBytes, rootBytes.length);
 }
 
+function encodeToAlphanumeric(obj, schema) {
+  const { rootSchema, arrayField, arraySchema } = separateSchemaParts(schema);
+  
+  let encodedItems = [];
+  if (arrayField && Array.isArray(obj[arrayField])) {
+    const itemLayout = arraySchema;
+    itemBytes = obj[arrayField].flatMap((item) =>
+      Array.from(encodeFieldsToBytes(itemLayout, item))
+    );
+  }
+
+  const encodedItems = items
+    .map(({ variant, quantity }) => `${variant}:${quantity}`)
+    .join("/");
+  const data = `$1%${flatValues.join("%")}%${encodedItems}/$`;
+}
+
 const JSON_PARSERS = {
-  Alphanumeric: (flatValues, items) => {
-    if (!Array.isArray(items)) {
-      console.warn("Alphanumeric format requires input.items[]");
-      return { data: "", mode: "alphanumeric" };
-    }
-
-    const encodedItems = items
-      .map(({ variant, quantity }) => `${variant}:${quantity}`)
-      .join("/");
-    const data = `$1%${flatValues.join("%")}%${encodedItems}/$`;
-
-    return {
-      data,
-      mode: "alphanumeric",
-    };
-  },
+  Alphanumeric: (obj, schema) => ({
+    data: encodeToAlphanumeric(obj, schema),
+    mode: "alphanumeric",
+  }),
   PER: (obj, schema) => ({
     mode: "byte",
     encoding: "hex",
     data: bytesToHex(encodeToBytes(obj, schema)),
   }),
   "PER-ModHex": (obj, schema) => {
-    const hex = encodeToBytes(obj, schema);
+    const hex = bytesToHex(encodeToBytes(obj, schema));
     return {
       data: ModHex.encode(hex),
       mode: "alphanumeric",
       encoding: "modhex",
     };
   },
-  "PER-NTRU": (input) => {
-    let hex = BitPacked.encode(input);
-    const bytes = hex.match(/.{1,2}/g)?.map((h) => parseInt(h, 16)) ?? [];
+  "PER-NTRU": (obj, schema) => {
+    const bytes = Array.from(encodeToBytes(obj, schema));
     const moduli = bytes.map(() => 256);
     const encoded = NTRU.encode(bytes, moduli);
     return {
@@ -200,8 +204,8 @@ const JSON_PARSERS = {
       encoding: "ntru",
     };
   },
-  None: (input) => ({
-    data: JSON.stringify(input),
+  None: (obj, schema) => ({
+    data: JSON.stringify(obj),
     mode: "byte",
     encoding: "utf-8",
   }),
@@ -219,5 +223,5 @@ export function encodeJson({ obj = {}, schema = {}, encoding = "None" }) {
   const encodeFn = JSON_PARSERS[encoding];
   if (!encodeFn) throw new Error(`Unknown input type: ${encoding}`);
 
-  return encodeFn(obj);
+  return encodeFn(obj, schema);
 }
