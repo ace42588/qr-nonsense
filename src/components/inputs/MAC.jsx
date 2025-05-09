@@ -90,7 +90,7 @@ export function MACGenerator({ input, onChange }) {
   };
 
   const handleUpdate = (result) => {
-    onChange?.({ ...input, mac: result });
+    onChange?.({ ...input, data: result });
   };
 
   return (
@@ -130,7 +130,7 @@ export function MACGenerator({ input, onChange }) {
       </select>
 
       <div className="bg-gray-100 p-2 rounded mt-4">
-        <strong>MAC:</strong> <code>{input.mac}</code>
+        <strong>MAC:</strong> <code>{input.data}</code>
       </div>
     </div>
   );
