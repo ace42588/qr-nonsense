@@ -1,7 +1,7 @@
 import {
   bytesToHex,
   encodeFieldsToBytes,
-  generateBitLayout,
+  generateBitLayoutFromSchema,
 } from "./bitFieldUtils";
 import { BitPacked, ModHex, NTRU } from "./json";
 
@@ -25,6 +25,40 @@ const exampleSchema = {
   properties: {
     platform: {
       type: "integer",
+      bits: 2
+    },
+    conferenceCode: {
+      type: "integer",
+      bits: 8
+    },
+    transactionId: {
+      type: "integer",
+      bits: 20
+    },
+    items: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          variant: {
+            type: "integer",
+            bits: 16
+          },
+          quantity: {
+            type: "integer",
+            bits: 8
+          }
+        }
+      }
+    }
+  }
+}
+
+const alphaNumericSchema = {
+  type: "object",
+  properties: {
+    platform: {
+      type: "string",
       bits: 2
     },
     conferenceCode: {
@@ -109,19 +143,18 @@ const JSON_PARSERS = {
   }),
 };
 
-export function encodeJson(input, format = "None", fieldMap = {}) {
-  const fullMap = { ...defaultFieldMap, ...fieldMap };
+export function encodeJson({value = {}, schema = {}, encoding = "None"}) {
 
-  if (typeof input !== "object" || input == null) {
+  if (typeof value !== "object" || value == null) {
     return {
-      data: String(input ?? ""),
+      data: String(value ?? ""),
       mode: "byte",
       encoding: "utf-8",
     };
   }
 
-  const encodeFn = JSON_PARSERS[format];
-  if (!encodeFn) throw new Error(`Unknown input type: ${input.type}`);
+  const encodeFn = JSON_PARSERS[encoding];
+  if (!encodeFn) throw new Error(`Unknown input type: ${encoding}`);
 
-  return encodeFn(input);
+  return encodeFn(value);
 }

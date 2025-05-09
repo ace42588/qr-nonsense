@@ -89,8 +89,8 @@ const jsonExample = {
   label: "Input 0",
   data: { 
     value: {}, 
-    fieldMap: {}, 
-    serialization: "none",
+    schema: {}, 
+    encoding: "none",
   },
 };
 
