@@ -13,22 +13,24 @@ export function MACGenerator({ input, onChange }) {
     [allInputs, input]
   );
 
-  const emitChange = (selectedIds, algo, key) => {
+  const emitChange = async (selectedIds, algo, key) => {
     const selected = selectableInputs.filter((i) => selectedIds.includes(i.id));
     const message = selected.map((i) => i.data).join("");
     const fn = MAC_FUNCTIONS[algo];
-    const newInput = {
-      ...input,
-      mode: "byte",
-      encoding: "hex",
-      includedFields: selectedIds,
-      algo,
-      key,
-    };
     try {
-      fn(message, key, 4).then(result => newInput.data = result);
-    } catch {}
-    onChange?.(newInput);
+      const result = await fn(message, key, 4);
+      onChange?.({
+        ...input,
+        mode: "byte",
+        encoding: "hex",
+        includedFields: selectedIds,
+        algo,
+        key,
+        data: result,
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleAlgoChange = (e) => {
@@ -38,7 +40,7 @@ export function MACGenerator({ input, onChange }) {
   const handleKeyChange = (e) => {
     emitChange(input.includedFields, input.algo, e.target.value);
   };
-  
+
   const toggleSelection = (id) => {
     const next = selectedIds.includes(id)
       ? selectedIds.filter((x) => x !== id)
