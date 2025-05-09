@@ -7,6 +7,38 @@ const INPUT_TYPES = {
   MAC: "mac",
 };
 
+const INPUT_PARSERS = {
+  basic: parseInput,
+  json: encodeJson,
+  bitField: (input) => {
+    const { layout, totalBits } = generateBitLayout(input.fields || []);
+        const encodedBytes = encodeFieldsToBytes(layout, input.values || {});
+        return {
+          mode: "byte",
+          encoding: "utf-8",
+          data: bytesToHex(encodedBytes),
+        };
+  },
+  mac: (input) => {
+    const message = inputs?.selectedInputs?.map((i) => i.data).join("");
+    const fn = MAC_FUNCTIONS[algo];
+    try {
+      const result = await fn(message, key, 4);
+      onChange?.({
+        ...input,
+        mode: "byte",
+        encoding: "hex",
+        includedFields: selectedIds,
+        algo,
+        key,
+        data: result,
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+}
+
 const isBinary = (str) =>
   /^(?:0b)?(?:[01]{1,}(?:\s+[01]{1,})+|(?:[01]{1,})+)$/i.test(str);
 const isHex = (str) =>
