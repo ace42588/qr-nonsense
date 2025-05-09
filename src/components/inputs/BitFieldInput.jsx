@@ -12,27 +12,30 @@ import { useEncodedInputs, useInputs, useInputDispatch } from "../../state";
 
 export function BitFieldInput({ id }) {
   const inputs = useInputs();
-  const {updateInput} = useInputDispatch();
+  const { updateInput } = useInputDispatch();
   const previews = useEncodedInputs();
+  console.debug("BitFieldInput", { previews });
 
-  const input = inputs.find(i => i.id === id);
-  console.debug("BitFieldInput", {input});
+  const input = inputs.find((i) => i.id === id);
+  const {fields = [], values = {}} = input;
+  console.debug("BitFieldInput", { input });
   const preview = previews[id];
-  
+  console.debug("BitFieldInput", { preview });
+
   const [tab, setTab] = useState("fields");
 
   const { layout, totalBits } = useMemo(
-    () => generateBitLayout(input.fields || []),
-    [input.fields]
+    () => generateBitLayout(fields),
+    [fields]
   );
 
   const encodedBytes = useMemo(() => {
     try {
-      return encodeFieldsToBytes(layout, input.values);
+      return encodeFieldsToBytes(layout, values);
     } catch {
       return null;
     }
-  }, [layout, input.values]);
+  }, [layout, values]);
 
   const emitChange = (updatedFields, updatedValues) => {
     const newInput = {
@@ -51,11 +54,11 @@ export function BitFieldInput({ id }) {
   };
 
   const handleFieldsChange = (newFields) => {
-    emitChange(newFields, input.values);
+    emitChange(newFields, values);
   };
 
   const handleValuesChange = (newValues) => {
-    emitChange(input.fields, newValues);
+    emitChange(fields, newValues);
   };
 
   return (
@@ -77,12 +80,12 @@ export function BitFieldInput({ id }) {
       />
       {tab === "values" ? (
         <BitFieldValues
-          values={input.values}
+          values={values}
           onChange={handleValuesChange}
           layout={layout}
         />
       ) : (
-        <BitFieldEditor fields={input.fields} onChange={handleFieldsChange} />
+        <BitFieldEditor fields={fields} onChange={handleFieldsChange} />
       )}
 
       <BitFieldVisualizer layout={layout} totalBits={totalBits} />

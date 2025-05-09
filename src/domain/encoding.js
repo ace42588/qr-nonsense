@@ -10,8 +10,8 @@ const INPUT_PARSERS = {
   mac: generateMAC,
 };
 
-export function encodeAll(inputs) {
-  return Promise.all(
+export async function encodeAll(inputs) {
+  return await Promise.all(
     inputs.map(async (input) => {
       const encodeFn = INPUT_PARSERS[input.type];
       if (!encodeFn) throw new Error(`Unknown input type: ${input.type}`);
