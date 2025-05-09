@@ -19,41 +19,30 @@ export function MACGenerator({ input, onChange }) {
       : [...selectedIds, id];
     onChange({ ...input, includedFields: next });
   };
-  
-  const emitChange = (updatedFields, updatedValues) => {
+
+  const emitChange = (selectedIds, algo, key) => {
+    const selected = selectableInputs.filter((i) => selectedIds.includes(i.id));
+    const message = selected.map((i) => i.data).join("");
+    const fn = MAC_FUNCTIONS[algo];
     const newInput = {
       ...input,
       mode: "byte",
       encoding: "hex",
+      includedFields: selectedIds,
+      algo,
+      key,
     };
     try {
       async function generateMAC() {
-      const selected = selectableInputs.filter((i) =>
-        selectedIds.includes(i.id)
-      );
-      const message = selected.map((i) => i.data).join("");
-      const fn = MAC_FUNCTIONS[input.algo];
-      const result = await fn(message, input.key, 4); // 4 bytes
-    }
+        const result = await fn(message, input.key, 4); // 4 bytes
+      }
       newInput.data = generateMAC();
     } catch {}
     onChange?.(newInput);
   };
 
-  const mac = useMemo(() => {
-    async function generateMAC() {
-      const selected = selectableInputs.filter((i) =>
-        selectedIds.includes(i.id)
-      );
-      const message = selected.map((i) => i.data).join("");
-      const fn = MAC_FUNCTIONS[input.algo];
-      const result = await fn(message, input.key, 4); // 4 bytes
-    }
-    generateMAC();
-  }, [selectableInputs, selectedIds, input.algo, input.key]);
-  console.debug("MACGenerator", { mac });
-
   const handleAlgoChange = (e) => {
+    emitChange()
     onChange?.({ ...input, algo: e.target.value, data: mac });
   };
 
