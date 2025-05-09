@@ -162,11 +162,15 @@ function encodeToBytes(obj, schema) {
 function encodeToAlphanumeric(obj, schema) {
   const { rootSchema, arrayField, arraySchema } = separateSchemaParts(schema);
   
-  let encodedItems = [];
+  let encodedItems;
   if (arrayField && Array.isArray(obj[arrayField])) {
     const itemLayout = arraySchema;
-    itemBytes = obj[arrayField].flatMap((item) =>
-      Array.from(encodeFieldsToBytes(itemLayout, item))
+    encodedItems = obj[arrayField].map((item) =>{
+      if (itemLayout.type === "object") {
+        const { separator = "", ...props} = arraySchema.properties;
+        return Object.keys(props).reduce((str, p) => )
+      }
+    }
     );
   }
 
