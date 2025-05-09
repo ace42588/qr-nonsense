@@ -19,20 +19,16 @@ const INPUT_PARSERS = {
           data: bytesToHex(encodedBytes),
         };
   },
-  mac: (input) => {
-    const message = inputs?.selectedInputs?.map((i) => i.data).join("");
-    const fn = MAC_FUNCTIONS[algo];
+  mac: ({selectedInputs = [], key = "secret", algo = "HMAC"}) => {
+    const message = input?.selectedInputs?.map((i) => i.data).join("");
+    const fn = MAC_FUNCTIONS[input.algo];
+    async function generateMAC() {
+      const result = await fn(message, secret, 4); // 4 bytes
+      return result
+    }
     try {
-      const result = await fn(message, key, 4);
-      onChange?.({
-        ...input,
-        mode: "byte",
-        encoding: "hex",
-        includedFields: selectedIds,
-        algo,
-        key,
-        data: result,
-      });
+      const result = generateMAC();
+      
     } catch (e) {
       console.error(e);
     }
