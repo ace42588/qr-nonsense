@@ -1,21 +1,18 @@
+import { useMemo, useState } from "react";
 import { useInputList } from "../../state";
-
-import { useEffect, useState } from "react";
-import sodium from "libsodium-wrappers-sumo";
-import { keccak_256 } from "js-sha3";
-
-// --- React Component ---
-
-
+import { MAC_FUNCTIONS } from "../../domain";
 
 export function MACGenerator({ input, onChange }) {
-  console.debug("MACGenerator", {input});
+  console.debug("MACGenerator", { input });
   const { inputs: allInputs } = useInputList();
 
   const currentId = input.id;
   const selectedIds = input.includedFields || [];
 
-  const selectableInputs = allInputs.filter((i) => i.id !== currentId);
+  const selectableInputs = useMemo(
+    () => allInputs.filter((i) => i.id !== currentId),
+    [allInputs]
+  );
 
   const toggleSelection = (id) => {
     const next = selectedIds.includes(id)
@@ -24,7 +21,7 @@ export function MACGenerator({ input, onChange }) {
     onChange({ ...input, includedFields: next });
   };
 
-  useEffect(() => {
+  const mac = useMemo(() => {
     async function generateMAC() {
       const selected = selectableInputs.filter((i) =>
         selectedIds.includes(i.id)
@@ -32,21 +29,16 @@ export function MACGenerator({ input, onChange }) {
       const message = selected.map((i) => i.data).join("");
       const fn = MAC_FUNCTIONS[input.algo];
       const result = await fn(message, input.key, 4); // 4 bytes
-      handleUpdate(result);
     }
     generateMAC();
   }, [selectableInputs, selectedIds, input.algo, input.key]);
 
   const handleAlgoChange = (e) => {
-    onChange?.({ ...input, algo: e.target.value });
+    onChange?.({ ...input, algo: e.target.value, data: mac });
   };
 
   const handleKeyChange = (e) => {
-    onChange?.({ ...input, key: e.target.value });
-  };
-
-  const handleUpdate = (result) => {
-    onChange?.({ ...input, data: result });
+    onChange?.({ ...input, key: e.target.value, data: mac });
   };
 
   return (
@@ -86,7 +78,7 @@ export function MACGenerator({ input, onChange }) {
       </select>
 
       <div className="bg-gray-100 p-2 rounded mt-4">
-        <strong>MAC:</strong> <code>{input.data}</code>
+        <strong>MAC:</strong> <code>{mac}</code>
       </div>
     </div>
   );

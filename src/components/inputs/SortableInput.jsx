@@ -6,7 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { BasicInput } from "./BasicInput";
 import { JsonInput } from "./JsonInput";
 import { BitFieldInput } from "./BitFieldInput";
-import { MACGenerator } from "./MAC";
+import { MACGenerator } from "./MACGenerator";
 
 import { TabSwitcher } from "../shared/TabSwitcher";
 
