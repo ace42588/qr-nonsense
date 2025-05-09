@@ -1,3 +1,6 @@
+import {
+  getCodewords,
+} from "../../domain/qr";
 import { DATA_MASKS } from "./constants";
 import { calculatePenalty } from "./calculatePenalty";
 import {
@@ -95,4 +98,21 @@ export function generateMatrix({
 
   //addFormatInfoModules(bestMatrix, errorCorrectionLevel, bestMask);
   return { matrix: applyMask(populated, bestMask), dataMask: bestMask };
+}
+
+export function getMatrix(
+  errorCorrectionLevel,
+  version,
+  selectedDataMask,
+  bits
+) {
+  if (bits.length === 0) return {};
+  //console.debug("getMatrix", {bits});
+  const codewords = getCodewords(bits, version, errorCorrectionLevel);
+  return generateMatrix({
+    version,
+    errorCorrectionLevel,
+    dataMask: selectedDataMask,
+    codewords,
+  });
 }
