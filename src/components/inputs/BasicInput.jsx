@@ -1,20 +1,28 @@
 import { useState, useEffect } from "react";
+import { useInputs, useInputDispatch, useEncodedInputs } from "../../state";
 import "../styles/styles.css";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
-export function BasicInput({ input = {}, onChange }) {
-  console.debug("BasicInput", {input})
+export function BasicInput({ id }) {
+  console.debug("BasicInput", { id })
+  const inputs = useInputs();
+  const {updateInput} = useInputDispatch();
+  const previews = useEncodedInputs();
+
+  const input = inputs.find(i => i.id === id);
+  const preview = previews[id];
+  
   const handleDataChange = (e) => {
-    onChange?.({ ...input, data: e.target.value });
+    updateInput?.({ ...input, data: e.target.value });
   };
 
   const handleModeChange = (e) => {
-    onChange?.({ ...input, mode: e.target.value });
+    updateInput?.({ ...input, mode: e.target.value });
   };
 
   const handleEncodingChange = (e) => {
-    onChange?.({
+    updateInput?.({
       ...input,
       encoding: e.target.checked ? "utf-8" : undefined,
     });

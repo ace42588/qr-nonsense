@@ -8,10 +8,12 @@ import {
   generateBitLayout,
 } from "./BitField";
 import { TabSwitcher } from "../shared/TabSwitcher";
-import { useEncodedInputs, useInputs, useInputDispatch } from "../state";
+import { useEncodedInputs, useInputs, useInputDispatch } from "../../state";
 
 export function BitFieldInput({ input, onChange }) {
+  console.debug("BitFieldInput", {input});
   const inputs = useInputs();
+  console.debug("BitFieldInput", {inputs});
   const dispatch = useInputDispatch();
   const previews = useEncodedInputs();
   

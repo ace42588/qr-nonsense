@@ -3,6 +3,7 @@ import { useState, useMemo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+import { useInputDispatch } from "../../state";
 import { BasicInput } from "./BasicInput";
 import { JsonInput } from "./JsonInput";
 import { BitFieldInput } from "./BitFieldInput";
@@ -24,9 +25,11 @@ const componentMap = {
   "mac": MACGenerator
 };
 
-export function SortableInput({ input, onChange, onRemove }) {
+export function SortableInput({ id, label }) {
+  const {  removeInput } =
+    useInputDispatch();
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: input.id });
+    useSortable({ id});
 
   const [type, setType] = useState("basic");
   const [expanded, setExpanded] = useState(true);
@@ -46,11 +49,6 @@ export function SortableInput({ input, onChange, onRemove }) {
   };
   const InputComponent = componentMap[type];
 
-  const handleChange = (payload) => {
-    console.debug("SortableInput: handleChange", {payload});
-    onChange(payload);
-  };
-
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
       <div className="input-button-row">
@@ -60,17 +58,17 @@ export function SortableInput({ input, onChange, onRemove }) {
         {expanded ? (
           <>
             <TabSwitcher options={INPUT_TYPES} active={type} onChange={setType} />
-            <button type="button" onClick={() => onRemove(input.id)}>
+            <button type="button" onClick={() => removeInput(id)}>
               ✖
             </button>
           </>
         ) : (
           <h3 onClick={() => setExpanded((e) => !e)}>
-            {input.label}
+            {label}
           </h3>
         )}
       </div>
-      {expanded && <InputComponent input={input} onChange={onChange}/>}
+      {expanded && <InputComponent id={id}/>}
       {expanded && <p onClick={() => setExpanded((e) => !e)}>Collapse</p>}
     </div>
   );
