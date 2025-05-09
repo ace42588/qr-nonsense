@@ -7,37 +7,10 @@ const INPUT_TYPES = {
   MAC: "mac",
 };
 
-const INPUT_PARSERS = {
-  basic: parseInput,
-  json: encodeJson,
-  bitField: ({ fields = [], values = {} }) => {
-    const { layout, totalBits } = generateBitLayout(fields);
-    const encodedBytes = encodeFieldsToBytes(layout, values);
-    return {
-      mode: "byte",
-      encoding: "utf-8",
-      data: bytesToHex(encodedBytes),
-    };
-  },
-  mac: ({ selectedInputs = [], key = "secret", algo = "HMAC-SHA256" }) => {
-    const message = selectedInputs?.map((i) => i.data).join("");
-    const fn = MAC_FUNCTIONS[algo];
-    async function generateMAC() {
-      const result = await fn(message, key, 4); // 4 bytes
-      return result;
-    }
-    try {
-      const result = generateMAC();
-      return {
-        mode: "byte",
-        encoding: "utf-8",
-        data: result,
-      };
-    } catch (e) {
-      console.error(e);
-    }
-  },
-};
+const MODE_REGEX = {
+  numeric: /\d+/gm,
+  alphanumeric: /[0-9A-Z \$\%\*\+\-\.\/:]+/gm,
+}
 
 const isBinary = (str) =>
   /^(?:0b)?(?:[01]{1,}(?:\s+[01]{1,})+|(?:[01]{1,})+)$/i.test(str);
@@ -111,28 +84,24 @@ export function bytesToHex(bytes) {
     .join("");
 }
 
-export function parseInput(input) {
-  console.debug("parseInput", { input });
-  if (!input || !input.data || !input.mode) return {};
-  let { mode, data, encoding } = input;
+export function parseBasic({ mode, data, encoding }) {
+  console.debug("parseBasic", { mode, data, encoding });
+  if (!data || !mode) return {};
 
   switch (mode) {
     case "numeric": {
-      const regex = /\d+/gm;
-      const match = data.match(regex);
-      return { ...input, data: match ? match.join("") : "" };
+      const match = data.match(MODE_REGEX[mode]);
+      return { mode, encoding, data: match ? match.join("") : "" };
     }
     case "alphanumeric": {
-      const regex = /[0-9A-Z \$\%\*\+\-\.\/:]+/gm;
-      let upperCase = data.toUpperCase();
-      const match = upperCase.match(regex);
-      return { ...input, data: match ? match.join("") : "" };
+      const match = data.toUpperCase().match(MODE_REGEX[mode]);
+      return { mode, encoding, data: match ? match.join("") : "" };
     }
     default: {
       // default to byte
       if (encoding === "utf-8") {
         //console.debug("parsedInput", "Forcing UTF-8 interpretation for input");
-        return { ...input };
+        return { mode, data, encoding };
       }
       if (isBinary(data) && encoding !== "hex") {
         //console.debug("parsedInput", "Interpreting input as binary...");
@@ -158,22 +127,22 @@ export function parseInput(input) {
         console.log(
           "input value for byte mode did not match binary or hex encoding"
         );
-        return { ...input, encoding: "utf-8" };
+        return { mode, data, encoding: "utf-8" };
       }
     }
   }
 }
 
-const defaultFieldMap = {
-  transactionKey: "transactionId",
-  conferenceKey: "conferenceCode",
-  platformKey: "platform",
-  itemsKey: "items",
-  variantKey: "variant",
-  quantityKey: "quantity",
-};
-
 export function encodeJson(input, format = "None", fieldMap = {}) {
+  const defaultFieldMap = {
+    transactionKey: "transactionId",
+    conferenceKey: "conferenceCode",
+    platformKey: "platform",
+    itemsKey: "items",
+    variantKey: "variant",
+    quantityKey: "quantity",
+  };
+
   const fullMap = { ...defaultFieldMap, ...fieldMap };
 
   if (typeof input !== "object" || input == null) {
@@ -257,28 +226,38 @@ export function encodeJson(input, format = "None", fieldMap = {}) {
   }
 }
 
-export function encodeAll(inputs) {
-  function parseByType(input) {
-    switch (input.type) {
-      case INPUT_TYPES.Basic: {
-        return parseInput(input);
-      }
-      case INPUT_TYPES.JSON: {
-        return encodeJson(input);
-      }
-      case INPUT_TYPES.BitField: {
-        const { layout, totalBits } = generateBitLayout(input.fields || []);
-        const encodedBytes = encodeFieldsToBytes(layout, input.values || {});
-        return {
-          mode: "byte",
-          encoding: "utf-8",
-          data: bytesToHex(encodedBytes),
-        };
-      }
-      case INPUT_TYPES.MAC: {
-      }
-      default: {
-      }
+const INPUT_PARSERS = {
+  basic: parseBasic,
+  json: encodeJson,
+  bitField: ({ fields = [], values = {} }) => {
+    const { layout, totalBits } = generateBitLayout(fields);
+    const encodedBytes = encodeFieldsToBytes(layout, values);
+    return {
+      mode: "byte",
+      encoding: "utf-8",
+      data: bytesToHex(encodedBytes),
+    };
+  },
+  mac: ({ selectedInputs = [], key = "secret", algo = "HMAC-SHA256" }) => {
+    const message = selectedInputs?.map((i) => i.data).join("");
+    const fn = MAC_FUNCTIONS[algo];
+    async function generateMAC() {
+      const result = await fn(message, key, 4); // 4 bytes
+      return result;
     }
-  }
+    try {
+      const result = generateMAC();
+      return {
+        mode: "byte",
+        encoding: "utf-8",
+        data: result,
+      };
+    } catch (e) {
+      console.error(e);
+    }
+  },
+};
+
+export function encodeAll(inputs) {
+  return inputs.map((input) => INPUT_PARSERS[input.type](input));
 }
