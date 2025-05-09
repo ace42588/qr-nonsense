@@ -1,3 +1,8 @@
+import {
+  bytesToHex,
+  encodeFieldsToBytes,
+  generateBitLayout,
+} from "./bitFieldUtils";
 import { BitPacked, ModHex, NTRU } from "./json";
 
 const defaultFieldMap = {
@@ -49,8 +54,6 @@ const defaultSchema = {
   }
 }
 
-const { layout, totalBits } = generateBitLayout(fields);
-  const encodedBytes = encodeFieldsToBytes(layout, values);
 
 const JSON_PARSERS = {
   Alphanumeric: (flatValues, items) => {
@@ -70,6 +73,8 @@ const JSON_PARSERS = {
     };
   },
   PER: (input) => {
+    const { layout, totalBits } = generateBitLayout(fields);
+  const encodedBytes = encodeFieldsToBytes(layout, values);
     return {
       data: BitPacked.encode(input),
       mode: "byte",
@@ -114,18 +119,6 @@ export function encodeJson(input, format = "None", fieldMap = {}) {
       encoding: "utf-8",
     };
   }
-
-  const items =
-    input[fullMap.itemsKey]?.map((item) => ({
-      variant: item[fullMap.variantKey],
-      quantity: item[fullMap.quantityKey],
-    })) || [];
-
-  const flatValues = [
-    input[fullMap.transactionKey],
-    input[fullMap.conferenceKey],
-    input[fullMap.platformKey],
-  ];
 
   const encodeFn = JSON_PARSERS[format];
   if (!encodeFn) throw new Error(`Unknown input type: ${input.type}`);
