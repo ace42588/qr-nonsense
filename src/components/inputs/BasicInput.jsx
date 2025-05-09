@@ -1,19 +1,16 @@
 import { useState, useEffect } from "react";
-import { useInputs, useInputDispatch, useEncodedInputs } from "../../state";
+import { useInputs, useInputDispatch } from "../../state";
 import "../styles/styles.css";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
 export function BasicInput({ id }) {
   const inputs = useInputs();
-  const {updateInput} = useInputDispatch();
-  const previews = useEncodedInputs();
+  const { updateInput } = useInputDispatch();
 
-  const input = inputs.find(i => i.id === id);
+  const input = inputs.find((i) => i.id === id);
   input.type = "basic";
-  console.debug("BasicInput", {input});
-  const preview = previews[id];
-  
+
   const handleDataChange = (e) => {
     updateInput?.({ ...input, data: e.target.value });
   };
@@ -28,24 +25,20 @@ export function BasicInput({ id }) {
       encoding: e.target.checked ? "utf-8" : undefined,
     });
   };
-  
-  const style ={
-        border: "1px solid #aaa",
-        borderRadius: 8,
-        padding: 16,
-        maxWidth: 900,
-      }
+
+  const style = {
+    border: "1px solid #aaa",
+    borderRadius: 8,
+    padding: 16,
+    maxWidth: 900,
+  };
 
   return (
     <div style={style}>
       <div className="input-group">
         <div className="label-select-checkbox-row">
           <label htmlFor="inputMode">Input Mode:</label>
-          <select
-            id="inputMode"
-            value={input.mode}
-            onChange={handleModeChange}
-          >
+          <select id="inputMode" value={input.mode} onChange={handleModeChange}>
             {modes.map((m) => (
               <option key={m} value={m}>
                 {m}
@@ -71,4 +64,3 @@ export function BasicInput({ id }) {
     </div>
   );
 }
-

@@ -6,13 +6,14 @@ import {
   MainViewTabs,
 } from "../components";
 
-import { QRDataProvider } from "../state";
+import { InputProvider, QRDataProvider } from "../state";
 
 import "../assets/styles/App.css";
 
 export default function App() {
   return (
     <div className="App">
+      <InputProvider>
       <QRDataProvider>
         <div className="row">
           <div className="column">
@@ -30,6 +31,7 @@ export default function App() {
           <SegmentDisplay />
         </div>
       </QRDataProvider>
+      </InputProvider>
     </div>
   );
 }

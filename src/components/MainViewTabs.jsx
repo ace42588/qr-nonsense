@@ -18,9 +18,8 @@ export function MainViewTabs() {
         active={tab}
         onChange={setTab}
       />
-      <InputProvider>
-        {tab === "input" ? <InputForm /> : <VideoScanner />}
-      </InputProvider>
+
+      {tab === "input" ? <InputForm /> : <VideoScanner />}
     </div>
   );
 }
