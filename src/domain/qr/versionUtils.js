@@ -3,12 +3,13 @@ import { EC_INFO } from "./constants";
 const CodewordLength = 8;
 
 export function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
+  console.debug("getMinimumQRCodeVersion", {totalDataBits})
   // Try each version until one is found that fits the data.
   for (let version = 1; version <= 40; version++) {
     const { capacity } = gerVersionInfo(errorCorrectionLevel, version);
     // The total bits must be rounded up to the next whole 8-bit codeword.
     const requiredBytes = Math.ceil(totalDataBits / CodewordLength);
-    if (requiredBytes <= capacity) {
+    if (totalDataBits <= capacity * CodewordLength) {
       return version;
     }
   }
