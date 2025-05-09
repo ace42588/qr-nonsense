@@ -12,8 +12,42 @@ const defaultFieldMap = {
 const defaultLayout = [
   { label: "platform", bits: 2 },
   { label: "conferenceCode", bits: 8 },
-  { label: "transactionId", bits: 20 },
+  { label: "transactionId", bits: 22 },
 ];
+
+const defaultSchema = {
+  type: "object",
+  properties: {
+    platform: {
+      type: "integer",
+      bits: 2
+    },
+    conferenceCode: {
+      type: "integer",
+      bits: 8
+    },
+    transactionId: {
+      type: "integer",
+      bits: 20
+    },
+    items: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          variant: {
+            type: "integer",
+            bits: 16
+          },
+          quantity: {
+            type: "integer",
+            bits: 8
+          }
+        }
+      }
+    }
+  }
+}
 
 const JSON_PARSERS = {
   Alphanumeric: (flatValues, items) => {
