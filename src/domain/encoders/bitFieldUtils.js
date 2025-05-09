@@ -4,6 +4,10 @@ function bitsNeeded(max) {
   return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
 }
 
+function getValueFromPath(obj, path) {
+  return path.split(".").reduce((acc, part) => acc?.[part], obj);
+}
+
 export function generateBitLayout(fields) {
   //console.debug("generateBitLayout", { fields });
   const withBits = fields.map((field) => ({
@@ -37,7 +41,7 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
   let result = 0;
 
   fieldsLayout.forEach((field) => {
-    const value = values[field.label];
+    const value = getValueFromPath(values, field.label);
     if (value === undefined) {
       throw new Error(`Missing value for field: ${field.label}`);
     }
@@ -92,4 +96,9 @@ function generateBitLayoutFromSchema(schema, prefix = "") {
   }
 
   return layout;
+}
+
+function generateItemLayouts(schema) {
+  const itemSchema = schema.properties.items;
+  return generateBitLayoutFromSchema(itemSchema);
 }
