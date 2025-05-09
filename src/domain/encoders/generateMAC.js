@@ -1,4 +1,4 @@
-import { MAC_FUNCTIONS } from "../../message";
+import { MAC_FUNCTIONS } from "./mac";
 import parseInput from "./parseInput";
 
 export default async function generateMAC({

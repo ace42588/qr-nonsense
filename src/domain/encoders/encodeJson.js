@@ -1,4 +1,4 @@
-import { MAC_FUNCTIONS, BitPacked, ModHex, NTRU } from "./message";
+import { BitPacked, ModHex, NTRU } from "./json";
 
 const defaultFieldMap = {
     transactionKey: "transactionId",
@@ -10,7 +10,7 @@ const defaultFieldMap = {
   };
 
 const JSON_PARSERS = {
-  alphanumeric: (flatValues, items) => {if (!Array.isArray(items)) {
+  Alphanumeric: (flatValues, items) => {if (!Array.isArray(items)) {
         console.warn("Alphanumeric format requires input.items[]");
         return { data: "", mode: "alphanumeric" };
       }
@@ -25,9 +25,33 @@ const JSON_PARSERS = {
         mode: "alphanumeric",
       };
                                        },
-  json: encodeJson,
-  bitField: encodeBitField,
-  mac: generateMAC,
+  PER: encodeJson,
+  "PER-ModHex": (input) => {
+      let hex = BitPacked.encode(input);
+      if (hex.length % 2 === 1) hex = `0${hex}`;
+      const modhex = ModHex.encode(hex);
+      return {
+        data: modhex,
+        mode: "alphanumeric",
+        encoding: "modhex",
+      };
+    },
+  "PER-NTRU": (input) => {
+      let hex = BitPacked.encode(input);
+      const bytes = hex.match(/.{1,2}/g)?.map((h) => parseInt(h, 16)) ?? [];
+      const moduli = bytes.map(() => 256);
+      const encoded = NTRU.encode(bytes, moduli);
+      return {
+        data: encoded.join(""),
+        mode: "alphanumeric",
+        encoding: "ntru",
+      };
+    },
+  None: (input) => ({
+        data: JSON.stringify(input),
+        mode: "byte",
+        encoding: "utf-8",})
+      
 };
 
 export function encodeJson(input, format = "None", fieldMap = {}) {
@@ -52,64 +76,9 @@ export function encodeJson(input, format = "None", fieldMap = {}) {
     input[fullMap.conferenceKey],
     input[fullMap.platformKey],
   ];
+  
+  const encodeFn = JSON_PARSERS[format];
+      if (!encodeFn) throw new Error(`Unknown input type: ${input.type}`);
 
-  switch (format) {
-    case "Alphanumeric": {
-      if (!Array.isArray(items)) {
-        console.warn("Alphanumeric format requires input.items[]");
-        return { data: "", mode: "alphanumeric" };
-      }
-
-      const encodedItems = items
-        .map(({ variant, quantity }) => `${variant}:${quantity}`)
-        .join("/");
-      const data = `$1%${flatValues.join("%")}%${encodedItems}/$`;
-
-      return {
-        data,
-        mode: "alphanumeric",
-      };
-    }
-
-    case "PER": {
-      const data = BitPacked.encode(input);
-      return {
-        data,
-        mode: "byte",
-        encoding: "hex",
-      };
-    }
-
-    case "PER-ModHex": {
-      let hex = BitPacked.encode(input);
-      if (hex.length % 2 === 1) hex = `0${hex}`;
-      const modhex = ModHex.encode(hex);
-      return {
-        data: modhex,
-        mode: "alphanumeric",
-        encoding: "modhex",
-      };
-    }
-
-    case "PER-NTRU": {
-      let hex = BitPacked.encode(input);
-      const bytes = hex.match(/.{1,2}/g)?.map((h) => parseInt(h, 16)) ?? [];
-      const moduli = bytes.map(() => 256);
-      const encoded = NTRU.encode(bytes, moduli);
-      return {
-        data: encoded.join(""),
-        mode: "alphanumeric",
-        encoding: "ntru",
-      };
-    }
-
-    case "None":
-    default: {
-      return {
-        data: JSON.stringify(input),
-        mode: "byte",
-        encoding: "utf-8",
-      };
-    }
-  }
+ return encodeFn(input)
 }
