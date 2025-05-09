@@ -101,19 +101,19 @@ export function finalizeEncoding(segments, version, errorCorrectionLevel) {
   // Add terminator bits, based on version capacity
   const numTermBits = getTerminatorLength(requiredDataCodewords, numDataBits());
   if (numTermBits > 0)
-    segments.push(createPart("terminator", 0, "terminator", numTermBits));
+    segments.push(createPart("terminator", 0, numTermBits, numTermBits));
 
   // add filler bits to complete the last codeword
   const remainder = numDataBits() % CodewordLength;
   const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
   if (numFillBits > 0)
-    segments.push(createPart("fill", 0, "fill", numFillBits));
+    segments.push(createPart("fill", 0, numFillBits, numFillBits));
 
   // add padding to fill the capacity
   const numPadBytes =
     requiredDataCodewords - Math.ceil(numDataBits() / CodewordLength);
   const padding = Array.from({ length: numPadBytes }, (_, i) =>
-    createPart("padding", PAD_BYTES[i % 2], "padding", 8)
+    createPart("padding", PAD_BYTES[i % 2], PAD_BYTES[i % 2], 8)
   );
   segments = [...segments, ...padding];
 
