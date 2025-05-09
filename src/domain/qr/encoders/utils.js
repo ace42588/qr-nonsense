@@ -35,7 +35,6 @@ function computeIndicatorLength(charCount, mode) {
 
 function getTerminatorLength(capacityBytes, totalDataBits) {
   const capacityBits = capacityBytes * CodewordLength;
-  console.debug("getTerminatorLength", {capacityBits, totalDataBits}, Math.min(4, Math.max(0, capacityBits - totalDataBits)));
   return Math.min(4, Math.max(0, capacityBits - totalDataBits));
 }
 

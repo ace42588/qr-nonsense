@@ -53,10 +53,13 @@ export function QRDataProvider({ children }) {
       setSegment: (payload) =>
         dispatch({ type: Actions.ChangeInputs, payload }),
       setInputs: (payload) => {
+        dispatch({ type: Actions.ChangeInputs, payload });
+        /*
         const parsed = payload.map(({ mode, data, encoding }) =>
           parseInput({ mode, data, encoding })
         );
         dispatch({ type: Actions.ChangeInputs, payload: { inputs: parsed } });
+        */
       },
       highlightModules: (payload) =>{
         const moduleIds = derived.idMap.get(payload.id);

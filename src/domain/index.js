@@ -1,3 +1,3 @@
 export * from "./qr";
 export * from "./encoding";
-export {useInputs}
+export { MAC_FUNCTIONS } from "./encoders/mac";

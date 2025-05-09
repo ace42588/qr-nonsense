@@ -4,6 +4,7 @@ import "../styles/styles.css";
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
 export function BasicInput({ input = {}, onChange }) {
+  console.debug("BasicInput", {input})
   const handleDataChange = (e) => {
     onChange?.({ ...input, data: e.target.value });
   };

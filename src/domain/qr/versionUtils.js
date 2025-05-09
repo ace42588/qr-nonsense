@@ -1,7 +1,7 @@
 import { EC_INFO } from "./constants";
 
 export function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
-  console.debug("getMinimumQRCodeVersion", {totalDataBits})
+  //console.debug("getMinimumQRCodeVersion", {totalDataBits})
   // Try each version until one is found that fits the data.
   for (let version = 1; version <= 40; version++) {
     const { capacity } = gerVersionInfo(errorCorrectionLevel, version);

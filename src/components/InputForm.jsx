@@ -16,13 +16,14 @@ import {
 
 import "./styles/styles.css";
 import { QRInfoInput } from "./qr/QRInfoInput";
-import { useInputList, useQRMessage } from "../state";
+import { useInputs, useInputDispatch, useQRMessage } from "../state";
 import { SortableInput } from "./inputs/SortableInput";
 
 export function InputForm() {
   //const [inputs, dispatch] = useReducer(inputReducer, [initialInput]);
-  const { inputs, addInput, updateInput, removeInput, reorderInputs } =
-    useInputList();
+  const inputs = useInputs();
+  const { addInput, updateInput, removeInput, reorderInputs } =
+    useInputDispatch();
   const nextLabel = useRef(inputs.length);
   const [label, setLabel] = useState("");
   const { setInputs } = useQRMessage();

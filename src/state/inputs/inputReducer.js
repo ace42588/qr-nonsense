@@ -49,15 +49,9 @@ export const initialInputs = [
     id: crypto.randomUUID(),
     type: "basic",
     label: "Input 0",
-    data: {
-      mode: "byte",
-      data: "Hello world",
-      encoding: "utf-8",
-    },
-    fields: [],
-    values: {},
-    algo: "HMAC-SHA256",
-    key: "supersecret",
+    mode: "byte",
+    data: "Hello world",
+    encoding: "utf-8",
   },
 ];
 
@@ -65,42 +59,37 @@ const basicExample = {
   id: crypto.randomUUID(),
   type: "basic",
   label: "Input 0",
-  data: {
-    mode: "byte",
-    data: "Hello world",
-    encoding: "utf-8",
-  },
+
+  mode: "byte",
+  data: "Hello world",
+  encoding: "utf-8",
 };
 
 const bitFieldExample = {
   id: crypto.randomUUID(),
   type: "bitfield",
   label: "Input 0",
-  data: {
-    fields: [],
-    values: {},
-    encoding: "dec",
-  },
+  fields: [],
+  values: {},
+  encoding: "dec",
 };
 
 const jsonExample = {
   id: crypto.randomUUID(),
   type: "json",
   label: "Input 0",
-  data: { 
-    obj: {}, 
-    schema: {}, 
-    encoding: "none",
-  },
+
+  obj: {},
+  schema: {},
+  encoding: "none",
 };
 
 const macExample = {
   id: crypto.randomUUID(),
   type: "mac",
   label: "Input 0",
-  data: {
-    algo: "HMAC-SHA256",
-    key: "supersecret",
-    selectedInputs: [],
-  },
+
+  algo: "HMAC-SHA256",
+  key: "supersecret",
+  selectedInputs: [],
 };
