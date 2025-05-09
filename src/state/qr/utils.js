@@ -9,41 +9,6 @@ import {
   getEncodedMessage
 } from "../../domain/qr";
 
-export function getSegments(inputs) {
-  const segments = inputs.flatMap(({ data, mode, encoding }) =>
-    encodeInput(mode, data, { inputEncoding: encoding })
-  );
-  //console.debug("getSegments", {segments});
-  return segments;
-}
-
-export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
-  let version = parseInt(inputVersion) || -1;
-  if (1 <= version && version <= 40) {
-    return version;
-  } else if (version == -1) {
-    return getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
-  }
-  throw new Error(`Invalid version: ${inputVersion.toString()}`);
-}
-
-export function getMatrix(
-  errorCorrectionLevel,
-  version,
-  selectedDataMask,
-  bits
-) {
-  if (bits.length === 0) return {};
-  //console.debug("getMatrix", {bits});
-  const codewords = getCodewords(bits, version, errorCorrectionLevel);
-  return generateMatrix({
-    version,
-    errorCorrectionLevel,
-    dataMask: selectedDataMask,
-    codewords,
-  });
-}
-
 export function highlightModules(segment, idMap, matrix) {
   console.debug("highlightModules", { segment, idMap, matrix });
   const modulesToUpdate = idMap.get(segment.id);
@@ -81,57 +46,4 @@ export function bytesToHex(bytes) {
   return Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
-}
-
-export function parseInput(input) {
-  console.debug("parseInput", { input });
-  if (!input || !input.data || !input.mode) return {};
-  let { mode, data, encoding } = input;
-
-  switch (mode) {
-    case "numeric": {
-      const regex = /\d+/gm;
-      const match = data.match(regex);
-      return {...input, data: match ? match.join("") : ""};
-    }
-    case "alphanumeric": {
-      const regex = /[0-9A-Z \$\%\*\+\-\.\/:]+/gm;
-      let upperCase = data.toUpperCase();
-      const match = upperCase.match(regex);
-      return {...input, data: match ? match.join("") : ""};
-    }
-    default: {
-      // default to byte
-      if (encoding === "utf-8") {
-        //console.debug("parsedInput", "Forcing UTF-8 interpretation for input");
-        return { ...input };
-      }
-      if (isBinary(data) && encoding !== "hex") {
-        //console.debug("parsedInput", "Interpreting input as binary...");
-        let hex = "";
-        let bin = data.replace(/^0b/i, "");
-        bin = bin.replace(/\s+/g, "");
-
-        for (let i = 0; i < bin.length; i += 4) {
-          let val = parseInt(bin.substring(i, i + 4), 2);
-          hex = hex.concat(val.toString(16));
-        }
-        return { mode, data: hex, encoding: "hex" };
-      } else if (isHex(data)) {
-        //console.debug("parsedInput", "Interpreting input as hex...");
-        let hex = data.replace(/0x/gi, "");
-        hex = hex.replace(/\s+/g, "");
-
-        if (hex.length % 2 !== 0) {
-          throw new Error("Invalid hex string: length must be even.");
-        }
-        return { mode, data: hex, encoding: "hex" };
-      } else {
-        console.log(
-          "input value for byte mode did not match binary or hex encoding"
-        );
-        return { ...input, encoding: "utf-8" };
-      }
-    }
-  }
 }

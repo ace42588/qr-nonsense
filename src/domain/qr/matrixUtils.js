@@ -1,6 +1,4 @@
-import {
-  getCodewords,
-} from "../../domain/qr";
+import { getCodewords } from "./codewordUtils";
 import { DATA_MASKS } from "./constants";
 import { calculatePenalty } from "./calculatePenalty";
 import {
