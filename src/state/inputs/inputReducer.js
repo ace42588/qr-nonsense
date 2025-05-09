@@ -15,14 +15,11 @@ export function inputReducer(state, action) {
         ...state,
         {
           id: crypto.randomUUID(),
-          label: action.label,
+          type: "basic",
+          label: "Input 0",
           mode: "byte",
-          data: "",
-          fields: [],
-          values: {},
-          algo: "HMAC-SHA256",
-          key: "supersecret",
-          mac: "",
+          data: "Hello world",
+          encoding: "utf-8",
         },
       ];
     }
@@ -59,7 +56,6 @@ const basicExample = {
   id: crypto.randomUUID(),
   type: "basic",
   label: "Input 0",
-
   mode: "byte",
   data: "Hello world",
   encoding: "utf-8",

@@ -8,8 +8,13 @@ import {
   generateBitLayout,
 } from "./BitField";
 import { TabSwitcher } from "../shared/TabSwitcher";
+import { useEncodedInputs, useInputs, useInputDispatch } from "../state";
 
 export function BitFieldInput({ input, onChange }) {
+  const inputs = useInputs();
+  const dispatch = useInputDispatch();
+  const previews = useEncodedInputs();
+  
   const [tab, setTab] = useState("fields");
 
   const { layout, totalBits } = useMemo(
