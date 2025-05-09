@@ -54,6 +54,5 @@ export const initialInputs = [
     values: {},
     algo: "HMAC-SHA256",
     key: "supersecret",
-    mac: "",
   },
 ];

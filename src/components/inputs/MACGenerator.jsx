@@ -13,13 +13,6 @@ export function MACGenerator({ input, onChange }) {
     [allInputs, input]
   );
 
-  const toggleSelection = (id) => {
-    const next = selectedIds.includes(id)
-      ? selectedIds.filter((x) => x !== id)
-      : [...selectedIds, id];
-    onChange({ ...input, includedFields: next });
-  };
-
   const emitChange = (selectedIds, algo, key) => {
     const selected = selectableInputs.filter((i) => selectedIds.includes(i.id));
     const message = selected.map((i) => i.data).join("");
@@ -33,21 +26,24 @@ export function MACGenerator({ input, onChange }) {
       key,
     };
     try {
-      async function generateMAC() {
-        const result = await fn(message, input.key, 4); // 4 bytes
-      }
-      newInput.data = generateMAC();
+      fn(message, key, 4).then(result => newInput.data = result);
     } catch {}
     onChange?.(newInput);
   };
 
   const handleAlgoChange = (e) => {
-    emitChange()
-    onChange?.({ ...input, algo: e.target.value, data: mac });
+    emitChange(input.includedFields, e.target.value, input.key);
   };
 
   const handleKeyChange = (e) => {
-    onChange?.({ ...input, key: e.target.value, data: mac });
+    emitChange(input.includedFields, input.algo, e.target.value);
+  };
+  
+  const toggleSelection = (id) => {
+    const next = selectedIds.includes(id)
+      ? selectedIds.filter((x) => x !== id)
+      : [...selectedIds, id];
+    emitChange(next, input.algo, input.key);
   };
 
   return (
@@ -87,7 +83,7 @@ export function MACGenerator({ input, onChange }) {
       </select>
 
       <div className="bg-gray-100 p-2 rounded mt-4">
-        <strong>MAC:</strong> <code>{mac}</code>
+        <strong>MAC:</strong> <code>{input.data}</code>
       </div>
     </div>
   );
