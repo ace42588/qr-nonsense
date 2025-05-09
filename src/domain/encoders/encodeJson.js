@@ -14,12 +14,6 @@ const defaultFieldMap = {
   quantityKey: "quantity",
 };
 
-const defaultLayout = [
-  { label: "platform", bits: 2 },
-  { label: "conferenceCode", bits: 8 },
-  { label: "transactionId", bits: 22 },
-];
-
 const exampleSchema = {
   type: "object",
   properties: {
@@ -54,20 +48,50 @@ const exampleSchema = {
   }
 }
 
+const existingSchema = {
+  type: "object",
+  properties: {
+    p: {
+      type: "integer",
+    },
+    cc: {
+      type: "integer",
+    },
+    txn: {
+      type: "integer",
+    },
+    i: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          v: {
+            type: "integer",
+          },
+          q: {
+            type: "integer",
+          }
+        }
+      }
+    }
+  }
+}
+
 const alphaNumericSchema = {
   type: "object",
   properties: {
+    encapsulator: "$",
+    format: {
+      type: "integer"
+    },
     platform: {
       type: "string",
-      bits: 2
     },
     conferenceCode: {
       type: "integer",
-      bits: 8
     },
     transactionId: {
       type: "integer",
-      bits: 20
     },
     items: {
       type: "array",
@@ -76,15 +100,16 @@ const alphaNumericSchema = {
         properties: {
           variant: {
             type: "integer",
-            bits: 16
           },
           quantity: {
             type: "integer",
-            bits: 8
-          }
+          },
+          separator: ":"
         }
-      }
-    }
+      },
+      separator: "/"
+    },
+    separator: "%"
   }
 }
 
@@ -144,6 +169,21 @@ const JSON_PARSERS = {
 };
 
 export function encodeJson({value = {}, schema = {}, encoding = "None"}) {
+  
+  const rootSchema = schema;
+  const itemSchema = rootSchema.properties.items;
+
+  const rootLayout = generateBitLayoutFromSchema(rootSchema);
+  const rootBytes = encodeFieldsToBytes(rootLayout, data);
+
+  const itemLayout = itemSchema ? generateBitLayoutFromSchema(itemSchema.items) : [];
+  const itemBytes = (data.items || []).flatMap(item =>
+    Array.from(encodeFieldsToBytes(itemLayout, item))
+  );
+
+  const combined = new Uint8Array(rootBytes.length + itemBytes.length);
+  combined.set(rootBytes, 0);
+  combined.set(itemBytes, rootBytes.length);
 
   if (typeof value !== "object" || value == null) {
     return {
