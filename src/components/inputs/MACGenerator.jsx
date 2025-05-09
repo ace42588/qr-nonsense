@@ -19,6 +19,26 @@ export function MACGenerator({ input, onChange }) {
       : [...selectedIds, id];
     onChange({ ...input, includedFields: next });
   };
+  
+  const emitChange = (updatedFields, updatedValues) => {
+    const newInput = {
+      ...input,
+      mode: "byte",
+      encoding: "hex",
+    };
+    try {
+      async function generateMAC() {
+      const selected = selectableInputs.filter((i) =>
+        selectedIds.includes(i.id)
+      );
+      const message = selected.map((i) => i.data).join("");
+      const fn = MAC_FUNCTIONS[input.algo];
+      const result = await fn(message, input.key, 4); // 4 bytes
+    }
+      newInput.data = generateMAC();
+    } catch {}
+    onChange?.(newInput);
+  };
 
   const mac = useMemo(() => {
     async function generateMAC() {
