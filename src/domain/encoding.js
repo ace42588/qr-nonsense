@@ -1,4 +1,4 @@
-import { BitPacked, ModHex, NTRU } from "./message";
+import { MAC_FUNCTIONS, BitPacked, ModHex, NTRU } from "./message";
 
 const INPUT_TYPES = {
   Basic: "basic",
@@ -10,30 +10,34 @@ const INPUT_TYPES = {
 const INPUT_PARSERS = {
   basic: parseInput,
   json: encodeJson,
-  bitField: (input) => {
-    const { layout, totalBits } = generateBitLayout(input.fields || []);
-        const encodedBytes = encodeFieldsToBytes(layout, input.values || {});
-        return {
-          mode: "byte",
-          encoding: "utf-8",
-          data: bytesToHex(encodedBytes),
-        };
+  bitField: ({ fields = [], values = {} }) => {
+    const { layout, totalBits } = generateBitLayout(fields);
+    const encodedBytes = encodeFieldsToBytes(layout, values);
+    return {
+      mode: "byte",
+      encoding: "utf-8",
+      data: bytesToHex(encodedBytes),
+    };
   },
-  mac: ({selectedInputs = [], key = "secret", algo = "HMAC"}) => {
-    const message = input?.selectedInputs?.map((i) => i.data).join("");
-    const fn = MAC_FUNCTIONS[input.algo];
+  mac: ({ selectedInputs = [], key = "secret", algo = "HMAC-SHA256" }) => {
+    const message = selectedInputs?.map((i) => i.data).join("");
+    const fn = MAC_FUNCTIONS[algo];
     async function generateMAC() {
-      const result = await fn(message, secret, 4); // 4 bytes
-      return result
+      const result = await fn(message, key, 4); // 4 bytes
+      return result;
     }
     try {
       const result = generateMAC();
-      
+      return {
+        mode: "byte",
+        encoding: "utf-8",
+        data: result,
+      };
     } catch (e) {
       console.error(e);
     }
-  }
-}
+  },
+};
 
 const isBinary = (str) =>
   /^(?:0b)?(?:[01]{1,}(?:\s+[01]{1,})+|(?:[01]{1,})+)$/i.test(str);
