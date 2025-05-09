@@ -161,23 +161,22 @@ function encodeToBytes(obj, schema) {
 
 function encodeToAlphanumeric(obj, schema) {
   const { rootSchema, arrayField, arraySchema } = separateSchemaParts(schema);
-  
+  const { separator = "", encapsulator = "", ...flatValues } = rootSchema;
   let encodedItems;
   if (arrayField && Array.isArray(obj[arrayField])) {
-    const itemLayout = arraySchema;
-    encodedItems = obj[arrayField].map((item) =>{
-      if (itemLayout.type === "object") {
-        const { separator = "", ...props} = arraySchema.properties;
-        return Object.keys(props).reduce((str, p) => )
-      }
-    }
-    );
+    encodedItems = obj[arrayField]
+      .map((item) => {
+        const { separator = "", ...props } = arraySchema.properties;
+        const propKeys = Object.keys(props);
+        const first = propKeys.shift();
+        return propKeys.reduce(
+          (str, k) => `${separator}${item[k]}`,
+          item[first]
+        );
+      })
+      .join(arrayField.separator || "");
   }
-
-  const encodedItems = items
-    .map(({ variant, quantity }) => `${variant}:${quantity}`)
-    .join("/");
-  const data = `$1%${flatValues.join("%")}%${encodedItems}/$`;
+  return `${encapsulator}${flatValues.join("%")}%${encodedItems}/$`;
 }
 
 const JSON_PARSERS = {
