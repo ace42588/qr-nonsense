@@ -1,3 +1,4 @@
+// domain/encoders/encodeBitField.js
 import {
   bytesToHex,
   encodeFieldsToBytes,

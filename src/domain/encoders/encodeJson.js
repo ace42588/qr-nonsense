@@ -20,7 +20,7 @@ const defaultLayout = [
   { label: "transactionId", bits: 22 },
 ];
 
-const defaultSchema = {
+const exampleSchema = {
   type: "object",
   properties: {
     platform: {

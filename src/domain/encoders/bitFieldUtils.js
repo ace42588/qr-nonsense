@@ -1,3 +1,5 @@
+// /encoders/bitFieldUtils.js
+
 function bitsNeeded(max) {
   return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
 }
