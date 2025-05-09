@@ -28,7 +28,6 @@ export function useDerivedQRData({
 }) {
   //const dataSegments = useMemo(() => getSegments(inputs), [inputs]);
   const encodedInputs = useEncodedInputs();
-  console.debug("useDerivedQRData", {encodedInputs});
   const dataSegments = useMemo(() => getSegments(Object.values(encodedInputs)), [encodedInputs]);
 
   const version = useMemo(
