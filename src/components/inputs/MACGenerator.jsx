@@ -6,12 +6,11 @@ export function MACGenerator({ input, onChange }) {
   console.debug("MACGenerator", { input });
   const { inputs: allInputs } = useInputList();
 
-  const currentId = input.id;
   const selectedIds = input.includedFields || [];
 
   const selectableInputs = useMemo(
-    () => allInputs.filter((i) => i.id !== currentId),
-    [allInputs]
+    () => allInputs.filter((i) => i.id !== input.id),
+    [allInputs, input]
   );
 
   const toggleSelection = (id) => {
@@ -32,6 +31,7 @@ export function MACGenerator({ input, onChange }) {
     }
     generateMAC();
   }, [selectableInputs, selectedIds, input.algo, input.key]);
+  console.debug("MACGenerator", { mac });
 
   const handleAlgoChange = (e) => {
     onChange?.({ ...input, algo: e.target.value, data: mac });
