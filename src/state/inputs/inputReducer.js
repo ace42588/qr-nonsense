@@ -88,7 +88,7 @@ const jsonExample = {
   type: "json",
   label: "Input 0",
   data: { 
-    value: {}, 
+    obj: {}, 
     schema: {}, 
     encoding: "none",
   },

@@ -19,15 +19,15 @@ const exampleSchema = {
   properties: {
     platform: {
       type: "integer",
-      bits: 2
+      bits: 2,
     },
     conferenceCode: {
       type: "integer",
-      bits: 8
+      bits: 8,
     },
     transactionId: {
       type: "integer",
-      bits: 20
+      bits: 20,
     },
     items: {
       type: "array",
@@ -36,17 +36,17 @@ const exampleSchema = {
         properties: {
           variant: {
             type: "integer",
-            bits: 16
+            bits: 16,
           },
           quantity: {
             type: "integer",
-            bits: 8
-          }
-        }
-      }
-    }
-  }
-}
+            bits: 8,
+          },
+        },
+      },
+    },
+  },
+};
 
 const existingSchema = {
   type: "object",
@@ -70,19 +70,19 @@ const existingSchema = {
           },
           q: {
             type: "integer",
-          }
-        }
-      }
-    }
-  }
-}
+          },
+        },
+      },
+    },
+  },
+};
 
 const alphaNumericSchema = {
   type: "object",
   properties: {
     encapsulator: "$",
     format: {
-      type: "integer"
+      type: "integer",
     },
     platform: {
       type: "string",
@@ -104,15 +104,60 @@ const alphaNumericSchema = {
           quantity: {
             type: "integer",
           },
-          separator: ":"
-        }
+          separator: ":",
+        },
       },
-      separator: "/"
+      separator: "/",
     },
-    separator: "%"
+    separator: "%",
+  },
+};
+
+// Extracts top-level integers and the first array of objects (if present)
+function separateSchemaParts(schema) {
+  const rootFields = {};
+  let arrayField = null;
+  let arraySchema = null;
+
+  for (const [key, prop] of Object.entries(schema.properties || {})) {
+    if (prop.type === "integer") {
+      rootFields[key] = prop;
+    } else if (
+      prop.type === "array" &&
+      prop.items?.type === "object" &&
+      !arrayField
+    ) {
+      arrayField = key;
+      arraySchema = prop.items;
+    }
   }
+
+  return {
+    rootSchema: { type: "object", properties: rootFields },
+    arrayField,
+    arraySchema,
+  };
 }
 
+function encodeToBytes(obj, schema) {
+  const { rootSchema, arrayField, arraySchema } = separateSchemaParts(schema);
+
+  const rootLayout = generateBitLayoutFromSchema(rootSchema);
+  const rootBytes = encodeFieldsToBytes(rootLayout, obj);
+
+  let itemBytes = [];
+
+  if (arrayField && Array.isArray(obj[arrayField])) {
+    const itemLayout = generateBitLayoutFromSchema(arraySchema);
+    itemBytes = obj[arrayField].flatMap((item) =>
+      Array.from(encodeFieldsToBytes(itemLayout, item))
+    );
+  }
+
+  const combined = new Uint8Array(rootBytes.length + itemBytes.length);
+  combined.set(rootBytes, 0);
+  combined.set(itemBytes, rootBytes.length);
+}
 
 const JSON_PARSERS = {
   Alphanumeric: (flatValues, items) => {
@@ -131,21 +176,15 @@ const JSON_PARSERS = {
       mode: "alphanumeric",
     };
   },
-  PER: (input) => {
-    const { layout, totalBits } = generateBitLayout(fields);
-  const encodedBytes = encodeFieldsToBytes(layout, values);
+  PER: (obj, schema) => ({
+    mode: "byte",
+    encoding: "hex",
+    data: bytesToHex(encodeToBytes(obj, schema)),
+  }),
+  "PER-ModHex": (obj, schema) => {
+    const hex = encodeToBytes(obj, schema);
     return {
-      data: BitPacked.encode(input),
-      mode: "byte",
-      encoding: "hex",
-    };
-  },
-  "PER-ModHex": (input) => {
-    let hex = BitPacked.encode(input);
-    if (hex.length % 2 === 1) hex = `0${hex}`;
-    const modhex = ModHex.encode(hex);
-    return {
-      data: modhex,
+      data: ModHex.encode(hex),
       mode: "alphanumeric",
       encoding: "modhex",
     };
@@ -168,26 +207,10 @@ const JSON_PARSERS = {
   }),
 };
 
-export function encodeJson({value = {}, schema = {}, encoding = "None"}) {
-  
-  const rootSchema = schema;
-  const itemSchema = rootSchema.properties.items;
-
-  const rootLayout = generateBitLayoutFromSchema(rootSchema);
-  const rootBytes = encodeFieldsToBytes(rootLayout, data);
-
-  const itemLayout = itemSchema ? generateBitLayoutFromSchema(itemSchema.items) : [];
-  const itemBytes = (data.items || []).flatMap(item =>
-    Array.from(encodeFieldsToBytes(itemLayout, item))
-  );
-
-  const combined = new Uint8Array(rootBytes.length + itemBytes.length);
-  combined.set(rootBytes, 0);
-  combined.set(itemBytes, rootBytes.length);
-
-  if (typeof value !== "object" || value == null) {
+export function encodeJson({ obj = {}, schema = {}, encoding = "None" }) {
+  if (typeof obj !== "object" || obj == null) {
     return {
-      data: String(value ?? ""),
+      data: String(obj ?? ""),
       mode: "byte",
       encoding: "utf-8",
     };
@@ -196,5 +219,5 @@ export function encodeJson({value = {}, schema = {}, encoding = "None"}) {
   const encodeFn = JSON_PARSERS[encoding];
   if (!encodeFn) throw new Error(`Unknown input type: ${encoding}`);
 
-  return encodeFn(value);
+  return encodeFn(obj);
 }
