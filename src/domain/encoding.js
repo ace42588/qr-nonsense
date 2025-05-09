@@ -1,73 +1,7 @@
 // domain/encoding.js
 import { MAC_FUNCTIONS, BitPacked, ModHex, NTRU } from "./message";
 
-export function generateBitLayout(fields) {
-  //console.debug("generateBitLayout", { fields });
-  function bitsNeeded(max) {
-    return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
-  }
-  const withBits = fields.map((field) => ({
-    ...field,
-    bits: bitsNeeded(field.max),
-  }));
-
-  const totalBits = withBits.reduce((sum, field) => sum + field.bits, 0);
-
-  let currentBit = totalBits - 1;
-  const layout = withBits.map((field) => {
-    const start = currentBit;
-    const end = currentBit - field.bits + 1;
-    currentBit -= field.bits;
-    return {
-      type: field.type,
-      label: field.label,
-      min: field.min,
-      max: field.max,
-      startBit: start,
-      endBit: end,
-      width: field.bits,
-    };
-  });
-
-  return { layout, totalBits };
-}
-
-export function encodeFieldsToBytes(fieldsLayout, values) {
-  //console.debug("encodeFieldsToBytes", { fieldsLayout, values });
-  let result = 0;
-
-  fieldsLayout.forEach((field) => {
-    const value = values[field.label];
-    if (value === undefined) {
-      throw new Error(`Missing value for field: ${field.label}`);
-    }
-    if (value < field.min || value > field.max) {
-      throw new Error(
-        `Value for ${field.label} out of allowed range (${field.min} to ${field.max})`
-      );
-    }
-
-    result |= (value & ((1 << field.width) - 1)) << field.endBit;
-  });
-
-  const totalBits = fieldsLayout[0].startBit + 1;
-  const totalBytes = Math.ceil(totalBits / 8);
-
-  const bytes = new Uint8Array(totalBytes);
-  for (let i = 0; i < totalBytes; i++) {
-    bytes[i] = (result >> (8 * (totalBytes - i - 1))) & 0xff;
-  }
-
-  return bytes;
-}
-
-export function bytesToHex(bytes) {
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-export function parseInput({ mode = "byte", data = "", encoding }) {
+function parseInput({ mode = "byte", data = "", encoding }) {
   console.debug("parseInput", { mode, data, encoding });
 
   const MODE_REGEX = {
@@ -127,7 +61,7 @@ export function parseInput({ mode = "byte", data = "", encoding }) {
   return { mode, data, encoding };
 }
 
-export function encodeJson(input, format = "None", fieldMap = {}) {
+function encodeJson(input, format = "None", fieldMap = {}) {
   const defaultFieldMap = {
     transactionKey: "transactionId",
     conferenceKey: "conferenceCode",
@@ -220,36 +154,103 @@ export function encodeJson(input, format = "None", fieldMap = {}) {
   }
 }
 
-const INPUT_PARSERS = {
-  basic: parseInput,
-  json: encodeJson,
-  bitField: ({ fields = [], values = {} }) => {
-    const { layout, totalBits } = generateBitLayout(fields);
-    const encodedBytes = encodeFieldsToBytes(layout, values);
+function encodeBitField({ fields = [], values = {} }) {
+  function generateBitLayout(fields) {
+    //console.debug("generateBitLayout", { fields });
+    const withBits = fields.map((field) => ({
+      ...field,
+      bits: field.max <= 0 ? 1 : Math.ceil(Math.log2(Number(field.max) + 1)),
+    }));
+
+    const totalBits = withBits.reduce((sum, field) => sum + field.bits, 0);
+
+    let currentBit = totalBits - 1;
+    const layout = withBits.map((field) => {
+      const start = currentBit;
+      const end = currentBit - field.bits + 1;
+      currentBit -= field.bits;
+      return {
+        type: field.type,
+        label: field.label,
+        min: field.min,
+        max: field.max,
+        startBit: start,
+        endBit: end,
+        width: field.bits,
+      };
+    });
+
+    return { layout, totalBits };
+  }
+
+  function encodeFieldsToBytes(fieldsLayout, values) {
+    //console.debug("encodeFieldsToBytes", { fieldsLayout, values });
+    let result = 0;
+
+    fieldsLayout.forEach((field) => {
+      const value = values[field.label];
+      if (value === undefined) {
+        throw new Error(`Missing value for field: ${field.label}`);
+      }
+      if (value < field.min || value > field.max) {
+        throw new Error(
+          `Value for ${field.label} out of allowed range (${field.min} to ${field.max})`
+        );
+      }
+
+      result |= (value & ((1 << field.width) - 1)) << field.endBit;
+    });
+
+    const totalBits = fieldsLayout[0].startBit + 1;
+    const totalBytes = Math.ceil(totalBits / 8);
+
+    const bytes = new Uint8Array(totalBytes);
+    for (let i = 0; i < totalBytes; i++) {
+      bytes[i] = (result >> (8 * (totalBytes - i - 1))) & 0xff;
+    }
+
+    return bytes;
+  }
+
+  const { layout, totalBits } = generateBitLayout(fields);
+  const encodedBytes = encodeFieldsToBytes(layout, values);
+  return parseInput({
+    mode: "byte",
+    encoding: "utf-8",
+    data: Array.from(encodedBytes)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join(""),
+  });
+}
+
+function generateMAC({
+  selectedInputs = [],
+  key = "secret",
+  algo = "HMAC-SHA256",
+}) {
+  const message = selectedInputs?.map((i) => i.data).join("");
+  const fn = MAC_FUNCTIONS[algo];
+  async function generate() {
+    const result = await fn(message, key, 4); // 4 bytes
+    return result;
+  }
+  try {
+    const result = generate();
     return parseInput({
       mode: "byte",
       encoding: "utf-8",
-      data: bytesToHex(encodedBytes),
+      data: result,
     });
-  },
-  mac: ({ selectedInputs = [], key = "secret", algo = "HMAC-SHA256" }) => {
-    const message = selectedInputs?.map((i) => i.data).join("");
-    const fn = MAC_FUNCTIONS[algo];
-    async function generateMAC() {
-      const result = await fn(message, key, 4); // 4 bytes
-      return result;
-    }
-    try {
-      const result = generateMAC();
-      return parseInput({
-        mode: "byte",
-        encoding: "utf-8",
-        data: result,
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  },
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+const INPUT_PARSERS = {
+  basic: parseInput,
+  json: encodeJson,
+  bitField: encodeBitField,
+  mac: generateMAC,
 };
 
 export function encodeAll(inputs) {
