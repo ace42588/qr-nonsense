@@ -9,6 +9,12 @@ const defaultFieldMap = {
   quantityKey: "quantity",
 };
 
+const defaultLayout = [
+  { label: "platform", bits: 2 },
+  { label: "conferenceCode", bits: 8 },
+  { label: "transactionId", bits: 20 },
+];
+
 const JSON_PARSERS = {
   Alphanumeric: (flatValues, items) => {
     if (!Array.isArray(items)) {
