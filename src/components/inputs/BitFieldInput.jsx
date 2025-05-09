@@ -14,13 +14,12 @@ export function BitFieldInput({ id }) {
   const inputs = useInputs();
   const { updateInput } = useInputDispatch();
   const previews = useEncodedInputs();
-  console.debug("BitFieldInput", { previews });
 
   const input = inputs.find((i) => i.id === id);
+  input.type = "bitField";
   const {fields = [], values = {}} = input;
-  console.debug("BitFieldInput", { input });
   const preview = previews[id];
-  console.debug("BitFieldInput", { preview });
+  //console.debug("BitFieldInput", { preview });
 
   const [tab, setTab] = useState("fields");
 

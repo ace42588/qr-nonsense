@@ -35,6 +35,13 @@ const sampleValue = {
 };
 
 export function JsonInput({ id }) {
+  const inputs = useInputs();
+  const { updateInput } = useInputDispatch();
+  const previews = useEncodedInputs();
+  console.debug("JsonInput", { previews });
+
+  const input = inputs.find((i) => i.id === id);
+  input.type = "json";
   const [value, setValue] = useState(() => {
     try {
       return typeof input === "string"
@@ -58,7 +65,7 @@ export function JsonInput({ id }) {
   const emitChange = (obj = value, fmt = format, map = fieldMap) => {
     const encoded = encodeJson(obj, fmt, map);
     if (encoded?.data) {
-      onChange?.({
+      updateInput?.({
         data: encoded.data,
         mode: encoded.mode,
         encoding: encoded.encoding,
@@ -69,7 +76,6 @@ export function JsonInput({ id }) {
   const handleEditorChange = (text) => {
     try {
       const parsed = JSON.parse(text);
-      setValue(parsed);
       emitChange(parsed);
     } catch {
       // Invalid JSON; ignore or show error
@@ -78,7 +84,6 @@ export function JsonInput({ id }) {
 
   const handleFormatChange = (e) => {
     const next = e.target.value;
-    setFormat(next);
     emitChange(value, next);
   };
 
@@ -86,7 +91,6 @@ export function JsonInput({ id }) {
     setFieldMapRaw(text);
     try {
       const parsed = JSON.parse(text);
-      setFieldMap(parsed);
       emitChange(value, format, parsed);
     } catch {
       // invalid field map; ignore

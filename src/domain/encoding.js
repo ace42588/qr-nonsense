@@ -11,12 +11,15 @@ const INPUT_PARSERS = {
 };
 
 async function encodeInput(data) {
+  console.debug("encodeInput", {data});
   const encodeFn = INPUT_PARSERS[data.type];
   if (!encodeFn) throw new Error(`Unknown input type: ${data.type}`);
   const result = await encodeFn(data); 
+  return result;
 }
 
 export async function encodeAll(inputs) {
+  console.debug("encodeAll", {inputs});
   return Object.fromEntries(
     await Promise.all(
       inputs.map(async (input) => {

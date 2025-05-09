@@ -10,6 +10,7 @@ export function BasicInput({ id }) {
   const previews = useEncodedInputs();
 
   const input = inputs.find(i => i.id === id);
+  input.type = "basic";
   console.debug("BasicInput", {input});
   const preview = previews[id];
   

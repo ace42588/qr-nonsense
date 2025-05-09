@@ -4,16 +4,19 @@ import {
   encodeFieldsToBytes,
   generateBitLayout,
 } from "./bitFieldUtils";
-import {parseInput} from "./parseInput";
+import { parseInput } from "./parseInput";
 
 export function encodeBitField(input) {
+  console.debug("encodeBitField", {input});
   const { fields = [], values = {} } = input;
   const { layout, totalBits } = generateBitLayout(fields);
   const encodedBytes = encodeFieldsToBytes(layout, values);
-  return parseInput({
-    ...input,
+  return {
+    layout,
+    totalBits,
+    encodedBytes,
     mode: "byte",
     encoding: "utf-8",
     data: bytesToHex(encodedBytes),
-  });
+  };
 }
