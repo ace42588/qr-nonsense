@@ -105,9 +105,9 @@ const alphaNumericSchema = {
             type: "integer",
           },
           separator: ":",
+          terminator: "/",
         },
       },
-      separator: "/",
     },
     separator: "%",
   },
@@ -164,19 +164,25 @@ function encodeToAlphanumeric(obj, schema) {
   const { separator = "", encapsulator = "", ...flatValues } = rootSchema;
   let encodedItems;
   if (arrayField && Array.isArray(obj[arrayField])) {
+    const {
+      separator = "",
+      terminator = "",
+      ...props
+    } = arraySchema.properties;
+    const propKeys = Object.keys(props);
+    const first = propKeys.shift();
     encodedItems = obj[arrayField]
       .map((item) => {
-        const { separator = "", ...props } = arraySchema.properties;
-        const propKeys = Object.keys(props);
-        const first = propKeys.shift();
         return propKeys.reduce(
-          (str, k) => `${separator}${item[k]}`,
+          (str, k) => `${separator}${item[k]}${terminator}`,
           item[first]
         );
       })
-      .join(arrayField.separator || "");
+      .join("");
   }
-  return `${encapsulator}${flatValues.join("%")}%${encodedItems}/$`;
+  return `${encapsulator}${flatValues.join(
+    separator
+  )}${separator}${encodedItems}${encapsulator}`;
 }
 
 const JSON_PARSERS = {
