@@ -7,13 +7,13 @@ import {
 } from "react";
 import { Actions, inputReducer, initialInputs } from "./inputReducer";
 
-const InputContext = createContext();
+const InputContext = createContext(null);
+const DispatchContext = createContext(null);
 
 export function InputProvider({ children }) {
   const [inputs, dispatch] = useReducer(inputReducer, initialInputs);
 
   const inputsContextValue = {
-    inputs,
     addInput: useCallback((payload) => {
       dispatch({
         type: Actions.Add,
@@ -38,12 +38,13 @@ export function InputProvider({ children }) {
   };
 
   return (
-    <InputContext.Provider value={inputsContextValue}>
-      {children}
+    <InputContext.Provider value={inputs}>
+      <DispatchContext.Provider value={inputsContextValue}>
+        {children}
+      </DispatchContext.Provider>
     </InputContext.Provider>
   );
 }
 
-export function useInputs() {
-  return useContext(InputContext);
-}
+export const useInputs = () => useContext(InputContext);
+export const useInputDispatch = () => useContext(DispatchContext);
