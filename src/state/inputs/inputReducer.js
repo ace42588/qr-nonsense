@@ -74,7 +74,7 @@ const basicExample = {
 
 const bitFieldExample = {
   id: crypto.randomUUID(),
-  type: "basic",
+  type: "bitfield",
   label: "Input 0",
   data: {
     fields: [],
@@ -85,7 +85,7 @@ const bitFieldExample = {
 
 const jsonExample = {
   id: crypto.randomUUID(),
-  type: "basic",
+  type: "json",
   label: "Input 0",
   data: { 
     value: {}, 
@@ -96,7 +96,7 @@ const jsonExample = {
 
 const macExample = {
   id: crypto.randomUUID(),
-  type: "basic",
+  type: "mac",
   label: "Input 0",
   data: {
     algo: "HMAC-SHA256",

@@ -1,7 +1,29 @@
+const INPUT_TYPES = {Basic: "basic", JSON: "json", BitField: "bitField", MAC: "mac"};
+
 const isBinary = (str) =>
   /^(?:0b)?(?:[01]{1,}(?:\s+[01]{1,})+|(?:[01]{1,})+)$/i.test(str);
 const isHex = (str) =>
   /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(str);
+
+function parseByType(input) {
+  switch (input.type) {
+    case INPUT_TYPES.Basic: {
+      
+    }
+    case INPUT_TYPES.JSON: {
+      
+    }
+    case INPUT_TYPES.BitField: {
+      
+    }
+    case INPUT_TYPES.MAC: {
+      
+    }
+    default: {
+      
+    }
+  }
+}
 
 export function bytesToHex(bytes) {
   return Array.from(bytes)
@@ -144,4 +166,8 @@ export function encodeJson(input, format = "None", fieldMap = {}) {
       };
     }
   }
+}
+
+export function encodeAll(inputs) {
+  
 }
