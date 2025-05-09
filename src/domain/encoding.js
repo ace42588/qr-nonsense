@@ -10,19 +10,13 @@ const INPUT_TYPES = {
 const MODE_REGEX = {
   numeric: /\d+/gm,
   alphanumeric: /[0-9A-Z \$\%\*\+\-\.\/:]+/gm,
-}
-
-const isBinary = (str) =>
-  /^(?:0b)?(?:[01]{1,}(?:\s+[01]{1,})+|(?:[01]{1,})+)$/i.test(str);
-const isHex = (str) =>
-  /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(str);
-
-export function bitsNeeded(max) {
-  return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
-}
+};
 
 export function generateBitLayout(fields) {
   //console.debug("generateBitLayout", { fields });
+  function bitsNeeded(max) {
+    return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
+  }
   const withBits = fields.map((field) => ({
     ...field,
     bits: bitsNeeded(field.max),
@@ -84,52 +78,51 @@ export function bytesToHex(bytes) {
     .join("");
 }
 
-export function parseBasic({ mode, data, encoding }) {
-  console.debug("parseBasic", { mode, data, encoding });
+export function parseInput({ mode = "byte", data = "", encoding }) {
+  console.debug("parseInput", { mode, data, encoding });
   if (!data || !mode) return {};
 
-  switch (mode) {
-    case "numeric": {
-      const match = data.match(MODE_REGEX[mode]);
-      return { mode, encoding, data: match ? match.join("") : "" };
-    }
-    case "alphanumeric": {
-      const match = data.toUpperCase().match(MODE_REGEX[mode]);
-      return { mode, encoding, data: match ? match.join("") : "" };
-    }
-    default: {
-      // default to byte
-      if (encoding === "utf-8") {
-        //console.debug("parsedInput", "Forcing UTF-8 interpretation for input");
-        return { mode, data, encoding };
-      }
-      if (isBinary(data) && encoding !== "hex") {
-        //console.debug("parsedInput", "Interpreting input as binary...");
-        let hex = "";
-        let bin = data.replace(/^0b/i, "");
-        bin = bin.replace(/\s+/g, "");
+  if (mode === "alphanumeric") data = data.toUpperCase();
+  if (mode === "alphanumeric" || mode === "numeric") {
+    const match = data.match(MODE_REGEX[mode]);
+    return { mode, encoding, data: match ? match.join("") : "" };
+  }
 
-        for (let i = 0; i < bin.length; i += 4) {
-          let val = parseInt(bin.substring(i, i + 4), 2);
-          hex = hex.concat(val.toString(16));
-        }
-        return { mode, data: hex, encoding: "hex" };
-      } else if (isHex(data)) {
-        //console.debug("parsedInput", "Interpreting input as hex...");
-        let hex = data.replace(/0x/gi, "");
-        hex = hex.replace(/\s+/g, "");
+  // default to byte
+  const isBinary = (str) =>
+    /^(?:0b)?(?:[01]{1,}(?:\s+[01]{1,})+|(?:[01]{1,})+)$/i.test(str);
+  const isHex = (str) =>
+    /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(str);
 
-        if (hex.length % 2 !== 0) {
-          throw new Error("Invalid hex string: length must be even.");
-        }
-        return { mode, data: hex, encoding: "hex" };
-      } else {
-        console.log(
-          "input value for byte mode did not match binary or hex encoding"
-        );
-        return { mode, data, encoding: "utf-8" };
-      }
+  let hex = "";
+  if (encoding === "utf-8") {
+    //console.debug("parsedInput", "Forcing UTF-8 interpretation for input");
+    return { mode, data, encoding };
+  }
+  if (isBinary(data) && encoding !== "hex") {
+    //console.debug("parsedInput", "Interpreting input as binary...");
+    let bin = data.replace(/^0b/i, "");
+    bin = bin.replace(/\s+/g, "");
+
+    for (let i = 0; i < bin.length; i += 4) {
+      let val = parseInt(bin.substring(i, i + 4), 2);
+      hex = hex.concat(val.toString(16));
     }
+    return { mode, data: hex, encoding: "hex" };
+  } else if (isHex(data)) {
+    //console.debug("parsedInput", "Interpreting input as hex...");
+    hex = data.replace(/0x/gi, "");
+    hex = hex.replace(/\s+/g, "");
+
+    if (hex.length % 2 !== 0) {
+      throw new Error("Invalid hex string: length must be even.");
+    }
+    return { mode, data: hex, encoding: "hex" };
+  } else {
+    console.log(
+      "input value for byte mode did not match binary or hex encoding"
+    );
+    return { mode, data, encoding: "utf-8" };
   }
 }
 
@@ -227,12 +220,12 @@ export function encodeJson(input, format = "None", fieldMap = {}) {
 }
 
 const INPUT_PARSERS = {
-  basic: parseBasic,
+  basic: parseInput,
   json: encodeJson,
   bitField: ({ fields = [], values = {} }) => {
     const { layout, totalBits } = generateBitLayout(fields);
     const encodedBytes = encodeFieldsToBytes(layout, values);
-    return {
+    return parseInput({
       mode: "byte",
       encoding: "utf-8",
       data: bytesToHex(encodedBytes),
