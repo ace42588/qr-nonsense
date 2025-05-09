@@ -49,6 +49,9 @@ const defaultSchema = {
   }
 }
 
+const { layout, totalBits } = generateBitLayout(fields);
+  const encodedBytes = encodeFieldsToBytes(layout, values);
+
 const JSON_PARSERS = {
   Alphanumeric: (flatValues, items) => {
     if (!Array.isArray(items)) {
