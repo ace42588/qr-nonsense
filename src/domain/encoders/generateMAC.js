@@ -1,7 +1,7 @@
 import { MAC_FUNCTIONS } from "./mac";
-import parseInput from "./parseInput";
+import { parseInput } from "./parseInput";
 
-export default async function generateMAC({
+export async function generateMAC({
   selectedInputs = [],
   key = "secret",
   algo = "HMAC-SHA256",

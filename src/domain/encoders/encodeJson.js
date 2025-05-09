@@ -3,16 +3,8 @@ import {
   encodeFieldsToBytes,
   generateBitLayoutFromSchema,
 } from "./bitFieldUtils";
-import { BitPacked, ModHex, NTRU } from "./json";
-
-const defaultFieldMap = {
-  transactionKey: "transactionId",
-  conferenceKey: "conferenceCode",
-  platformKey: "platform",
-  itemsKey: "items",
-  variantKey: "variant",
-  quantityKey: "quantity",
-};
+import { ModHex, NTRU } from "./json";
+import {parseInput} from "./parseInput";
 
 const exampleSchema = {
   type: "object",

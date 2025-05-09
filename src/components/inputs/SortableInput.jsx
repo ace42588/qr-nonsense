@@ -19,7 +19,9 @@ const INPUT_TYPES = [
 
 const componentMap = {
   "basic": BasicInput,
-  "mac-generator": MACGenerator
+  "json": JsonInput,
+  "bitField": BitFieldInput,
+  "mac": MACGenerator
 };
 
 export function SortableInput({ input, onChange, onRemove }) {
@@ -68,22 +70,7 @@ export function SortableInput({ input, onChange, onRemove }) {
           </h3>
         )}
       </div>
-
-      {expanded && type === "basic" && (
-        <BasicInput input={input} onChange={onChange} />
-      )}
-      {expanded && type === "json" && (
-        <JsonInput input={input} onChange={onChange} />
-      )}
-      {expanded && type === "bitField" && (
-        <BitFieldInput
-          input={input}
-          onChange={onChange}
-        />
-      )}
-      {expanded && type === "mac" && (
-        <MACGenerator input={input} onChange={onChange}/>
-      )}
+      {expanded && <InputComponent input={input} onChange={onChange}/>}
       {expanded && <p onClick={() => setExpanded((e) => !e)}>Collapse</p>}
     </div>
   );

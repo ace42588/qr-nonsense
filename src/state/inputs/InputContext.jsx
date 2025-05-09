@@ -25,7 +25,6 @@ export function InputProvider({ children }) {
     }, []),
     removeInput: useCallback(
       (payload) => {
-        console.debug("removeInput", {payload});
         dispatch({ type: Actions.Remove, payload })},
       []
     ),

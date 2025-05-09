@@ -4,7 +4,7 @@ import {
   encodeFieldsToBytes,
   generateBitLayout,
 } from "./bitFieldUtils";
-import parseInput from "./parseInput";
+import {parseInput} from "./parseInput";
 
 export function encodeBitField({ fields = [], values = {} }) {
   const { layout, totalBits } = generateBitLayout(fields);

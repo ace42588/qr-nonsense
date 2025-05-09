@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { useInputList } from "../../state";
+import { useInputs } from "../../state";
 import { MAC_FUNCTIONS } from "../../domain";
 
 export function MACGenerator({ input, onChange }) {
-  const { inputs: allInputs } = useInputList();
+  const { inputs: allInputs } = useInputs();
 
   const selectedIds = input.includedFields || [];
 
