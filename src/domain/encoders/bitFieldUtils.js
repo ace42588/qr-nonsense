@@ -1,11 +1,8 @@
-import {} from "./"
-import parseInput from "./parseInput";
-
 function bitsNeeded(max) {
   return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
 }
 
-function generateBitLayout(fields) {
+export function generateBitLayout(fields) {
   //console.debug("generateBitLayout", { fields });
   const withBits = fields.map((field) => ({
     ...field,
@@ -33,7 +30,7 @@ function generateBitLayout(fields) {
   return { layout, totalBits };
 }
 
-function encodeFieldsToBytes(fieldsLayout, values) {
+export function encodeFieldsToBytes(fieldsLayout, values) {
   //console.debug("encodeFieldsToBytes", { fieldsLayout, values });
   let result = 0;
 
@@ -62,18 +59,8 @@ function encodeFieldsToBytes(fieldsLayout, values) {
   return bytes;
 }
 
-function bytesToHex(bytes) {
+export function bytesToHex(bytes) {
   return Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
-}
-
-export function encodeBitField({ fields = [], values = {} }) {
-  const { layout, totalBits } = generateBitLayout(fields);
-  const encodedBytes = encodeFieldsToBytes(layout, values);
-  return parseInput({
-    mode: "byte",
-    encoding: "utf-8",
-    data: bytesToHex(encodedBytes),
-  });
 }

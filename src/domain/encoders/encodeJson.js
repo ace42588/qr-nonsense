@@ -1,57 +1,64 @@
 import { BitPacked, ModHex, NTRU } from "./json";
 
 const defaultFieldMap = {
-    transactionKey: "transactionId",
-    conferenceKey: "conferenceCode",
-    platformKey: "platform",
-    itemsKey: "items",
-    variantKey: "variant",
-    quantityKey: "quantity",
-  };
+  transactionKey: "transactionId",
+  conferenceKey: "conferenceCode",
+  platformKey: "platform",
+  itemsKey: "items",
+  variantKey: "variant",
+  quantityKey: "quantity",
+};
 
 const JSON_PARSERS = {
-  Alphanumeric: (flatValues, items) => {if (!Array.isArray(items)) {
-        console.warn("Alphanumeric format requires input.items[]");
-        return { data: "", mode: "alphanumeric" };
-      }
+  Alphanumeric: (flatValues, items) => {
+    if (!Array.isArray(items)) {
+      console.warn("Alphanumeric format requires input.items[]");
+      return { data: "", mode: "alphanumeric" };
+    }
 
-      const encodedItems = items
-        .map(({ variant, quantity }) => `${variant}:${quantity}`)
-        .join("/");
-      const data = `$1%${flatValues.join("%")}%${encodedItems}/$`;
+    const encodedItems = items
+      .map(({ variant, quantity }) => `${variant}:${quantity}`)
+      .join("/");
+    const data = `$1%${flatValues.join("%")}%${encodedItems}/$`;
 
-      return {
-        data,
-        mode: "alphanumeric",
-      };
-                                       },
-  PER: encodeJson,
+    return {
+      data,
+      mode: "alphanumeric",
+    };
+  },
+  PER: (input) => {
+    return {
+      data: BitPacked.encode(input),
+      mode: "byte",
+      encoding: "hex",
+    };
+  },
   "PER-ModHex": (input) => {
-      let hex = BitPacked.encode(input);
-      if (hex.length % 2 === 1) hex = `0${hex}`;
-      const modhex = ModHex.encode(hex);
-      return {
-        data: modhex,
-        mode: "alphanumeric",
-        encoding: "modhex",
-      };
-    },
+    let hex = BitPacked.encode(input);
+    if (hex.length % 2 === 1) hex = `0${hex}`;
+    const modhex = ModHex.encode(hex);
+    return {
+      data: modhex,
+      mode: "alphanumeric",
+      encoding: "modhex",
+    };
+  },
   "PER-NTRU": (input) => {
-      let hex = BitPacked.encode(input);
-      const bytes = hex.match(/.{1,2}/g)?.map((h) => parseInt(h, 16)) ?? [];
-      const moduli = bytes.map(() => 256);
-      const encoded = NTRU.encode(bytes, moduli);
-      return {
-        data: encoded.join(""),
-        mode: "alphanumeric",
-        encoding: "ntru",
-      };
-    },
+    let hex = BitPacked.encode(input);
+    const bytes = hex.match(/.{1,2}/g)?.map((h) => parseInt(h, 16)) ?? [];
+    const moduli = bytes.map(() => 256);
+    const encoded = NTRU.encode(bytes, moduli);
+    return {
+      data: encoded.join(""),
+      mode: "alphanumeric",
+      encoding: "ntru",
+    };
+  },
   None: (input) => ({
-        data: JSON.stringify(input),
-        mode: "byte",
-        encoding: "utf-8",})
-      
+    data: JSON.stringify(input),
+    mode: "byte",
+    encoding: "utf-8",
+  }),
 };
 
 export function encodeJson(input, format = "None", fieldMap = {}) {
@@ -76,9 +83,9 @@ export function encodeJson(input, format = "None", fieldMap = {}) {
     input[fullMap.conferenceKey],
     input[fullMap.platformKey],
   ];
-  
-  const encodeFn = JSON_PARSERS[format];
-      if (!encodeFn) throw new Error(`Unknown input type: ${input.type}`);
 
- return encodeFn(input)
+  const encodeFn = JSON_PARSERS[format];
+  if (!encodeFn) throw new Error(`Unknown input type: ${input.type}`);
+
+  return encodeFn(input);
 }
