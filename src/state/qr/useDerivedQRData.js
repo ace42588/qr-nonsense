@@ -1,5 +1,10 @@
 import { useMemo } from "react";
-import { encodeInput, getEncodedMessage, getVersion, getMatrix } from "../../domain/qr";
+import {
+  encodeInput,
+  getEncodedMessage,
+  getVersion,
+  getMatrix,
+} from "../../domain/qr";
 import { useEncodedInputs } from "../../state";
 
 /**
@@ -29,9 +34,11 @@ export function useDerivedQRData({
   const encodedInputs = useEncodedInputs();
   const dataSegments = useMemo(
     () =>
-      Object.values(encodedInputs).flatMap(({ data, mode, encoding }) =>
-        encodeInput(mode, data, { inputEncoding: encoding })
-      ),
+      Object.values(encodedInputs).flatMap(({ data, mode, encoding }) => ({
+        data,
+        mode,
+        encoding,
+      })),
     [encodedInputs]
   );
 

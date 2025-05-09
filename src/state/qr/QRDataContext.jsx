@@ -2,7 +2,6 @@ import { createContext, useContext, useMemo, useReducer } from "react";
 import { Actions, qrReducer, initialQRState } from "./qrReducer";
 
 import { useDerivedQRData } from "./useDerivedQRData";
-import { parseInput } from "./utils";
 
 const QRDataContext = createContext();
 const QRFormatContext = createContext();
