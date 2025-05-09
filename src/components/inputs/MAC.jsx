@@ -52,6 +52,8 @@ const MAC_FUNCTIONS = {
 
 // --- React Component ---
 
+
+
 export function MACGenerator({ input, onChange }) {
   console.debug("MACGenerator", {input});
   const { inputs: allInputs } = useInputList();
