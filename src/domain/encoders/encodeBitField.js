@@ -13,6 +13,7 @@ export function encodeBitField(input) {
   const encodedBytes = encodeFieldsToBytes(layout, values);
   return {
     layout,
+    values,
     totalBits,
     encodedBytes,
     mode: "byte",

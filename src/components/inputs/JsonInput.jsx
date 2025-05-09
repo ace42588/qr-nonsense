@@ -38,7 +38,6 @@ export function JsonInput({ id }) {
   const inputs = useInputs();
   const { updateInput } = useInputDispatch();
   const previews = useEncodedInputs();
-  console.debug("JsonInput", { previews });
 
   const input = inputs.find((i) => i.id === id);
   input.type = "json";

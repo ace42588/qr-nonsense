@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { getEncodedMessage } from "../../domain/qr";
+import { useEncodedInputs } from "../../state";
 import { getSegments, getVersion, getMatrix } from "./utils";
 
 /**
@@ -25,7 +26,9 @@ export function useDerivedQRData({
   dataMask: selectedDataMask,
   errorCorrectionLevel,
 }) {
-  const dataSegments = useMemo(() => getSegments(inputs), [inputs]);
+  //const dataSegments = useMemo(() => getSegments(inputs), [inputs]);
+  const encodedInputs = useEncodedInputs();
+  const dataSegments = useMemo(() => getSegments(encodedInputs), [encodedInputs]);
 
   const version = useMemo(
     () =>

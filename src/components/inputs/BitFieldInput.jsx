@@ -80,7 +80,7 @@ export function BitFieldInput({ id }) {
       <div style={{ marginTop: 8 }}>
         {encodedBytes ? (
           <>
-            <b>Encoded Bytes:</b> {bytesToHex(encodedBytes)}
+            <b>Encoded Bytes:</b> {preview.data}
           </>
         ) : (
           <span style={{ color: "red" }}>(missing or invalid values)</span>
