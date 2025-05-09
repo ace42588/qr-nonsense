@@ -1,11 +1,12 @@
 import { MAC_FUNCTIONS } from "./mac";
 import { parseInput } from "./parseInput";
 
-export async function generateMAC({
+export async function generateMAC(input) {
+  const {
   selectedInputs = [],
   key = "secret",
   algo = "HMAC-SHA256",
-}) {
+} = input;
   const fn = MAC_FUNCTIONS[algo];
   if (!fn) throw new Error(`Unknown MAC algorithm: ${algo}`);
   const message = selectedInputs.map((i) => i.data).join("");

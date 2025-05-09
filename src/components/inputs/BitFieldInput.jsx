@@ -10,12 +10,14 @@ import {
 import { TabSwitcher } from "../shared/TabSwitcher";
 import { useEncodedInputs, useInputs, useInputDispatch } from "../../state";
 
-export function BitFieldInput({ input, onChange }) {
-  console.debug("BitFieldInput", {input});
+export function BitFieldInput({ id }) {
   const inputs = useInputs();
-  console.debug("BitFieldInput", {inputs});
-  const dispatch = useInputDispatch();
+  const {updateInput} = useInputDispatch();
   const previews = useEncodedInputs();
+
+  const input = inputs.find(i => i.id === id);
+  console.debug("BitFieldInput", {input});
+  const preview = previews[id];
   
   const [tab, setTab] = useState("fields");
 
@@ -45,7 +47,7 @@ export function BitFieldInput({ input, onChange }) {
       const encodedBytes = encodeFieldsToBytes(layout, updatedValues);
       newInput.data = bytesToHex(encodedBytes);
     } catch {}
-    onChange?.(newInput);
+    updateInput?.(newInput);
   };
 
   const handleFieldsChange = (newFields) => {

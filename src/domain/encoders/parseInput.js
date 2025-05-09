@@ -1,4 +1,5 @@
-export function parseInput({ mode = "byte", data = "", encoding }) {
+export function parseInput(input) {
+  const { mode = "byte", data = "", encoding } = input;
   console.debug("parseInput", { mode, data, encoding });
 
   const MODE_REGEX = {
@@ -12,15 +13,14 @@ export function parseInput({ mode = "byte", data = "", encoding }) {
   const isHex = (val) =>
     /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(val);
 
-  if (!data || !mode) return {};
+  if (!data || !mode) return input;
 
   // Handle alphanumeric and numeric modes
   if (mode === "alphanumeric" || mode === "numeric") {
     const normalized = mode === "alphanumeric" ? data.toUpperCase() : data;
     const match = normalized.match(MODE_REGEX[mode]);
     return {
-      mode,
-      encoding,
+      ...input,
       data: match ? match.join("") : "",
     };
   }
@@ -36,7 +36,7 @@ export function parseInput({ mode = "byte", data = "", encoding }) {
         hex += val.toString(16);
       }
 
-      return { mode, data: hex, encoding: "hex" };
+      return { ...input, data: hex, encoding: "hex" };
     }
 
     if (isHex(data)) {
@@ -46,14 +46,14 @@ export function parseInput({ mode = "byte", data = "", encoding }) {
         throw new Error("Invalid hex string: length must be even.");
       }
 
-      return { mode, data: hex, encoding: "hex" };
+      return { ...input, data: hex, encoding: "hex" };
     }
 
     // Fallback to UTF-8 if no known encoding matched
     console.log("Input for byte mode did not match binary or hex.");
-    return { mode, data, encoding: "utf-8" };
+    return { ...input, encoding: "utf-8" };
   }
 
   // Unknown mode fallback
-  return { mode, data, encoding };
+  return input;
 }

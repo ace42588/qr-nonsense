@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Editor from "@monaco-editor/react";
+import { useEncodedInputs, useInputs, useInputDispatch } from "../../state";
 import "../styles/styles.css";
 
 import { encodeJson } from "./utils";
@@ -33,7 +34,7 @@ const sampleValue = {
   ],
 };
 
-export function JsonInput({ input = {}, onChange, fieldMap: initialMap = {} }) {
+export function JsonInput({ id }) {
   const [value, setValue] = useState(() => {
     try {
       return typeof input === "string"

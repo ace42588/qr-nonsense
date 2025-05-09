@@ -5,12 +5,12 @@ import "../styles/styles.css";
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
 export function BasicInput({ id }) {
-  console.debug("BasicInput", { id })
   const inputs = useInputs();
   const {updateInput} = useInputDispatch();
   const previews = useEncodedInputs();
 
   const input = inputs.find(i => i.id === id);
+  console.debug("BasicInput", {input});
   const preview = previews[id];
   
   const handleDataChange = (e) => {
