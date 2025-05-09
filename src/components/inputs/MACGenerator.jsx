@@ -3,7 +3,6 @@ import { useInputList } from "../../state";
 import { MAC_FUNCTIONS } from "../../domain";
 
 export function MACGenerator({ input, onChange }) {
-  console.debug("MACGenerator", { input });
   const { inputs: allInputs } = useInputList();
 
   const selectedIds = input.includedFields || [];
@@ -16,6 +15,7 @@ export function MACGenerator({ input, onChange }) {
   const emitChange = async (selectedIds, algo, key) => {
     const selected = selectableInputs.filter((i) => selectedIds.includes(i.id));
     const message = selected.map((i) => i.data).join("");
+    console.debug("MACGenerator: emitChange", { message });
     const fn = MAC_FUNCTIONS[algo];
     try {
       const result = await fn(message, key, 4);
