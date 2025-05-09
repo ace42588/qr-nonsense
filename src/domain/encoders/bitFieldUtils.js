@@ -36,6 +36,33 @@ export function generateBitLayout(fields) {
   return { layout, totalBits };
 }
 
+export function generateBitLayoutFromSchema(schema, prefix = "") {
+  const layout = [];
+  const properties = schema.properties || {};
+
+  for (const [key, propSchema] of Object.entries(properties)) {
+    const name = prefix ? `${prefix}.${key}` : key;
+
+    if (propSchema.type === "object") {
+      layout.push(...generateBitLayoutFromSchema(propSchema, name));
+    } else if (propSchema.type === "integer") {
+      if (typeof propSchema.bits !== "number") {
+        throw new Error(`Missing 'bits' for field: ${name}`);
+      }
+      layout.push({
+        label: name,
+        type: "integer",
+        min: 0,
+        max: (1 << propSchema.bits) - 1,
+        bits: propSchema.bits,
+      });
+    }
+    // Arrays are handled separately
+  }
+
+  return layout;
+}
+
 export function encodeFieldsToBytes(fieldsLayout, values) {
   //console.debug("encodeFieldsToBytes", { fieldsLayout, values });
   let result = 0;
@@ -69,36 +96,4 @@ export function bytesToHex(bytes) {
   return Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
-}
-
-function generateBitLayoutFromSchema(schema, prefix = "") {
-  const layout = [];
-  const properties = schema.properties || {};
-
-  for (const [key, propSchema] of Object.entries(properties)) {
-    const name = prefix ? `${prefix}.${key}` : key;
-
-    if (propSchema.type === "object") {
-      layout.push(...generateBitLayoutFromSchema(propSchema, name));
-    } else if (propSchema.type === "integer") {
-      if (typeof propSchema.bits !== "number") {
-        throw new Error(`Missing 'bits' for field: ${name}`);
-      }
-      layout.push({
-        label: name,
-        type: "integer",
-        min: 0,
-        max: (1 << propSchema.bits) - 1,
-        bits: propSchema.bits,
-      });
-    }
-    // Arrays are handled separately
-  }
-
-  return layout;
-}
-
-function generateItemLayouts(schema) {
-  const itemSchema = schema.properties.items;
-  return generateBitLayoutFromSchema(itemSchema);
 }
