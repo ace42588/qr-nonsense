@@ -8,7 +8,7 @@ export function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   for (let version = 1; version <= 40; version++) {
     const { capacity } = gerVersionInfo(errorCorrectionLevel, version);
     // The total bits must be rounded up to the next whole 8-bit codeword.
-    const requiredBytes = Math.ceil(totalDataBits / CodewordLength);
+    //const requiredBytes = Math.ceil(totalDataBits / CodewordLength);
     if (totalDataBits <= capacity * CodewordLength) {
       return version;
     }
