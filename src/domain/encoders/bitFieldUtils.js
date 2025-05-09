@@ -67,6 +67,7 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
   //console.debug("encodeFieldsToBytes", { fieldsLayout, values });
   let result = 0;
 
+  try {
   fieldsLayout.forEach((field) => {
     const value = getValueFromPath(values, field.label);
     if (value === undefined) {
@@ -90,9 +91,13 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
   }
 
   return bytes;
+  } catch {
+    return null;
+  }
 }
 
 export function bytesToHex(bytes) {
+  if (!bytes) return "";
   return Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");

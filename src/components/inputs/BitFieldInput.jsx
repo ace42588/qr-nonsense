@@ -18,23 +18,12 @@ export function BitFieldInput({ id }) {
   const input = inputs.find((i) => i.id === id);
   input.type = "bitField";
   const {fields = [], values = {}} = input;
-  const preview = previews[id];
-  //console.debug("BitFieldInput", { preview });
+  const preview = previews[id] || {};
+  console.debug("BitFieldInput", { preview });
 
   const [tab, setTab] = useState("fields");
 
-  const { layout, totalBits } = useMemo(
-    () => generateBitLayout(fields),
-    [fields]
-  );
-
-  const encodedBytes = useMemo(() => {
-    try {
-      return encodeFieldsToBytes(layout, values);
-    } catch {
-      return null;
-    }
-  }, [layout, values]);
+  const { encodedBytes = 0, layout = [], totalBits = 0 } = preview;
 
   const emitChange = (updatedFields, updatedValues) => {
     const newInput = {
