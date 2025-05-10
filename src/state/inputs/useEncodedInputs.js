@@ -20,7 +20,3 @@ export function useEncodedInputs() {
 
   return encoded;
 }
-
-export function useEncodedSegments() {
-  
-}

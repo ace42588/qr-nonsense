@@ -29,3 +29,7 @@ export async function parseAll(inputs) {
     )
   );
 }
+
+export async function encodeAll(inputs) {
+  
+}
