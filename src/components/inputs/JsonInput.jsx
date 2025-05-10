@@ -14,13 +14,33 @@ const formats = [
   { value: "PER-NTRU", label: "Packed Encoding Rule, NTRU" },
 ];
 
-const defaultFieldMap = {
-  transactionKey: "txn",
-  conferenceKey: "cc",
-  platformKey: "p",
-  itemsKey: "i",
-  variantKey: "v",
-  quantityKey: "q",
+const sampleSchema = {
+  type: "object",
+  properties: {
+    p: {
+      type: "integer",
+    },
+    cc: {
+      type: "integer",
+    },
+    txn: {
+      type: "integer",
+    },
+    i: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          v: {
+            type: "integer",
+          },
+          q: {
+            type: "integer",
+          },
+        },
+      },
+    },
+  },
 };
 
 const sampleValue = {
@@ -36,11 +56,11 @@ const sampleValue = {
 
 export function JsonInput({ id, input }) {
   const { updateInput } = useInputDispatch();
-  const { obj = sampleValue, schema, encoding } = input;
+  const { obj = sampleValue, schema = sampleSchema, encoding = "None" } = input;
   const preview = useParsedInputs()[id];
 
   const [tab, setTab] = useState("values");
-  
+
   const emitChange = (field, value) =>
     updateInput?.({ ...input, [field]: value });
 
@@ -51,6 +71,13 @@ export function JsonInput({ id, input }) {
     } catch {
       // Invalid JSON; ignore or show error
     }
+  };
+
+  const options = {
+    minimap: { enabled: false },
+    scrollbar: { vertical: "hidden", horizontal: "hidden" },
+    overviewRulerLanes: 0,
+    lineNumbers: "off",
   };
 
   return (
@@ -77,12 +104,7 @@ export function JsonInput({ id, input }) {
             defaultLanguage="json"
             value={JSON.stringify(obj, null, 2)}
             onChange={(e) => handleJsonChange("obj", e)}
-            options={{
-              minimap: { enabled: false },
-              scrollbar: { vertical: "hidden", horizontal: "hidden" },
-              overviewRulerLanes: 0,
-              lineNumbers: "off",
-            }}
+            options={options}
           />
         </div>
       ) : (
@@ -90,21 +112,20 @@ export function JsonInput({ id, input }) {
           <Editor
             height="180px"
             defaultLanguage="json"
-            value={schema}
+            value={JSON.stringify(schema, null, 2)}
             onChange={(e) => handleJsonChange("schema", e)}
-            options={{
-              minimap: { enabled: false },
-              scrollbar: { vertical: "hidden", horizontal: "hidden" },
-              overviewRulerLanes: 0,
-              lineNumbers: "off",
-            }}
+            options={options}
           />
         </div>
       )}
 
       <div className="label-select-row">
         <label htmlFor="format">Encoding Format:</label>
-        <select id="format" value={encoding} onChange={(e) => emitChange("encoding", e.target.value)}>
+        <select
+          id="format"
+          value={encoding}
+          onChange={(e) => emitChange("encoding", e.target.value)}
+        >
           {formats.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
@@ -116,9 +137,7 @@ export function JsonInput({ id, input }) {
       {encoding !== "None" && (
         <div style={{ marginTop: 12 }}>
           <label htmlFor="preview">Preview:</label>
-          <pre id="preview">
-            {preview?.data}
-          </pre>
+          <pre id="preview">{preview?.data}</pre>
         </div>
       )}
     </div>

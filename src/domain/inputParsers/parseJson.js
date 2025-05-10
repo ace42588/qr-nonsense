@@ -5,7 +5,7 @@ import {
 } from "./utils/bitFieldUtils";
 import { ModHex, NTRU } from "../encoders";
 
-const exampleSchema = {
+const bitSchema = {
   type: "object",
   properties: {
     platform: {
@@ -211,6 +211,7 @@ const JSON_PARSERS = {
 
 export function parseJson(input) {
   const { obj, schema, encoding } = input;
+  console.debug("parseJson", { obj, schema, encoding });
   if (!obj || !schema) return input;
 
   if (typeof obj !== "object" || obj == null) {
