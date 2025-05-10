@@ -7,7 +7,15 @@ function maxFromBits(bits) {
   return Math.pow(2, bits) - 1;
 }
 
-export function SortableField({ field, onChange, onRemove }) {
+export function SortableField({ id }) {
+  const { updateInput } = useInputDispatch();
+  const inputs = useInputs();
+  const input = inputs.find((i) => i.id === id);
+  
+  const previews = useEncodedInputs();
+  const preview = previews[id] || {};
+  const { totalBits, layout } = preview;
+  
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: field.id });
 

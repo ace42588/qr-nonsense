@@ -26,11 +26,10 @@ const DEFAULT_FIELD = {
 };
 
 export function BitFieldEditor({ id }) {
-  const inputs = useInputs();
   const { updateInput } = useInputDispatch();
-  const previews = useEncodedInputs();
-
+  const inputs = useInputs();
   const input = inputs.find((i) => i.id === id);
+
   const { fields } = input;
   const sensors = useSensors(
     useSensor(PointerSensor),

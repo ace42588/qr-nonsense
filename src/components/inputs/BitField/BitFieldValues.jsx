@@ -14,7 +14,11 @@ export function BitFieldValues({ id }) {
   const previews = useEncodedInputs();
 
   const input = inputs.find((i) => i.id === id);
+  const { values, fields, layout } = input;
   const [type, setType] = useState("base10");
+
+  const emitChange = (field, value) =>
+    updateInput({ ...input, [field]: value });
 
   const handleInputChange = (e, field) => {
     let newValue = e.target.value;
@@ -40,7 +44,7 @@ export function BitFieldValues({ id }) {
       [field.label]: newValue,
     };
     //console.debug("BitFieldValues: handleInputChange", { newValues });
-    onChange({
+    emitChange({
       ...values,
       [field.label]: newValue,
     });

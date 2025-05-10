@@ -19,7 +19,6 @@ export function BitFieldInput({ id }) {
   input.type = "bitField";
   const {fields = [], values = {}} = input;
   const preview = previews[id] || {};
-  console.debug("BitFieldInput", { preview });
 
   const [tab, setTab] = useState("fields");
 

@@ -15,11 +15,14 @@ const COLORS = [
 ];
 
 export function BitFieldVisualizer({ id }) {
-  const inputs = useInputs();
   const { updateInput } = useInputDispatch();
-  const previews = useEncodedInputs();
-
+  const inputs = useInputs();
   const input = inputs.find((i) => i.id === id);
+  
+  const previews = useEncodedInputs();
+  const preview = previews[id] || {};
+  const { totalBits, layout } = preview;
+  
   if (totalBits === 0) return null;
 
   return (
