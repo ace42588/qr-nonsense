@@ -36,7 +36,7 @@ const sampleValue = {
 
 export function JsonInput({ id, input }) {
   const { updateInput } = useInputDispatch();
-  const { obj, schema, encoding } = input;
+  const { obj = sampleValue, schema, encoding } = input;
   const preview = useParsedInputs()[id];
 
   const [tab, setTab] = useState("values");
@@ -44,26 +44,12 @@ export function JsonInput({ id, input }) {
   const emitChange = (field, value) =>
     updateInput?.({ ...input, [field]: value });
 
-  const handleEditorChange = (text) => {
+  const handleJsonChange = (field, text) => {
     try {
       const parsed = JSON.parse(text);
-      emitChange("obj", parsed);
+      emitChange(field, parsed);
     } catch {
       // Invalid JSON; ignore or show error
-    }
-  };
-
-  const handleFormatChange = (e) => {
-    const next = e.target.value;
-    emitChange("encoding", next);
-  };
-
-  const handleFieldMapChange = (text) => {
-    try {
-      const parsed = JSON.parse(text);
-      emitChange(value, format, parsed);
-    } catch {
-      // invalid field map; ignore
     }
   };
 
@@ -89,8 +75,8 @@ export function JsonInput({ id, input }) {
           <Editor
             height="300px"
             defaultLanguage="json"
-            value={JSON.stringify(value, null, 2)}
-            onChange={handleEditorChange}
+            value={JSON.stringify(obj, null, 2)}
+            onChange={(e) => handleJsonChange("obj", e)}
             options={{
               minimap: { enabled: false },
               scrollbar: { vertical: "hidden", horizontal: "hidden" },
@@ -104,8 +90,8 @@ export function JsonInput({ id, input }) {
           <Editor
             height="180px"
             defaultLanguage="json"
-            value={fieldMapRaw}
-            onChange={handleFieldMapChange}
+            value={schema}
+            onChange={(e) => handleJsonChange("schema", e)}
             options={{
               minimap: { enabled: false },
               scrollbar: { vertical: "hidden", horizontal: "hidden" },
@@ -118,7 +104,7 @@ export function JsonInput({ id, input }) {
 
       <div className="label-select-row">
         <label htmlFor="format">Encoding Format:</label>
-        <select id="format" value={format} onChange={handleFormatChange}>
+        <select id="format" value={encoding} onChange={(e) => emitChange("encoding", e.target.value)}>
           {formats.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
@@ -127,11 +113,11 @@ export function JsonInput({ id, input }) {
         </select>
       </div>
 
-      {format !== "None" && (
+      {encoding !== "None" && (
         <div style={{ marginTop: 12 }}>
           <label htmlFor="preview">Preview:</label>
           <pre id="preview">
-            {JSON.stringify(encodeJson(value, format, fieldMap)?.data, null, 2)}
+            {preview?.data}
           </pre>
         </div>
       )}

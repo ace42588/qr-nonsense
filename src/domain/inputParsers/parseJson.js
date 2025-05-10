@@ -193,15 +193,15 @@ const JSON_PARSERS = {
     data: encodeToHex(obj, schema),
   }),
   "PER-ModHex": (obj, schema) => ({
-      data: ModHex.encode(encodeToBytes(obj, schema)),
-      mode: "alphanumeric",
-      encoding: "modhex",
-    }),
+    data: ModHex.encode(encodeToBytes(obj, schema)),
+    mode: "alphanumeric",
+    encoding: "modhex",
+  }),
   "PER-NTRU": (obj, schema) => ({
-      data: NTRU.encode(encodeToBytes(obj, schema)),
-      mode: "numeric",
-      encoding: "ntru",
-    }),
+    data: NTRU.encode(encodeToBytes(obj, schema)),
+    mode: "numeric",
+    encoding: "ntru",
+  }),
   None: (obj, schema) => ({
     data: JSON.stringify(obj),
     mode: "byte",
