@@ -1,9 +1,9 @@
 import { useState } from "react";
 import Editor from "@monaco-editor/react";
-import { useEncodedInputs, useInputs, useInputDispatch } from "../../state";
+import { useParsedInputs, useInputDispatch } from "../../state";
 import "../styles/styles.css";
 
-import { encodeJson } from "./utils";
+//import { encodeJson } from "./utils";
 import { TabSwitcher } from "../shared/TabSwitcher";
 
 const formats = [
@@ -36,44 +36,18 @@ const sampleValue = {
 
 export function JsonInput({ id, input }) {
   const { updateInput } = useInputDispatch();
-  const previews = useEncodedInputs();
+  const { obj, schema, encoding } = input;
+  const preview = useParsedInputs()[id];
 
-  input.type = "json";
-  const [value, setValue] = useState(() => {
-    try {
-      return typeof input === "string"
-        ? JSON.parse(input)
-        : input ?? sampleValue;
-    } catch {
-      return sampleValue;
-    }
-  });
-
-  const [format, setFormat] = useState("None");
-  const [fieldMap, setFieldMap] = useState({
-    ...defaultFieldMap,
-    ...initialMap,
-  });
-  const [fieldMapRaw, setFieldMapRaw] = useState(
-    JSON.stringify(fieldMap, null, 2)
-  );
   const [tab, setTab] = useState("values");
-
-  const emitChange = (obj = value, fmt = format, map = fieldMap) => {
-    const encoded = encodeJson(obj, fmt, map);
-    if (encoded?.data) {
-      updateInput?.({
-        data: encoded.data,
-        mode: encoded.mode,
-        encoding: encoded.encoding,
-      });
-    }
-  };
+  
+  const emitChange = (field, value) =>
+    updateInput?.({ ...input, [field]: value });
 
   const handleEditorChange = (text) => {
     try {
       const parsed = JSON.parse(text);
-      emitChange(parsed);
+      emitChange("obj", parsed);
     } catch {
       // Invalid JSON; ignore or show error
     }
@@ -81,11 +55,10 @@ export function JsonInput({ id, input }) {
 
   const handleFormatChange = (e) => {
     const next = e.target.value;
-    emitChange(value, next);
+    emitChange("encoding", next);
   };
 
   const handleFieldMapChange = (text) => {
-    setFieldMapRaw(text);
     try {
       const parsed = JSON.parse(text);
       emitChange(value, format, parsed);
