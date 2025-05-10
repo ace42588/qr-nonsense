@@ -1,20 +1,16 @@
 import React, { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { bitsNeeded } from "./utils";
+
+function bitsNeeded(max) {
+  return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
+}
 
 function maxFromBits(bits) {
   return Math.pow(2, bits) - 1;
 }
 
-export function SortableField({ id }) {
-  const { updateInput } = useInputDispatch();
-  const inputs = useInputs();
-  const input = inputs.find((i) => i.id === id);
-  
-  const previews = useEncodedInputs();
-  const preview = previews[id] || {};
-  const { totalBits, layout } = preview;
+export function SortableField({ field, onChange, onRemove }) {
   
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: field.id });
