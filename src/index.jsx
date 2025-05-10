@@ -3,15 +3,13 @@ import ReactDOM from 'react-dom';
 import App from './app/App';
 import "./assets/styles/index.css";
 import { createRoot } from 'react-dom/client';
-import sodium from "libsodium-wrappers";
+import sodium from "libsodium-wrappers-sumo";
 
-await sodium.ready;
+async function main() {
+  await sodium.ready;
 
-const container = document.getElementById('root');
-const root = createRoot(container);
+  const root = createRoot(document.getElementById("root"));
+  root.render(<App />);
+}
 
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
+main();

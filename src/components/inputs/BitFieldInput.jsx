@@ -1,12 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
-import {
-  BitFieldEditor,
-  BitFieldValues,
-  BitFieldVisualizer,
-  bytesToHex,
-  encodeFieldsToBytes,
-  generateBitLayout,
-} from "./BitField";
+import { BitFieldEditor } from "./BitField/BitFieldEditor";
+import { BitFieldValues } from "./BitField/BitFieldValues";
+import { BitFieldVisualizer } from "./BitField/BitFieldVisualizer";
+
 import { TabSwitcher } from "../shared/TabSwitcher";
 import { useEncodedInputs, useInputs, useInputDispatch } from "../../state";
 

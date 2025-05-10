@@ -1,26 +1,19 @@
-import sodium from "libsodium-wrappers-sumo";
 import { keccak_256 } from "js-sha3";
+import sodium from "libsodium-wrappers-sumo";
 
 export function hmacSha256Truncated(message, key, length = 8) {
   const encoder = new TextEncoder();
-  const keyData = encoder.encode(key);
-  const msgData = encoder.encode(message);
+  const msgBytes = encoder.encode(message);
+  const keyBytes = encoder.encode(key);
 
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    keyData,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
+  // HMAC-SHA256 using sodium
+  const mac = sodium.crypto_auth_hmacsha256(msgBytes, keyBytes);
 
-  const sig = await crypto.subtle.sign("HMAC", cryptoKey, msgData);
-  const truncated = new Uint8Array(sig).slice(0, length);
-  return [...truncated].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const truncated = mac.slice(0, length);
+  return sodium.to_hex(truncated);
 }
 
-export async function poly1305Mac(message, key, length = 8) {
-  await sodium.ready;
+export function poly1305Mac(message, key, length = 8) {
   const encoder = new TextEncoder();
   const fullKey = sodium.crypto_generichash(32, encoder.encode(key));
   const mac = sodium.crypto_onetimeauth(encoder.encode(message), fullKey);

@@ -1,22 +1,8 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useInputs } from "./InputContext";
-import { parseAll } from "../../domain/encoding";
+import { parseAll, encodeAll } from "../../domain/encoding";
 
 export function useEncodedInputs() {
   const inputs = useInputs();
-  const [encoded, setEncoded] = useState({});
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function runEncoding() {
-      const result = await parseAll(inputs);
-      if (!cancelled) setEncoded(result);
-    }
-
-    runEncoding();
-    return () => { cancelled = true };
-  }, [inputs]);
-
-  return encoded;
+  return useMemo(() => encodeAll(inputs), [inputs]);
 }

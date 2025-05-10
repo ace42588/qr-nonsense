@@ -11,33 +11,23 @@ const INPUT_PARSERS = {
   mac: generateMAC,
 };
 
-async function handleInput(inputData) {
-  console.debug("handleInput", {inputData});
+function handleInput(inputData) {
+  console.debug("handleInput", { inputData });
   const encodeFn = INPUT_PARSERS[inputData.type];
   if (!encodeFn) throw new Error(`Unknown input type: ${inputData.type}`);
-  const result = await encodeFn(inputData); 
-  return result;
+  return encodeFn(inputData);
 }
 
-export async function parseAll(inputs) {
-  console.debug("parseAll", {inputs});
+export function parseAll(inputs) {
+  console.debug("parseAll", { inputs });
   return Object.fromEntries(
-    await Promise.all(
-      inputs.map(async (input) => {
-        const parsed = await handleInput({ ...input, inputs });
-        return [input.id, parsed];
-      })
-    )
+    inputs.map((input) => [input.id, handleInput({ ...input, inputs })])
   );
 }
 
-export async function encodeAll(inputs) {
-  const parsedInputs = await Promise.all(
-      inputs.map(async (input) => {
-        const parsed = await handleInput({ ...input, inputs });
-        return parsed;
-      }));
+export function encodeAll(inputs) {
+  const parsedInputs = inputs.map((input) => handleInput({ ...input, inputs }));
   const encodedInputs = parsedInputs.flatMap(({ data, mode, encoding }) =>
-        encodeInput(data, mode, encoding)
-      )
+    encodeInput(data, mode, encoding)
+  );
 }

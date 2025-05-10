@@ -1,5 +1,5 @@
 import React from "react";
-import { useEncodedInputs, useInputs, useInputDispatch } from "../../state";
+import { useEncodedInputs, useInputs, useInputDispatch } from "../../../state";
 
 // Color palette (cycle through for each field)
 const COLORS = [
