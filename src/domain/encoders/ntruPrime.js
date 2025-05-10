@@ -6,26 +6,15 @@ import { hexToBytes } from "./utils";
 const limit = 1024;
 const len = 10;
 // const maxNum = 255;
-const maxNum = 9;
-
-function prepareInput(input) {
-  const encoder = new TextEncoder("utf-8");
-  
-  let R;
-  if (typeof input === "string"){
-    
-  }
-  const M = R.map(() => 256);
-}
+const maxNum = 9; // for numeric encoding
 
 /**
- * Encode a list of base-256 digits into a compact stream of decimal digits.
+ * Encode a list of bytes into a compact stream of decimal digits.
  * 
  * @param {number[]} R - List of integers representing base-256 input bytes.
  * @param {number[]} M - List of moduli (usually [256, 256, ..., 256]).
  * @returns {number[]} - List of decimal digits (0–9).
  */
-
 function encodeNTRU(R, M) {
   if (M.length === 0) return [];
 
@@ -62,6 +51,13 @@ function encodeNTRU(R, M) {
   return S.concat(encode(R2, M2));
 }
 
+/**
+ * Decode a list of decimal digits into a stream of bytes.
+ * 
+ * @param {number[]} S - List of decimal digits (0-9).
+ * @param {number[]} M - List of moduli (usually [256, 256, ..., 256]).
+ * @returns {number[]} - List of integers representing base-256 input bytes..
+ */
 function decodeNTRU(S, M) {
   if (M.length === 0) return [];
 
@@ -113,9 +109,12 @@ function decodeNTRU(S, M) {
 }
 
 export function encode(input) {
-  
+  const bytes = hexToBytes(input);
+  const moduli = bytes.map(() => 256);
+  return encodeNTRU(bytes, moduli).join("");
 }
 
 export function decode(input) {
-  
+  const moduli = input.map(() => 256);
+  return decodeNTRU(input, moduli);
 }

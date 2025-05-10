@@ -1,5 +1,5 @@
+import { bytesToHex } from "../encoders/utils";
 import {
-  bytesToHex,
   encodeFieldsToBytes,
   generateBitLayoutFromSchema,
 } from "./utils/bitFieldUtils";
@@ -189,14 +189,14 @@ const JSON_PARSERS = {
   "PER-ModHex": (obj, schema) => {
     const hex = bytesToHex(encodeToBytes(obj, schema));
     return {
-      data: ModHex.encode(hex),
+      data: ModHex.encode(encodeToBytes(obj, schema)),
       mode: "alphanumeric",
       encoding: "modhex",
     };
   },
   "PER-NTRU": (obj, schema) => {
     const bytes = Array.from(encodeToBytes(obj, schema));
-    const encoded = NTRU.encode(bytes);
+    const encoded = NTRU.encode(encodeToBytes(obj, schema));
     return {
       data: encoded.join(""),
       mode: "alphanumeric",
