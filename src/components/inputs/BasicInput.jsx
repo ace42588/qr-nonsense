@@ -8,7 +8,6 @@ export function BasicInput({ id }) {
   const { updateInput } = useInputDispatch();
   const inputs = useInputs();
   const input = inputs.find((i) => i.id === id);
-  input.type = "basic";
 
   const handleDataChange = (e) => {
     updateInput?.({ ...input, data: e.target.value });

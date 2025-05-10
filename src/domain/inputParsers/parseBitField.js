@@ -8,7 +8,6 @@ import {
 export function parseBitField(input) {
   console.debug("parseBitField", {input});
   const { fields, values } = input;
-  if (!fields || !values) return input;
   
   const { layout, totalBits } = generateBitLayout(fields);
   const encodedBytes = encodeFieldsToBytes(layout, values);
