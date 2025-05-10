@@ -1,16 +1,21 @@
 import { useMemo, useState } from "react";
-import { useInputs } from "../../state";
+import { useEncodedInputs, useInputs, useInputDispatch } from "../../state";
 import { MAC_FUNCTIONS } from "../../domain";
 
-export function MACGenerator({ input, onChange }) {
-  const { inputs: allInputs } = useInputs();
+export function MACGenerator({ id }) {
+  const allInputs = useInputs();
+  const { updateInput } = useInputDispatch();
+  const previews = useEncodedInputs();
+
+  const input = allInputs.find((i) => i.id === id);
+  input.type = "mac";
 
   const selectedIds = input.includedFields || [];
 
-  const selectableInputs = useMemo(
-    () => allInputs.filter((i) => i.id !== input.id),
-    [allInputs, input]
-  );
+  const selectableInputs = allInputs.filter(i => i.id !== id);
+  const preview = previews[id];
+  
+  updateInput
 
   const emitChange = async (selectedIds, algo, key) => {
     const selected = selectableInputs.filter((i) => selectedIds.includes(i.id));
