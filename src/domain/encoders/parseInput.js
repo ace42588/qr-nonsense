@@ -1,17 +1,17 @@
+const MODE_REGEX = {
+  numeric: /^\d+$/,
+  alphanumeric: /^[0-9A-Z $%*+\-./:]+$/,
+};
+
+const isBinary = (val) =>
+  /^(?:0b)?(?:[01]{1,}(?:\s+[01]{1,})+|(?:[01]{1,})+)$/i.test(val);
+
+const isHex = (val) =>
+  /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(val);
+
 export function parseInput(input) {
   const { mode = "byte", data = "", encoding } = input;
   console.debug("parseInput", { mode, data, encoding });
-
-  const MODE_REGEX = {
-    numeric: /^\d+$/,
-    alphanumeric: /^[0-9A-Z $%*+\-./:]+$/,
-  };
-
-  const isBinary = (val) =>
-    /^(?:0b)?(?:[01]{1,}(?:\s+[01]{1,})+|(?:[01]{1,})+)$/i.test(val);
-
-  const isHex = (val) =>
-    /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(val);
 
   if (!data || !mode) return input;
 
