@@ -12,45 +12,17 @@ export function MACGenerator({ id }) {
 
   const selectedIds = input.includedFields || [];
 
-  const selectableInputs = allInputs.filter(i => i.id !== id);
+  const selectableInputs = allInputs.filter((i) => i.id !== id);
   const preview = previews[id];
-  
-  updateInput
 
-  const emitChange = async (selectedIds, algo, key) => {
-    const selected = selectableInputs.filter((i) => selectedIds.includes(i.id));
-    const message = selected.map((i) => i.data).join("");
-    console.debug("MACGenerator: emitChange", { message });
-    const fn = MAC_FUNCTIONS[algo];
-    try {
-      const result = await fn(message, key, 4);
-      onChange?.({
-        ...input,
-        mode: "byte",
-        encoding: "hex",
-        includedFields: selectedIds,
-        algo,
-        key,
-        data: result,
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleAlgoChange = (e) => {
-    emitChange(input.includedFields, e.target.value, input.key);
-  };
-
-  const handleKeyChange = (e) => {
-    emitChange(input.includedFields, input.algo, e.target.value);
-  };
+  const handleChange = (field, value) =>
+    updateInput({ ...input, [field]: value });
 
   const toggleSelection = (id) => {
     const next = selectedIds.includes(id)
       ? selectedIds.filter((x) => x !== id)
       : [...selectedIds, id];
-    emitChange(next, input.algo, input.key);
+    handleChange("selectedIds", next);
   };
 
   return (
@@ -61,7 +33,7 @@ export function MACGenerator({ id }) {
       <input
         className="border p-1 w-full mb-2"
         value={input.key}
-        onChange={handleKeyChange}
+        onChange={(e) => handleChange("key", e.target.value)}
       />
 
       <label className="block font-medium">Select Fields</label>
@@ -80,7 +52,7 @@ export function MACGenerator({ id }) {
       <select
         className="border p-1 w-full mb-2"
         value={input.algo}
-        onChange={handleAlgoChange}
+        onChange={(e) => handleChange("algo", e.target.value)}
       >
         {Object.keys(MAC_FUNCTIONS).map((alg) => (
           <option key={alg} value={alg}>
@@ -90,7 +62,7 @@ export function MACGenerator({ id }) {
       </select>
 
       <div className="bg-gray-100 p-2 rounded mt-4">
-        <strong>MAC:</strong> <code>{input.data}</code>
+        <strong>MAC:</strong> <code>{preview || "(calculating…)"}</code>
       </div>
     </div>
   );

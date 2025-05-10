@@ -20,12 +20,12 @@ export async function hmacSha256Truncated(message, key, length = 8) {
   return [...truncated].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-export async function poly1305Mac(message, key) {
+export async function poly1305Mac(message, key, length = 8) {
   await sodium.ready;
   const encoder = new TextEncoder();
   const fullKey = sodium.crypto_generichash(32, encoder.encode(key));
   const mac = sodium.crypto_onetimeauth(encoder.encode(message), fullKey);
-  return sodium.to_hex(mac).slice(0, 8);
+  return sodium.to_hex(mac).slice(0, length * 2);
 }
 
 export function kmac128(message, key, length = 8) {
