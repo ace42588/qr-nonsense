@@ -1,6 +1,13 @@
 // modhex mapping base; c.....v => 0x0 ... 0xF
 const modhexBase = "CBDEFGHIJKLNRTUV".split("");
 
+function bytesToHex(bytes) {
+  if (!bytes) return "";
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 // Convert a MODHEX encoded Strings to hex
 export function decode(input, encoding = "hex") {
   // strip whitespaces and string cleanup - all non matching characters are 0x00 (c in modhex)
@@ -42,10 +49,10 @@ export function encode(input) {
 
     // even length ?
     if (hexInput.length % 2 !== 0) {
-      throw new Error(
-        "hex input string has no even length (" + hexInput.length + ")"
-      );
+      hexInput = "0"
     }
+  } else if (Array.isArray(input)) {
+    hexInput = bytesToHex(input);
   } else {
     // buffer to hex
     hexInput = input.toString("hex");

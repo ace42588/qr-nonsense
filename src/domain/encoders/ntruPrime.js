@@ -15,7 +15,8 @@ const maxNum = 9;
  * @returns {number[]} - List of decimal digits (0–9).
  */
 
-export function encode(R, M) {
+export function encode(R) {
+  const M = R.map(() => 256);
   if (M.length === 0) return [];
 
   const S = [];

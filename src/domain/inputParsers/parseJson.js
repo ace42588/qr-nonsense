@@ -196,8 +196,7 @@ const JSON_PARSERS = {
   },
   "PER-NTRU": (obj, schema) => {
     const bytes = Array.from(encodeToBytes(obj, schema));
-    const moduli = bytes.map(() => 256);
-    const encoded = NTRU.encode(bytes, moduli);
+    const encoded = NTRU.encode(bytes);
     return {
       data: encoded.join(""),
       mode: "alphanumeric",
