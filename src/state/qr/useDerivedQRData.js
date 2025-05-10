@@ -25,13 +25,13 @@ import { useEncodedInputs } from "../../state";
  * }}
  */
 export function useDerivedQRData({
-  inputs,
   version: selectedVersion,
   dataMask: selectedDataMask,
   errorCorrectionLevel,
 }) {
   //const dataSegments = useMemo(() => getSegments(inputs), [inputs]);
   const encodedInputs = useEncodedInputs();
+  console.debug("useDerivedQRData", {encodedInputs});
   const dataSegments = useMemo(
     () =>
       Object.values(encodedInputs).flatMap(({ data, mode, encoding }) => ({
@@ -41,6 +41,7 @@ export function useDerivedQRData({
       })),
     [encodedInputs]
   );
+  console.debug("useDerivedQRData", {dataSegments});
 
   const version = useMemo(
     () =>

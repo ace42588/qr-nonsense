@@ -10,14 +10,12 @@ const QRMessageContext = createContext();
 export function QRDataProvider({ children }) {
   const [state, dispatch] = useReducer(qrReducer, initialQRState);
   const {
-    inputs,
     version: selectedVersion,
     dataMask: selectedDataMask,
     errorCorrectionLevel,
   } = state;
 
   const derived = useDerivedQRData({
-    inputs,
     version: selectedVersion,
     dataMask: selectedDataMask,
     errorCorrectionLevel,
