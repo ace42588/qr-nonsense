@@ -192,23 +192,16 @@ const JSON_PARSERS = {
     encoding: "hex",
     data: encodeToHex(obj, schema),
   }),
-  "PER-ModHex": (obj, schema) => {
-    const hex = bytesToHex(encodeToBytes(obj, schema));
-    return {
+  "PER-ModHex": (obj, schema) => ({
       data: ModHex.encode(encodeToBytes(obj, schema)),
       mode: "alphanumeric",
       encoding: "modhex",
-    };
-  },
-  "PER-NTRU": (obj, schema) => {
-    const bytes = Array.from(encodeToBytes(obj, schema));
-    const encoded = NTRU.encode(encodeToBytes(obj, schema));
-    return {
-      data: encoded.join(""),
-      mode: "alphanumeric",
+    }),
+  "PER-NTRU": (obj, schema) => ({
+      data: NTRU.encode(encodeToBytes(obj, schema)),
+      mode: "numeric",
       encoding: "ntru",
-    };
-  },
+    }),
   None: (obj, schema) => ({
     data: JSON.stringify(obj),
     mode: "byte",
