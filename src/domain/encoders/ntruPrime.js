@@ -7,6 +7,12 @@ const len = 10;
 const maxNum = 9;
 
 function prepareInput(input) {
+  const encoder = new TextEncoder("utf-8");
+  
+  let R;
+  if (typeof input === "string"){
+    
+  }
   const M = R.map(() => 256);
 }
 
