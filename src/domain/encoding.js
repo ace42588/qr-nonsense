@@ -23,8 +23,8 @@ export async function parseAll(inputs) {
   return Object.fromEntries(
     await Promise.all(
       inputs.map(async (input) => {
-        const encoded = await handleInput({ ...input, inputs });
-        return [input.id, encoded];
+        const parsed = await handleInput({ ...input, inputs });
+        return [input.id, parsed];
       })
     )
   );
