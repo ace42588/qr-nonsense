@@ -8,8 +8,8 @@ function getValueFromPath(obj, path) {
   return path.split(".").reduce((acc, part) => acc?.[part], obj);
 }
 
-export function generateBitLayout(fields) {
-  //console.debug("generateBitLayout", { fields });
+export function generateBitLayout(fields = []) {
+  console.debug("generateBitLayout", { fields });
   const withBits = fields.map((field) => ({
     ...field,
     bits: bitsNeeded(field.max),

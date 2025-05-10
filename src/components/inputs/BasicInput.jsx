@@ -5,9 +5,8 @@ import "../styles/styles.css";
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
 export function BasicInput({ id }) {
-  const inputs = useInputs();
   const { updateInput } = useInputDispatch();
-
+  const inputs = useInputs();
   const input = inputs.find((i) => i.id === id);
   input.type = "basic";
 

@@ -30,7 +30,7 @@ export function BitFieldEditor({ id }) {
   const inputs = useInputs();
   const input = inputs.find((i) => i.id === id);
 
-  const { fields = [ DEFAULT_FIELD ] } = input;
+  const { fields = [] } = input;
   
   const sensors = useSensors(
     useSensor(PointerSensor),

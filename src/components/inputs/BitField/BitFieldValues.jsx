@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useEncodedInputs, useInputs, useInputDispatch } from "../../../state";
+import { useParsedInputs, useInputs, useInputDispatch } from "../../../state";
 const encoder = new TextEncoder("utf-8");
 
 const types = [
@@ -9,12 +9,13 @@ const types = [
 ];
 
 export function BitFieldValues({ id }) {
-  const inputs = useInputs();
   const { updateInput } = useInputDispatch();
-  const previews = useEncodedInputs();
-
+  const inputs = useInputs();
   const input = inputs.find((i) => i.id === id);
-  const { values = {}, layout = [] } = input;
+  const previews = useParsedInputs();
+  const preview = previews[id] || {};
+
+  const { values = {}, layout = [] } = preview;
   const [type, setType] = useState("base10");
 
   const emitChange = (field, value) =>

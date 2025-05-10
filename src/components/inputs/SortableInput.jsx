@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { useInputDispatch } from "../../state";
+import { useInputs, useInputDispatch } from "../../state";
 import { BasicInput } from "./BasicInput";
 import { JsonInput } from "./JsonInput";
 import { BitFieldInput } from "./BitFieldInput";
@@ -26,13 +26,19 @@ const componentMap = {
 };
 
 export function SortableInput({ id, label }) {
-  const {  removeInput } =
+  const inputs = useInputs();
+  const input = inputs.find((i) => i.id === id);
+
+  const { updateInput, removeInput } =
     useInputDispatch();
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id});
 
   const [type, setType] = useState("basic");
   const [expanded, setExpanded] = useState(true);
+  
+  const handleTypeChange = (field, value) =>
+    updateInput({ ...input, [field]: value });
 
   function toggleExpanded() {
     setExpanded((prev) => !prev);
