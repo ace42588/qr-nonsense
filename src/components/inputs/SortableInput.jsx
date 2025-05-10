@@ -36,8 +36,8 @@ export function SortableInput({ id, label }) {
 
   const [expanded, setExpanded] = useState(true);
 
-  const handleTypeChange = (e) =>
-    updateInput({ ...input, type: e.target.value });
+  const handleTypeChange = (tab) =>
+    updateInput({ ...input, type: tab });
 
   function toggleExpanded() {
     setExpanded((prev) => !prev);
