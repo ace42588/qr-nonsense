@@ -1,11 +1,10 @@
 import { useMemo } from "react";
 import {
-  encodeInput,
   getEncodedMessage,
   getVersion,
   getMatrix,
 } from "../../domain/qr";
-import { useEncodedInputs } from "../../state";
+import { useEncodedInputs, useParsedInputs } from "../../state";
 
 /**
  * Derives intermediate and final QR code data from reducer state inputs.
@@ -30,16 +29,7 @@ export function useDerivedQRData({
   errorCorrectionLevel,
 }) {
   //const dataSegments = useMemo(() => getSegments(inputs), [inputs]);
-  const encodedInputs = useEncodedInputs();
-  console.debug("useDerivedQRData", { encodedInputs });
-  const dataSegments = useMemo(
-    () =>
-      Object.values(encodedInputs).flatMap(({ data, mode, encoding }) =>
-        encodeInput(data, mode, encoding)
-      ),
-    [encodedInputs]
-  );
-  console.debug("useDerivedQRData", { dataSegments });
+  const dataSegments = useEncodedInputs();
 
   const version = useMemo(
     () =>

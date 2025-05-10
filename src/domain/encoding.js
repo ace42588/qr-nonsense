@@ -27,7 +27,7 @@ export function parseAll(inputs) {
 
 export function encodeAll(inputs) {
   const parsedInputs = inputs.map((input) => handleInput({ ...input, inputs }));
-  const encodedInputs = parsedInputs.flatMap(({ data, mode, encoding }) =>
-    encodeInput(data, mode, encoding)
+  return parsedInputs.flatMap(({ data, mode, encoding }) =>
+    encodeInput(mode, data, encoding)
   );
 }
