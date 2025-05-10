@@ -108,13 +108,26 @@ function decodeNTRU(S, M) {
   return R;
 }
 
+/**
+ * Encode a string of hexadecimal digits into a stream of decimal digits.
+ * 
+ * @param {number[]} input - List of integers representing base-256 input bytes.
+ * @returns {number[]} - List of decimal digits (0–9).
+ */
 export function encode(input) {
   const bytes = hexToBytes(input);
   const moduli = bytes.map(() => 256);
   return encodeNTRU(bytes, moduli).join("");
 }
 
+/**
+ * Decode a string of decimal digits into a stream of bytes.
+ * 
+ * @param {number[]} input - List of decimal digits (0–9).
+ * @returns {number[]} - List of integers representing base-256 input bytes.
+ */
 export function decode(input) {
+  const decimals = input.split("");
   const moduli = input.map(() => 256);
   return decodeNTRU(input, moduli);
 }

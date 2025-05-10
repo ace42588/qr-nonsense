@@ -148,6 +148,12 @@ function encodeToBytes(obj, schema) {
   const combined = new Uint8Array(rootBytes.length + itemBytes.length);
   combined.set(rootBytes, 0);
   combined.set(itemBytes, rootBytes.length);
+  return combined;
+}
+
+function encodeToHex(obj, schema) {
+  const bytes = encodeToBytes(obj, schema);
+  return bytesToHex(bytes);
 }
 
 function encodeToAlphanumeric(obj, schema) {
@@ -184,7 +190,7 @@ const JSON_PARSERS = {
   PER: (obj, schema) => ({
     mode: "byte",
     encoding: "hex",
-    data: bytesToHex(encodeToBytes(obj, schema)),
+    data: encodeToHex(obj, schema),
   }),
   "PER-ModHex": (obj, schema) => {
     const hex = bytesToHex(encodeToBytes(obj, schema));
