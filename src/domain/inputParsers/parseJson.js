@@ -213,7 +213,9 @@ const JSON_PARSERS = {
 };
 
 export function encodeJson(input) {
-  const { obj = {}, schema = {}, encoding = "None" } = input;
+  const { obj, schema, encoding } = input;
+  if (!obj || !schema) return input;
+  
   if (typeof obj !== "object" || obj == null) {
     return {
       data: String(obj ?? ""),

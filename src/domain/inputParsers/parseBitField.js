@@ -1,15 +1,15 @@
-// domain/encoders/encodeBitField.js
+// domain/inputParsers/parseBitField.js
 import {
   bytesToHex,
   encodeFieldsToBytes,
   generateBitLayout,
-} from "./bitFieldUtils";
-import { parseInput } from "./parseInput";
+} from "./utils/bitFieldUtils";
 
-export function encodeBitField(input) {
-  console.debug("encodeBitField", {input});
+export function parseBitField(input) {
+  console.debug("parseBitField", {input});
   const { fields, values } = input;
-  if (!fields || !values) return "";
+  if (!fields || !values) return input;
+  
   const { layout, totalBits } = generateBitLayout(fields);
   const encodedBytes = encodeFieldsToBytes(layout, values);
   return {

@@ -9,9 +9,9 @@ const isBinary = (val) =>
 const isHex = (val) =>
   /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(val);
 
-export function parseInput(input) {
-  const { mode = "byte", data = "", encoding } = input;
-  console.debug("parseInput", { mode, data, encoding });
+export function parseBasic(input) {
+  const { mode, data, encoding } = input;
+  console.debug("parseBasic", { mode, data, encoding });
 
   if (!data || !mode) return input;
 

@@ -1,7 +1,7 @@
-import { parseInput } from "./encoders/parseInput";
-import { encodeJson } from "./encoders/encodeJson";
-import { encodeBitField } from "./encoders/encodeBitField";
-import { generateMAC } from "./encoders/generateMAC";
+import { parseInput } from "./inputParsers/parseBasic";
+import { encodeJson } from "./inputParsers/parseJson";
+import { encodeBitField } from "./inputParsers/parseBitField";
+import { generateMAC } from "./encodinputParsersers/generateMAC";
 
 const INPUT_PARSERS = {
   basic: parseInput,
