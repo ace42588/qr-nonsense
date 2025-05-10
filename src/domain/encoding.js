@@ -18,8 +18,8 @@ async function handleInput(inputData) {
   return result;
 }
 
-export async function parseInputs(inputs) {
-  console.debug("parseInputs", {inputs});
+export async function parseAll(inputs) {
+  console.debug("parseAll", {inputs});
   return Object.fromEntries(
     await Promise.all(
       inputs.map(async (input) => {

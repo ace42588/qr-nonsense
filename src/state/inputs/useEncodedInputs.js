@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useInputs } from "./InputContext";
-import { encodeAll } from "../../domain/encoding";
+import { parseAll } from "../../domain/encoding";
 
 export function useEncodedInputs() {
   const inputs = useInputs();
@@ -10,7 +10,7 @@ export function useEncodedInputs() {
     let cancelled = false;
 
     async function runEncoding() {
-      const result = await encodeAll(inputs);
+      const result = await parseAll(inputs);
       if (!cancelled) setEncoded(result);
     }
 

@@ -211,7 +211,7 @@ const JSON_PARSERS = {
   }),
 };
 
-export function encodeJson(input) {
+export function parseJson(input) {
   const { obj, schema, encoding } = input;
   if (!obj || !schema) return input;
 
