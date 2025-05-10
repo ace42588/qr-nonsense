@@ -9,11 +9,11 @@ export const Actions = {
   Reorder: "REORDER",
 };
 
-export function inputReducer(state, action) {
+export function inputReducer(inputs, action) {
   switch (action.type) {
     case Actions.Add: {
       return [
-        ...state,
+        ...inputs,
         {
           id: crypto.randomUUID(),
           type: "basic",
@@ -26,17 +26,17 @@ export function inputReducer(state, action) {
     }
     case Actions.Remove: {
       const id = action.payload;
-      return state.filter((input) => input.id !== id);
+      return inputs.filter((input) => input.id !== id);
     }
     case Actions.Update: {
-      return updateInputById(state, action.id, action.partial);
+      return updateInputById(inputs, action.id, action.partial);
     }
     case Actions.Reorder: {
       const { oldIndex, newIndex } = action;
-      return arrayMove(state, oldIndex, newIndex);
+      return arrayMove(inputs, oldIndex, newIndex);
     }
     default:
-      return state;
+      return inputs;
   }
 }
 
@@ -56,7 +56,7 @@ const basicExample = {
   type: "basic",
   label: "Input 0",
   mode: "byte",
-  data: "Hello world",
+  text: "Hello world",
   encoding: "utf-8",
 };
 
@@ -73,7 +73,6 @@ const jsonExample = {
   id: crypto.randomUUID(),
   type: "json",
   label: "Input 0",
-
   obj: {},
   schema: {},
   encoding: "none",
@@ -83,7 +82,6 @@ const macExample = {
   id: crypto.randomUUID(),
   type: "mac",
   label: "Input 0",
-
   algo: "HMAC-SHA256",
   key: "supersecret",
   selectedInputs: [],

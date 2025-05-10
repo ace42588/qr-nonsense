@@ -99,6 +99,42 @@ const alphaNumericSchema = {
   },
 };
 
+const basicExample = {
+  id: crypto.randomUUID(),
+  type: "basic",
+  label: "Input 0",
+  mode: "byte",
+  text: "Hello world",
+  encoding: "utf-8",
+};
+
+const bitFieldExample = {
+  id: crypto.randomUUID(),
+  type: "bitfield",
+  label: "Input 0",
+  fields: [],
+  values: {},
+  encoding: "dec",
+};
+
+const jsonExample = {
+  id: crypto.randomUUID(),
+  type: "json",
+  label: "Input 0",
+  obj: {},
+  schema: {},
+  encoding: "none",
+};
+
+const macExample = {
+  id: crypto.randomUUID(),
+  type: "mac",
+  label: "Input 0",
+  algo: "HMAC-SHA256",
+  key: "supersecret",
+  selectedInputs: [],
+};
+
 const baseDefaults = {
   data: "",
   values: {},
@@ -108,7 +144,7 @@ const baseDefaults = {
 const typeDefaults = {
   string: {
     type: "string",
-    data: "",
+    text: "hello world",
   },
   bitfield: {
     type: "bitfield",
@@ -120,7 +156,7 @@ const typeDefaults = {
   mac: {
     type: "mac",
     algo: "poly1305",
-    key: "",
+    key: "supersecret",
     includedFields: [],
   },
   // add others here...
