@@ -1,5 +1,5 @@
 import React from "react";
-import { useEncodedInputs, useInputs, useInputDispatch } from "../../../state";
+import { useEncodedInputs, useInputs } from "../../../state";
 
 // Color palette (cycle through for each field)
 const COLORS = [
@@ -15,13 +15,12 @@ const COLORS = [
 ];
 
 export function BitFieldVisualizer({ id }) {
-  const { updateInput } = useInputDispatch();
   const inputs = useInputs();
   const input = inputs.find((i) => i.id === id);
   
   const previews = useEncodedInputs();
   const preview = previews[id] || {};
-  const { totalBits, layout } = preview;
+  const { totalBits, layout = [] } = preview;
   
   if (totalBits === 0) return null;
 

@@ -4,25 +4,19 @@ import { BitFieldValues } from "./BitField/BitFieldValues";
 import { BitFieldVisualizer } from "./BitField/BitFieldVisualizer";
 
 import { TabSwitcher } from "../shared/TabSwitcher";
-import { useEncodedInputs, useInputs, useInputDispatch } from "../../state";
+import { useParsedInputs, useInputs } from "../../state";
 
 export function BitFieldInput({ id }) {
   const inputs = useInputs();
-  const { updateInput } = useInputDispatch();
-  const previews = useEncodedInputs();
-
   const input = inputs.find((i) => i.id === id);
   input.type = "bitField";
-  const {fields = [], values = {}} = input;
+
+  const previews = useParsedInputs();
   const preview = previews[id] || {};
+  const { encodedBytes } = preview;
 
   const [tab, setTab] = useState("fields");
-
-  const { encodedBytes, layout = [], totalBits = 0 } = preview;
   
-  const handleChange = (field, value) =>
-    updateInput({ ...input, [field]: value });
-
   return (
     <div
       style={{
@@ -41,16 +35,12 @@ export function BitFieldInput({ id }) {
         onChange={setTab}
       />
       {tab === "values" ? (
-        <BitFieldValues
-          values={values}
-          onChange={(e) => handleChange("values", e.target.value)}
-          layout={layout}
-        />
+        <BitFieldValues id={id} />
       ) : (
-        <BitFieldEditor fields={fields} onChange={(e) => handleChange("fields", e.target.value)} />
+        <BitFieldEditor id={id} />
       )}
 
-      <BitFieldVisualizer layout={layout} totalBits={totalBits} />
+      <BitFieldVisualizer id={id} />
       <div style={{ marginTop: 8 }}>
         {encodedBytes ? (
           <>
