@@ -31,17 +31,15 @@ export function useDerivedQRData({
 }) {
   //const dataSegments = useMemo(() => getSegments(inputs), [inputs]);
   const encodedInputs = useEncodedInputs();
-  console.debug("useDerivedQRData", {encodedInputs});
+  console.debug("useDerivedQRData", { encodedInputs });
   const dataSegments = useMemo(
     () =>
-      Object.values(encodedInputs).flatMap(({ data, mode, encoding }) => ({
-        data,
-        mode,
-        encoding,
-      })),
+      Object.values(encodedInputs).flatMap(({ data, mode, encoding }) =>
+        encodeInput(data, mode, encoding)
+      ),
     [encodedInputs]
   );
-  console.debug("useDerivedQRData", {dataSegments});
+  console.debug("useDerivedQRData", { dataSegments });
 
   const version = useMemo(
     () =>
