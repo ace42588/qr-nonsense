@@ -1,5 +1,6 @@
 // state/inputs/inputReducer.js
 import { arrayMove } from "@dnd-kit/sortable";
+import { updateInputById } from "../utils";
 
 export const Actions = {
   Add: "ADD",
@@ -28,9 +29,7 @@ export function inputReducer(state, action) {
       return state.filter((input) => input.id !== id);
     }
     case Actions.Update: {
-      return state.map((input) =>
-        input.id === action.id ? { ...input, ...action.payload } : input
-      );
+      return updateInputById(state, action.id, action.partial);
     }
     case Actions.Reorder: {
       const { oldIndex, newIndex } = action;

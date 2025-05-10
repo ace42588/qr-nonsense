@@ -21,7 +21,7 @@ export function InputProvider({ children }) {
       });
     }, []),
     updateInput: useCallback((payload) => {
-      dispatch({ type: Actions.Update, id: payload.id, payload });
+      dispatch({ type: Actions.Update, id: payload.id, partial: payload });
     }, []),
     removeInput: useCallback(
       (payload) => {
