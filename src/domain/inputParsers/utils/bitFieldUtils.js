@@ -68,29 +68,29 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
   let result = 0;
 
   try {
-  fieldsLayout.forEach((field) => {
-    const value = getValueFromPath(values, field.label);
-    if (value === undefined) {
-      throw new Error(`Missing value for field: ${field.label}`);
+    fieldsLayout.forEach((field) => {
+      const value = getValueFromPath(values, field.label);
+      if (value === undefined) {
+        throw new Error(`Missing value for field: ${field.label}`);
+      }
+      if (value < field.min || value > field.max) {
+        throw new Error(
+          `Value for ${field.label} out of allowed range (${field.min} to ${field.max})`
+        );
+      }
+
+      result |= (value & ((1 << field.width) - 1)) << field.endBit;
+    });
+
+    const totalBits = fieldsLayout[0].startBit + 1;
+    const totalBytes = Math.ceil(totalBits / 8);
+
+    const bytes = new Uint8Array(totalBytes);
+    for (let i = 0; i < totalBytes; i++) {
+      bytes[i] = (result >> (8 * (totalBytes - i - 1))) & 0xff;
     }
-    if (value < field.min || value > field.max) {
-      throw new Error(
-        `Value for ${field.label} out of allowed range (${field.min} to ${field.max})`
-      );
-    }
 
-    result |= (value & ((1 << field.width) - 1)) << field.endBit;
-  });
-
-  const totalBits = fieldsLayout[0].startBit + 1;
-  const totalBytes = Math.ceil(totalBits / 8);
-
-  const bytes = new Uint8Array(totalBytes);
-  for (let i = 0; i < totalBytes; i++) {
-    bytes[i] = (result >> (8 * (totalBytes - i - 1))) & 0xff;
-  }
-
-  return bytes;
+    return bytes;
   } catch {
     return null;
   }
