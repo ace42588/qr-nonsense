@@ -8,14 +8,9 @@ const types = [
   { value: "string", label: "String" },
 ];
 
-export function BitFieldValues({ id }) {
+export function BitFieldValues({ id, input }) {
   const { updateInput } = useInputDispatch();
-  const inputs = useInputs();
-  const input = inputs.find((i) => i.id === id);
-  const previews = useParsedInputs();
-  const preview = previews[id] || {};
-
-  const { values = {}, layout = [] } = preview;
+  const { values = {}, layout = [] } = useParsedInputs()[id];
   const [type, setType] = useState("base10");
 
   const emitChange = (field, value) =>

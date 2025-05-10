@@ -34,12 +34,10 @@ const sampleValue = {
   ],
 };
 
-export function JsonInput({ id }) {
-  const inputs = useInputs();
+export function JsonInput({ id, input }) {
   const { updateInput } = useInputDispatch();
   const previews = useEncodedInputs();
 
-  const input = inputs.find((i) => i.id === id);
   input.type = "json";
   const [value, setValue] = useState(() => {
     try {

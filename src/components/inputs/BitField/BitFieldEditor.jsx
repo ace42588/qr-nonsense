@@ -25,11 +25,8 @@ const DEFAULT_FIELD = {
   mode: "bits", // or "max"
 };
 
-export function BitFieldEditor({ id }) {
+export function BitFieldEditor({ input }) {
   const { updateInput } = useInputDispatch();
-  const inputs = useInputs();
-  const input = inputs.find((i) => i.id === id);
-
   const { fields = [] } = input;
   
   const sensors = useSensors(

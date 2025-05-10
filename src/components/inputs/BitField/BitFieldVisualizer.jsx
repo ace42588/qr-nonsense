@@ -14,13 +14,8 @@ const COLORS = [
   "#6366f1", // Indigo
 ];
 
-export function BitFieldVisualizer({ id }) {
-  const inputs = useInputs();
-  const input = inputs.find((i) => i.id === id);
-  
-  const previews = useParsedInputs();
-  const preview = previews[id] || {};
-  const { totalBits, layout = [] } = preview;
+export function BitFieldVisualizer({ id, input }) {
+  const { totalBits, layout = [] } = useParsedInputs()[id];
 
   return (
     <div style={{ marginTop: 12 }}>
