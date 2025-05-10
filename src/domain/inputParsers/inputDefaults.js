@@ -142,15 +142,29 @@ const baseDefaults = {
 };
 
 const typeDefaults = {
-  string: {
-    type: "string",
+  basic: {
+    type: "basic",
     text: "hello world",
+    mode: "byte",
+    encoding: "utf-8",
+  },
+  json: {
+    type: "json",
+    obj: {
+      p: "A",
+      cc: 133,
+      txn: "99999",
+      i: [
+        { v: 5432, q: 1 },
+        { v: 6666, q: 3 },
+        { v: 1234, q: 2 },
+      ],
+    },
+    schema: existingSchema,
   },
   bitfield: {
     type: "bitfield",
-    layout: [
-      { label: "Field A", type: "base10" },
-    ],
+    layout: [{ label: "Field A", type: "base10" }],
     values: {},
   },
   mac: {
@@ -159,7 +173,6 @@ const typeDefaults = {
     key: "supersecret",
     includedFields: [],
   },
-  // add others here...
 };
 
 export function getInputDefaults(type) {
