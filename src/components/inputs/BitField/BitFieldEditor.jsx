@@ -14,7 +14,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { SortableField } from "./SortableField";
-import { bitsNeeded } from "./utils";
+import { useEncodedInputs, useInputs, useInputDispatch } from "../../state";
 
 const DEFAULT_FIELD = {
   label: "",
@@ -25,20 +25,29 @@ const DEFAULT_FIELD = {
   mode: "bits", // or "max"
 };
 
-export function BitFieldEditor({ fields, onChange }) {
+export function BitFieldEditor({ id }) {
+  const inputs = useInputs();
+  const { updateInput } = useInputDispatch();
+  const previews = useEncodedInputs();
+
+  const input = inputs.find((i) => i.id === id);
+  const { fields } = input;
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  const emitChange = (field, value) =>
+    updateInput({ ...input, [field]: value });
+
   function handleAddField() {
-    console.debug("BitFieldEditor: handleAddField", {});
     const newField = { ...DEFAULT_FIELD, id: crypto.randomUUID() };
-    onChange([...fields, newField]);
+    emitChange("fields", [...fields, newField]);
   }
 
   function handleChange(id, key, value) {
-    onChange(
+    emitChange(
+      "fields",
       fields.map((f) =>
         f.id === id ? { ...f, ...(key ? { [key]: value } : value) } : f
       )
@@ -46,8 +55,10 @@ export function BitFieldEditor({ fields, onChange }) {
   }
 
   function handleRemove(id) {
-    console.debug("handleRemove", { id });
-    onChange(fields.filter((f) => f.id !== id));
+    emitChange(
+      "fields",
+      fields.filter((f) => f.id !== id)
+    );
   }
 
   function handleDragEnd(event) {
@@ -56,14 +67,9 @@ export function BitFieldEditor({ fields, onChange }) {
     if (active.id !== over.id) {
       const oldIndex = fields.findIndex((f) => f.id === active.id);
       const newIndex = fields.findIndex((f) => f.id === over.id);
-      onChange(arrayMove(fields, oldIndex, newIndex));
+      emitChange("fields", arrayMove(fields, oldIndex, newIndex));
     }
   }
-
-  const totalBits = fields.reduce(
-    (sum, f) => sum + (f.mode === "bits" ? f.bitWidth || 0 : bitsNeeded(f.max)),
-    0
-  );
 
   return (
     <div style={{ marginBottom: 32 }}>

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-
+import { useEncodedInputs, useInputs, useInputDispatch } from "../../state";
 const encoder = new TextEncoder("utf-8");
 
 const types = [
@@ -8,7 +8,12 @@ const types = [
   { value: "string", label: "String" },
 ];
 
-export function BitFieldValues({ values, onChange, layout }) {
+export function BitFieldValues({ id }) {
+  const inputs = useInputs();
+  const { updateInput } = useInputDispatch();
+  const previews = useEncodedInputs();
+
+  const input = inputs.find((i) => i.id === id);
   const [type, setType] = useState("base10");
 
   const handleInputChange = (e, field) => {

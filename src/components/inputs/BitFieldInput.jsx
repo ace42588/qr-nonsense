@@ -23,7 +23,7 @@ export function BitFieldInput({ id }) {
 
   const [tab, setTab] = useState("fields");
 
-  const { encodedBytes = 0, layout = [], totalBits = 0 } = preview;
+  const { encodedBytes, layout = [], totalBits = 0 } = preview;
   
   const handleChange = (field, value) =>
     updateInput({ ...input, [field]: value });
@@ -59,7 +59,7 @@ export function BitFieldInput({ id }) {
       <div style={{ marginTop: 8 }}>
         {encodedBytes ? (
           <>
-            <b>Encoded Bytes:</b> {preview.data}
+            <b>Encoded Bytes:</b> {encodedBytes}
           </>
         ) : (
           <span style={{ color: "red" }}>(missing or invalid values)</span>
