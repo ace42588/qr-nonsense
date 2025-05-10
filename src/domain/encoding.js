@@ -2,6 +2,7 @@ import { parseBasic } from "./inputParsers/parseBasic";
 import { parseJson } from "./inputParsers/parseJson";
 import { parseBitField } from "./inputParsers/parseBitField";
 import { generateMAC } from "./inputParsers/generateMAC";
+import { encodeInput } from "./qr/encoders";
 
 const INPUT_PARSERS = {
   basic: parseBasic,
@@ -31,5 +32,12 @@ export async function parseAll(inputs) {
 }
 
 export async function encodeAll(inputs) {
-  
+  const parsedInputs = await Promise.all(
+      inputs.map(async (input) => {
+        const parsed = await handleInput({ ...input, inputs });
+        return parsed;
+      }));
+  const encodedInputs = parsedInputs.flatMap(({ data, mode, encoding }) =>
+        encodeInput(data, mode, encoding)
+      )
 }

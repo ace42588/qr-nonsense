@@ -24,30 +24,9 @@ export function BitFieldInput({ id }) {
   const [tab, setTab] = useState("fields");
 
   const { encodedBytes = 0, layout = [], totalBits = 0 } = preview;
-
-  const emitChange = (updatedFields, updatedValues) => {
-    const newInput = {
-      ...input,
-      mode: "byte",
-      encoding: "hex",
-      fields: updatedFields,
-      values: updatedValues,
-    };
-    console.debug("BitFieldInput: emitChange", { newInput });
-    try {
-      const encodedBytes = encodeFieldsToBytes(layout, updatedValues);
-      newInput.data = bytesToHex(encodedBytes);
-    } catch {}
-    updateInput?.(newInput);
-  };
-
-  const handleFieldsChange = (newFields) => {
-    emitChange(newFields, values);
-  };
-
-  const handleValuesChange = (newValues) => {
-    emitChange(fields, newValues);
-  };
+  
+  const handleChange = (field, value) =>
+    updateInput({ ...input, [field]: value });
 
   return (
     <div
@@ -69,11 +48,11 @@ export function BitFieldInput({ id }) {
       {tab === "values" ? (
         <BitFieldValues
           values={values}
-          onChange={handleValuesChange}
+          onChange={(e) => handleChange("values", e.target.value)}
           layout={layout}
         />
       ) : (
-        <BitFieldEditor fields={fields} onChange={handleFieldsChange} />
+        <BitFieldEditor fields={fields} onChange={(e) => handleChange("fields", e.target.value)} />
       )}
 
       <BitFieldVisualizer layout={layout} totalBits={totalBits} />
