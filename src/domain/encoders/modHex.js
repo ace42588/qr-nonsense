@@ -1,3 +1,5 @@
+import { bytesToHex, prepareHexString } from "./utils";
+
 // modhex mapping base; c.....v => 0x0 ... 0xF
 const modhexBase = "CBDEFGHIJKLNRTUV".split("");
 
@@ -37,18 +39,9 @@ export function encode(input) {
 
   // hex or buffer input ?
   if (typeof input === "string") {
-    // strip whitespaces and string cleanup
-    hexInput = input.replace(/\s*/g, "").replace(/[^a-f0-9]/gi, "");
-
-    // even length ?
-    if (hexInput.length % 2 !== 0) {
-      // add a leading zero
-      hexInput = `0${hexInput}`;
-    }
+    hexInput = prepareHexString(input);
   } else if (input instanceof Uint8Array) {
-    hexInput = Array.from(input)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("")
+    hexInput = bytesToHex(input);
   } else {
     // buffer to hex
     hexInput = input.toString("hex");

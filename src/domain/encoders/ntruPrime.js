@@ -1,6 +1,8 @@
 // https://www.imperialviolet.org/2021/08/26/qrencoding.html
 // https://ntruprime.cr.yp.to/nist/ntruprime-20201007.pdf
 
+import { hexToBytes } from "./utils";
+
 const limit = 1024;
 const len = 10;
 // const maxNum = 255;
