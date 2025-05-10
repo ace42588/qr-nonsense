@@ -10,16 +10,16 @@ const INPUT_PARSERS = {
   mac: generateMAC,
 };
 
-async function encodeInput(data) {
-  console.debug("encodeInput", {data});
-  const encodeFn = INPUT_PARSERS[data.type];
-  if (!encodeFn) throw new Error(`Unknown input type: ${data.type}`);
-  const result = await encodeFn(data); 
+async function parseInput(inputData) {
+  console.debug("parseInput", {inputData});
+  const encodeFn = INPUT_PARSERS[inputData.type];
+  if (!encodeFn) throw new Error(`Unknown input type: ${inputData.type}`);
+  const result = await encodeFn(inputData); 
   return result;
 }
 
-export async function encodeAll(inputs) {
-  console.debug("encodeAll", {inputs});
+export async function parseInputs(inputs) {
+  console.debug("parseInputs", {inputs});
   return Object.fromEntries(
     await Promise.all(
       inputs.map(async (input) => {
