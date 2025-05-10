@@ -19,26 +19,25 @@ const INPUT_TYPES = [
 ];
 
 const componentMap = {
-  "basic": BasicInput,
-  "json": JsonInput,
-  "bitField": BitFieldInput,
-  "mac": MACGenerator
+  basic: BasicInput,
+  json: JsonInput,
+  bitField: BitFieldInput,
+  mac: MACGenerator,
 };
 
 export function SortableInput({ id, label }) {
   const inputs = useInputs();
   const input = inputs.find((i) => i.id === id);
+  const { type = "basic" } = input;
 
-  const { updateInput, removeInput } =
-    useInputDispatch();
+  const { updateInput, removeInput } = useInputDispatch();
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id});
+    useSortable({ id });
 
-  const [type, setType] = useState("basic");
   const [expanded, setExpanded] = useState(true);
-  
-  const handleTypeChange = (field, value) =>
-    updateInput({ ...input, [field]: value });
+
+  const handleTypeChange = (e) =>
+    updateInput({ ...input, type: e.target.value });
 
   function toggleExpanded() {
     setExpanded((prev) => !prev);
@@ -63,18 +62,20 @@ export function SortableInput({ id, label }) {
         </span>
         {expanded ? (
           <>
-            <TabSwitcher options={INPUT_TYPES} active={type} onChange={setType} />
+            <TabSwitcher
+              options={INPUT_TYPES}
+              active={type}
+              onChange={handleTypeChange}
+            />
             <button type="button" onClick={() => removeInput(id)}>
               ✖
             </button>
           </>
         ) : (
-          <h3 onClick={() => setExpanded((e) => !e)}>
-            {label}
-          </h3>
+          <h3 onClick={() => setExpanded((e) => !e)}>{label}</h3>
         )}
       </div>
-      {expanded && <InputComponent id={id}/>}
+      {expanded && <InputComponent id={id} input={input} />}
       {expanded && <p onClick={() => setExpanded((e) => !e)}>Collapse</p>}
     </div>
   );
