@@ -38,9 +38,3 @@ export async function kmac128(message, key, length = 8) {
   const hashHex = keccak_256(concat);
   return hashHex.slice(0, length * 2); // hex string
 }
-
-export const MAC_FUNCTIONS = {
-  "HMAC-SHA256": hmacSha256Truncated,
-  Poly1305: poly1305Mac,
-  KMAC128: kmac128,
-};

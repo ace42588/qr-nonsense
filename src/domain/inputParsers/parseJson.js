@@ -2,9 +2,8 @@ import {
   bytesToHex,
   encodeFieldsToBytes,
   generateBitLayoutFromSchema,
-} from "./bitFieldUtils";
-import { ModHex, NTRU } from "./json";
-import { parseInput } from "./parseInput";
+} from "./utils/bitFieldUtils";
+import { ModHex, NTRU } from "../encoders";
 
 const exampleSchema = {
   type: "object",
@@ -215,7 +214,7 @@ const JSON_PARSERS = {
 export function encodeJson(input) {
   const { obj, schema, encoding } = input;
   if (!obj || !schema) return input;
-  
+
   if (typeof obj !== "object" || obj == null) {
     return {
       data: String(obj ?? ""),
@@ -227,6 +226,5 @@ export function encodeJson(input) {
   const encodeFn = JSON_PARSERS[encoding];
   if (!encodeFn) throw new Error(`Unknown input type: ${encoding}`);
 
-  const parsed = encodeFn(obj, schema);
-  return { ...input, ...parsed };
+  return encodeFn(obj, schema);
 }
