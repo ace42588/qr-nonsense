@@ -21,10 +21,9 @@ export function bytesToHexString(bytes) {
     .join("");
 }
 
-export function hexStringToBytes(str) {
-  str = prepareHexString(str)
-  const bytes = new Uint8Array(str.length/2);
-  for (let i = 0; i < str.length; i += 2) {
-    const byte = parseInt(str.substring(i, i + 2), 16);
-  }
+export function hexStringToBytes(input) {
+  const hexInput = prepareHexString(input)
+  const hexBytes = hexInput.match(/[a-f0-9]{2}/gi);
+  if (!hexBytes) return new Uint8Array(0);
+  return Uint8Array.from(hexBytes, (h) => parseInt(h, 16));
 }
