@@ -4,25 +4,12 @@ import "../styles/styles.css";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
-export function BasicInput({ id }) {
+export function BasicInput({ id, input }) {
   const { updateInput } = useInputDispatch();
-  const inputs = useInputs();
-  const input = inputs.find((i) => i.id === id);
+  const { data, mode, encoding } = input;
 
-  const handleDataChange = (e) => {
-    updateInput?.({ ...input, data: e.target.value });
-  };
-
-  const handleModeChange = (e) => {
-    updateInput?.({ ...input, mode: e.target.value });
-  };
-
-  const handleEncodingChange = (e) => {
-    updateInput?.({
-      ...input,
-      encoding: e.target.checked ? "utf-8" : undefined,
-    });
-  };
+  const handleChange = (field, value) =>
+    updateInput?.({ ...input, [field]: value });
 
   const style = {
     border: "1px solid #aaa",
@@ -36,27 +23,40 @@ export function BasicInput({ id }) {
       <div className="input-group">
         <div className="label-select-checkbox-row">
           <label htmlFor="inputMode">Input Mode:</label>
-          <select id="inputMode" value={input.mode} onChange={handleModeChange}>
+          <select
+            id="inputMode"
+            value={mode}
+            onChange={(e) => handleChange("mode", e.target.value)}
+          >
             {modes.map((m) => (
               <option key={m} value={m}>
                 {m}
               </option>
             ))}
           </select>
-          {input.mode === "byte" && (
+          {mode === "byte" && (
             <>
               <label htmlFor="forceUtf8">Force UTF-8</label>
               <input
                 id="forceUtf8"
                 type="checkbox"
-                checked={input.encoding === "utf-8"}
-                onChange={handleEncodingChange}
+                checked={encoding === "utf-8"}
+                onChange={(e) =>
+                  handleChange(
+                    "encoding",
+                    e.target.checked ? "utf-8" : undefined
+                  )
+                }
               />
             </>
           )}
         </div>
         <div className="input-button-row">
-          <input type="text" value={input.data} onChange={handleDataChange} />
+          <input
+            type="text"
+            value={data}
+            onChange={(e) => handleChange("data", e.target.value)}
+          />
         </div>
       </div>
     </div>

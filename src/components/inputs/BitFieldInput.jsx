@@ -9,7 +9,6 @@ import { useParsedInputs, useInputs } from "../../state";
 export function BitFieldInput({ id }) {
   const inputs = useInputs();
   const input = inputs.find((i) => i.id === id);
-  input.type = "bitField";
 
   const previews = useParsedInputs();
   const preview = previews[id] || {};
