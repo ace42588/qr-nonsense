@@ -2,7 +2,6 @@ import sodium from "libsodium-wrappers-sumo";
 import { keccak_256 } from "js-sha3";
 
 export async function hmacSha256Truncated(message, key, length = 8) {
-  console.debug("hmacSha256Truncated", {message, key, length});
   const encoder = new TextEncoder();
   const keyData = encoder.encode(key);
   const msgData = encoder.encode(message);
@@ -28,7 +27,7 @@ export async function poly1305Mac(message, key, length = 8) {
   return sodium.to_hex(mac).slice(0, length * 2);
 }
 
-export function kmac128(message, key, length = 8) {
+export async function kmac128(message, key, length = 8) {
   const encoder = new TextEncoder();
   const keyBytes = encoder.encode(key);
   const msgBytes = encoder.encode(message);
@@ -43,5 +42,5 @@ export function kmac128(message, key, length = 8) {
 export const MAC_FUNCTIONS = {
   "HMAC-SHA256": hmacSha256Truncated,
   Poly1305: poly1305Mac,
-  KMAC128: async (m, k, l) => kmac128(m, k, l),
+  KMAC128: kmac128,
 };
