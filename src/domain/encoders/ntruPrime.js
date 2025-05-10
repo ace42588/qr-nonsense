@@ -1,11 +1,14 @@
-const limit = 1024;
-//const M = 256
+// https://www.imperialviolet.org/2021/08/26/qrencoding.html
+// https://ntruprime.cr.yp.to/nist/ntruprime-20201007.pdf
 
-// const len = 256
+const limit = 1024;
 const len = 10;
 // const maxNum = 255;
 const maxNum = 9;
 
+function prepareInput(input) {
+  const M = R.map(() => 256);
+}
 
 /**
  * Encode a list of base-256 digits into a compact stream of decimal digits.
@@ -15,8 +18,7 @@ const maxNum = 9;
  * @returns {number[]} - List of decimal digits (0–9).
  */
 
-export function encode(R) {
-  const M = R.map(() => 256);
+function encodeNTRU(R, M) {
   if (M.length === 0) return [];
 
   const S = [];
@@ -52,7 +54,7 @@ export function encode(R) {
   return S.concat(encode(R2, M2));
 }
 
-export function decode(S, M = 256) {
+function decodeNTRU(S, M) {
   if (M.length === 0) return [];
 
   if (M.length === 1) {
@@ -100,4 +102,12 @@ export function decode(S, M = 256) {
   }
 
   return R;
+}
+
+export function encode(input) {
+  
+}
+
+export function decode(input) {
+  
 }
