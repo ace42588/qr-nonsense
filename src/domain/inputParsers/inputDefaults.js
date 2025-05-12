@@ -135,12 +135,6 @@ const macExample = {
   selectedInputs: [],
 };
 
-const baseDefaults = {
-  data: "",
-  values: {},
-  layout: [],
-};
-
 const typeDefaults = {
   basic: {
     type: "basic",

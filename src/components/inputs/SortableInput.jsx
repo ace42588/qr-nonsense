@@ -14,7 +14,7 @@ import { TabSwitcher } from "../shared/TabSwitcher";
 const INPUT_TYPES = [
   { value: "basic", label: "Basic" },
   { value: "json", label: "JSON" },
-  { value: "bitField", label: "BitField" },
+  { value: "bitfield", label: "BitField" },
   { value: "mac", label: "MAC" },
 ];
 
@@ -30,14 +30,11 @@ export function SortableInput({ id, label }) {
   const input = inputs.find((i) => i.id === id);
   const { type = "basic" } = input;
 
-  const { updateInput, removeInput } = useInputDispatch();
+  const { updateInput, removeInput, setType } = useInputDispatch();
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
   const [expanded, setExpanded] = useState(true);
-
-  const handleTypeChange = (tab) =>
-    updateInput({ ...input, type: tab });
 
   function toggleExpanded() {
     setExpanded((prev) => !prev);
@@ -65,7 +62,7 @@ export function SortableInput({ id, label }) {
             <TabSwitcher
               options={INPUT_TYPES}
               active={type}
-              onChange={handleTypeChange}
+              onChange={setType}
             />
             <button type="button" onClick={() => removeInput(id)}>
               ✖

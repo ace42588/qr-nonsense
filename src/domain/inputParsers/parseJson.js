@@ -211,7 +211,7 @@ const JSON_PARSERS = {
 
 export function parseJson(input) {
   const { obj, schema, encoding } = input;
-  console.debug("parseJson", { obj, schema, encoding });
+  console.debug("parseJson", { input });
   if (!obj || !schema) return input;
 
   if (typeof obj !== "object" || obj == null) {
