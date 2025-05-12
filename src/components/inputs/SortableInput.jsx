@@ -25,11 +25,8 @@ const componentMap = {
   mac: MACGenerator,
 };
 
-export function SortableInput({ id, label }) {
-  const inputs = useInputs();
-  const input = inputs.find((i) => i.id === id);
-  const { type = "basic" } = input;
-
+export function SortableInput({ input }) {
+  const {id, label, type} = input;
   const { updateInput, removeInput, setType } = useInputDispatch();
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });

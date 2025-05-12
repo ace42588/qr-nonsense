@@ -20,9 +20,8 @@ import { useInputs, useInputDispatch } from "../state";
 import { SortableInput } from "./inputs/SortableInput";
 
 export function InputForm() {
-  const inputs = useInputs();
-  const { addInput, reorderInputs } =
-    useInputDispatch();
+  const { inputs } = useInputs();
+  const { addInput, reorderInputs } = useInputDispatch();
   const nextLabel = useRef(inputs?.length || 0);
   const [label, setLabel] = useState("");
 
@@ -45,11 +44,7 @@ export function InputForm() {
             strategy={verticalListSortingStrategy}
           >
             {inputs.map((input) => (
-              <SortableInput
-                key={input.id}
-                id={input.id}
-                label={input.label}
-              />
+              <SortableInput key={input.id} input={input} />
             ))}
           </SortableContext>
         </DndContext>
@@ -63,7 +58,7 @@ export function InputForm() {
 
           <button
             onClick={() => {
-              addInput(label !== "" ? label : `Input ${nextLabel.current++}` );
+              addInput(label !== "" ? label : `Input ${nextLabel.current++}`);
               setLabel("");
             }}
             style={{ marginTop: 8 }}

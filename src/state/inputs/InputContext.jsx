@@ -13,7 +13,7 @@ const initialState = {
 };
 
 export function InputProvider({ children }) {
-  const [state, dispatch] = useReducer(inputReducer, [initialState]);
+  const [state, dispatch] = useReducer(inputReducer, initialState);
 
   const inputsContextValue = {
     addInput: useCallback((payload) => {

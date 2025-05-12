@@ -27,7 +27,7 @@ export function inputReducer(state, action) {
       const prev = state.inputs;
       return {
         ...state,
-        inputs: [...prev, { ...initialInput, label: action.label }],
+        inputs: [...prev, { ...initialInput, id: crypto.randomUUID(), label: action.label }],
       };
     }
     case Actions.Remove: {

@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
-import { useEncodedInputs, useInputs, useInputDispatch } from "../../state";
+import { useParsedInputs, useInputs, useInputDispatch } from "../../state";
 import { MAC_FUNCTIONS } from "../../domain";
 
 export function MACGenerator({ id, input }) {
   const allInputs = useInputs();
   const { updateInput } = useInputDispatch();
-  const previews = useEncodedInputs();
+  const previews = useParsedInputs();
 
   const selectedIds = input.includedFields || [];
 
