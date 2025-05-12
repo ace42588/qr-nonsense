@@ -177,8 +177,6 @@ const typeDefaults = {
 
 export function getTypeExtensions(type) {
   return {
-    id: crypto.randomUUID(),
-    ...baseDefaults,
     ...(typeDefaults[type] ?? {}),
   };
 }

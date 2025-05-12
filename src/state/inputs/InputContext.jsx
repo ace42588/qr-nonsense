@@ -34,6 +34,13 @@ export function InputProvider({ children }) {
       const newIndex = inputs.findIndex((i) => i.id === over.id);
       dispatch({ type: Actions.Reorder, oldIndex, newIndex });
     }, []),
+    setType: useCallback((payload) => {
+      dispatch({
+        type: Actions.ChangeType,
+        id: payload.id,
+        newType: payload.type
+      })
+    })
   };
 
   return (

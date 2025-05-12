@@ -1,43 +1,32 @@
 // state/inputs/inputReducer.js
 import { arrayMove } from "@dnd-kit/sortable";
 import { updateInputById } from "../utils";
-import { getTypeExtensions } from "../domain"
+import { getTypeExtensions } from "../domain";
 
 export const Actions = {
   Add: "ADD",
   Remove: "REMOVE",
   Update: "UPDATE",
   Reorder: "REORDER",
-  ChangeType: "CHANGE_TYPE"
+  ChangeType: "CHANGE_TYPE",
 };
-
-getTypeExtensions
 
 export function createInput(overrides = {}) {
   return {
     id: crypto.randomUUID(),
-    type: "basic", // start here
+    type: "basic",
     label: "New Input",
     data: "",
+    mode: "byte",
+    text: "Hello world",
     ...overrides,
   };
 }
 
-
 export function inputReducer(inputs, action) {
   switch (action.type) {
     case Actions.Add: {
-      return [
-        ...inputs,
-        {
-          id: crypto.randomUUID(),
-          type: "basic",
-          label: "Input 0",
-          mode: "byte",
-          data: "Hello world",
-          encoding: "utf-8",
-        },
-      ];
+      return [...inputs, createInput()];
     }
     case Actions.Remove: {
       const id = action.payload;
@@ -51,14 +40,15 @@ export function inputReducer(inputs, action) {
       return arrayMove(inputs, oldIndex, newIndex);
     }
     case Actions.ChangeType: {
-      return inputs.map(input =>
-    input.id === action.id
-      ? {
-          ...input,
-          type: action.newType,
-          ...getTypeExtensions(action.newType),
-        }
-      : input);
+      return inputs.map((input) =>
+        input.id === action.id
+          ? {
+              ...input,
+              type: action.newType,
+              ...getTypeExtensions(action.newType),
+            }
+          : input
+      );
     }
     default:
       return inputs;
