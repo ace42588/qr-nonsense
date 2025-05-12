@@ -22,16 +22,58 @@ export function QRDataProvider({ children }) {
     dataMask: selectedDataMask,
     errorCorrectionLevel,
   });
-  
+
   const qrDataContextValue = useMemo(
-  () => ({
-    errorCorrectionLevel,
+    () => ({
+      errorCorrectionLevel,
       version: derived.version,
       dataMask: derived.dataMask,
-    segments: derived.segments,
+      segments: derived.segments,
       matrix: derived.matrix,
       idMap: derived.idMap,
-  }));
+    }),
+    [
+      errorCorrectionLevel,
+      derived.version,
+      derived.dataMask,
+      derived.segments,
+      derived.matrix,
+      derived.idMap,
+    ]
+  );
+
+  const qrDataDispatchContextValue = useMemo(
+    () => ({
+      setErrorCorrection: (payload) =>
+        dispatch({
+          type: Actions.ChangeInputs,
+          payload: { errorCorrectionLevel: payload },
+        }),
+      setVersion: (payload) =>
+        dispatch({ type: Actions.ChangeInputs, payload: { version: payload } }),
+      setDataMask: (payload) =>
+        dispatch({
+          type: Actions.ChangeInputs,
+          payload: { dataMask: payload },
+        }),
+      setSegment: (payload) =>
+        dispatch({ type: Actions.ChangeInputs, payload }),
+      setInputs: (payload) => {
+        dispatch({ type: Actions.ChangeInputs, payload });
+      },
+      highlightModules: (payload) => {
+        const moduleIds = derived.idMap.get(payload.id);
+        dispatch({ type: Actions.HighlightIds, payload: moduleIds });
+      },
+      clearHighlightedModules: (payload) => {
+        const moduleIds = derived.idMap.get(payload.id);
+        dispatch({ type: Actions.RemoveHighlightIds, payload: moduleIds });
+      },
+      highlightSegment: (payload) =>
+        dispatch({ type: Actions.HighlightIds, payload }),
+    }),
+    []
+  );
 
   const formatContextValue = useMemo(
     () => ({

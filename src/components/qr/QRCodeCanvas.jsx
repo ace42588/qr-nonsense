@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import "../styles/styles.css";
 
-import { useQRData, useQRMessage } from "../../state";
+import { useQRData, useQRMessage, useDerivedQRData } from "../../state";
 
 export function QRCodeCanvas() {
   const canvasRef = useRef(null);
