@@ -3,13 +3,8 @@ import { getRequiredDataCodewords } from "../codewordUtils";
 
 const CodewordLength = 8;
 
-let lastSegmentId = 0;
-
-// ~24k bits possible
 function getId() {
-  if (lastSegmentId >= 0xffff) lastSegmentId = 0;
-
-  return `segment-${lastSegmentId++}`;
+  return `${crypto.randomUUID()}`;
 }
 
 export function validateLength(data, min, max, type) {
@@ -117,17 +112,11 @@ export function finalizeEncoding(segments, version, errorCorrectionLevel) {
   );
   segments = [...segments, ...padding];
 
-  const idMap = new Map();
   const bits = segments.flatMap((s) => {
     const bits = getBits(s.value, s.length, s);
     s.bitIds = bits.map((b) => b.id);
-    idMap.set(
-      s.id,
-      bits.map((b) => b.id)
-    );
-    bits.forEach((b) => idMap.set(b.id, s.id));
     return bits;
   });
 
-  return { segments, bits, idMap };
+  return { segments, bits };
 }

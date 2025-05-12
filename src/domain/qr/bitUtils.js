@@ -1,10 +1,5 @@
-let lastBitId = 0;
-
-// ~24k bits possible
 function getId() {
-  if (lastBitId >= 0xffff) lastBitId = 0;
-
-  return `bit-${lastBitId++}`;
+  return `${crypto.randomUUID()}`;
 }
 
 function getBit(value, sourceId, sourceType) {

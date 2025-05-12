@@ -22,7 +22,7 @@ export function useDerivedQRData() {
     [dataSegments, selectedVersion, errorCorrectionLevel]
   );
 
-  const { segments, bits, idMap } = useMemo(
+  const { segments, bits } = useMemo(
     () => getEncodedMessage(dataSegments, version, errorCorrectionLevel),
     [dataSegments, version, errorCorrectionLevel]
   );
@@ -35,7 +35,6 @@ export function useDerivedQRData() {
   return {
     segments,
     bits,
-    idMap,
     version,
     matrix,
     dataMask,
