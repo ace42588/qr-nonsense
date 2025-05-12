@@ -10,6 +10,7 @@ export const Actions = {
   Reorder: "REORDER",
   ChangeType: "CHANGE_TYPE",
   ChangeMeta: "CHANGE_META",
+  SetInputs: "SET_INPUTS",
 };
 
 export const initialInput = {
@@ -27,7 +28,10 @@ export function inputReducer(state, action) {
       const prev = state.inputs;
       return {
         ...state,
-        inputs: [...prev, { ...initialInput, id: crypto.randomUUID(), label: action.label }],
+        inputs: [
+          ...prev,
+          { ...initialInput, id: crypto.randomUUID(), label: action.label },
+        ],
       };
     }
     case Actions.Remove: {
@@ -66,7 +70,10 @@ export function inputReducer(state, action) {
       };
     }
     case Actions.ChangeMeta: {
-      return {...state, [action.field]: action.value}
+      return { ...state, [action.field]: action.value };
+    }
+    case Actions.SetInputs: {
+      return { ...state, ...action.payload };
     }
     default:
       return state;

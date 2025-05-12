@@ -59,6 +59,7 @@ export function InputProvider({ children }) {
         field: "dataMask",
         value: payload,
       }),
+    setInputs: () => dispatch({type: Actions.SetInputs})
   };
 
   return (
