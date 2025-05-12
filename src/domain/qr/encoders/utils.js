@@ -54,11 +54,12 @@ function createModeIndicator(mode) {
 
 function createCharacterCountIndicator(data, codons, mode) {
   console.debug("createCharacterCountIndicator", {data, codons, mode});
+  const length = mode.name === "byte" ? codons.length : data.length;
   return createPart(
     "characterCountIndicator",
-    codons.length,
-    codons.length,
-    computeIndicatorLength(codons.length, mode)
+    length,
+    length,
+    computeIndicatorLength(length, mode)
   );
 }
 
