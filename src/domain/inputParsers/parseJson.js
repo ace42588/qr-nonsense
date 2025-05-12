@@ -180,7 +180,7 @@ function encodeToAlphanumeric(obj, schema) {
       .map((item) => {
       console.debug("encodeToAlphanumeric", {propKeys, first, firstVal: item[first]});
         return propKeys.reduce(
-          (str, k) => `${separator}${item[k]}${terminator}`,
+          (str, k) => `${str}${separator}${item[k]}${terminator}`,
           item[first]
         );
       })

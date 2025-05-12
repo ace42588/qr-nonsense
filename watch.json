@@ -1,4 +1,5 @@
 {
+  "ignored": [".bash_history"],
   "install": {
     "include": [
       "^package\\.json$"
