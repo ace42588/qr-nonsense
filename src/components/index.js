@@ -1,5 +1,5 @@
-export * from "./InputForm";
-export * from "./QRDisplayTabs";
-export * from "./MainViewTabs";
-export * from "./qr";
+export { InputForm } from "./InputForm";
+export { QRDisplayTabs } from "./QRDisplayTabs";
+export { MainViewTabs } from "./MainViewTabs";
+export { SegmentDisplay } from "./qr/SegmentDisplay";
 export * from "./shared";

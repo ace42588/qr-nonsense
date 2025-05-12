@@ -17,6 +17,7 @@ export function QRDataProvider({ children }) {
     errorCorrectionLevel,
   } = state;
 
+  /*
   const derived = useDerivedQRData({
     version: selectedVersion,
     dataMask: selectedDataMask,
@@ -41,41 +42,8 @@ export function QRDataProvider({ children }) {
       derived.idMap,
     ]
   );
-
-  const qrDataDispatchContextValue = useMemo(
-    () => ({
-      setErrorCorrection: (payload) =>
-        dispatch({
-          type: Actions.ChangeInputs,
-          payload: { errorCorrectionLevel: payload },
-        }),
-      setVersion: (payload) =>
-        dispatch({ type: Actions.ChangeInputs, payload: { version: payload } }),
-      setDataMask: (payload) =>
-        dispatch({
-          type: Actions.ChangeInputs,
-          payload: { dataMask: payload },
-        }),
-      setSegment: (payload) =>
-        dispatch({ type: Actions.ChangeInputs, payload }),
-      setInputs: (payload) => {
-        dispatch({ type: Actions.ChangeInputs, payload });
-      },
-      highlightModules: (payload) => {
-        const moduleIds = derived.idMap.get(payload.id);
-        dispatch({ type: Actions.HighlightIds, payload: moduleIds });
-      },
-      clearHighlightedModules: (payload) => {
-        const moduleIds = derived.idMap.get(payload.id);
-        dispatch({ type: Actions.RemoveHighlightIds, payload: moduleIds });
-      },
-      highlightSegment: (payload) =>
-        dispatch({ type: Actions.HighlightIds, payload }),
-    }),
-    []
-  );
-
-  const formatContextValue = useMemo(
+  
+    const formatContextValue = useMemo(
     () => ({
       errorCorrectionLevel,
       version: derived.version,
@@ -119,7 +87,7 @@ export function QRDataProvider({ children }) {
     }),
     [derived.segments, derived.matrix]
   );
-
+  
   return (
     <QRDataContext.Provider value={state}>
       <QRDataDispatchContext.Provider value={qrDataDispatchContextValue}>
@@ -131,9 +99,48 @@ export function QRDataProvider({ children }) {
       </QRDataDispatchContext.Provider>
     </QRDataContext.Provider>
   );
+  */
+
+  const qrDataDispatchContextValue = useMemo(
+    () => ({
+      setErrorCorrection: (payload) =>
+        dispatch({
+          type: Actions.ChangeInputs,
+          payload: { errorCorrectionLevel: payload },
+        }),
+      setVersion: (payload) =>
+        dispatch({ type: Actions.ChangeInputs, payload: { version: payload } }),
+      setDataMask: (payload) =>
+        dispatch({
+          type: Actions.ChangeInputs,
+          payload: { dataMask: payload },
+        }),
+      setSegment: (payload) =>
+        dispatch({ type: Actions.ChangeInputs, payload }),
+      setInputs: (payload) => {
+        dispatch({ type: Actions.ChangeInputs, payload });
+      },
+      highlightModules: (payload) => {
+        dispatch({ type: Actions.HighlightIds, payload });
+      },
+      clearHighlightedModules: (payload) => {
+        dispatch({ type: Actions.RemoveHighlightIds, payload });
+      },
+      highlightSegment: (payload) =>
+        dispatch({ type: Actions.HighlightIds, payload }),
+    }),
+    []
+  );
+
+  return (
+    <QRDataContext.Provider value={state}>
+      <QRDataDispatchContext.Provider value={qrDataDispatchContextValue}>
+        {children}
+      </QRDataDispatchContext.Provider>
+    </QRDataContext.Provider>
+  );
 }
 
 export const useQRData = () => useContext(QRDataContext);
 export const useQRDataDispatch = () => useContext(QRDataDispatchContext);
-export const useQRFormat = () => useContext(QRFormatContext);
-export const useQRMessage = () => useContext(QRMessageContext);
+
