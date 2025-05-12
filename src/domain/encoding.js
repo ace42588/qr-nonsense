@@ -7,7 +7,7 @@ import { encodeInput } from "./qr/encoders";
 const INPUT_PARSERS = {
   basic: parseBasic,
   json: parseJson,
-  bitField: parseBitField,
+  bitfield: parseBitField,
   mac: generateMAC,
 };
 
