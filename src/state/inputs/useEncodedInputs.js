@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useInputs } from "./InputContext";
-import { parseAll, encodeAll } from "../../domain/encoding";
+import { parseAll } from "../../domain/encoding";
 
 export function useParsedInputs() {
   const {inputs} = useInputs();

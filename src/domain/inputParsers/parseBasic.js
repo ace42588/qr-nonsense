@@ -19,9 +19,10 @@ export function parseBasic(input) {
   if (mode === "alphanumeric" || mode === "numeric") {
     const normalized = mode === "alphanumeric" ? text.toUpperCase() : text;
     const match = normalized.match(MODE_REGEX[mode]);
+    console.debug("parseBasic", { match });
     return {
       ...input,
-      text: match ? match.join("") : "",
+      data: match ? match.join("") : "",
     };
   }
 
