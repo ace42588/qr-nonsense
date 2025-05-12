@@ -3,7 +3,6 @@ import { useQRData } from "./QRDataContext";
 import { useInputs } from "../inputs/InputContext";
 import { getEncodedMessage, getVersion, getMatrix } from "../../domain/qr";
 import { encodeAll } from "../../domain/encoding";
-import { useEncodedInputs } from "../../state";
 
 export function useDerivedQRData() {
   

@@ -6,8 +6,3 @@ export function useParsedInputs() {
   const {inputs} = useInputs();
   return useMemo(() => parseAll(inputs), [inputs]);
 }
-
-export function useEncodedInputs() {
-  const {inputs} = useInputs();
-  return useMemo(() => encodeAll(inputs), [inputs]);
-}

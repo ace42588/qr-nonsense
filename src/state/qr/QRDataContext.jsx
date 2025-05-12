@@ -11,13 +11,7 @@ const QRDataDispatchContext = createContext(null);
 
 export function QRDataProvider({ children }) {
   const [state, dispatch] = useReducer(qrReducer, initialQRState);
-  const {inputs} = useInputs();
-  const encodedInputs = useMemo(() => encodeAll(inputs), [inputs]);
-  const derived = useDerivedQRData({
-    version: state.version,
-    dataMask: state.dataMask,
-    errorCorrectionLevel: state.errorCorrectionLevel,
-  });
+  const derived = useDerivedQRData();
 
   const qrDataDispatchContextValue = {
     setErrorCorrection: (payload) =>
