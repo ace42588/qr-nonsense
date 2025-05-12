@@ -4,12 +4,12 @@ import { useQRData } from "./QRDataContext";
 import { getEncodedMessage, getVersion, getMatrix } from "../../domain/qr";
 import { useEncodedInputs } from "../../state";
 
-export function useDerivedQRData() {
-  const {
+export function useDerivedQRData({
     version: selectedVersion,
     dataMask: selectedDataMask,
     errorCorrectionLevel,
-  } = useQRData();
+  }) {
+
   const dataSegments = useEncodedInputs();
 
   const version = useMemo(

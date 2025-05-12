@@ -40,7 +40,19 @@ export function InputProvider({ children }) {
         id,
         newType: type
       })
-    })
+    }),
+    setErrorCorrection: (payload) =>
+      dispatch({
+        type: Actions.ChangeInputs,
+        payload: { errorCorrectionLevel: payload },
+      }),
+    setVersion: (payload) =>
+      dispatch({ type: Actions.ChangeInputs, payload: { version: payload } }),
+    setDataMask: (payload) =>
+      dispatch({
+        type: Actions.ChangeInputs,
+        payload: { dataMask: payload },
+      }),
   };
 
   return (

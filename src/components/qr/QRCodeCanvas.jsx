@@ -1,13 +1,12 @@
 import { useRef, useEffect, useState } from "react";
 import "../styles/styles.css";
 
-import { useQRData, useDerivedQRData, useQRDataDispatch } from "../../state";
+import { useQRData, useQRDataDispatch } from "../../state";
 
 export function QRCodeCanvas() {
   const canvasRef = useRef(null);
-  const { highlightedIds } = useQRData();
+  const { highlightedIds, matrix } = useQRData();
   const { highlightSegment } = useQRDataDispatch();
-  const { matrix } = useDerivedQRData();
   console.debug("QRCodeCanvas", { matrix, highlightedIds });
   
   const isHighlighted = (id) =>  highlightedIds.includes(id);
