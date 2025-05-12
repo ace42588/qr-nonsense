@@ -120,6 +120,7 @@ export function finalizeEncoding(segments, version, errorCorrectionLevel) {
   const idMap = new Map();
   const bits = segments.flatMap((s) => {
     const bits = getBits(s.value, s.length, s);
+    s.bitIds = bits.map((b) => b.id);
     idMap.set(
       s.id,
       bits.map((b) => b.id)

@@ -11,21 +11,19 @@ export const Actions = {
   ChangeType: "CHANGE_TYPE",
 };
 
-export const initialInput = [
-  {
-    id: crypto.randomUUID(),
-    type: "basic",
-    label: "Input 0",
-    mode: "byte",
-    text: "Hello world",
-    encoding: "utf-8",
-  },
-];
+export const initialInput = {
+  id: crypto.randomUUID(),
+  type: "basic",
+  label: "Input 0",
+  mode: "byte",
+  text: "Hello world",
+  encoding: "utf-8",
+};
 
 export function inputReducer(inputs, action) {
   switch (action.type) {
     case Actions.Add: {
-      return [...inputs, {...initialInput, label: action.label}];
+      return [...inputs, { ...initialInput, label: action.label }];
     }
     case Actions.Remove: {
       const id = action.payload;
