@@ -12,36 +12,31 @@ const QRMessageContext = createContext();
 export function QRDataProvider({ children }) {
   const [state, dispatch] = useReducer(qrReducer, initialQRState);
 
-  const qrDataDispatchContextValue = useMemo(
-    () => ({
-      setErrorCorrection: (payload) =>
-        dispatch({
-          type: Actions.ChangeInputs,
-          payload: { errorCorrectionLevel: payload },
-        }),
-      setVersion: (payload) =>
-        dispatch({ type: Actions.ChangeInputs, payload: { version: payload } }),
-      setDataMask: (payload) =>
-        dispatch({
-          type: Actions.ChangeInputs,
-          payload: { dataMask: payload },
-        }),
-      setSegment: (payload) =>
-        dispatch({ type: Actions.ChangeInputs, payload }),
-      setInputs: (payload) => {
-        dispatch({ type: Actions.ChangeInputs, payload });
-      },
-      highlightModules: (ids) => {
-        dispatch({ type: Actions.HighlightIds, ids });
-      },
-      clearHighlightedModules: (ids) => {
-        dispatch({ type: Actions.RemoveHighlightIds, ids });
-      },
-      highlightSegment: (id) =>
-        dispatch({ type: Actions.HighlightIds, id }),
-    }),
-    []
-  );
+  const qrDataDispatchContextValue = {
+    setErrorCorrection: (payload) =>
+      dispatch({
+        type: Actions.ChangeInputs,
+        payload: { errorCorrectionLevel: payload },
+      }),
+    setVersion: (payload) =>
+      dispatch({ type: Actions.ChangeInputs, payload: { version: payload } }),
+    setDataMask: (payload) =>
+      dispatch({
+        type: Actions.ChangeInputs,
+        payload: { dataMask: payload },
+      }),
+    setSegment: (payload) => dispatch({ type: Actions.ChangeInputs, payload }),
+    setInputs: (payload) => {
+      dispatch({ type: Actions.ChangeInputs, payload });
+    },
+    highlightModules: (ids) => {
+      dispatch({ type: Actions.HighlightIds, ids });
+    },
+    clearHighlightedModules: (ids) => {
+      dispatch({ type: Actions.RemoveHighlightIds, ids });
+    },
+    highlightSegment: (id) => dispatch({ type: Actions.HighlightIds, id }),
+  };
 
   return (
     <QRDataContext.Provider value={state}>
@@ -54,4 +49,3 @@ export function QRDataProvider({ children }) {
 
 export const useQRData = () => useContext(QRDataContext);
 export const useQRDataDispatch = () => useContext(QRDataDispatchContext);
-

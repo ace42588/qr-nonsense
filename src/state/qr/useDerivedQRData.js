@@ -10,7 +10,7 @@ export function useDerivedQRData() {
     dataMask: selectedDataMask,
     errorCorrectionLevel,
   } = useQRData();
-  const dataSegments = useMemo(() => useEncodedInputs(), []);
+  const dataSegments = useEncodedInputs();
 
   const version = useMemo(
     () =>

@@ -23,7 +23,7 @@ export function InputForm() {
   const inputs = useInputs();
   const { addInput, reorderInputs } =
     useInputDispatch();
-  const nextLabel = useRef(inputs.length);
+  const nextLabel = useRef(inputs?.length || 0);
   const [label, setLabel] = useState("");
 
   const sensors = useSensors(

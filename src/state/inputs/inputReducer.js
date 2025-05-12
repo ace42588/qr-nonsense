@@ -25,7 +25,7 @@ export const initialInput = [
 export function inputReducer(inputs, action) {
   switch (action.type) {
     case Actions.Add: {
-      return [...inputs, createInput()];
+      return [...inputs, {...initialInput, label: action.label}];
     }
     case Actions.Remove: {
       const id = action.payload;
