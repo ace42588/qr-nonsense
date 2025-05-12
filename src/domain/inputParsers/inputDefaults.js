@@ -175,7 +175,7 @@ const typeDefaults = {
   },
 };
 
-export function getInputDefaults(type) {
+export function getTypeExtensions(type) {
   return {
     id: crypto.randomUUID(),
     ...baseDefaults,
