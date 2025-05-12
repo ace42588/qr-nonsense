@@ -1,6 +1,6 @@
 const MODE_REGEX = {
-  numeric: /^\d+$/,
-  alphanumeric: /^[0-9A-Z $%*+\-./:]+$/,
+  numeric: /^\d+$/g,
+  alphanumeric: /^[0-9A-Z $%*+\-./:]+$/g,
 };
 
 const isBinary = (val) =>

@@ -78,7 +78,7 @@ export function QRInfoInput() {
             <label htmlFor="data-mask">Data Mask:</label>
             <select
               id="data-mask"
-              value={dataMask}
+              value={cDataMask || dataMask}
               onChange={(e) => setDataMask(e.target.value)}
             >
               {masks.map((mask) => (
