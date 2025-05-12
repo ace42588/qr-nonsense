@@ -6,7 +6,7 @@ const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
 export function BasicInput({ id, input }) {
   const { updateInput } = useInputDispatch();
-  const { data, mode, encoding } = input;
+  const { text, mode, encoding } = input;
 
   const handleChange = (field, value) =>
     updateInput?.({ ...input, [field]: value });
@@ -54,8 +54,8 @@ export function BasicInput({ id, input }) {
         <div className="input-button-row">
           <input
             type="text"
-            value={data}
-            onChange={(e) => handleChange("data", e.target.value)}
+            value={text}
+            onChange={(e) => handleChange("text", e.target.value)}
           />
         </div>
       </div>

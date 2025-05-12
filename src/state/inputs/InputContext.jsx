@@ -5,13 +5,13 @@ import {
   useContext,
   useReducer,
 } from "react";
-import { Actions, inputReducer, initialInputs } from "./inputReducer";
+import { Actions, inputReducer, initialInput } from "./inputReducer";
 
 const InputContext = createContext(null);
 const DispatchContext = createContext(null);
 
 export function InputProvider({ children }) {
-  const [inputs, dispatch] = useReducer(inputReducer, initialInputs);
+  const [inputs, dispatch] = useReducer(inputReducer, [initialInput]);
 
   const inputsContextValue = {
     addInput: useCallback((payload) => {

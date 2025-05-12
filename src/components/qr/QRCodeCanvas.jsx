@@ -82,7 +82,7 @@ export function QRCodeCanvas() {
 
     console.debug(module);
 
-    highlightSegment(module);
+    highlightSegment(idMap.get(module.bitId));
   };
 
   return (

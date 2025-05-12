@@ -11,6 +11,17 @@ export const Actions = {
   ChangeType: "CHANGE_TYPE",
 };
 
+export const initialInput = [
+  {
+    id: crypto.randomUUID(),
+    type: "basic",
+    label: "Input 0",
+    mode: "byte",
+    text: "Hello world",
+    encoding: "utf-8",
+  },
+];
+
 export function inputReducer(inputs, action) {
   switch (action.type) {
     case Actions.Add: {
@@ -42,14 +53,3 @@ export function inputReducer(inputs, action) {
       return inputs;
   }
 }
-
-export const initialInputs = [
-  {
-    id: crypto.randomUUID(),
-    type: "basic",
-    label: "Input 0",
-    mode: "byte",
-    data: "Hello world",
-    encoding: "utf-8",
-  },
-];
