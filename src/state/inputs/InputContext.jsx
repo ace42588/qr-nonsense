@@ -62,7 +62,7 @@ export function InputProvider({ children }) {
   };
 
   return (
-    <InputContext.Provider value={state.inputs}>
+    <InputContext.Provider value={state}>
       <DispatchContext.Provider value={inputsContextValue}>
         {children}
       </DispatchContext.Provider>

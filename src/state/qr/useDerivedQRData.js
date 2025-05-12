@@ -1,16 +1,21 @@
 import { useMemo } from "react";
 import { useQRData } from "./QRDataContext";
-
+import { useInputs } from "../inputs/InputContext";
 import { getEncodedMessage, getVersion, getMatrix } from "../../domain/qr";
+import { encodeAll } from "../../domain/encoding";
 import { useEncodedInputs } from "../../state";
 
-export function useDerivedQRData({
+export function useDerivedQRData() {
+  
+  const {
+    inputs,
     version: selectedVersion,
     dataMask: selectedDataMask,
     errorCorrectionLevel,
-  }) {
+  } = useInputs();
 
-  const dataSegments = useEncodedInputs();
+
+  const dataSegments = useMemo(() => encodeAll(inputs), [inputs]);
 
   const version = useMemo(
     () =>
