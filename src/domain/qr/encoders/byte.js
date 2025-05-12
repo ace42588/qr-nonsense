@@ -24,7 +24,7 @@ export function* iteratorFunc(data, options) {
         const hex = data.substring(i, i + 2);
         const byte = parseInt(data.substring(i, i + 2), 16);
         console.debug({hex, byte});
-        yield createByte(hex, `0x${hex}`, inputEncoding);
+        yield createByte(byte, `0x${hex}`, inputEncoding);
       }
       break;
     }
