@@ -20,6 +20,9 @@ const INPUT_TYPES = [
 
 const componentMap = {
   basic: BasicInput,
+  byte: BasicInput,
+  numeric: BasicInput,
+  alphanumeric: BasicInput,
   json: JsonInput,
   bitfield: BitFieldInput,
   mac: MACGenerator,
