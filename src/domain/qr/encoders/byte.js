@@ -15,14 +15,15 @@ const createByte = (value, text, inputEncoding = "utf-8") => {
 };
 
 export function* iteratorFunc(data, options) {
-  //console.debug("byte:iteratprFunc", { data, options });
-  let { inputEncoding } = options;
+  console.debug("byte:iteratprFunc", { data, options });
+  let inputEncoding = options;
 
   switch (inputEncoding) {
     case "hex": {
       for (let i = 0; i < data.length; i += 2) {
         const hex = data.substring(i, i + 2);
         const byte = parseInt(data.substring(i, i + 2), 16);
+        console.debug({hex, byte});
         yield createByte(hex, `0x${hex}`, inputEncoding);
       }
       break;

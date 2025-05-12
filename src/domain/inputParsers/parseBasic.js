@@ -43,9 +43,7 @@ export function parseBasic(input) {
     if (isHex(text)) {
       let hex = text.replace(/^0x/i, "").replace(/\s+/g, "");
 
-      if (hex.length % 2 !== 0) {
-        throw new Error("Invalid hex string: length must be even.");
-      }
+      if (hex.length % 2 !== 0) hex = `0${hex}`;
 
       return { ...input, data: hex, encoding: "hex" };
     }
