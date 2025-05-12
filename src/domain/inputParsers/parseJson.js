@@ -172,7 +172,6 @@ function encodeToAlphanumeric(obj, schema) {
     separator,
     encapsulator,
     flatValues,
-    fvProps: Object.keys(flatValues.properties),
   });
   let encodedItems;
   if (arrayField && Array.isArray(obj[arrayField])) {
