@@ -6,10 +6,10 @@ import "../styles/styles.css";
 export function SegmentDisplay() {
   const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
   const { highlightedIds, segments } = useQRData();
-  console.debug("SegmentDisplay", { segments, highlightedIds });
+  const [clicked, setClicked] = useState(false);
+  //console.debug("SegmentDisplay", { segments, highlightedIds });
 
   const isHighlighted = (id) => {
-    //console.debug("isHighlighted", {highlightedIds, id});
     highlightedIds.includes(id);
   };
 
@@ -27,9 +27,16 @@ export function SegmentDisplay() {
           <button
             key={segment.id}
             className={getClassName(segment)}
-            onClick={() => highlightModules(segment.bitIds)}
-            onMouseEnter={() => highlightModules(segment.bitIds)}
-            onMouseLeave={() => clearHighlightedModules(segment.bitIds)}
+            onClick={() => {
+              highlightModules(segment.bitIds);
+              setClicked(!clicked);
+            }}
+            onMouseEnter={() => {
+              if (!clicked) highlightModules(segment.bitIds);
+            }}
+            onMouseLeave={() => {
+              if (!clicked) clearHighlightedModules(segment.bitIds);
+            }}
             title={`Segment ${segment.id}`}
           >
             {segment.type !== "codon"

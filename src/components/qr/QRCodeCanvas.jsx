@@ -7,7 +7,7 @@ export function QRCodeCanvas() {
   const canvasRef = useRef(null);
   const { highlightedIds, matrix } = useQRData();
   const { highlightSegment } = useQRDataDispatch();
-  console.debug("QRCodeCanvas", { matrix, highlightedIds });
+  //console.debug("QRCodeCanvas", { matrix, highlightedIds });
   
   const isHighlighted = (id) =>  highlightedIds.includes(id);
 
@@ -81,7 +81,7 @@ export function QRCodeCanvas() {
 
     console.debug(module);
 
-    highlightSegment(idMap.get(module.bitId));
+    highlightSegment(module.bit.sourceId);
   };
 
   return (

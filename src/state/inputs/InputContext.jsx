@@ -10,6 +10,13 @@ import { Actions, inputReducer, initialInput } from "./inputReducer";
 const InputContext = createContext(null);
 const DispatchContext = createContext(null);
 
+const initialState = {
+  errorCorrectionLevel: 0,
+  version: -1, // "auto"
+  dataMask: -1, // "auto"
+  inputs: [initialInput],
+}
+
 export function InputProvider({ children }) {
   const [inputs, dispatch] = useReducer(inputReducer, [initialInput]);
 
