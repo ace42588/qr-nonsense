@@ -7,7 +7,7 @@ const isBinary = (val) =>
   /^(?:0b)?(?:[01]{1,}(?:\s+[01]{1,})+|(?:[01]{1,})+)$/i.test(val);
 
 const isHex = (val) =>
-  /^(?:0x)?(?:[0-9A-F]{2}(?:\s+[0-9A-F]{2})+|(?:[0-9A-F]{2})+)$/i.test(val);
+  /^(?:0x)?(?:[0-9A-F]{1,}(?:\s+[0-9A-F]{1,})+|(?:[0-9A-F]{1,})+)$/i.test(val);
 
 export function parseBasic(input) {
   const { mode, text, encoding } = input;
@@ -28,6 +28,7 @@ export function parseBasic(input) {
 
   // Handle byte mode with binary or hex input
   if (mode === "byte") {
+    if (encoding === "utf-8") return { ...input, data: text};
     if (isBinary(text) && encoding !== "hex") {
       const bin = text.replace(/^0b/i, "").replace(/\s+/g, "");
       let hex = "";
