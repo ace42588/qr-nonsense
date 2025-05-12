@@ -1,6 +1,7 @@
 import { useState } from "react";
-import "../styles/styles.css"; // Import your component-specific styles
-import { useQRFormat } from "../../state";
+import { useQRData, useDerivedQRData, useQRDataDispatch } from "../../state";
+
+import "../styles/styles.css";
 
 const levels = [
   { label: "Low (L) – 7% redundancy", value: 0 },
@@ -31,14 +32,8 @@ const masks = [
 
 export function QRInfoInput() {
   const [expanded, setExpanded] = useState(false);
-  const {
-    errorCorrectionLevel,
-    version,
-    dataMask,
-    setErrorCorrection,
-    setVersion,
-    setDataMask,
-  } = useQRFormat();
+  const { errorCorrectionLevel, version, dataMask } = useDerivedQRData();
+  const { setErrorCorrection, setVersion, setDataMask } = useQRDataDispatch();
   return (
     <div
       style={{

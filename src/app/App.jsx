@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   QRDisplayTabs,
   SegmentDisplay,
-  QRMetaInfo,
   MainViewTabs,
 } from "../components";
 

@@ -1,12 +1,13 @@
 import { useRef, useEffect, useState } from "react";
-import { useQRData, useQRMessage } from "../../state";
+import { useQRData, useDerivedQRData, useQRDataDispatch } from "../../state";
+
 import "../styles/styles.css";
 
 export function SegmentDisplay() {
+  const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
   const { highlightedIds } = useQRData();
+  const { segments } = useDerivedQRData();
   //console.debug("SegmentDisplay", {highlightedIds});
-  const { segments, highlightModules, clearHighlightedModules } =
-    useQRMessage();
 
   const isHighlighted = (id) => {
     //console.debug("isHighlighted", {highlightedIds, id});
