@@ -9,6 +9,7 @@ export const Actions = {
   Update: "UPDATE",
   Reorder: "REORDER",
   ChangeType: "CHANGE_TYPE",
+  ChangeMeta: "CHANGE_META",
 };
 
 export const initialInput = {
@@ -20,34 +21,54 @@ export const initialInput = {
   encoding: "utf-8",
 };
 
-export function inputReducer(inputs, action) {
+export function inputReducer(state, action) {
   switch (action.type) {
     case Actions.Add: {
-      return [...inputs, { ...initialInput, label: action.label }];
+      const prev = state.inputs;
+      return {
+        ...state,
+        inputs: [...prev, { ...initialInput, label: action.label }],
+      };
     }
     case Actions.Remove: {
       const id = action.payload;
-      return inputs.filter((input) => input.id !== id);
+      const prev = state.inputs;
+      return {
+        ...state,
+        inputs: prev.filter((input) => input.id !== id),
+      };
     }
     case Actions.Update: {
-      return updateInputById(inputs, action.id, action.partial);
+      const prev = state.inputs;
+      return {
+        ...state,
+        inputs: updateInputById(prev, action.id, action.partial),
+      };
     }
     case Actions.Reorder: {
       const { oldIndex, newIndex } = action;
-      return arrayMove(inputs, oldIndex, newIndex);
+      const prev = state.inputs;
+      return { ...state, inputs: arrayMove(prev, oldIndex, newIndex) };
     }
     case Actions.ChangeType: {
-      return inputs.map((input) =>
-        input.id === action.id
-          ? {
-              ...input,
-              type: action.newType,
-              ...getTypeExtensions(action.newType),
-            }
-          : input
-      );
+      const prev = state.inputs;
+      return {
+        ...state,
+        inputs: prev.map((input) =>
+          input.id === action.id
+            ? {
+                ...input,
+                type: action.newType,
+                ...getTypeExtensions(action.newType),
+              }
+            : input
+        ),
+      };
+    }
+    case Actions.ChangeMeta: {
+      return {...state, [action.field]: action.value}
     }
     default:
-      return inputs;
+      return state;
   }
 }
