@@ -120,14 +120,14 @@ export function QRDataProvider({ children }) {
       setInputs: (payload) => {
         dispatch({ type: Actions.ChangeInputs, payload });
       },
-      highlightModules: (payload) => {
-        dispatch({ type: Actions.HighlightIds, payload });
+      highlightModules: (ids) => {
+        dispatch({ type: Actions.HighlightIds, ids });
       },
-      clearHighlightedModules: (payload) => {
-        dispatch({ type: Actions.RemoveHighlightIds, payload });
+      clearHighlightedModules: (ids) => {
+        dispatch({ type: Actions.RemoveHighlightIds, ids });
       },
-      highlightSegment: (payload) =>
-        dispatch({ type: Actions.HighlightIds, payload }),
+      highlightSegment: (id) =>
+        dispatch({ type: Actions.HighlightIds, id }),
     }),
     []
   );

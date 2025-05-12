@@ -7,7 +7,8 @@ export function QRCodeCanvas() {
   const canvasRef = useRef(null);
   const { highlightedIds } = useQRData();
   const { highlightSegment } = useQRDataDispatch();
-  const { matrix } = useDerivedQRData();
+  const { matrix, idMap } = useDerivedQRData();
+  console.debug("QRCodeCanvas", { matrix, idMap, highlightedIds });
   
   const isHighlighted = (id) =>  highlightedIds.includes(id);
 

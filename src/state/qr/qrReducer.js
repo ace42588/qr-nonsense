@@ -31,9 +31,9 @@ export function qrReducer(state, action) {
     case Actions.HighlightIds: {
       return {
         ...state,
-        highlightedIds: Array.isArray(action.payload)
-          ? action.payload
-          : [action.payload],
+        highlightedIds: Array.isArray(action.ids)
+          ? action.ids
+          : [action.ids],
       };
     }
 
@@ -41,7 +41,7 @@ export function qrReducer(state, action) {
       return {
         ...state,
         highlightedIds: state.highlightedIds.filter(
-          (id) => !action.payload.includes(id)
+          (id) => !action.ids.includes(id)
         ),
       };
     }

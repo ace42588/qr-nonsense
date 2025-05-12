@@ -6,8 +6,8 @@ import "../styles/styles.css";
 export function SegmentDisplay() {
   const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
   const { highlightedIds } = useQRData();
-  const { segments } = useDerivedQRData();
-  //console.debug("SegmentDisplay", {highlightedIds});
+  const { segments, idMap } = useDerivedQRData();
+  //console.debug("SegmentDisplay", { segments, idMap, highlightedIds });
 
   const isHighlighted = (id) => {
     //console.debug("isHighlighted", {highlightedIds, id});
@@ -28,9 +28,9 @@ export function SegmentDisplay() {
           <button
             key={segment.id}
             className={getClassName(segment)}
-            onClick={() => highlightModules(segment)}
-            onMouseEnter={() => highlightModules(segment)}
-            onMouseLeave={() => clearHighlightedModules(segment)}
+            onClick={() => highlightModules(segment.id)}
+            onMouseEnter={() => highlightModules(idMap.get(segment.id))}
+            onMouseLeave={() => clearHighlightedModules(idMap.get(segment.id))}
             title={`Segment ${segment.id}`}
           >
             {segment.type !== "codon"
