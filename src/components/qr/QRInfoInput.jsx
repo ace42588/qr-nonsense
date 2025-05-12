@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQRData, useDerivedQRData, useQRDataDispatch } from "../../state";
+import { useInputs, useDerivedQRData, useInputDispatch } from "../../state";
 
 import "../styles/styles.css";
 
@@ -32,8 +32,9 @@ const masks = [
 
 export function QRInfoInput() {
   const [expanded, setExpanded] = useState(false);
-  const { errorCorrectionLevel, version, dataMask } = useQRData();
-  const { setErrorCorrection, setVersion, setDataMask } = useQRDataDispatch();
+  const { errorCorrectionLevel, version, dataMask } = useInputs();
+  const { version: cVersion, dataMask: cDataMask } = useInputs();
+  const { setErrorCorrection, setVersion, setDataMask } = useInputDispatch();
   return (
     <div
       style={{
@@ -63,7 +64,7 @@ export function QRInfoInput() {
             <label htmlFor="qr-version">QR Code Version:</label>
             <select
               id="qr-version"
-              value={version}
+              value={cVersion || version}
               onChange={(e) => setVersion(e.target.value)}
             >
               {versions.map((ver) => (
