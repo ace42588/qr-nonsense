@@ -165,6 +165,7 @@ function encodeToHex(obj, schema) {
 function encodeToAlphanumeric(obj, schema) {
   const { rootSchema, arrayField, arraySchema } = separateSchemaParts(schema);
   const { separator = "", encapsulator = "", ...flatProps } = rootSchema.properties;
+  const flatValues = Object.keys(flatProps).map((k) => obj[k]);
   console.debug("encodeToAlphanumeric", {
     rootSchema,
     arrayField,
@@ -172,8 +173,8 @@ function encodeToAlphanumeric(obj, schema) {
     separator,
     encapsulator,
     flatProps,
+    flatValues
   });
-  const flatValues = Object.keys(flatProps).map()
   let encodedItems;
   if (arrayField && Array.isArray(obj[arrayField])) {
     const {
@@ -183,6 +184,7 @@ function encodeToAlphanumeric(obj, schema) {
     } = arraySchema.properties;
     const propKeys = Object.keys(props);
     const first = propKeys.shift();
+    console.debug("encodeToAlphanumeric", {propKeys, first});
     encodedItems = obj[arrayField]
       .map((item) => {
         return propKeys.reduce(
