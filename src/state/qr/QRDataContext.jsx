@@ -1,3 +1,4 @@
+// /src/state/qr/QRDataContext.jsx
 import { createContext, useContext, useMemo, useReducer } from "react";
 import { Actions, qrReducer, initialQRState } from "./qrReducer";
 

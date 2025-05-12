@@ -166,15 +166,7 @@ function encodeToAlphanumeric(obj, schema) {
   const { rootSchema, arrayField, arraySchema } = separateSchemaParts(schema);
   const { separator = "", encapsulator = "", ...flatProps } = rootSchema.properties;
   const flatValues = Object.keys(flatProps).map((k) => obj[k]);
-  console.debug("encodeToAlphanumeric", {
-    rootSchema,
-    arrayField,
-    arraySchema,
-    separator,
-    encapsulator,
-    flatProps,
-    flatValues
-  });
+
   let encodedItems;
   if (arrayField && Array.isArray(obj[arrayField])) {
     const {
@@ -184,9 +176,9 @@ function encodeToAlphanumeric(obj, schema) {
     } = arraySchema.properties;
     const propKeys = Object.keys(props);
     const first = propKeys.shift();
-    console.debug("encodeToAlphanumeric", {propKeys, first});
     encodedItems = obj[arrayField]
       .map((item) => {
+      console.debug("encodeToAlphanumeric", {propKeys, first, firstVal: item[first]});
         return propKeys.reduce(
           (str, k) => `${separator}${item[k]}${terminator}`,
           item[first]
