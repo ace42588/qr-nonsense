@@ -1,18 +1,13 @@
 import React, { useCallback, useRef, useEffect, useState } from "react";
-import { Actions, useQRMessage } from "../state";
+import { useQRDataDispatch } from "../state";
 import jsQR from "jsqr";
 import "./styles/styles.css";
 
-export function VideoScanner({
-  setBitStream,
-  setVersion,
-  setDataMask,
-  setErrorCorrectionLevel,
-}) {
+export function VideoScanner() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [scanning, setScanning] = useState(true);
-  const { setInputs } = useQRMessage();
+  const { setInputs } = useQRDataDispatch();
 
   const updateQRData = useCallback(
     ({ chunks, version, formatInfo }) => {

@@ -4,8 +4,8 @@ import { Actions, qrReducer, initialQRState } from "./qrReducer";
 
 import { useDerivedQRData } from "./useDerivedQRData";
 
-const QRDataContext = createContext();
-const QRDataDispatchContext = createContext();
+const QRDataContext = createContext(null);
+const QRDataDispatchContext = createContext(null);
 const QRFormatContext = createContext();
 const QRMessageContext = createContext();
 
@@ -122,15 +122,18 @@ export function QRDataProvider({ children }) {
 
   return (
     <QRDataContext.Provider value={state}>
-      <QRFormatContext.Provider value={formatContextValue}>
-        <QRMessageContext.Provider value={messageContextValue}>
-          {children}
-        </QRMessageContext.Provider>
-      </QRFormatContext.Provider>
+      <QRDataDispatchContext.Provider value={qrDataDispatchContextValue}>
+        <QRFormatContext.Provider value={formatContextValue}>
+          <QRMessageContext.Provider value={messageContextValue}>
+            {children}
+          </QRMessageContext.Provider>
+        </QRFormatContext.Provider>
+      </QRDataDispatchContext.Provider>
     </QRDataContext.Provider>
   );
 }
 
 export const useQRData = () => useContext(QRDataContext);
+export const useQRDataDispatch = () => useContext(QRDataDispatchContext);
 export const useQRFormat = () => useContext(QRFormatContext);
 export const useQRMessage = () => useContext(QRMessageContext);
