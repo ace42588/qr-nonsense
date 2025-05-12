@@ -155,6 +155,7 @@ const typeDefaults = {
       ],
     },
     schema: existingSchema,
+    format: "None",
   },
   bitfield: {
     type: "bitfield",

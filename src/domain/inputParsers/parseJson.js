@@ -159,6 +159,12 @@ function encodeToHex(obj, schema) {
 function encodeToAlphanumeric(obj, schema) {
   const { rootSchema, arrayField, arraySchema } = separateSchemaParts(schema);
   const { separator = "", encapsulator = "", ...flatValues } = rootSchema;
+  console.debug("encodeToAlphanumeric", {
+    rootSchema,
+    arrayField,
+    arraySchema,
+    flatValues,
+  });
   let encodedItems;
   if (arrayField && Array.isArray(obj[arrayField])) {
     const {
@@ -210,7 +216,7 @@ const JSON_PARSERS = {
 };
 
 export function parseJson(input) {
-  const { obj, schema, encoding } = input;
+  const { obj, schema, format } = input;
   console.debug("parseJson", { input });
   if (!obj || !schema) return input;
 
@@ -222,8 +228,8 @@ export function parseJson(input) {
     };
   }
 
-  const encodeFn = JSON_PARSERS[encoding];
-  if (!encodeFn) throw new Error(`Unknown input type: ${encoding}`);
+  const encodeFn = JSON_PARSERS[format];
+  if (!encodeFn) throw new Error(`Unknown input type: ${format}`);
 
   return encodeFn(obj, schema);
 }

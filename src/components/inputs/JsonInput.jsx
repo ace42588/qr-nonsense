@@ -14,49 +14,9 @@ const formats = [
   { value: "PER-NTRU", label: "Packed Encoding Rule, NTRU" },
 ];
 
-const sampleSchema = {
-  type: "object",
-  properties: {
-    p: {
-      type: "integer",
-    },
-    cc: {
-      type: "integer",
-    },
-    txn: {
-      type: "integer",
-    },
-    i: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          v: {
-            type: "integer",
-          },
-          q: {
-            type: "integer",
-          },
-        },
-      },
-    },
-  },
-};
-
-const sampleValue = {
-  p: "A",
-  cc: 133,
-  txn: "99999",
-  i: [
-    { v: 5432, q: 1 },
-    { v: 6666, q: 3 },
-    { v: 1234, q: 2 },
-  ],
-};
-
 export function JsonInput({ id, input }) {
   const { updateInput } = useInputDispatch();
-  const { obj = sampleValue, schema = sampleSchema, encoding = "None" } = input;
+  const { obj, schema, format } = input;
   const preview = useParsedInputs()[id];
 
   const [tab, setTab] = useState("values");
@@ -123,8 +83,8 @@ export function JsonInput({ id, input }) {
         <label htmlFor="format">Encoding Format:</label>
         <select
           id="format"
-          value={encoding}
-          onChange={(e) => emitChange("encoding", e.target.value)}
+          value={format}
+          onChange={(e) => emitChange("format", e.target.value)}
         >
           {formats.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -134,7 +94,7 @@ export function JsonInput({ id, input }) {
         </select>
       </div>
 
-      {encoding !== "None" && (
+      {format !== "None" && (
         <div style={{ marginTop: 12 }}>
           <label htmlFor="preview">Preview:</label>
           <pre id="preview">{preview?.data}</pre>
