@@ -5,6 +5,7 @@ import { Actions, qrReducer, initialQRState } from "./qrReducer";
 import { useDerivedQRData } from "./useDerivedQRData";
 
 const QRDataContext = createContext();
+const QRDataDispatchContext = createContext();
 const QRFormatContext = createContext();
 const QRMessageContext = createContext();
 
@@ -21,6 +22,16 @@ export function QRDataProvider({ children }) {
     dataMask: selectedDataMask,
     errorCorrectionLevel,
   });
+  
+  const qrDataContextValue = useMemo(
+  () => ({
+    errorCorrectionLevel,
+      version: derived.version,
+      dataMask: derived.dataMask,
+    segments: derived.segments,
+      matrix: derived.matrix,
+      idMap: derived.idMap,
+  }));
 
   const formatContextValue = useMemo(
     () => ({
