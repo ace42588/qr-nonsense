@@ -113,6 +113,7 @@ function separateSchemaParts(schema) {
   let arraySchema = null;
 
   for (const [key, prop] of Object.entries(schema.properties || {})) {
+    //console.debug("separateSchemaParts", { key, prop });
     if (flatTypes.includes(prop.type)) {
       rootFields[key] = prop;
     } else if (
@@ -122,7 +123,8 @@ function separateSchemaParts(schema) {
     ) {
       arrayField = key;
       arraySchema = prop.items;
-    } else if (typeof prop.type === "string" && specialTypes.includes(key)) {
+    } else if (typeof prop === "string" && specialTypes.includes(key)) {
+      //console.debug("separateSchemaParts: special type", { key, prop });
       rootFields[key] = prop;
     }
   }
@@ -162,7 +164,7 @@ function encodeToHex(obj, schema) {
 
 function encodeToAlphanumeric(obj, schema) {
   const { rootSchema, arrayField, arraySchema } = separateSchemaParts(schema);
-  const { separator = "", encapsulator = "", ...flatValues } = rootSchema;
+  const { separator = "", encapsulator = "", ...flatValues } = rootSchema.properties;
   console.debug("encodeToAlphanumeric", {
     rootSchema,
     arrayField,
@@ -170,7 +172,7 @@ function encodeToAlphanumeric(obj, schema) {
     separator,
     encapsulator,
     flatValues,
-    fvProps: Object.keys(flatValues.properties)
+    fvProps: Object.keys(flatValues.properties),
   });
   let encodedItems;
   if (arrayField && Array.isArray(obj[arrayField])) {
