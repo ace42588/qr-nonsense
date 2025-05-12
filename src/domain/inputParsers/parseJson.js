@@ -107,13 +107,13 @@ const alphaNumericSchema = {
 // Extracts top-level integers and the first array of objects (if present)
 function separateSchemaParts(schema) {
   const flatTypes = ["integer", "string", "number", "boolean"];
-  const specialTypes = ["encapsulator", ];
+  const specialTypes = ["encapsulator", "separator", "terminator"];
   const rootFields = {};
   let arrayField = null;
   let arraySchema = null;
 
   for (const [key, prop] of Object.entries(schema.properties || {})) {
-    if (prop.type === "integer") {
+    if (flatTypes.includes(prop.type)) {
       rootFields[key] = prop;
     } else if (
       prop.type === "array" &&
@@ -122,6 +122,8 @@ function separateSchemaParts(schema) {
     ) {
       arrayField = key;
       arraySchema = prop.items;
+    } else if (typeof prop.type === "string" && specialTypes.includes(key)) {
+      rootFields[key] = prop;
     }
   }
 
