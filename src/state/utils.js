@@ -14,3 +14,15 @@ export function updateInputById(inputs, id, partial) {
     };
   });
 }
+
+export function createInput(overrides = {}) {
+  return {
+    id: crypto.randomUUID(),
+    type: "basic",
+    label: "New Input",
+    data: "",
+    mode: "byte",
+    text: "Hello world",
+    ...overrides,
+  };
+}

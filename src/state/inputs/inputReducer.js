@@ -1,7 +1,7 @@
 // state/inputs/inputReducer.js
 import { arrayMove } from "@dnd-kit/sortable";
-import { updateInputById } from "../utils";
-import { getTypeExtensions } from "../domain";
+import { createInput, updateInputById } from "../utils";
+import { getTypeExtensions } from "../../domain";
 
 export const Actions = {
   Add: "ADD",
@@ -10,18 +10,6 @@ export const Actions = {
   Reorder: "REORDER",
   ChangeType: "CHANGE_TYPE",
 };
-
-export function createInput(overrides = {}) {
-  return {
-    id: crypto.randomUUID(),
-    type: "basic",
-    label: "New Input",
-    data: "",
-    mode: "byte",
-    text: "Hello world",
-    ...overrides,
-  };
-}
 
 export function inputReducer(inputs, action) {
   switch (action.type) {
@@ -65,39 +53,3 @@ export const initialInputs = [
     encoding: "utf-8",
   },
 ];
-
-const basicExample = {
-  id: crypto.randomUUID(),
-  type: "basic",
-  label: "Input 0",
-  mode: "byte",
-  text: "Hello world",
-  encoding: "utf-8",
-};
-
-const bitFieldExample = {
-  id: crypto.randomUUID(),
-  type: "bitfield",
-  label: "Input 0",
-  fields: [],
-  values: {},
-  encoding: "dec",
-};
-
-const jsonExample = {
-  id: crypto.randomUUID(),
-  type: "json",
-  label: "Input 0",
-  obj: {},
-  schema: {},
-  encoding: "none",
-};
-
-const macExample = {
-  id: crypto.randomUUID(),
-  type: "mac",
-  label: "Input 0",
-  algo: "HMAC-SHA256",
-  key: "supersecret",
-  selectedInputs: [],
-};

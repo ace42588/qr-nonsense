@@ -62,7 +62,7 @@ export function SortableInput({ id, label }) {
             <TabSwitcher
               options={INPUT_TYPES}
               active={type}
-              onChange={setType}
+              onChange={(e) => setType(id, e)}
             />
             <button type="button" onClick={() => removeInput(id)}>
               ✖
