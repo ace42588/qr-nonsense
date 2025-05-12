@@ -7,17 +7,12 @@ export function VideoScanner() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [scanning, setScanning] = useState(true);
-  const { setInputs } = useQRDataDispatch();
+  const { setInputs } = useInputDispatch();
 
   const updateQRData = useCallback(
     ({ chunks, version, formatInfo }) => {
       console.debug("updateQRData", { chunks, version, formatInfo });
-      setInputs(
-        chunks.map(({ type, text, data }) => ({
-          mode: type,
-          data: text || data,
-        }))
-      );
+      setInputs({ chunks, version, formatInfo });
     },
     [setInputs]
   );

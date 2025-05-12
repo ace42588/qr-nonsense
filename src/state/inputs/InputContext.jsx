@@ -59,7 +59,21 @@ export function InputProvider({ children }) {
         field: "dataMask",
         value: payload,
       }),
-    setInputs: () => dispatch({type: Actions.SetInputs})
+    setInputs: ({ chunks, version, formatInfo }) => {
+      dispatch({
+        type: Actions.SetInputs,
+        payload: {
+          version,
+          ...formatInfo,
+          inputs: chunks.map((c, idx) => ({
+            ...c,
+            mode: c.type,
+            id: crypto.randomUUID(),
+            label: `Chunk ${idx}`,
+          })),
+        },
+      });
+    },
   };
 
   return (
