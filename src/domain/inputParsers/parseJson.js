@@ -163,7 +163,10 @@ function encodeToAlphanumeric(obj, schema) {
     rootSchema,
     arrayField,
     arraySchema,
+    separator,
+    encapsulator,
     flatValues,
+    fvProps: Object.keys(flatValues.properties)
   });
   let encodedItems;
   if (arrayField && Array.isArray(obj[arrayField])) {
