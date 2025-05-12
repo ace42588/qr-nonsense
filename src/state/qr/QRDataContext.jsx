@@ -2,7 +2,7 @@
 import { createContext, useContext, useMemo, useReducer } from "react";
 import { Actions, qrReducer, initialQRState } from "./qrReducer";
 
-import { useInputs } from "./InputContext";
+import { useInputs } from "../inputs/InputContext";
 import { encodeAll } from "../../domain/encoding";
 import { useDerivedQRData } from "./useDerivedQRData";
 
@@ -13,6 +13,7 @@ export function QRDataProvider({ children }) {
   const [state, dispatch] = useReducer(qrReducer, initialQRState);
   const inputs = useInputs();
   const encodedInputs = useMemo(() => encodeAll(inputs), [inputs]);
+  const derived = useDerivedQRData();
 
   const qrDataDispatchContextValue = {
     setErrorCorrection: (payload) =>
