@@ -1,6 +1,3 @@
-import { getBits } from "../bitUtils";
-import { getRequiredDataCodewords } from "../codewordUtils";
-
 const CodewordLength = 8;
 
 function getId() {

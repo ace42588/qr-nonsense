@@ -2,7 +2,6 @@ import { parseBasic } from "./parsers/parseBasic";
 import { parseJson } from "./parsers/parseJson";
 import { parseBitField } from "./parsers/parseBitField";
 import { generateMAC } from "./parsers/generateMAC";
-import { encodeInput } from "../qr/encoders";
 
 const INPUT_PARSERS = {
   basic: parseBasic,

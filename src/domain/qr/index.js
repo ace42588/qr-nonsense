@@ -1,4 +1,4 @@
-import { generateCodewords} from "./codewords";
+import { generateCodewords } from "./codewords";
 import { encodeAll, finalizeEncoding } from "./encoders";
 import { generateMatrix } from "./matrixUtils";
 import { getMinimumQRCodeVersion } from "./versionUtils";
@@ -10,23 +10,20 @@ export function getEncodedMessage(inputs, sVersion, errorCorrectionLevel) {
       ? getMinimumQRCodeVersion(numDataBits, errorCorrectionLevel)
       : sVersion;
   const segments = finalizeEncoding(encodedInputs, numDataCodewords);
-  return {segments, version};
+  return { segments, version };
 }
 
 export function getCodewords(segments, version, errorCorrectionLevel) {
-  const encodedBits = getBitsFromSegments(segments);
-  generateCodewords()
+  return generateCodewords(segments, version, errorCorrectionLevel);
 }
 
 export function getMatrix(
-  errorCorrectionLevel,
-  version,
+  codewords,
   selectedDataMask,
-  bits
+  version,
+  errorCorrectionLevel
 ) {
-  if (bits.length === 0) return {};
   //console.debug("getMatrix", {bits});
-  const codewords = getCodewords(bits, version, errorCorrectionLevel);
   return generateMatrix({
     version,
     errorCorrectionLevel,

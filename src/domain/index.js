@@ -1,2 +1,2 @@
-export * from "./qr";
-export {parseAll, encodeAll} from "./input";
+export { getCodewords, getEncodedMessage, getMatrix } from "./qr";
+export { parseAll } from "./input";

@@ -1,7 +1,7 @@
 import { gerVersionInfo } from "../versionUtils";
 import { getCodewordsForBlock } from "./codewordUtils";
 
-function getBlocks(encodedData, errorCorrectionLevel, version) {
+export function getBlocks(encodedData, errorCorrectionLevel, version) {
   const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
     errorCorrectionLevel,
     version
