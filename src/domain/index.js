@@ -1,2 +1,2 @@
 export * from "./qr";
-export * from "./inputParsers";
+export {parseAll, encodeAll} from "./input";

@@ -10,4 +10,4 @@ export {
   useInputs,
   useInputDispatch,
 } from "./inputs/InputContext";
-export { useParsedInputs } from "./inputs/useEncodedInputs";
+export { useParsedInputs } from "./inputs/useParsedInputs";
