@@ -1,5 +1,5 @@
 import { ReedSolomonEncoder } from "./reedsolomon/";
-import { getBits } from "./bitUtils";
+import { getBits, getBitsFromSegments } from "./bitUtils";
 import { gerVersionInfo } from "./versionUtils";
 
 const CodewordLength = 8;
@@ -116,11 +116,7 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
 
 export function getCodewords(segments, version, errorCorrectionLevel) {
 
-  const encodedBits = segments.flatMap((s) => {
-    const bits = getBits(s.value, s.length, s);
-    s.bitIds = bits.map((b) => b.id);
-    return bits;
-  });
+  const encodedBits = getBitsFromSegments(segments);
 
   const qrBlocks = getBlocks(encodedBits, errorCorrectionLevel, version);
   const totalCodewords = qrBlocks.reduce(

@@ -19,6 +19,13 @@ export function encodeInput(mode, input, options = {}) {
   }
 }
 
+export function encodeAll(parsedInputs) {
+  console.debug("encodeAll", { parsedInputs });
+  return parsedInputs.flatMap(({ data, mode, encoding }) =>
+    encodeInput(mode, data, encoding)
+  );
+}
+
 export function finalizeEncoding(segments, requiredDataCodewords) {
   const CodewordLength = 8;
   const PAD_BYTES = [236, 17];
