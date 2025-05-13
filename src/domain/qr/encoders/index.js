@@ -34,7 +34,7 @@ export function finalizeEncoding(segments, numDataCodewords) {
   const terminated = addTerminator(segments, numDataCodewords);
 
   // add filler bits to complete the last codeword
-  const filled = addTerminator(terminated, numDataCodewords);
+  const filled = addFill(terminated, numDataCodewords);
 
   // add padding to fill the capacity
   const padded = addPadding(filled, numDataCodewords);

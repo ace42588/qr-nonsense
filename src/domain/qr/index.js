@@ -10,6 +10,7 @@ export function getEncodedMessage(inputs, sVersion, errorCorrectionLevel) {
       ? getMinimumQRCodeVersion(numDataBits, errorCorrectionLevel)
       : sVersion;
   const segments = finalizeEncoding(encodedInputs, numDataCodewords);
+  console.debug("getEncodedMessage", { segments, version });
   return { segments, version };
 }
 
