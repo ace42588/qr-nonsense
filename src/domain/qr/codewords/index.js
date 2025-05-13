@@ -1,4 +1,5 @@
 import { getBitsFromSegments } from "./bitUtils";
+import { getBlocks } from "./blockUtils";
 
 export function generateCodewords(segments, version, errorCorrectionLevel) {
 

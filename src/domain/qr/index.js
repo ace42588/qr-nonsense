@@ -1,4 +1,4 @@
-import { getRequiredDataCodewords, getCodewords } from "./codewordUtils";
+import { generateCodewords} from "./codewords";
 import { encodeAll, finalizeEncoding } from "./encoders";
 import { generateMatrix } from "./matrixUtils";
 import { getMinimumQRCodeVersion } from "./versionUtils";
@@ -11,6 +11,10 @@ export function getEncodedMessage(inputs, sVersion, errorCorrectionLevel) {
       : sVersion;
   const segments = finalizeEncoding(encodedInputs, numDataCodewords);
   return {segments, version};
+}
+
+export function getCodewords() {
+  
 }
 
 export function getMatrix(

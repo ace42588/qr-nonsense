@@ -1,15 +1,10 @@
-import { ReedSolomonEncoder } from "./reedsolomon/";
-import { getBits, getBitsFromSegments } from "./bitUtils";
-import { gerVersionInfo } from "./versionUtils";
+import { ReedSolomonEncoder } from "../reedsolomon/";
+import { getBits } from "./bitUtils";
 
 const CodewordLength = 8;
 
-let lastCodewordId = 0;
-
 function getId() {
-  if (lastCodewordId >= 0xffff) lastCodewordId = 0;
-
-  return `codeword-${lastCodewordId++}`;
+  return `${crypto.randomUUID()}`;
 }
 
 function getCodeword(bits, type) {
@@ -35,42 +30,16 @@ function getECCodeword(byte, sourceCodeword) {
   };
 }
 
-function getBlocks(encodedData, errorCorrectionLevel, version) {
-  const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
-    errorCorrectionLevel,
-    version
+function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
+  const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
+  const dataBytes = Array.from(dataCodewords, ({ bits }) =>
+    bits.reduce((byte, { value }, idx) => (byte << 1) | value, 0)
   );
-  let lastBlockId = 0;
-  let numProcessedCodewords = 0;
-
-  // ecBlocks is an { numBlocks, dataCodewordsPerBlock }[] used to map
-  // the specifics of how to split up codewords for error correction.
-  // The capacity of a block can vary within a QR code version.
-
-  return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }, idx) => {
-    const blocksForType = Array.from(
-      { length: numBlocks },
-      (_, blockNumber) => {
-        const blockId = lastBlockId + blockNumber;
-        const blockCodewords = getCodewordsForBlock(
-          dataCodewordsPerBlock,
-          ecCodewordsPerBlock,
-          numProcessedCodewords,
-          encodedData
-        );
-        numProcessedCodewords += dataCodewordsPerBlock;
-        return {
-          codewords: blockCodewords,
-          id: blockId,
-        };
-      }
-    );
-    lastBlockId = lastBlockId + blocksForType.length;
-    return blocksForType;
-  });
+  const ecBytes = encoder.encode(dataBytes);
+  return Array.from(ecBytes, (b, idx) => getECCodeword(b, dataCodewords[idx]));
 }
 
-function getCodewordsForBlock(
+export function getCodewordsForBlock(
   dataCodewordsPerBlock,
   ecCodewordsPerBlock,
   numProcessedCodewords,
@@ -92,35 +61,4 @@ function getCodewordsForBlock(
     ...dataCodewords,
     ...getEcCodewords(ecCodewordsPerBlock, dataCodewords),
   ];
-}
-
-function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
-  const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
-  const dataBytes = Array.from(dataCodewords, ({ bits }) =>
-    bits.reduce((byte, { value }, idx) => (byte << 1) | value, 0)
-  );
-  const ecBytes = encoder.encode(dataBytes);
-  return Array.from(ecBytes, (b, idx) => getECCodeword(b, dataCodewords[idx]));
-}
-
-export function getCodewords(segments, version, errorCorrectionLevel) {
-
-  const encodedBits = getBitsFromSegments(segments);
-
-  const qrBlocks = getBlocks(encodedBits, errorCorrectionLevel, version);
-  const totalCodewords = qrBlocks.reduce(
-    (total, { codewords }) => total + codewords.length,
-    0
-  );
-  const orderedCodewords = Array.from({ length: totalCodewords }, (_, idx) => {
-    const blockIdx = idx % qrBlocks.length;
-    const cwIdx = Math.floor(idx / qrBlocks.length);
-    const { codewords: bCodewords } = qrBlocks[blockIdx];
-    if (cwIdx < bCodewords.length) {
-      const codeword = bCodewords[cwIdx];
-      codeword.qrPosition = idx;
-      return codeword;
-    }
-  });
-  return orderedCodewords;
 }
