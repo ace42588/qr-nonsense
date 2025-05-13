@@ -1,7 +1,7 @@
 import { encodeNumeric } from "./numeric";
 import { encodeAlphanumeric } from "./alphanumeric";
 import { encodeByte } from "./byte";
-import { createPart, getTerminatorLength } from "./utils";
+import { addTerminator, createPart, getTerminatorLength } from "./utils";
 import { getMinimumQRCodeVersion } from "../versionUtils";
 
 export function encodeInput(mode, input, options = {}) {
