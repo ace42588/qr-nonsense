@@ -14,7 +14,8 @@ export function getEncodedMessage(inputs, sVersion, errorCorrectionLevel) {
 }
 
 export function getCodewords(segments, version, errorCorrectionLevel) {
-  
+  const encodedBits = getBitsFromSegments(segments);
+  generateCodewords()
 }
 
 export function getMatrix(
