@@ -45,6 +45,12 @@ export function getCodewordsForBlock(
   numProcessedCodewords,
   encodedData
 ) {
+  console.debug("getCodewordsForBlock", {
+    dataCodewordsPerBlock,
+    ecCodewordsPerBlock,
+    numProcessedCodewords,
+    encodedData,
+  });
   const dataCodewords = Array.from(
     { length: dataCodewordsPerBlock },
     (_, i) => {

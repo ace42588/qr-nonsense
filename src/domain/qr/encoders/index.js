@@ -22,7 +22,8 @@ export function encodeInput(mode, input, options = {}) {
 
 export function encodeAll(parsedInputs) {
   console.debug("encodeAll", { parsedInputs });
-  const encodedInputs = parsedInputs.flatMap(({ data, mode, encoding }) =>
+  const parsedValues = Object.values(parsedInputs);
+  const encodedInputs = parsedValues.flatMap(({ data, mode, encoding }) =>
     encodeInput(mode, data, encoding)
   );
   return [encodedInputs, getNumBits(encodedInputs)];
