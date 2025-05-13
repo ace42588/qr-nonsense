@@ -70,17 +70,6 @@ function getBlocks(encodedData, errorCorrectionLevel, version) {
   });
 }
 
-export function getRequiredDataCodewords(version, errorCorrectionLevel) {
-  const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
-  let requiredDataCodewords = 0;
-
-  return ecBlocks.reduce(
-    (total, { numBlocks, dataCodewordsPerBlock }) =>
-      total + numBlocks * dataCodewordsPerBlock,
-    requiredDataCodewords
-  );
-}
-
 function getCodewordsForBlock(
   dataCodewordsPerBlock,
   ecCodewordsPerBlock,
