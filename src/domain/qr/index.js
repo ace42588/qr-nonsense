@@ -1,7 +1,15 @@
-export {getBits} from "./bitUtils";
-export {calculatePenalty} from "./calculatePenalty";
-export {getRequiredDataCodewords, getCodewords} from "./codewordUtils";
-export * from "./encoders";
-export * from "./matrixUtils";
-export * from "./moduleUtils";
-export * from "./versionUtils";
+export { getBits } from "./bitUtils";
+export { calculatePenalty } from "./calculatePenalty";
+export { getRequiredDataCodewords, getCodewords } from "./codewordUtils";
+export { encodeInput, getEncodedMessage } from "./encoders";
+export { generateMatrix, getMatrix } from "./matrixUtils";
+export {
+  makeModule,
+  addFormatInfoModules,
+  addNonDataModules,
+} from "./moduleUtils";
+export {
+  getVersion,
+  gerVersionInfo,
+  getMinimumQRCodeVersion,
+} from "./versionUtils";
