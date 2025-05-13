@@ -53,7 +53,7 @@ function createModeIndicator(mode) {
 }
 
 function createCharacterCountIndicator(data, codons, mode) {
-  console.debug("createCharacterCountIndicator", { data, codons, mode });
+  // console.debug("createCharacterCountIndicator", { data, codons, mode });
   const length = mode.name === "byte" ? codons.length : data.length;
   return createPart(
     "characterCountIndicator",
@@ -66,7 +66,7 @@ function createCharacterCountIndicator(data, codons, mode) {
 export function encodeSegment(data, inputMode, codonItrFn) {
   //console.debug("encodeSegment", { data, inputMode, codonItrFn });
   const codons = [...codonItrFn(data)];
-  console.debug("encodeSegment", { data, codons });
+  //console.debug("encodeSegment", { data, codons });
   const mode = createModeIndicator(inputMode);
   const characterCount = createCharacterCountIndicator(data, codons, inputMode);
   const segment = [mode, characterCount, ...codons];
