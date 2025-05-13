@@ -56,6 +56,7 @@ export function getCodewordsForBlock(
     (_, i) => {
       const cwStart = numProcessedCodewords + i * CodewordLength;
       const bits = encodedData.slice(cwStart, cwStart + CodewordLength);
+      console.debug("getCodewordsForBlock", {cwStart, bits});
       if (bits.length === 8) {
         return getCodeword(bits, "data");
       }
