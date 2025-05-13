@@ -10,7 +10,7 @@ export const MAC_FUNCTIONS = {
   KMAC128: kmac128,
 };
 
-export async function generateMAC(input) {
+export function generateMAC(input) {
   const { algo, key, includedFields, inputs } = input;
   if (!algo || !key || !includedFields) return "";
 
@@ -19,7 +19,7 @@ export async function generateMAC(input) {
     .join("");
   const fn = MAC_FUNCTIONS[algo];
   if (!fn) throw new Error(`Unknown MAC algorithm: ${algo}`);
-  const mac = await fn(message, key, 4); // returns hex
+  const mac = fn(message, key, 4); // returns hex
   return {
     mode: "byte",
     encoding: "utf-8",

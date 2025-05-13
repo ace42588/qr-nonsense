@@ -35,7 +35,7 @@ export function InputProvider({ children }) {
       dispatch({ type: Actions.Reorder, oldIndex, newIndex });
     }, []),
     setType: useCallback((id, type) => {
-      console.debug("setType", {id, type})
+      //console.debug("setType", {id, type})
       dispatch({
         type: Actions.ChangeType,
         id,
