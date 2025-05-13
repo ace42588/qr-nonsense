@@ -164,7 +164,7 @@ const typeDefaults = {
   },
   mac: {
     type: "mac",
-    algo: "poly1305",
+    algo: "Poly1305",
     key: "supersecret",
     includedFields: [],
   },

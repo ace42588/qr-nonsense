@@ -3,7 +3,7 @@ import { useParsedInputs, useInputs, useInputDispatch } from "../../state";
 import { MAC_FUNCTIONS } from "../../domain";
 
 export function MACGenerator({ id, input }) {
-  const allInputs = useInputs();
+  const {inputs: allInputs} = useInputs();
   const { updateInput } = useInputDispatch();
   const previews = useParsedInputs();
 
