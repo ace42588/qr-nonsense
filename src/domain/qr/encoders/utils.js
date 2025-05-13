@@ -97,7 +97,7 @@ export function addTerminator(segments, numDataCodewords) {
     numDataBits(segments)
   );
   if (numTermBits > 0)
-    segments.push(createPart("terminator", 0, numTermBits, numTermBits));
+    return segments.concat(createPart("terminator", 0, numTermBits, numTermBits));
   return segments;
 }
 
@@ -106,11 +106,12 @@ export function addFill(segments, numDataCodewords) {
   const remainder = numDataBits(segments) % CodewordLength;
   const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
   if (numFillBits > 0)
-    segments.push(createPart("fill", 0, numFillBits, numFillBits));
+    return segments.concat(createPart("fill", 0, numFillBits, numFillBits));
   return segments;
 }
 
 export function addPadding(segments, numDataCodewords) {
+  // add padding to fill the capacity
   const PAD_BYTES = [236, 17];
   const numPadBytes =
     numDataCodewords - Math.ceil(numDataBits(segments) / CodewordLength);
