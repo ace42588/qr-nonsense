@@ -13,7 +13,7 @@ export function getEncodedMessage(inputs, sVersion, errorCorrectionLevel) {
   return {segments, version};
 }
 
-export function getCodewords() {
+export function getCodewords(segments, version, errorCorrectionLevel) {
   
 }
 
