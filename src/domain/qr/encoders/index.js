@@ -27,14 +27,14 @@ export function encodeAll(parsedInputs) {
   );
 }
 
-export function finalizeEncoding(segments, requiredDataCodewords) {
+export function finalizeEncoding(segments, numDataCodewords) {
   const CodewordLength = 8;
   const PAD_BYTES = [236, 17];
   
   const numDataBits = () => segments.reduce((total, s) => total + s.length, 0);
 
   // Add terminator bits, based on version capacity
-  const numTermBits = getTerminatorLength(requiredDataCodewords, numDataBits());
+  const numTermBits = getTerminatorLength(numDataCodewords, numDataBits());
   if (numTermBits > 0)
     segments.push(createPart("terminator", 0, numTermBits, numTermBits));
 
@@ -46,7 +46,7 @@ export function finalizeEncoding(segments, requiredDataCodewords) {
 
   // add padding to fill the capacity
   const numPadBytes =
-    requiredDataCodewords - Math.ceil(numDataBits() / CodewordLength);
+    numDataCodewords - Math.ceil(numDataBits() / CodewordLength);
   const padding = Array.from({ length: numPadBytes }, (_, i) =>
     createPart("padding", PAD_BYTES[i % 2], PAD_BYTES[i % 2], 8)
   );

@@ -87,6 +87,14 @@ export function* createNonByte(input, mode, encoderFn) {
   }
 }
 
+const numDataBits = () => segments.reduce((total, s) => total + s.length, 0);
+
+export function addTerminator() {
+  const numTermBits = getTerminatorLength(numDataCodewords, numDataBits());
+  if (numTermBits > 0)
+    segments.push(createPart("terminator", 0, numTermBits, numTermBits));
+}
+
 const PAD_BYTES = [236, 17];
 
 export function finalizeEncoding(segments, version, errorCorrectionLevel) {
