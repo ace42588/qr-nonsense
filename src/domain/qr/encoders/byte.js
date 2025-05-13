@@ -7,6 +7,7 @@ const mode = {
     { max: 256, length: 8 },
     { max: Infinity, length: 16 },
   ],
+  groupingRegex: /.{1}/g
 };
 
 const createByte = (value, text, inputEncoding = "utf-8") => {

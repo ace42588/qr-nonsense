@@ -15,24 +15,6 @@ export function validateLength(data, min, max, type) {
   }
 }
 
-function computeIndicatorLength(charCount, mode) {
-  if (!mode.thresholds) {
-    throw new Error(
-      `Mode ${mode.toString()} does not support a character count indicator.`
-    );
-  }
-  const { thresholds } = mode;
-  for (const { max, length } of thresholds) {
-    if (charCount < max) return length;
-  }
-  return thresholds[thresholds.length - 1].length;
-}
-
-function getTerminatorLength(capacityBytes, totalDataBits) {
-  const capacityBits = capacityBytes * CodewordLength;
-  return Math.min(4, Math.max(0, capacityBits - totalDataBits));
-}
-
 function createPart(type, value, text, length) {
   return {
     type: type,
@@ -53,24 +35,28 @@ function createModeIndicator(mode) {
 }
 
 function createCharacterCountIndicator(data, codons, mode) {
-  // console.debug("createCharacterCountIndicator", { data, codons, mode });
-  const length = mode.name === "byte" ? codons.length : data.length;
+  const charCount = mode.name === "byte" ? codons.length : data.length;
+  function computeIndicatorLength() {
+    const { thresholds } = mode;
+    for (const { max, length } of thresholds) {
+      if (charCount < max) return length;
+    }
+    return thresholds[thresholds.length - 1].length;
+  }
+
   return createPart(
     "characterCountIndicator",
-    length,
-    length,
-    computeIndicatorLength(length, mode)
+    charCount,
+    charCount,
+    computeIndicatorLength()
   );
 }
 
 export function encodeSegment(data, inputMode, codonItrFn) {
-  //console.debug("encodeSegment", { data, inputMode, codonItrFn });
   const codons = [...codonItrFn(data)];
-  //console.debug("encodeSegment", { data, codons });
   const mode = createModeIndicator(inputMode);
   const characterCount = createCharacterCountIndicator(data, codons, inputMode);
   const segment = [mode, characterCount, ...codons];
-  //console.debug("encodeSegment", { segment });
 
   return segment;
 }
@@ -81,7 +67,6 @@ export function* createNonByte(input, mode, encoderFn) {
     throw new Error(`Invalid input for ${mode.name} encoder: ${input}`);
   }
   for (let i = 0; i < groups.length; i++) {
-    //yield new SegmentClass(groups[i], i, parentId);
     const { value, length } = encoderFn(groups[i]);
     yield createCodon(value, groups[i], mode.name, length);
   }
@@ -92,12 +77,16 @@ const numDataBits = (segments) =>
 
 export function addTerminator(segments, numDataCodewords) {
   // Add terminator bits, based on version capacity
-  const numTermBits = getTerminatorLength(
-    numDataCodewords,
-    numDataBits(segments)
+  const capacityBits = numDataCodewords * CodewordLength;
+  const numTermBits = Math.min(
+    4,
+    Math.max(0, capacityBits - numDataBits(segments))
   );
+
   if (numTermBits > 0)
-    return segments.concat(createPart("terminator", 0, numTermBits, numTermBits));
+    return segments.concat(
+      createPart("terminator", 0, numTermBits, numTermBits)
+    );
   return segments;
 }
 
