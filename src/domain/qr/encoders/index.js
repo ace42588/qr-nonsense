@@ -2,6 +2,7 @@ import { encodeNumeric } from "./numeric";
 import { encodeAlphanumeric } from "./alphanumeric";
 import { encodeByte } from "./byte";
 import { createPart, getTerminatorLength } from "./utils";
+import { getMinimumQRCodeVersion } from "../versionUtils";
 
 export function encodeInput(mode, input, options = {}) {
   console.debug("encodeInput", { mode, input, options });
@@ -21,7 +22,7 @@ export function encodeInput(mode, input, options = {}) {
 
 export function encodeAll(parsedInputs) {
   console.debug("encodeAll", { parsedInputs });
-  return parsedInputs.flatMap(({ data, mode, encoding }) =>
+  const encodedInputs = parsedInputs.flatMap(({ data, mode, encoding }) =>
     encodeInput(mode, data, encoding)
   );
 }

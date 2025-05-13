@@ -27,11 +27,3 @@ export function parseAll(inputs) {
     inputs.map((input) => [input.id, handleInput({ ...input, inputs })])
   );
 }
-
-export function encodeAll(inputs) {
-  console.debug("encodeAll", { inputs });
-  const parsedInputs = inputs.map((input) => handleInput({ ...input, inputs }));
-  return parsedInputs.flatMap(({ data, mode, encoding }) =>
-    encodeInput(mode, data, encoding)
-  );
-}

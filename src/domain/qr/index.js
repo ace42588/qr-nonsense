@@ -3,10 +3,7 @@ export { calculatePenalty } from "./calculatePenalty";
 import { getRequiredDataCodewords, getCodewords } from "./codewordUtils";
 export { encodeInput, finalizeEncoding } from "./encoders";
 import { generateMatrix } from "./matrixUtils";
-import {
-  getMinimumQRCodeVersion,
-} from "./versionUtils";
-
+import { getMinimumQRCodeVersion } from "./versionUtils";
 
 export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
   let version = parseInt(inputVersion) || -1;
