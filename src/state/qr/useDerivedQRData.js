@@ -11,10 +11,11 @@ export function useDerivedQRData() {
     dataMask: selectedDataMask,
     errorCorrectionLevel,
   } = useInputs();
+  const parsedInputs = useParsedInputs();
 
   const { segments, version } = useMemo(
-    () => getEncodedMessage(dataSegments, version, errorCorrectionLevel),
-    [dataSegments, version, errorCorrectionLevel]
+    () => getEncodedMessage(parsedInputs, selectedVersion, errorCorrectionLevel),
+    [parsedInputs, selectedVersion, errorCorrectionLevel]
   );
 
   const { matrix, dataMask } = useMemo(
