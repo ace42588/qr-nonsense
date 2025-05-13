@@ -1,7 +1,5 @@
-export { getBits } from "./bitUtils";
-export { calculatePenalty } from "./calculatePenalty";
 import { getRequiredDataCodewords, getCodewords } from "./codewordUtils";
-export { encodeInput, finalizeEncoding } from "./encoders";
+import { encodeAll, finalizeEncoding } from "./encoders";
 import { generateMatrix } from "./matrixUtils";
 import { getMinimumQRCodeVersion } from "./versionUtils";
 
@@ -15,8 +13,12 @@ export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
   throw new Error(`Invalid version: ${inputVersion.toString()}`);
 }
 
-export function getEncodedMessage(dataSegments, version, errorCorrectionLevel) {
-  const { segments, bits, idMap } = finalizeEncoding(
+export function getEncodedMessage(inputs, sVersion, errorCorrectionLevel) {
+  const encodedInputs = encodeAll(inputs);
+  const numDataBits = 0;
+  const version = sVersion === -1 ? getMinimumQRCodeVersion() : sVersion;
+  const numDataCodewords = getRequiredDataCodewords(version, errorCorrectionLevel);
+  const { segments } = finalizeEncoding(
     dataSegments,
     version,
     errorCorrectionLevel
