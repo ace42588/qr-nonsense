@@ -53,7 +53,7 @@ function createModeIndicator(mode) {
 }
 
 function createCharacterCountIndicator(data, codons, mode) {
-  console.debug("createCharacterCountIndicator", {data, codons, mode});
+  console.debug("createCharacterCountIndicator", { data, codons, mode });
   const length = mode.name === "byte" ? codons.length : data.length;
   return createPart(
     "characterCountIndicator",
@@ -66,7 +66,7 @@ function createCharacterCountIndicator(data, codons, mode) {
 export function encodeSegment(data, inputMode, codonItrFn) {
   //console.debug("encodeSegment", { data, inputMode, codonItrFn });
   const codons = [...codonItrFn(data)];
-  console.debug("encodeSegment",{data, codons});
+  console.debug("encodeSegment", { data, codons });
   const mode = createModeIndicator(inputMode);
   const characterCount = createCharacterCountIndicator(data, codons, inputMode);
   const segment = [mode, characterCount, ...codons];
@@ -87,48 +87,35 @@ export function* createNonByte(input, mode, encoderFn) {
   }
 }
 
-const numDataBits = (segments) => segments.reduce((total, s) => total + s.length, 0);
+const numDataBits = (segments) =>
+  segments.reduce((total, s) => total + s.length, 0);
 
 export function addTerminator(segments, numDataCodewords) {
-  const numTermBits = getTerminatorLength(numDataCodewords, numDataBits());
+  // Add terminator bits, based on version capacity
+  const numTermBits = getTerminatorLength(
+    numDataCodewords,
+    numDataBits(segments)
+  );
   if (numTermBits > 0)
     segments.push(createPart("terminator", 0, numTermBits, numTermBits));
   return segments;
 }
 
-const PAD_BYTES = [236, 17];
-
-export function finalizeEncoding(segments, version, errorCorrectionLevel) {
-  const requiredDataCodewords = getRequiredDataCodewords(
-    version,
-    errorCorrectionLevel
-  );
-  const numDataBits = () => segments.reduce((total, s) => total + s.length, 0);
-
-  // Add terminator bits, based on version capacity
-  const numTermBits = getTerminatorLength(requiredDataCodewords, numDataBits());
-  if (numTermBits > 0)
-    segments.push(createPart("terminator", 0, numTermBits, numTermBits));
-
+export function addFill(segments, numDataCodewords) {
   // add filler bits to complete the last codeword
-  const remainder = numDataBits() % CodewordLength;
+  const remainder = numDataBits(segments) % CodewordLength;
   const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
   if (numFillBits > 0)
     segments.push(createPart("fill", 0, numFillBits, numFillBits));
+  return segments;
+}
 
-  // add padding to fill the capacity
+export function addPadding(segments, numDataCodewords) {
+  const PAD_BYTES = [236, 17];
   const numPadBytes =
-    requiredDataCodewords - Math.ceil(numDataBits() / CodewordLength);
+    numDataCodewords - Math.ceil(numDataBits(segments) / CodewordLength);
   const padding = Array.from({ length: numPadBytes }, (_, i) =>
     createPart("padding", PAD_BYTES[i % 2], PAD_BYTES[i % 2], 8)
   );
-  segments = [...segments, ...padding];
-
-  const bits = segments.flatMap((s) => {
-    const bits = getBits(s.value, s.length, s);
-    s.bitIds = bits.map((b) => b.id);
-    return bits;
-  });
-
-  return { segments, bits };
+  return [...segments, ...padding];
 }
