@@ -31,7 +31,7 @@ function getECCodeword(byte, sourceCodeword) {
     subtype: "errorCorrection",
     sourceCodeword,
     id,
-    bits: getBits(byte, CodewordLength, {id}),
+    bits: getBits(byte, CodewordLength, { id }),
   };
 }
 
@@ -114,12 +114,15 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   return Array.from(ecBytes, (b, idx) => getECCodeword(b, dataCodewords[idx]));
 }
 
-export function getCodewords(encodedInputs, version, errorCorrectionLevel) {
-  const requiredDataCodewords = getRequiredDataCodewords(
-    version,
-    errorCorrectionLevel
-  );
-  const qrBlocks = getBlocks(encodedInputs, errorCorrectionLevel, version);
+export function getCodewords(segments, version, errorCorrectionLevel) {
+
+  const encodedBits = segments.flatMap((s) => {
+    const bits = getBits(s.value, s.length, s);
+    s.bitIds = bits.map((b) => b.id);
+    return bits;
+  });
+
+  const qrBlocks = getBlocks(encodedBits, errorCorrectionLevel, version);
   const totalCodewords = qrBlocks.reduce(
     (total, { codewords }) => total + codewords.length,
     0

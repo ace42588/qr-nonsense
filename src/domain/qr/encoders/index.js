@@ -1,7 +1,7 @@
 import { encodeNumeric } from "./numeric";
 import { encodeAlphanumeric } from "./alphanumeric";
 import { encodeByte } from "./byte";
-import { finalizeEncoding } from "./utils";
+import { createPart, getTerminatorLength } from "./utils";
 
 export function encodeInput(mode, input, options = {}) {
   console.debug("encodeInput", { mode, input, options });
@@ -19,12 +19,30 @@ export function encodeInput(mode, input, options = {}) {
   }
 }
 
-export function getEncodedMessage(dataSegments, version, errorCorrectionLevel) {
-  const { segments, bits, idMap } = finalizeEncoding(
-    dataSegments,
-    version,
-    errorCorrectionLevel
+export function finalizeEncoding(segments, requiredDataCodewords) {
+  const CodewordLength = 8;
+  const PAD_BYTES = [236, 17];
+  
+  const numDataBits = () => segments.reduce((total, s) => total + s.length, 0);
+
+  // Add terminator bits, based on version capacity
+  const numTermBits = getTerminatorLength(requiredDataCodewords, numDataBits());
+  if (numTermBits > 0)
+    segments.push(createPart("terminator", 0, numTermBits, numTermBits));
+
+  // add filler bits to complete the last codeword
+  const remainder = numDataBits() % CodewordLength;
+  const numFillBits = remainder > 0 ? CodewordLength - remainder : 0;
+  if (numFillBits > 0)
+    segments.push(createPart("fill", 0, numFillBits, numFillBits));
+
+  // add padding to fill the capacity
+  const numPadBytes =
+    requiredDataCodewords - Math.ceil(numDataBits() / CodewordLength);
+  const padding = Array.from({ length: numPadBytes }, (_, i) =>
+    createPart("padding", PAD_BYTES[i % 2], PAD_BYTES[i % 2], 8)
   );
-  //console.debug("getEncodedMessage", { segments, bits, idMap });
-  return { segments, bits, idMap };
+  segments = [...segments, ...padding];
+
+  return segments;
 }
