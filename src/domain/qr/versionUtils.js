@@ -4,11 +4,18 @@ export function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   //console.debug("getMinimumQRCodeVersion", {totalDataBits})
   // Try each version until one is found that fits the data.
   for (let version = 1; version <= 40; version++) {
-    const { capacity } = gerVersionInfo(errorCorrectionLevel, version);
-    // The total bits must be rounded up to the next whole 8-bit codeword.
-    //const requiredBytes = Math.ceil(totalDataBits / CodewordLength);
+    const { capacity, ecBlocks } = gerVersionInfo(
+      errorCorrectionLevel,
+      version
+    );
+
     if (totalDataBits <= capacity) {
-      return version;
+      let requiredDataCodewords = ecBlocks.reduce(
+        (total, { numBlocks, dataCodewordsPerBlock }) =>
+          total + numBlocks * dataCodewordsPerBlock,
+        0
+      );
+      return [version];
     }
   }
   throw new Error("Data too large to fit in a QR code version 40.");
@@ -34,4 +41,15 @@ export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
     return getMinimumQRCodeVersion(numBits, errorCorrectionLevel);
   }
   throw new Error(`Invalid version: ${inputVersion.toString()}`);
+}
+
+export function getRequiredDataCodewords(version, errorCorrectionLevel) {
+  const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
+  let requiredDataCodewords = 0;
+
+  return ecBlocks.reduce(
+    (total, { numBlocks, dataCodewordsPerBlock }) =>
+      total + numBlocks * dataCodewordsPerBlock,
+    requiredDataCodewords
+  );
 }

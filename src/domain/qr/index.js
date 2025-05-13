@@ -14,9 +14,8 @@ export function getVersion(numBits, inputVersion, errorCorrectionLevel) {
 }
 
 export function getEncodedMessage(inputs, sVersion, errorCorrectionLevel) {
-  const encodedInputs = encodeAll(inputs);
-  const numDataBits = 0;
-  const version = sVersion === -1 ? getMinimumQRCodeVersion() : sVersion;
+  const [encodedInputs, numDataBits] = encodeAll(inputs);
+  const version = sVersion === -1 ? getMinimumQRCodeVersion(numDataBits, errorCorrectionLevel) : sVersion;
   const numDataCodewords = getRequiredDataCodewords(version, errorCorrectionLevel);
   const { segments } = finalizeEncoding(
     dataSegments,
