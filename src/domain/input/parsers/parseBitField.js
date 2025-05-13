@@ -1,5 +1,5 @@
 // domain/inputParsers/parseBitField.js
-import { bytesToHex } from "../encoders/utils";
+import { bytesToHex } from "../../encoders/utils";
 import {
   encodeFieldsToBytes,
   generateBitLayout,

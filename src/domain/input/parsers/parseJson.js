@@ -1,9 +1,9 @@
-import { bytesToHex } from "../encoders/utils";
+import { bytesToHex } from "../../encoders/utils";
 import {
   encodeFieldsToBytes,
   generateBitLayoutFromSchema,
 } from "./utils/bitFieldUtils";
-import { ModHex, NTRU } from "../encoders";
+import { ModHex, NTRU } from "../../encoders";
 
 // Extracts top-level integers and the first array of objects (if present)
 function separateSchemaParts(schema) {
