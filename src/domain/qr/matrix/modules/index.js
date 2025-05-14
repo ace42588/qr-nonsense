@@ -68,7 +68,6 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
 export function addNonDataModules(
   matrix,
   errorCorrectionLevel,
-  version,
   dataMask
 ) {
   
@@ -81,3 +80,5 @@ export function addNonDataModules(
 
   return matrix;
 }
+
+export const 
