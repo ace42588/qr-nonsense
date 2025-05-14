@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useInputs } from "../inputs/InputContext";
 import { useParsedInputs } from "../inputs/useParsedInputs";
-import { getEncodedMessage, getCodewords, generateMatrix } from "../../domain/qr";
+import { getEncodedMessage, getCodewords, getMatrix } from "../../domain/qr";
 
 export function useDerivedQRData() {
   //console.debug("useDerivedQRData", useInputs());
@@ -23,7 +23,7 @@ export function useDerivedQRData() {
   );
 
   const { matrix, dataMask } = useMemo(
-    () => generateMatrix(codewords, selectedDataMask, version, errorCorrectionLevel),
+    () => getMatrix(codewords, selectedDataMask, version, errorCorrectionLevel),
     [errorCorrectionLevel, version, selectedDataMask, codewords]
   );
 

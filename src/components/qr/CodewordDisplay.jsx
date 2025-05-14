@@ -7,7 +7,7 @@ export function CodewordDisplay() {
   const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
   const { highlightedIds, codewords } = useQRData();
   const [clicked, setClicked] = useState(false);
-  //console.debug("SegmentDisplay", { segments, highlightedIds });
+  //console.debug("CodewordDisplay", { codewords, highlightedIds });
 
   const isHighlighted = (id) => {
     highlightedIds.includes(id);
@@ -21,27 +21,25 @@ export function CodewordDisplay() {
 
   return (
     <div className="segment-display">
-      <h3>Segments</h3>
+      <h3>Codewords</h3>
       <div className="segment-container">
-        {codewords.map((segment, index) => (
+        {codewords.map((codeword, index) => (
           <button
-            key={segment.id}
-            className={getClassName(segment)}
+            key={codeword.id}
+            className={getClassName(codeword)}
             onClick={() => {
-              highlightModules(segment.bitIds);
+              highlightModules(codeword.bits.map((b) => b.id));
               setClicked(!clicked);
             }}
             onMouseEnter={() => {
-              if (!clicked) highlightModules(segment.bitIds);
+              if (!clicked) highlightModules(codeword.bits.map((b) => b.id));
             }}
             onMouseLeave={() => {
-              if (!clicked) clearHighlightedModules(segment.bitIds);
+              if (!clicked) clearHighlightedModules(codeword.bits.map((b) => b.id));
             }}
-            title={`Segment ${segment.id}`}
+            title={`Codeword ${codeword.id}`}
           >
-            {segment.type !== "codon"
-              ? `${segment.type}: ${segment.text}`
-              : segment.text}
+            {codeword.subtype}
           </button>
         ))}
       </div>

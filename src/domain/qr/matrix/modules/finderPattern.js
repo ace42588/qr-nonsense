@@ -4,7 +4,6 @@ import { makeNonDataModule } from "./utils";
 const source = { name: "FinderPattern" };
 
 export function addFinderPatterns(matrix) {
-  console.debug("addFinderPatterns", {matrix});
   const size = matrix.length;
   
   function addPattern(startX, startY) {
