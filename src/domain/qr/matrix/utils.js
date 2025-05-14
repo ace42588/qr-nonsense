@@ -41,9 +41,8 @@ export function mapQRMatrix(matrix, callbackFn) {
   return matrix;
 }
 
-export function applyMask(matrix, maskIndex, errorCorrectionLevel) {
+export function applyMask(matrix, maskIndex) {
   //console.debug("applyMask", {matrix, maskIndex})
-  addFormatInfoModules(matrix, errorCorrectionLevel, maskIndex);
   const maskFunc = DATA_MASKS[maskIndex];
   const masked = mapQRMatrix(matrix, ({ x, y, idx }, current) => {
     const isMasked = maskFunc({ x, y });
