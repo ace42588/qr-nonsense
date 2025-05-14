@@ -19,7 +19,7 @@ export function MACGenerator({ id, input }) {
     const next = selectedIds.includes(id)
       ? selectedIds.filter((x) => x !== id)
       : [...selectedIds, id];
-    handleChange("selectedIds", next);
+    handleChange("includedFields", next);
   };
 
   return (

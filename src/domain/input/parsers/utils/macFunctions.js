@@ -4,7 +4,10 @@ import sodium from "libsodium-wrappers-sumo";
 export function hmacSha256Truncated(message, key, length = 8) {
   const encoder = new TextEncoder();
   const msgBytes = encoder.encode(message);
-  const keyBytes = encoder.encode(key);
+  const rawKeyBytes = encoder.encode(key);
+
+  // Expand or compress the key to 32 bytes using BLAKE2b
+  const keyBytes = sodium.crypto_generichash(32, rawKeyBytes);
 
   // HMAC-SHA256 using sodium
   const mac = sodium.crypto_auth_hmacsha256(msgBytes, keyBytes);
