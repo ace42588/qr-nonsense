@@ -2,9 +2,8 @@ import { DATA_MASKS } from "./constants";
 import { calculatePenalty } from "./calculatePenalty";
 import {
   addFormatInfoModules,
-  addNonDataModules,
   makeModule,
-} from "./moduleUtils";
+} from "./modules";
 
 const remainderBit = { value: 0, source: "Remainder" };
 

@@ -2,8 +2,6 @@ import { addFinderPatterns } from "./finderPattern";
 import { addSeparators } from "./separators";
 import { addAlignmentPatterns } from "./alignmentPatterns";
 import { addTimingPatterns } from "./timingPatterns";
-import { addFormatInfoModules } from "./formatInfo";
-import { addVersionInfo } from "./versionInfo";
 
 export { makeModule } from "./utils";
 export { addFormatInfoModules } from "./formatInfo";

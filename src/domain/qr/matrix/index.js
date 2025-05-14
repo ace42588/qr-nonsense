@@ -10,7 +10,9 @@ export function generateMatrix({
 }) {
   //console.debug("generateMatrix", { codewords });
   const matrix = createMatrix(version);
-  addPatterns(matrix);
+  let base = addPatterns(matrix);
+  base = addFormatInfoModules(matrix);
+  base = addVersionInfo(matrix, errorCorrectionLevel, dataMask);
   const populated = addCodewords(base);
 
   if (dataMask !== -1) {
