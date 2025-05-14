@@ -66,7 +66,7 @@ export function evaluateQRCodeQuality(canvas) {
   const gridNonuniformity = estimateGridNonuniformity(data, canvas.width, canvas.height);
   
   results.metrics.gridNonuniformity.value = gridNonuniformity;
-  results.metrics.gridNonuniformity.grade = gradeGridNonuniformity(gridNonuniformity);
+  //results.metrics.gridNonuniformity.grade = gradeGridNonuniformity(gridNonuniformity);
   
   // 6. Estimate Format Information Damage
   const formatDamage = estimateFormatInformationDamage(data, canvas.width, canvas.height);
