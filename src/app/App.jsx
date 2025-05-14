@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   QRDisplayTabs,
   SegmentDisplay,
-  CodewordDisplay,
   MainViewTabs,
 } from "../components";
 
@@ -29,9 +28,6 @@ export default function App() {
         </div>
         <div className="row">
           <SegmentDisplay />
-        </div>
-        <div className="row">
-          <CodewordDisplay />
         </div>
       </QRDataProvider>
       </InputProvider>

@@ -2,15 +2,14 @@ import { useRef, useEffect, useState } from "react";
 import "../styles/styles.css";
 
 import { useQRData, useQRDataDispatch } from "../../state";
-import { evaluateQRCodeQuality } from "../../domain/qr";
 
 export function QRCodeCanvas() {
   const canvasRef = useRef(null);
   const { highlightedIds, matrix } = useQRData();
   const { highlightSegment } = useQRDataDispatch();
   //console.debug("QRCodeCanvas", { matrix, highlightedIds });
-
-  const isHighlighted = (id) => highlightedIds.includes(id);
+  
+  const isHighlighted = (id) =>  highlightedIds.includes(id);
 
   useEffect(() => {
     if (!canvasRef.current || !matrix) return;
@@ -53,8 +52,6 @@ export function QRCodeCanvas() {
         }
       }
     }
-    
-    //console.debug("QRCodeCanvas: evaluation", evaluateQRCodeQuality(canvas));
   }, [matrix, highlightedIds]);
 
   const handleClick = (event) => {
