@@ -1,4 +1,7 @@
 import {getBitsFromFormatInfo, makeNonDataModule} from "./utils";
+import {addFinderPatterns} from "./finderPattern";
+import {addSeparators} from "./separators";
+import {addAlignmentPatterns} from "./alignmentPatterns";
 
 export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const source = { name: "FormatInfo" };
@@ -63,86 +66,6 @@ export function addNonDataModules(
 ) {
   const size = matrix.length;
 
-  function addAlignmentPatterns() {
-    const source = { name: "AlignmentPattern" };
-    if (version === 1) return [];
-
-    function shouldDrawAlignmentPattern(x, y) {
-      const finderPatternPositions = [
-        { x: 0, y: 0 },
-        { x: size - 7, y: 0 },
-        { x: 0, y: size - 7 },
-      ];
-
-      for (const pos of finderPatternPositions) {
-        if (Math.abs(pos.x - x) < 9 && Math.abs(pos.y - y) < 9) {
-          return false;
-        }
-      }
-      return true;
-    }
-
-    function drawAlignmentPattern(centerX, centerY) {
-      for (let y = 0; y < 5; y++) {
-        for (let x = 0; x < 5; x++) {
-          const value = ALIGNMENT_PATTERN[y][x];
-          matrix[centerY - 2 + y][centerX - 2 + x] = makeNonDataModule(
-            value,
-            source,
-            centerX - 2 + x,
-            centerY - 2 + y
-          );
-        }
-      }
-    }
-
-    const positions = getAlignmentPatternPositions(version);
-
-    for (let i = 0; i < positions.length; i++) {
-      for (let j = 0; j < positions.length; j++) {
-        if (shouldDrawAlignmentPattern(positions[i], positions[j])) {
-          drawAlignmentPattern(positions[i], positions[j]);
-        }
-      }
-    }
-  }
-
-  function addFinderPatterns() {
-    const source = { name: "FinderPattern" };
-    function addPattern(startX, startY) {
-      for (let y = 0; y < 7; y++) {
-        for (let x = 0; x < 7; x++) {
-          const value = FINDER_PATTERN[y][x];
-          matrix[startY + y][startX + x] = makeNonDataModule(
-            value,
-            source,
-            startX + x,
-            startY + y
-          );
-        }
-      }
-    }
-
-    addPattern(0, 0);
-    addPattern(size - 7, 0);
-    addPattern(0, size - 7);
-  }
-
-  function addSeparators() {
-    const source = { name: "Separator" };
-
-    for (let i = 0; i < 8; i++) {
-      // Top-left separator
-      matrix[i][7] = makeNonDataModule(0, source, 7, i);
-      matrix[7][i] = makeNonDataModule(0, source, i, 7);
-      // Top-right separator
-      matrix[i][size - 8] = makeNonDataModule(0, source, size - 8, i);
-      matrix[7][size - 1 - i] = makeNonDataModule(0, source, size - 1 - i, 7);
-      // Bottom-left separator
-      matrix[size - 1 - i][7] = makeNonDataModule(0, source, 7, size - 1 - i);
-      matrix[size - 8][i] = makeNonDataModule(0, source, i, size - 8);
-    }
-  }
 
   function addTimingPatterns() {
     const source = { name: "TimingPattern" };
@@ -187,8 +110,8 @@ export function addNonDataModules(
     }
   }
 
-  addFinderPatterns();
-  addSeparators();
+  addFinderPatterns(matrix);
+  addSeparators(matrix);
   addAlignmentPatterns();
   addTimingPatterns();
   addFormatInfoModules(matrix, errorCorrectionLevel, dataMask);

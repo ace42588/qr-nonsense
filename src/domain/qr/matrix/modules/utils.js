@@ -33,22 +33,6 @@ export function makeNonDataModule(value, source, x, y) {
   return { ...module, nonData: true, source };
 }
 
-function getAlignmentPatternPositions(version) {
-  if (version === 1) return [];
-  const positions = [6];
-  const numPositions = Math.floor(version / 7) + 2;
-  const step = Math.ceil((version * 4 + 17 - 13) / (numPositions - 1));
-  for (
-    let pos = version * 4 + 10 - step * (numPositions - 2);
-    pos >= 6;
-    pos -= step
-  ) {
-    positions.push(pos);
-  }
-  positions.push(version * 4 + 10);
-  return positions;
-}
-
 export function getBitsFromFormatInfo(ecLevel, mask = -1) {
   if (mask === -1) return 0x4000;
   const info = FORMAT_INFO_TABLE.filter(
@@ -75,73 +59,6 @@ function computeBCH(bits, length) {
   }
 
   return bits.padStart(length, "0");
-}
-
-function addAlignmentPatterns(version, matrix) {
-  const source = { name: "AlignmentPattern" };
-  const size = matrix.length;
-  if (version === 1) return [];
-
-  function shouldDrawAlignmentPattern(x, y) {
-    const finderPatternPositions = [
-      { x: 0, y: 0 },
-      { x: size - 7, y: 0 },
-      { x: 0, y: size - 7 },
-    ];
-
-    for (const pos of finderPatternPositions) {
-      if (Math.abs(pos.x - x) < 9 && Math.abs(pos.y - y) < 9) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  function drawAlignmentPattern(centerX, centerY) {
-    for (let y = 0; y < 5; y++) {
-      for (let x = 0; x < 5; x++) {
-        const value = ALIGNMENT_PATTERN[y][x];
-        matrix[centerY - 2 + y][centerX - 2 + x] = makeNonDataModule(
-          value,
-          source,
-          centerX - 2 + x,
-          centerY - 2 + y
-        );
-      }
-    }
-  }
-
-  const positions = getAlignmentPatternPositions(version);
-
-  for (let i = 0; i < positions.length; i++) {
-    for (let j = 0; j < positions.length; j++) {
-      if (shouldDrawAlignmentPattern(positions[i], positions[j])) {
-        drawAlignmentPattern(positions[i], positions[j]);
-      }
-    }
-  }
-}
-
-function addFinderPatterns(matrix) {
-  const source = { name: "FinderPattern" };
-  const size = matrix.length;
-  function addPattern(startX, startY) {
-    for (let y = 0; y < 7; y++) {
-      for (let x = 0; x < 7; x++) {
-        const value = FINDER_PATTERN[y][x];
-        matrix[startY + y][startX + x] = makeNonDataModule(
-          value,
-          source,
-          startX + x,
-          startY + y
-        );
-      }
-    }
-  }
-
-  addPattern(0, 0);
-  addPattern(size - 7, 0);
-  addPattern(0, size - 7);
 }
 
 function addSeparators(matrix) {
