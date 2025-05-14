@@ -1,7 +1,7 @@
 /**
  * Estimate modulation based on histogram analysis
  */
-function estimateModulation(data, minReflectance, maxReflectance) {
+export function estimateModulation(data, minReflectance, maxReflectance) {
   // Create histogram bins
   const bins = 10;
   const histogram = new Array(bins).fill(0);
@@ -39,7 +39,7 @@ function estimateModulation(data, minReflectance, maxReflectance) {
 /**
  * Grade modulation according to ISO standards
  */
-function gradeModulation(modulation) {
+export function gradeModulation(modulation) {
   if (modulation >= 0.50) return 'A';
   if (modulation >= 0.40) return 'B';
   if (modulation >= 0.30) return 'C';

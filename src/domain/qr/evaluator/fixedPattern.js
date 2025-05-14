@@ -1,7 +1,7 @@
 /**
  * Estimate fixed pattern damage by analyzing finder patterns
  */
-function estimateFixedPatternDamage(data, width, height) {
+export function estimateFixedPatternDamage(data, width, height) {
   // In a real implementation, we would:
   // 1. Detect the finder patterns (top-left, top-right, bottom-left)
   // 2. Analyze their shape and contrast
@@ -15,7 +15,7 @@ function estimateFixedPatternDamage(data, width, height) {
 /**
  * Grade fixed pattern damage
  */
-function gradeFixedPatternDamage(damage) {
+export function gradeFixedPatternDamage(damage) {
   if (damage <= 0.10) return 'A';
   if (damage <= 0.20) return 'B';
   if (damage <= 0.30) return 'C';

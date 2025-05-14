@@ -1,7 +1,7 @@
 /**
  * Estimate axial nonuniformity
  */
-function estimateAxialNonuniformity(data, width, height) {
+export function estimateAxialNonuniformity(data, width, height) {
   // In a real implementation, we would:
   // 1. Detect the edges of the QR code
   // 2. Calculate how square the shape is
@@ -14,7 +14,7 @@ function estimateAxialNonuniformity(data, width, height) {
 /**
  * Grade axial nonuniformity
  */
-function gradeAxialNonuniformity(nonuniformity) {
+export function gradeAxialNonuniformity(nonuniformity) {
   if (nonuniformity <= 0.06) return 'A';
   if (nonuniformity <= 0.08) return 'B';
   if (nonuniformity <= 0.10) return 'C';

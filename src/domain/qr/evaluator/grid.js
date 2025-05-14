@@ -1,7 +1,7 @@
 /**
  * Estimate grid nonuniformity
  */
-function estimateGridNonuniformity(data, width, height) {
+export function estimateGridNonuniformity(data, width, height) {
   // In a real implementation, we would:
   // 1. Detect the module grid
   // 2. Measure deviation from ideal grid
@@ -14,7 +14,7 @@ function estimateGridNonuniformity(data, width, height) {
 /**
  * Grade grid nonuniformity
  */
-function gradeGridNoniformity(nonuniformity) {
+export function gradeGridNoniformity(nonuniformity) {
   if (nonuniformity <= 0.10) return 'A';
   if (nonuniformity <= 0.15) return 'B';
   if (nonuniformity <= 0.20) return 'C';
