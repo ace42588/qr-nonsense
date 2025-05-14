@@ -22,6 +22,8 @@ function handleInput(inputData) {
 
 export function parseAll(inputs) {
   //console.debug("parseAll", { inputs });
+  const nonMac = inputs.filter((input) => input.type !== "mac");
+  
   return Object.fromEntries(
     inputs.map((input) => [input.id, handleInput({ ...input, inputs })])
   );
