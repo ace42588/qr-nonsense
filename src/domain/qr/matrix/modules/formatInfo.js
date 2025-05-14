@@ -70,10 +70,11 @@ function placeModules(matrix, formatInfo = source) {
     8,
     size - 8
   );
+  return matrix;
 }
 
 export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
   placeModules(matrix, formatInfo)
-  return 
+  return matrix;
 }
