@@ -2,14 +2,14 @@ import { createMatrix, addCodewords, applyMask } from "./utils";
 import { calculatePenalty } from "./calculatePenalty";
 import { addPatterns, addFormatInfoModules } from "./modules";
 
-export function generateMatrix({
-  version,
-  errorCorrectionLevel,
-  dataMask,
+export function getMatrix(
   codewords,
-}) {
-  //console.debug("generateMatrix", { codewords });
+  dataMask,
+  version,
+  errorCorrectionLevel
+) {
   const matrix = createMatrix(version);
+  //console.debug("getMatrix", { matrix });
   const base = addPatterns(matrix);
   const populated = addCodewords(base, codewords);
 

@@ -1,7 +1,8 @@
 import { generateCodewords } from "./codewords";
 import { encodeAll, finalizeEncoding } from "./encoders";
-import { generateMatrix } from "./matrix";
 import { getMinimumQRCodeVersion } from "./versionUtils";
+
+export { getMatrix } from "./matrix";
 export { evaluateQRCodeQuality } from "./evaluator.js";
 
 export function getEncodedMessage(inputs, sVersion, errorCorrectionLevel) {
@@ -16,4 +17,3 @@ export function getEncodedMessage(inputs, sVersion, errorCorrectionLevel) {
 }
 
 export const getCodewords = generateCodewords;
-export const getMatrix = generateMatrix;

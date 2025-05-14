@@ -1,8 +1,5 @@
 import { calculatePenalty } from "./calculatePenalty";
-import {
-  addFormatInfoModules,
-  makeModule,
-} from "./modules";
+import { addFormatInfoModules, makeModule } from "./modules";
 
 export const DATA_MASKS = [
   (p) => (p.y + p.x) % 2 === 0,
@@ -18,11 +15,9 @@ export const DATA_MASKS = [
 const remainderBit = { value: 0, source: "Remainder" };
 
 export function createMatrix(version) {
-  const dimension = version * 4 + 17;
-  const matrix = Array.from({ length: dimension }, () =>
-    Array(dimension).fill(null)
-  );
-  return matrix;
+  //console.debug("createMatrix", {version});
+  const length = version * 4 + 17;
+  return Array.from({ length }, () => Array(length).fill(null));
 }
 
 export function mapQRMatrix(matrix, callbackFn) {
