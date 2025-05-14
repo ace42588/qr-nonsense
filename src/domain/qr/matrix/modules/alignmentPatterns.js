@@ -1,4 +1,4 @@
-import { ALIGNMENT_PATTERN } from "./constants";
+import { ALIGNMENT_PATTERN } from "../constants";
 import { makeNonDataModule } from "./utils";
 
 const source = { name: "AlignmentPattern" };

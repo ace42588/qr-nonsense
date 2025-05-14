@@ -1,4 +1,4 @@
-import { VERSION_INFO } from "./constants";
+import { VERSION_INFO } from "../constants";
 import { makeNonDataModule } from "./utils";
 
 const source = { name: "VersionInfo" };

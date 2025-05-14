@@ -1,9 +1,19 @@
-import { DATA_MASKS } from "./constants";
 import { calculatePenalty } from "./calculatePenalty";
 import {
   addFormatInfoModules,
   makeModule,
 } from "./modules";
+
+export const DATA_MASKS = [
+  (p) => (p.y + p.x) % 2 === 0,
+  (p) => p.y % 2 === 0,
+  (p) => p.x % 3 === 0,
+  (p) => (p.y + p.x) % 3 === 0,
+  (p) => (Math.floor(p.y / 2) + Math.floor(p.x / 3)) % 2 === 0,
+  (p) => ((p.x * p.y) % 2) + ((p.x * p.y) % 3) === 0,
+  (p) => (((p.y * p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
+  (p) => (((p.y + p.x) % 2) + ((p.y * p.x) % 3)) % 2 === 0,
+];
 
 const remainderBit = { value: 0, source: "Remainder" };
 

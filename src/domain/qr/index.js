@@ -1,7 +1,8 @@
 import { generateCodewords } from "./codewords";
 import { encodeAll, finalizeEncoding } from "./encoders";
-import { generateMatrix } from "./matrixUtils";
+import { generateMatrix } from "./matrix";
 import { getMinimumQRCodeVersion } from "./versionUtils";
+export { evaluateQRCodeQuality } from "./evaluator.js";
 
 export function getEncodedMessage(inputs, sVersion, errorCorrectionLevel) {
   const [encodedInputs, numDataBits] = encodeAll(inputs);
