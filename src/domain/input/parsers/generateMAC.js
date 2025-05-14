@@ -16,7 +16,7 @@ export function generateMAC(input) {
   console.debug("generateMAC", {includedFields, inputs});
 
   const message = includedFields
-    .map((id) => inputs.find((i) => i.id === id)?.data)
+    .map((id) => inputs?.[id]?.data)
     .join("");
   console.debug("generateMAC", {message});
   const fn = MAC_FUNCTIONS[algo];

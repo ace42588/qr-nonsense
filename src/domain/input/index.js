@@ -21,6 +21,7 @@ function handleInput(inputData) {
 }
 
 export function parseAll(inputs) {
+  const originalOrder = inputs.map((input) => input.id);
   const nonMacInputs = inputs.filter((input) => input.type !== "mac");
   const macInputs = inputs.filter((input) => input.type === "mac");
 
@@ -34,7 +35,7 @@ export function parseAll(inputs) {
     macInputs.map((input) => [input.id, handleInput({ ...input, inputs: first })])
   );
 
-  const obj = { ...first, ...second };
+  const obj = Object.fromEntries(inputs.map(({id}) => [id, {...first, ...second}[id]]));
   console.debug("parseAll", { first, second, obj });
 
   return obj;
