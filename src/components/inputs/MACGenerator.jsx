@@ -59,7 +59,7 @@ export function MACGenerator({ id, input }) {
       </select>
 
       <div className="bg-gray-100 p-2 rounded mt-4">
-        <strong>MAC:</strong> <code>{preview || "(calculating…)"}</code>
+        <strong>MAC:</strong> <code>{preview.data || "(calculating…)"}</code>
       </div>
     </div>
   );
