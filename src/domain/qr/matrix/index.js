@@ -1,6 +1,6 @@
 import { createMatrix, addCodewords, applyMask } from "./utils";
 import { calculatePenalty } from "./calculatePenalty";
-import { makeModule, addFormatInfoModules, addVersionInfo, addPatterns } from "./modules";
+import { addPatterns } from "./modules";
 
 export function generateMatrix({
   version,
@@ -10,13 +10,11 @@ export function generateMatrix({
 }) {
   //console.debug("generateMatrix", { codewords });
   const matrix = createMatrix(version);
-  let base = addPatterns(matrix);
-  base = addFormatInfoModules(matrix);
-  base = addVersionInfo(matrix, errorCorrectionLevel, dataMask);
-  const populated = addCodewords(base);
+  const base = addPatterns(matrix);
+  const populated = addCodewords(base, codewords);
 
   if (dataMask !== -1) {
-    const masked = applyMask(populated, dataMask);
+    const masked = applyMask(populated, dataMask, errorCorrectionLevel);
     return { matrix: masked, dataMask };
   }
 
