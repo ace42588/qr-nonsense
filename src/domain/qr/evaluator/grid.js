@@ -14,7 +14,7 @@ export function estimateGridNonuniformity(data, width, height) {
 /**
  * Grade grid nonuniformity
  */
-export function gradeGridNoniformity(nonuniformity) {
+export function gradeGridNonuniformity(nonuniformity) {
   if (nonuniformity <= 0.10) return 'A';
   if (nonuniformity <= 0.15) return 'B';
   if (nonuniformity <= 0.20) return 'C';

@@ -5,7 +5,7 @@ import {
   gradeFixedPatternDamage,
 } from "./fixedPattern";
 import { estimateFormatInformationDamage, gradeFormatDamage } from "./format";
-import { estimateGridNonuniformity, gradeGridNoniformity } from "./grid";
+import { estimateGridNonuniformity, gradeGridNonuniformity } from "./grid";
 import { estimateModulation, gradeModulation } from "./modulation";
 import { calculateOverallGrade } from "./utils";
 
@@ -76,7 +76,7 @@ export function evaluateQRCodeQuality(canvas) {
   );
 
   results.metrics.gridNonuniformity.value = gridNonuniformity;
-  //results.metrics.gridNonuniformity.grade = gradeGridNonuniformity(gridNonuniformity);
+  results.metrics.gridNonuniformity.grade = gradeGridNonuniformity(gridNonuniformity);
 
   // 6. Estimate Format Information Damage
   const formatDamage = estimateFormatInformationDamage(
