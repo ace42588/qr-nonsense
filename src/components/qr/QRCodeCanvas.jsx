@@ -54,7 +54,7 @@ export function QRCodeCanvas() {
       }
     }
     
-    console.debug("QRCodeCanvas: evaluation", evaluateQRCodeQuality(canvas));
+    //console.debug("QRCodeCanvas: evaluation", evaluateQRCodeQuality(canvas));
   }, [matrix, highlightedIds]);
 
   const handleClick = (event) => {

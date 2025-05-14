@@ -9,7 +9,6 @@ export function getMatrix(
   errorCorrectionLevel
 ) {
   const matrix = createMatrix(version);
-  //console.debug("getMatrix", { matrix });
   const base = addPatterns(matrix);
   const populated = addCodewords(base, codewords);
 
@@ -27,10 +26,10 @@ export function getMatrix(
     const testMatrix = addFormatInfoModules(
       matrix,
       errorCorrectionLevel,
-      dataMask
+      maskIdx
     );
     const score = calculatePenalty(testMatrix);
-    //console.debug("generateQRCodeMatrix", {bestScore, score});
+    //console.debug("getMatrix", {bestScore, score});
     if (score < bestScore) {
       bestScore = score;
       bestMask = maskIdx;

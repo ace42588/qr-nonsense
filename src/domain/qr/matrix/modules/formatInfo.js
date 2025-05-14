@@ -20,6 +20,7 @@ function getBitsFromFormatInfo(ecLevel, mask = -1) {
 function placeModules(matrix, formatInfo = source) {
   const size = matrix.length;
   const values = formatInfo.value.toString(2);
+  console.debug("placeModules", {formatInfo, values});
   // Horizontal
   [
     { x: 0, y: 8 },
@@ -75,6 +76,7 @@ function placeModules(matrix, formatInfo = source) {
 
 export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
+  console.debug("addFormatInfoModules", {errorCorrectionLevel, dataMask, formatInfo});
   placeModules(matrix, formatInfo)
   return matrix;
 }
