@@ -8,13 +8,14 @@ const source = {
 };
 
 function getBitsFromFormatInfo(ecLevel, mask = -1) {
-  if ((ecLevel = undefined || mask === -1)) return; // use placeholder
+  if ((ecLevel === undefined || mask === -1)) return; // use placeholder
   console.debug("getBitsFromFormatInfo", { ecLevel, mask });
   const info = FORMAT_INFO_TABLE.find((entry) => {
     const { formatInfo: { errorCorrectionLevel, dataMask }} = entry;
-    console.debug("getBitsFromFormatInfo: ec", errorCorrectionLevel == ecLevel);
-    console.debug("getBitsFromFormatInfo: mask", dataMask == mask);
-    return errorCorrectionLevel == ecLevel && dataMask == mask;
+    const correctEC = errorCorrectionLevel === parseInt(ecLevel);
+    const correctMask = dataMask === parseInt(mask);
+    console.debug("getBitsFromFormatInfo: ec", { correctEC, correctMask});
+    return (errorCorrectionLevel === parseInt(ecLevel) && dataMask === parseInt(mask));
   });
   console.debug("getBitsFromFormatInfo", { info });
   if (!info || !info.bits) throw new Error("Format information not found");
