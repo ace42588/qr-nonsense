@@ -8,7 +8,8 @@ const source = {
 };
 
 function getBitsFromFormatInfo(ecLevel, mask = -1) {
-  if (!ecLevel || mask === -1) return; // use placeholder
+  if (ecLevel = undefined || mask === -1) return; // use placeholder
+  console.debug("getBitsFromFormatInfo", {ecLevel, mask});
   const info = FORMAT_INFO_TABLE.find(
     ({ formatInfo: { errorCorrectionLevel, dataMask } }) =>
       errorCorrectionLevel == ecLevel && mask == dataMask
@@ -20,7 +21,7 @@ function getBitsFromFormatInfo(ecLevel, mask = -1) {
 function placeModules(matrix, formatInfo = source) {
   const size = matrix.length;
   const values = formatInfo.value.toString(2);
-  console.debug("placeModules", {formatInfo, values});
+  //console.debug("placeModules", {formatInfo, values});
   // Horizontal
   [
     { x: 0, y: 8 },
