@@ -13,6 +13,8 @@ function getBitsFromFormatInfo(ecLevel, mask = -1) {
   return info.bits;
 }
 
+function placeModules
+
 export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
   source.value = formatInfo;
