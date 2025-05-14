@@ -11,32 +11,60 @@ export function estimateFixedPatternDamage(data, width, height) {
 }
 */
 
-/**
- * Estimate fixed pattern damage by analyzing finder patterns
- */
-export function estimateFixedPatternDamage(data, width, height) {
-  const regionSize = 7; // finder pattern size in modules
-  const moduleSize = Math.floor(width / 21); // approximate for version 1
-
-  function samplePattern(x0, y0) {
-    let black = 0, total = 0;
-    for (let y = 0; y < regionSize; y++) {
-      for (let x = 0; x < regionSize; x++) {
-        const px = (y0 + y) * width + (x0 + x);
-        const r = data[px * 4];
-        total++;
-        if (r < 128) black++;
-      }
+function sampleRegion(data, width, x0, y0, size) {
+  let darkCount = 0, total = 0;
+  for (let y = y0; y < y0 + size; y++) {
+    for (let x = x0; x < x0 + size; x++) {
+      const idx = (y * width + x) * 4;
+      const brightness = data[idx]; // Assume grayscale or use R
+      if (brightness < 128) darkCount++;
+      total++;
     }
-    return 1 - black / total;
+  }
+  return darkCount / total; // 1 = all dark, 0 = all light
+}
+
+export function estimateFixedPatternDamage(data, width, height, version) {
+  const moduleCount = 17 + version * 4;
+  const moduleSize = width / moduleCount;
+  const size = Math.floor(moduleSize * 7);
+
+  const coords = [
+    [0, 0], // top-left
+    [width - size, 0], // top-right
+    [0, height - size], // bottom-left
+  ];
+
+  const finderAverages = coords.map(([x, y]) =>
+    sampleRegion(data, width, Math.round(x), Math.round(y), size)
+  );
+
+  // Sample timing patterns (row 6, col 6)
+  const tRow = 6 * moduleSize;
+  const tCol = 6 * moduleSize;
+  let timingErrors = 0;
+  const steps = moduleCount - 14;
+
+  for (let i = 8; i < moduleCount - 8; i++) {
+    const rowX = Math.round(i * moduleSize);
+    const colY = Math.round(i * moduleSize);
+
+    const rowIdx = (Math.round(tRow) * width + rowX) * 4;
+    const colIdx = (colY * width + Math.round(tCol)) * 4;
+
+    const rowDark = data[rowIdx] < 128;
+    const colDark = data[colIdx] < 128;
+
+    const expected = i % 2 === 0; // timing pattern alternates
+
+    if (rowDark !== expected) timingErrors++;
+    if (colDark !== expected) timingErrors++;
   }
 
-  // Sample three finder patterns
-  const tl = samplePattern(0, 0);
-  const tr = samplePattern(width - moduleSize * regionSize, 0);
-  const bl = samplePattern(0, height - moduleSize * regionSize);
+  const timingScore = 1 - timingErrors / (steps * 2);
+  const finderScore = 1 - finderAverages.map(v => Math.abs(0.5 - v) * 2).reduce((a, b) => a + b, 0) / 3;
 
-  return (tl + tr + bl) / 3;
+  return (timingScore + finderScore) / 2; // 0 = bad, 1 = perfect
 }
 
 
