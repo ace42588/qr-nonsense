@@ -1,3 +1,5 @@
+import {createBaseMatrix} from "./utils";
+
 export function generateMatrix({
   version,
   errorCorrectionLevel,
@@ -6,27 +8,6 @@ export function generateMatrix({
 }) {
   //console.debug("generateMatrix", { codewords });
   const dimension = version * 4 + 17;
-
-  function applyMask(matrix, maskIndex) {
-    //console.debug("applyMask", {matrix, maskIndex})
-    addFormatInfoModules(matrix, errorCorrectionLevel, maskIndex);
-    const maskFunc = DATA_MASKS[maskIndex];
-    const masked = mapQRMatrix(matrix, ({ x, y, idx }, current) => {
-      const isMasked = maskFunc({ x, y });
-      //console.debug("applyMask", {current});
-      return makeModule({ ...current, isMasked });
-    });
-    return masked;
-  }
-
-  function addCodewords(matrix) {
-    const bits = codewords.flatMap((cw) => cw.bits);
-    //console.debug("applyCodewords", { bits });
-    return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
-      const bit = bits[idx] || remainderBit;
-      return makeModule({ bit, x, y });
-    });
-  }
 
   const base = createBaseMatrix();
   const populated = addCodewords(base);

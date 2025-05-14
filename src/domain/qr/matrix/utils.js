@@ -8,7 +8,8 @@ import {
 
 const remainderBit = { value: 0, source: "Remainder" };
 
-function createBaseMatrix(dimension, errorCorrectionLevel, version, dataMask) {
+export function createBaseMatrix(errorCorrectionLevel, version, dataMask) {
+  const dimension = version * 4 + 17;
   const matrix = Array.from({ length: dimension }, () =>
     Array(dimension).fill(null)
   );
@@ -16,7 +17,7 @@ function createBaseMatrix(dimension, errorCorrectionLevel, version, dataMask) {
   return matrix;
 }
 
-function mapQRMatrix(matrix, callbackFn) {
+export function mapQRMatrix(matrix, callbackFn) {
   const dimension = matrix.length;
   let up = true;
   let idx = 0;
@@ -42,7 +43,7 @@ function mapQRMatrix(matrix, callbackFn) {
   return matrix;
 }
 
-function applyMask(matrix, maskIndex, errorCorrectionLevel) {
+export function applyMask(matrix, maskIndex, errorCorrectionLevel) {
   //console.debug("applyMask", {matrix, maskIndex})
   addFormatInfoModules(matrix, errorCorrectionLevel, maskIndex);
   const maskFunc = DATA_MASKS[maskIndex];
@@ -54,7 +55,7 @@ function applyMask(matrix, maskIndex, errorCorrectionLevel) {
   return masked;
 }
 
-function addCodewords(matrix, codewords) {
+export function addCodewords(matrix, codewords) {
   const bits = codewords.flatMap((cw) => cw.bits);
   //console.debug("applyCodewords", { bits });
   return mapQRMatrix(matrix, ({ x, y, idx }, current) => {

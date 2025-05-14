@@ -1,4 +1,4 @@
-import { getBitsFromFormatInfo, makeNonDataModule } from "./utils";
+import { getBitsFromFormatInfo, makeModule, makeNonDataModule } from "./utils";
 import { addFinderPatterns } from "./finderPattern";
 import { addSeparators } from "./separators";
 import { addAlignmentPatterns } from "./alignmentPatterns";
@@ -81,4 +81,4 @@ export function addNonDataModules(
   return matrix;
 }
 
-export const 
+export const getModule = makeModule;
