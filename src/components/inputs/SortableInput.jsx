@@ -62,7 +62,7 @@ export function SortableInput({ input }) {
             <TabSwitcher
               options={INPUT_TYPES}
               active={type}
-              onChange={(e) => { console.debug("SortableInput: TabSwitcher",{id, e}); setType(id, e)}}
+              onChange={(e) => setType(id, e)}
             />
             <button type="button" onClick={() => removeInput(id)}>
               ✖

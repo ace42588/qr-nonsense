@@ -29,8 +29,12 @@ export function parseAll(inputs) {
 
   // Second pass: parse MAC inputs with parsed non-MAC values available
   const second = macInputs.map((input) => handleInput({ ...input, first }));
+  
+  const parsed = [...first, ...second];
+  
+  console.debug("parseAll", {first, second, parsed});
 
   return Object.fromEntries(
-    [...first, ...second].map((input) => [input.id, input])
+    parsed.map((input) => [input.id, input])
   );
 }

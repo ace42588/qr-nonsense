@@ -10,7 +10,7 @@ export function MACGenerator({ id, input }) {
   const selectedIds = input.includedFields || [];
 
   const selectableInputs = allInputs.filter((i) => i.id !== id);
-  const preview = previews[id];
+  const preview = previews?.[id];
 
   const handleChange = (field, value) =>
     updateInput({ ...input, [field]: value });
