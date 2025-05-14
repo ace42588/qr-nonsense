@@ -8,12 +8,11 @@ import {
 
 const remainderBit = { value: 0, source: "Remainder" };
 
-export function createBaseMatrix(errorCorrectionLevel, version, dataMask) {
+export function createMatrix(version) {
   const dimension = version * 4 + 17;
   const matrix = Array.from({ length: dimension }, () =>
     Array(dimension).fill(null)
   );
-  addNonDataModules(matrix, errorCorrectionLevel, version, dataMask);
   return matrix;
 }
 
@@ -57,7 +56,7 @@ export function applyMask(matrix, maskIndex, errorCorrectionLevel) {
 
 export function addCodewords(matrix, codewords) {
   const bits = codewords.flatMap((cw) => cw.bits);
-  //console.debug("applyCodewords", { bits });
+  //console.debug("addCodewords", { bits });
   return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
     const bit = bits[idx] || remainderBit;
     return makeModule({ bit, x, y });

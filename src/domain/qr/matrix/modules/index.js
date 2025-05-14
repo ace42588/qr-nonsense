@@ -6,6 +6,12 @@ import { addTimingPatterns } from "./timingPatterns";
 import { addFormatInfoModules } from "./formatInfo";
 import { addVersionInfo } from "./versionInfo";
 
+export function addPatterns(matrix) {
+  addFinderPatterns(matrix);
+  addSeparators(matrix);
+  addAlignmentPatterns(matrix);
+  addTimingPatterns(matrix);
+}
 
 export function addNonDataModules(
   matrix,
