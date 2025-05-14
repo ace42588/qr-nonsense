@@ -12,11 +12,13 @@ export const MAC_FUNCTIONS = {
 
 export function generateMAC(input) {
   const { algo, key, includedFields, inputs } = input;
-  if (!algo || !key || !includedFields) return "";
+  if (!algo || !key || !includedFields) return {};
+  console.debug("generateMAC", {includedFields, inputs});
 
   const message = includedFields
     .map((id) => inputs.find((i) => i.id === id)?.data)
     .join("");
+  console.debug("generateMAC", {message});
   const fn = MAC_FUNCTIONS[algo];
   if (!fn) throw new Error(`Unknown MAC algorithm: ${algo}`);
   const mac = fn(message, key, 4); // returns hex
