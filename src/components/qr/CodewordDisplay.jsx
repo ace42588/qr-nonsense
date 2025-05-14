@@ -5,7 +5,7 @@ import "../styles/styles.css";
 
 export function CodewordDisplay() {
   const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
-  const { highlightedIds, segments } = useQRData();
+  const { highlightedIds, codewords } = useQRData();
   const [clicked, setClicked] = useState(false);
   //console.debug("SegmentDisplay", { segments, highlightedIds });
 
@@ -23,7 +23,7 @@ export function CodewordDisplay() {
     <div className="segment-display">
       <h3>Segments</h3>
       <div className="segment-container">
-        {segments.map((segment, index) => (
+        {codewords.map((segment, index) => (
           <button
             key={segment.id}
             className={getClassName(segment)}
