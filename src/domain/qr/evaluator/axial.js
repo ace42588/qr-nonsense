@@ -1,6 +1,4 @@
 /**
- * Estimate axial nonuniformity
- *
 export function estimateAxialNonuniformity(data, width, height) {
   // In a real implementation, we would:
   // 1. Detect the edges of the QR code
@@ -12,6 +10,9 @@ export function estimateAxialNonuniformity(data, width, height) {
 }
 */
 
+/**
+ * Estimate axial nonuniformity
+ */
 export function estimateAxialNonuniformity(data, width, height) {
   // Convert RGBA to grayscale
   const grayscale = new Uint8ClampedArray(width * height);
