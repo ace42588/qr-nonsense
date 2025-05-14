@@ -14,7 +14,7 @@ function getBitsFromFormatInfo(ecLevel, mask = -1) {
     const { formatInfo: { errorCorrectionLevel, dataMask }} = entry;
     const correctEC = errorCorrectionLevel === parseInt(ecLevel);
     const correctMask = dataMask === parseInt(mask);
-    console.debug("getBitsFromFormatInfo: ec", { correctEC, correctMask});
+    //console.debug("getBitsFromFormatInfo: ec", { correctEC, correctMask});
     return (errorCorrectionLevel === parseInt(ecLevel) && dataMask === parseInt(mask));
   });
   console.debug("getBitsFromFormatInfo", { info });

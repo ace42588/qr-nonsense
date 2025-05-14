@@ -48,7 +48,7 @@ export function mapQRMatrix(matrix, callbackFn) {
 
 export function applyMask(matrix, maskIndex) {
   //console.debug("applyMask", {matrix, maskIndex})
-  const maskFunc = DATA_MASKS[maskIndex] || (() => false);
+  const maskFunc = DATA_MASKS[maskIndex];
   const masked = mapQRMatrix(matrix, ({ x, y, idx }, current) => {
     const isMasked = maskFunc({ x, y });
     //console.debug("applyMask", {current});
