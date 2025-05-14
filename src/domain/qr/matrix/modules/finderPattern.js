@@ -3,7 +3,7 @@ import { makeNonDataModule } from "./utils";
 
 const source = { name: "FinderPattern" };
 
-function addFinderPatterns(matrix) {
+export function addFinderPatterns(matrix) {
   const size = matrix.length;
   function addPattern(startX, startY) {
     for (let y = 0; y < 7; y++) {

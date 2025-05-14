@@ -19,35 +19,6 @@ function getAlignmentPatternPositions(version) {
   return positions;
 }
 
-function shouldDrawAlignmentPattern(x, y, size) {
-  const finderPatternPositions = [
-    { x: 0, y: 0 },
-    { x: size - 7, y: 0 },
-    { x: 0, y: size - 7 },
-  ];
-
-  for (const pos of finderPatternPositions) {
-    if (Math.abs(pos.x - x) < 9 && Math.abs(pos.y - y) < 9) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function drawAlignmentPattern(centerX, centerY, matrix) {
-  for (let y = 0; y < 5; y++) {
-    for (let x = 0; x < 5; x++) {
-      const value = ALIGNMENT_PATTERN[y][x];
-      matrix[centerY - 2 + y][centerX - 2 + x] = makeNonDataModule(
-        value,
-        source,
-        centerX - 2 + x,
-        centerY - 2 + y
-      );
-    }
-  }
-}
-
 export function addAlignmentPatterns(matrix) {
   const size = matrix.length;
   const version = (size - 17) / 4;

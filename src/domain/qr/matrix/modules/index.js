@@ -1,16 +1,18 @@
-import {getBitsFromFormatInfo, makeNonDataModule} from "./utils";
-import {addFinderPatterns} from "./finderPattern";
-import {addSeparators} from "./separators";
-import {addAlignmentPatterns} from "./alignmentPatterns";
+import { getBitsFromFormatInfo, makeNonDataModule } from "./utils";
+import { addFinderPatterns } from "./finderPattern";
+import { addSeparators } from "./separators";
+import { addAlignmentPatterns } from "./alignmentPatterns";
+import { addTimingPatterns } from "./timingPatterns";
+import { addVersionInfo } from "./versionInfo";
 
 export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const source = { name: "FormatInfo" };
-  const size = matrix.length;
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
   source.value = formatInfo;
   const bits = formatInfo.toString(2);
   const values = `${bits}`;
 
+  const size = matrix.length;
   // Horizontal
   [
     { x: 0, y: 8 },
@@ -55,7 +57,12 @@ export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   );
 
   // Add the dark module
-  matrix[size - 8][8] = makeNonDataModule(1, {...source, value: "dark module"}, 8, size - 8);
+  matrix[size - 8][8] = makeNonDataModule(
+    1,
+    { ...source, value: "dark module" },
+    8,
+    size - 8
+  );
 }
 
 export function addNonDataModules(
@@ -64,58 +71,13 @@ export function addNonDataModules(
   version,
   dataMask
 ) {
-  const size = matrix.length;
-
-
-  function addTimingPatterns() {
-    const source = { name: "TimingPattern" };
-    for (let i = 8; i < size - 8; i++) {
-      const value = i % 2 === 0 ? 1 : 0;
-      matrix[6][i] = makeNonDataModule(value, source, i, 6);
-      matrix[i][6] = makeNonDataModule(value, source, 6, i);
-    }
-  }
-
-  function addVersionInfo() {
-    function getVersionString() {
-      const versionBits = VERSION_INFO[version].toString(2).padStart(6, "0");
-      const paddedVersionBits = versionBits.padEnd(18, "0");
-
-      const errorCorrectionBits = computeBCH(paddedVersionBits, 12);
-      return (versionBits + errorCorrectionBits).padStart(18, "0");
-    }
-    if (version < 7) return;
-    const source = { name: "VersionInfo" };
-    const versionString = getVersionString();
-    source.value = versionString;
-
-    for (let i = 0; i < 6; i++) {
-      for (let j = 0; j < 3; j++) {
-        const value = versionString[i * 3 + j];
-        // Bottom-left version information
-        matrix[size - 11 + j][i] = makeNonDataModule(
-          value,
-          source,
-          size - 11 + j,
-          i
-        );
-        // Top-right version information
-        matrix[i][size - 11 + j] = makeNonDataModule(
-          value,
-          source,
-          i,
-          size - 11 + j
-        );
-      }
-    }
-  }
-
+  
   addFinderPatterns(matrix);
   addSeparators(matrix);
-  addAlignmentPatterns();
-  addTimingPatterns();
+  addAlignmentPatterns(matrix);
+  addTimingPatterns(matrix);
   addFormatInfoModules(matrix, errorCorrectionLevel, dataMask);
-  addVersionInfo();
+  addVersionInfo(matrix);
 
   return matrix;
 }

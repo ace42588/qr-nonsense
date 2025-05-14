@@ -2,7 +2,7 @@ import { makeNonDataModule } from "./utils";
 
 const source = { name: "Separator" };
 
-function addSeparators(matrix) {
+export function addSeparators(matrix) {
   const size = matrix.length;
 
   for (let i = 0; i < 8; i++) {
@@ -16,4 +16,5 @@ function addSeparators(matrix) {
     matrix[size - 1 - i][7] = makeNonDataModule(0, source, 7, size - 1 - i);
     matrix[size - 8][i] = makeNonDataModule(0, source, i, size - 8);
   }
+  return matrix;
 }
