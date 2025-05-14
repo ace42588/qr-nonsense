@@ -24,7 +24,7 @@ export function generateMAC(input) {
   const mac = fn(message, key, 4); // returns hex
   return {
     mode: "byte",
-    encoding: "utf-8",
+    encoding: "hex",
     data: mac,
   };
 }
