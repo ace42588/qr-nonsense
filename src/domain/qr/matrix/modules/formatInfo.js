@@ -8,12 +8,13 @@ const source = {
 };
 
 function getBitsFromFormatInfo(ecLevel, mask = -1) {
-  if (ecLevel = undefined || mask === -1) return; // use placeholder
-  console.debug("getBitsFromFormatInfo", {ecLevel, mask});
-  const info = FORMAT_INFO_TABLE.find(
-    ({ formatInfo: { errorCorrectionLevel, dataMask } }) =>
-      errorCorrectionLevel == ecLevel && mask == dataMask
-  );
+  if ((ecLevel = undefined || mask === -1)) return; // use placeholder
+  console.debug("getBitsFromFormatInfo", { ecLevel, mask });
+  const info = FORMAT_INFO_TABLE.find((entry) => {
+    const {{ errorCorrectionLevel, dataMask } = entry.formatInfo;
+    return errorCorrectionLevel == ecLevel && dataMask == mask;
+  });
+  console.debug("getBitsFromFormatInfo", { info });
   if (!info || !info.bits) throw new Error("Format information not found");
   return { ...source, type: "formatInfo", value: info.bits };
 }
@@ -77,7 +78,11 @@ function placeModules(matrix, formatInfo = source) {
 
 export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
-  console.debug("addFormatInfoModules", {errorCorrectionLevel, dataMask, formatInfo});
-  placeModules(matrix, formatInfo)
+  console.debug("addFormatInfoModules", {
+    errorCorrectionLevel,
+    dataMask,
+    formatInfo,
+  });
+  placeModules(matrix, formatInfo);
   return matrix;
 }
