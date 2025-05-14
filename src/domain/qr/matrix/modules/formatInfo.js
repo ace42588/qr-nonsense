@@ -11,7 +11,9 @@ function getBitsFromFormatInfo(ecLevel, mask = -1) {
   if ((ecLevel = undefined || mask === -1)) return; // use placeholder
   console.debug("getBitsFromFormatInfo", { ecLevel, mask });
   const info = FORMAT_INFO_TABLE.find((entry) => {
-    const {{ errorCorrectionLevel, dataMask } = entry.formatInfo;
+    const { formatInfo: { errorCorrectionLevel, dataMask }} = entry;
+    console.debug("getBitsFromFormatInfo: ec", errorCorrectionLevel == ecLevel);
+    console.debug("getBitsFromFormatInfo: mask", dataMask == mask);
     return errorCorrectionLevel == ecLevel && dataMask == mask;
   });
   console.debug("getBitsFromFormatInfo", { info });
