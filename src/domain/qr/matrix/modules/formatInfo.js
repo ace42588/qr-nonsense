@@ -1,4 +1,4 @@
-import { FORMAT_INFO_TABLE } from "../constants";
+import { FORMAT_INFO_TABLE } from "../../constants";
 import { makeNonDataModule } from "./utils";
 
 const source = {

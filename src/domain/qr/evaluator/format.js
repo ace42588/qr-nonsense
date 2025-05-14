@@ -1,3 +1,4 @@
+import { FORMAT_INFO_TABLE } from "../constants";
 /**
 export function estimateFormatInformationDamage(data, width, height) {
   // In a real implementation, we would:
@@ -43,8 +44,7 @@ function hammingDistance(a, b) {
 
 function decodeFormatInfo(bits) {
   // List of all 32 valid format strings (error-corrected)
-  const VALID_FORMATS = [...]; // preload all 32 values
-  const distances = VALID_FORMATS.map(valid => hammingDistance(valid, bits));
+  const distances = FORMAT_INFO_TABLE.map(valid => hammingDistance(valid.bits, bits));
   const minDist = Math.min(...distances);
   return minDist; // 0 = perfect match, >3 = unrecoverable
 }
