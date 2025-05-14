@@ -25,16 +25,17 @@ export function parseAll(inputs) {
   const macInputs = inputs.filter((input) => input.type === "mac");
 
   // First pass: parse non-MAC inputs
-  const first = nonMacInputs.map((input) => handleInput({ ...input, inputs }));
+  const first = Object.fromEntries(
+    nonMacInputs.map((input) => [input.id, handleInput({ ...input, inputs })])
+  );
 
   // Second pass: parse MAC inputs with parsed non-MAC values available
-  const second = macInputs.map((input) => handleInput({ ...input, first }));
-  
-  const parsed = [...first, ...second];
-  
-  console.debug("parseAll", {first, second, parsed});
-
-  return Object.fromEntries(
-    parsed.map((input) => [input.id, input])
+  const second = Object.fromEntries(
+    macInputs.map((input) => [input.id, handleInput({ ...input, inputs: first })])
   );
+
+  const obj = { ...first, ...second };
+  console.debug("parseAll", { first, second, obj });
+
+  return obj;
 }
