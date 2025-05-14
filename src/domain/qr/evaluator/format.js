@@ -1,61 +1,205 @@
-import { FORMAT_INFO_TABLE } from "../constants";
+import {
+  calculateOtsuThreshold,
+  detectQRBoundaries,
+
+} from "./utils";
+
 /**
-export function estimateFormatInformationDamage(data, width, height) {
-  // In a real implementation, we would:
-  // 1. Locate format information bits
-  // 2. Check for errors using error correction
+ * Estimate format information damage by locating and validating format bits
+ * @param {Uint8ClampedArray} data - Image data from canvas
+ * @param {number} width - Canvas width
+ * @param {number} height - Canvas height
+ * @return {number} Damage estimate (0-1 scale, lower is better)
+ */
+function estimateFormatInformationDamage(data, width, height) {
+  // Step 1: Detect QR code boundaries and size
+  const boundaries = detectQRBoundaries(data, width, height);
+  if (!boundaries) return 1.0; // Could not detect QR code
   
-  // For this example, returning a simulated value
-  // Lower values indicate less damage (better)
-  return 0.10;
-}
-*/
-
-const FORMAT_LOCATIONS = {
-  primary: [
-    [0, 8], [1, 8], [2, 8], [3, 8], [4, 8],
-    [5, 8], [7, 8], [8, 8], [8, 7], [8, 5],
-    [8, 4], [8, 3], [8, 2], [8, 1], [8, 0],
-  ],
-  mirror: [
-    [width - 1, 8], [width - 2, 8], [width - 3, 8],
-    [width - 4, 8], [width - 5, 8], [width - 6, 8],
-    [8, height - 1], [8, height - 2], [8, height - 3],
-    [8, height - 4], [8, height - 5], [8, height - 6],
-    [8, height - 7], [8, height - 8], [7, 8],
-  ]
-};
-
-function extractFormatBits(data, width, coords, moduleSize) {
-  let bits = "";
-  for (let [x, y] of coords) {
-    const px = Math.round(x * moduleSize);
-    const py = Math.round(y * moduleSize);
-    const idx = (py * width + px) * 4;
-    const dark = data[idx] < 128;
-    bits += dark ? "1" : "0";
+  const { top, left, bottom, right } = boundaries;
+  const qrSize = Math.max(bottom - top, right - left);
+  const moduleSize = qrSize / 21; // Approximate module size (assuming version 1 QR code)
+  
+  // Step 2: Extract format information bits
+  // Format information is located in two places:
+  // 1. Around top-left finder pattern
+  // 2. Split between bottom-left and top-right finder patterns
+  
+  // Get binary image
+  const binaryData = getBinaryData(data, width, height);
+  
+  // Extract format bits from the first location (around top-left finder pattern)
+  const formatBits1 = extractFormatBits1(binaryData, width, left, top, moduleSize);
+  
+  // Extract format bits from the second location (split between bottom-left and top-right)
+  const formatBits2 = extractFormatBits2(binaryData, width, left, top, right, bottom, moduleSize);
+  
+  // Step 3: Compare the two copies of format information (they should be identical)
+  let formatBitsDifference = 0;
+  for (let i = 0; i < 15; i++) {
+    if (formatBits1[i] !== formatBits2[i]) {
+      formatBitsDifference++;
+    }
   }
-  return bits;
+  
+  // Step 4: Validate format information using BCH error correction
+  const formatBits = formatBits1.slice(); // Use the first copy as reference
+  let bchErrors = countBCHErrors(formatBits);
+  
+  // Step 5: Combine metrics to calculate overall damage
+  // Weight both the difference between the two copies and the BCH errors
+  const diffDamage = formatBitsDifference / 15; // Normalize to 0-1
+  const bchDamage = Math.min(1.0, bchErrors / 3); // Normalize to 0-1 (can correct up to 3 errors)
+  
+  return (diffDamage * 0.4) + (bchDamage * 0.6); // Weighted average favoring BCH verification
 }
 
-function hammingDistance(a, b) {
-  return a.split("").filter((bit, i) => bit !== b[i]).length;
+/**
+ * Extract format bits from around the top-left finder pattern
+ * @return {Array} 15 format bits
+ */
+function extractFormatBits1(binaryData, width, left, top, moduleSize) {
+  const formatBits = new Array(15);
+  
+  // Horizontal format bits (right of the top-left finder pattern)
+  for (let i = 0; i < 8; i++) {
+    const x = Math.round(left + (i < 6 ? i + 7 : i + 8) * moduleSize);
+    const y = Math.round(top + 8 * moduleSize);
+    const index = y * width + x;
+    
+    if (index >= 0 && index < binaryData.length) {
+      formatBits[i] = binaryData[index];
+    } else {
+      formatBits[i] = 0; // Default value if out of bounds
+    }
+  }
+  
+  // Vertical format bits (below the top-left finder pattern)
+  for (let i = 0; i < 7; i++) {
+    const x = Math.round(left + 8 * moduleSize);
+    const y = Math.round(top + (7 - i) * moduleSize);
+    const index = y * width + x;
+    
+    if (index >= 0 && index < binaryData.length) {
+      formatBits[i + 8] = binaryData[index];
+    } else {
+      formatBits[i + 8] = 0; // Default value if out of bounds
+    }
+  }
+  
+  return formatBits;
 }
 
-function decodeFormatInfo(bits) {
-  // List of all 32 valid format strings (error-corrected)
-  const distances = FORMAT_INFO_TABLE.map(valid => hammingDistance(valid.bits, bits));
-  const minDist = Math.min(...distances);
-  return minDist; // 0 = perfect match, >3 = unrecoverable
+/**
+ * Extract format bits from the second location
+ * (split between bottom-left and top-right finder patterns)
+ * @return {Array} 15 format bits
+ */
+function extractFormatBits2(binaryData, width, left, top, right, bottom, moduleSize) {
+  const formatBits = new Array(15);
+  
+  // Top-right vertical format bits
+  for (let i = 0; i < 7; i++) {
+    const x = Math.round(right - 8 * moduleSize);
+    const y = Math.round(top + i * moduleSize);
+    const index = y * width + x;
+    
+    if (index >= 0 && index < binaryData.length) {
+      formatBits[i] = binaryData[index];
+    } else {
+      formatBits[i] = 0; // Default value if out of bounds
+    }
+  }
+  
+  // Bottom-left horizontal format bits
+  for (let i = 0; i < 8; i++) {
+    const x = Math.round(left + i * moduleSize);
+    const y = Math.round(bottom - 8 * moduleSize);
+    const index = y * width + x;
+    
+    if (index >= 0 && index < binaryData.length) {
+      formatBits[i + 7] = binaryData[index];
+    } else {
+      formatBits[i + 7] = 0; // Default value if out of bounds
+    }
+  }
+  
+  return formatBits;
 }
 
-export function estimateFormatInformationDamage(data, width, height, version) {
-  const moduleCount = 17 + version * 4;
-  const moduleSize = width / moduleCount;
+/**
+ * Convert image data to binary (0 or 1) using Otsu's method
+ * @return {Uint8Array} Binary image data
+ */
+function getBinaryData(data, width, height) {
+  const grayValues = [];
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114) / 255;
+    grayValues.push(gray);
+  }
+  
+  const threshold = calculateOtsuThreshold(grayValues);
+  const binary = new Uint8Array(width * height);
+  
+  for (let i = 0; i < grayValues.length; i++) {
+    binary[i] = grayValues[i] > threshold ? 1 : 0;
+  }
+  
+  return binary;
+}
 
-  const formatBits = extractFormatBits(data, width, FORMAT_LOCATIONS.primary, moduleSize);
-  const errorBits = decodeFormatInfo(formatBits);
-  return Math.min(errorBits / 3, 1); // 0 = perfect, 1 = max damage
+/**
+ * Count BCH errors in format information
+ * This uses the BCH(15,5) code used in QR codes
+ * @param {Array} formatBits - 15 format bits
+ * @return {number} Number of errors detected
+ */
+function countBCHErrors(formatBits) {
+  // The format information uses a BCH(15,5) code
+  // First 5 bits encode the format info, last 10 bits are error correction
+  
+  // XOR with the mask pattern (this uncovers the raw format information)
+  const mask = [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0]; // 10101 00000 10010
+  const unmaskedBits = formatBits.map((bit, index) => bit ^ mask[index]);
+  
+  // Calculate syndrome using BCH
+  return calculateBCHSyndrome(unmaskedBits);
+}
+
+/**
+ * Calculate BCH syndrome to detect errors
+ * @param {Array} bits - Bits to check
+ * @return {number} Number of errors detected
+ */
+function calculateBCHSyndrome(bits) {
+  // Generator polynomial for BCH(15,5): x^10 + x^8 + x^5 + x^4 + x^2 + x + 1
+  const generator = [1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1]; // coefficients of the generator polynomial
+  
+  // Convert bit array to polynomial representation (most significant bit first)
+  let data = bits.slice();
+  
+  // Calculate remainder using polynomial division (CRC)
+  // Only consider the 5 data bits (first 5 bits) for error checking
+  let dataLength = 5;
+  
+  // Perform polynomial long division
+  for (let i = 0; i < dataLength; i++) {
+    if (data[i] === 1) {
+      for (let j = 0; j < generator.length; j++) {
+        data[i + j] ^= generator[j];
+      }
+    }
+  }
+  
+  // Count non-zero bits in the remainder (should be zero if no errors)
+  let errorCount = 0;
+  for (let i = dataLength; i < 15; i++) {
+    if (data[i] === 1) {
+      errorCount++;
+    }
+  }
+  
+  return errorCount;
 }
 
 
