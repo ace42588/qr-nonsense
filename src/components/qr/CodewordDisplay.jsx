@@ -7,7 +7,7 @@ export function CodewordDisplay() {
   const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
   const { highlightedIds, codewords } = useQRData();
   const [clicked, setClicked] = useState(false);
-  //console.debug("CodewordDisplay", { codewords, highlightedIds });
+  console.debug("CodewordDisplay", { codewords, highlightedIds });
 
   const isHighlighted = (id) => {
     highlightedIds.includes(id);
