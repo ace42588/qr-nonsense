@@ -5,7 +5,7 @@ function getId() {
 function getBit(value, sourceId, sourceType) {
   if (!sourceId) throw new Error("Missing source ID");
   return {
-    type: "bit",
+    type: sourceType,
     value,
     id: getId(),
     sourceId,

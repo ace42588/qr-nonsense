@@ -13,7 +13,7 @@
  * @param {HTMLCanvasElement} canvas - Canvas element containing the QR code
  * @return {Object} Quality evaluation results with grades and metrics
  */
-function evaluateQRCodeQuality(canvas) {
+export function evaluateQRCodeQuality(canvas) {
   // Get canvas context and image data
   const ctx = canvas.getContext('2d');
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -66,7 +66,7 @@ function evaluateQRCodeQuality(canvas) {
   const gridNonuniformity = estimateGridNonuniformity(data, canvas.width, canvas.height);
   
   results.metrics.gridNonuniformity.value = gridNonuniformity;
-  results.metrics.gridNonuniformity.grade = gradeGridNonuniformity(gridNonuniformity);
+  //results.metrics.gridNonuniformity.grade = gradeGridNonuniformity(gridNonuniformity);
   
   // 6. Estimate Format Information Damage
   const formatDamage = estimateFormatInformationDamage(data, canvas.width, canvas.height);
