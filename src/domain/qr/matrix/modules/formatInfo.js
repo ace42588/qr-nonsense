@@ -8,23 +8,18 @@ const source = {
 };
 
 function getBitsFromFormatInfo(ecLevel, mask = -1) {
-  if ((ecLevel === undefined || mask === -1)) return; // use placeholder
-  console.debug("getBitsFromFormatInfo", { ecLevel, mask });
-  const info = FORMAT_INFO_TABLE.find((entry) => {
-    const { formatInfo: { errorCorrectionLevel, dataMask }} = entry;
-    const correctEC = errorCorrectionLevel === parseInt(ecLevel);
-    const correctMask = dataMask === parseInt(mask);
-    //console.debug("getBitsFromFormatInfo: ec", { correctEC, correctMask});
-    return (errorCorrectionLevel === parseInt(ecLevel) && dataMask === parseInt(mask));
-  });
-  console.debug("getBitsFromFormatInfo", { info });
+  if (mask === -1) return 0x4000;
+  const info = FORMAT_INFO_TABLE.filter(
+    ({ formatInfo: { errorCorrectionLevel, dataMask } }) =>
+      errorCorrectionLevel == ecLevel && mask == dataMask
+  )[0];
   if (!info || !info.bits) throw new Error("Format information not found");
-  return { ...source, type: "formatInfo", value: info.bits };
+  return info.bits;
 }
 
-function placeModules(matrix, formatInfo = source) {
+function placeModules(matrix, formatInfo = 0x4000) {
   const size = matrix.length;
-  const values = formatInfo.value.toString(2);
+  const values = formatInfo.toString(2);
   //console.debug("placeModules", {formatInfo, values});
   // Horizontal
   [
