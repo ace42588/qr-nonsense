@@ -13,7 +13,7 @@
  * @param {HTMLCanvasElement} canvas - Canvas element containing the QR code
  * @return {Object} Quality evaluation results with grades and metrics
  */
-function evaluateQRCodeQuality(canvas) {
+export function evaluateQRCodeQuality(canvas) {
   // Get canvas context and image data
   const ctx = canvas.getContext('2d');
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);

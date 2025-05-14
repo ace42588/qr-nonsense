@@ -14,21 +14,5 @@ export function getEncodedMessage(inputs, sVersion, errorCorrectionLevel) {
   return { segments, version };
 }
 
-export function getCodewords(segments, version, errorCorrectionLevel) {
-  return generateCodewords(segments, version, errorCorrectionLevel);
-}
-
-export function getMatrix(
-  codewords,
-  selectedDataMask,
-  version,
-  errorCorrectionLevel
-) {
-  //console.debug("getMatrix", {bits});
-  return generateMatrix({
-    version,
-    errorCorrectionLevel,
-    dataMask: selectedDataMask,
-    codewords,
-  });
-}
+export const getCodewords = generateCodewords;
+export const getMatrix = generateMatrix;

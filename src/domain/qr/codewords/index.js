@@ -22,3 +22,5 @@ export function generateCodewords(segments, version, errorCorrectionLevel) {
   });
   return orderedCodewords;
 }
+
+export const getCodewords = generateCodewords;

@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import "../styles/styles.css";
 
 import { useQRData, useQRDataDispatch } from "../../state";
+import {evaluateQRCodeQuality} from "../../domain/qr"
 
 export function QRCodeCanvas() {
   const canvasRef = useRef(null);
