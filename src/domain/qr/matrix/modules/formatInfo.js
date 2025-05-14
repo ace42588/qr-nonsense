@@ -1,23 +1,25 @@
 import { FORMAT_INFO_TABLE } from "./constants";
 import { makeNonDataModule } from "./utils";
 
-const source = { name: "FormatInfo" };
-
-const placeholder = 0x4000.toString(2);
+const source = {
+  name: "FormatInfo",
+  type: "placeholder",
+  value: 0x4000,
+};
 
 function getBitsFromFormatInfo(ecLevel, mask = -1) {
-  if (mask === -1) return 0x4000;
+  if (mask === -1) return; //
   const info = FORMAT_INFO_TABLE.find(
     ({ formatInfo: { errorCorrectionLevel, dataMask } }) =>
       errorCorrectionLevel == ecLevel && mask == dataMask
   );
   if (!info || !info.bits) throw new Error("Format information not found");
-  return info.bits;
+  return { ...source, type: "formatInfo", value: info.bits };
 }
 
-function placeModules(matrix, formatInfo = placeholder) {
-    const size = matrix.length;
-  source.value = formatInfo;
+function placeModules(matrix, formatInfo = source) {
+  const size = matrix.length;
+  const values = formatInfo.value.toString(2);
   // Horizontal
   [
     { x: 0, y: 8 },
@@ -72,59 +74,6 @@ function placeModules(matrix, formatInfo = placeholder) {
 
 export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
-  source.value = formatInfo;
-  const bits = formatInfo.toString(2);
-  const values = `${bits}`;
-
-  const size = matrix.length;
-  // Horizontal
-  [
-    { x: 0, y: 8 },
-    { x: 1, y: 8 },
-    { x: 2, y: 8 },
-    { x: 3, y: 8 },
-    { x: 4, y: 8 },
-    { x: 5, y: 8 },
-    { x: 7, y: 8 },
-    { x: size - 8, y: 8 },
-    { x: size - 7, y: 8 },
-    { x: size - 6, y: 8 },
-    { x: size - 5, y: 8 },
-    { x: size - 4, y: 8 },
-    { x: size - 3, y: 8 },
-    { x: size - 2, y: 8 },
-    { x: size - 1, y: 8 },
-  ].forEach(
-    ({ x, y }, idx) =>
-      (matrix[y][x] = makeNonDataModule(values[idx], source, x, y))
-  );
-  // Vertical
-  [
-    { x: 8, y: size - 1 },
-    { x: 8, y: size - 2 },
-    { x: 8, y: size - 3 },
-    { x: 8, y: size - 4 },
-    { x: 8, y: size - 5 },
-    { x: 8, y: size - 6 },
-    { x: 8, y: size - 7 },
-    { x: 8, y: 8 },
-    { x: 8, y: 7 },
-    { x: 8, y: 5 },
-    { x: 8, y: 4 },
-    { x: 8, y: 3 },
-    { x: 8, y: 2 },
-    { x: 8, y: 1 },
-    { x: 8, y: 0 },
-  ].forEach(
-    ({ x, y }, idx) =>
-      (matrix[y][x] = makeNonDataModule(values[idx], source, x, y))
-  );
-
-  // Add the dark module
-  matrix[size - 8][8] = makeNonDataModule(
-    1,
-    { ...source, value: "dark module" },
-    8,
-    size - 8
-  );
+  placeModules(matrix, formatInfo)
+  return 
 }
