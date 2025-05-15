@@ -13,48 +13,49 @@ export function QRCodeCanvas() {
   const isHighlighted = (id) => highlightedIds.includes(id);
 
   useEffect(() => {
-    if (!canvasRef.current || !matrix) return;
-
     const canvas = canvasRef.current;
+    if (!canvas || !matrix) return;
+
     const ctx = canvas.getContext("2d");
-    const dimension = matrix.length;
-    const quietZone = 4;
-    const totalDimension = dimension + quietZone * 2;
-    const moduleSize = canvas.width / totalDimension;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const draw = () => {
+      const dimension = matrix.length;
+      const quietZone = 4;
+      const totalDimension = dimension + quietZone * 2;
+      const moduleSize = canvas.width / totalDimension;
 
-    // Fill entire canvas with white (including quiet zone)
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    for (let y = 0; y < dimension; y++) {
-      for (let x = 0; x < dimension; x++) {
-        const m = matrix[y][x];
-        if (!m) continue;
+      for (let y = 0; y < dimension; y++) {
+        for (let x = 0; x < dimension; x++) {
+          const m = matrix[y][x];
+          if (!m) continue;
 
-        ctx.fillStyle = m.isDark ? "black" : "white";
-        ctx.fillRect(
-          (x + quietZone) * moduleSize,
-          (y + quietZone) * moduleSize,
-          moduleSize,
-          moduleSize
-        );
-
-        if (isHighlighted(m.bitId)) {
-          ctx.strokeStyle = "red";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(
+          ctx.fillStyle = m.isDark ? "black" : "white";
+          ctx.fillRect(
             (x + quietZone) * moduleSize,
             (y + quietZone) * moduleSize,
             moduleSize,
             moduleSize
           );
+
+          if (highlightedIds.includes(m.bitId)) {
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(
+              (x + quietZone) * moduleSize,
+              (y + quietZone) * moduleSize,
+              moduleSize,
+              moduleSize
+            );
+          }
         }
       }
-    }
-    
-    //console.debug("QRCodeCanvas: evaluation", evaluateQRCodeQuality(canvas));
+    };
+
+    requestAnimationFrame(draw);
   }, [matrix, highlightedIds]);
 
   const handleClick = (event) => {
