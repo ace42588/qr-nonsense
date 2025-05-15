@@ -16,7 +16,6 @@ const source = {
 function getBitsFromFormatInfo(ecLevel = -1, mask = -1) {
   const errorCorrectionLevel = parseInt(ecLevel);
   const dataMask = parseInt(mask);
-  console.debug("getBitsFromFormatInfo", {timestamp: Date.now(), errorCorrectionLevel, dataMask});
   
   if (dataMask === -1 || errorCorrectionLevel === -1 || Number.isNaN(dataMask)) return 0x4000; // return a placeholder value
   

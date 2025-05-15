@@ -33,7 +33,7 @@ const masks = [
 export function QRInfoInput() {
   const [expanded, setExpanded] = useState(false);
   const { errorCorrectionLevel, version, dataMask } = useInputs();
-  const { version: cVersion, dataMask: cDataMask } = useInputs();
+  const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
   const { setErrorCorrection, setVersion, setDataMask } = useInputDispatch();
   return (
     <div

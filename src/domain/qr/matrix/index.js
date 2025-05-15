@@ -23,6 +23,7 @@ export function getMatrix(
   console.debug("getMatrix: automatic dataMask scoring");
   let bestScore = Infinity;
   let bestMask = 0;
+  let bestMatrix;
   for (let maskIdx = 0; maskIdx < 8; maskIdx++) {
     const masked = applyMask(populated, maskIdx);
     const testMatrix = updateFormatInfoModules(
@@ -35,8 +36,9 @@ export function getMatrix(
     if (score < bestScore) {
       bestScore = score;
       bestMask = maskIdx;
+      bestMatrix = testMatrix;
     }
   }
 
-  return { matrix: applyMask(populated, bestMask), dataMask: bestMask };
+  return { matrix: bestMatrix, dataMask: bestMask };
 }

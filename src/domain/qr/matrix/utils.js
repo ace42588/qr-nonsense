@@ -58,8 +58,9 @@ export function applyMask(matrix, maskIndex) {
 }
 
 export function addCodewords(matrix, codewords) {
+  console.debug("addCodewords", { codewords });
   const bits = codewords.flatMap((cw) => cw.bits);
-  //console.debug("addCodewords", { bits });
+  console.debug("addCodewords", { bits });
   return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
     const bit = bits[idx] || remainderBit;
     return makeModule({ bit, x, y });
