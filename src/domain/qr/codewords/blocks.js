@@ -71,10 +71,8 @@ function getCodewordsForBlock(
   ];
 }
 
-export function getBlocks(encodedData, ecCodewordsPerBlock, ecBlocks) {
-  const dataCodewords = splitIntoDataCodewords(encodedData);
+export function getBlocks(dataCodewords, ecCodewordsPerBlock, ecBlocks) {
   let offset = 0;
-  let numProcessedCodewords = 0;
 
   // ecBlocks is an { numBlocks, dataCodewordsPerBlock }[] used to map
   // the specifics of how to split up codewords for error correction.
