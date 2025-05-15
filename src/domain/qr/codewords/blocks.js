@@ -27,7 +27,9 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const dataBytes = dataCodewords.map(({ bits }) => bitsToByte(bits));
   const ecBytes = encoder.encode(dataBytes);
   //return ecBytes.map((b, idx) => getECCodeword(b, dataCodewords[idx]));
-  return Array.from(ecBytes, (b, idx) => getECCodeword(b, dataCodewords[idx]));
+  //return Array.from(ecBytes, (b, idx) => getECCodeword(b, dataCodewords[idx]));
+  const source = { name: "ReedSolomon", type: "ec" };
+  return ecBytes.map((byte) => getECCodeword(byte, source));
 }
 
 function generateEcCodewords(ecCodewordsPerBlock, dataCodewords) {
