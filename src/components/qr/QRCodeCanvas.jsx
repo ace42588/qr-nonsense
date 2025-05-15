@@ -119,16 +119,18 @@ export function QRCodeCanvas() {
 
   return (
     <div className="qr-code-canvas-container">
-      <canvas id="qrCode" ref={qrRef} width="420" height="420"></canvas>
-      <canvas
-        id="canvas"
-        ref={highlightRef}
-        width="420"
-        height="420"
-        onClick={handleClick}
-        onContextMenu={handleClick} // Handle right-click as well
-        style={{ border: "1px solid #000" }}
-      ></canvas>
+      <div className="qr-canvas-wrapper">
+        <canvas id="qrCode" ref={qrRef} width="420" height="420"></canvas>
+        <canvas
+          id="canvas"
+          ref={highlightRef}
+          width="420"
+          height="420"
+          onClick={handleClick}
+          onContextMenu={handleClick} // Handle right-click as well
+          style={{ border: "1px solid #000" }}
+        ></canvas>
+      </div>
     </div>
   );
 }

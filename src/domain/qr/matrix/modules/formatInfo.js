@@ -1,3 +1,4 @@
+// srrc/domain/qr/matrix/modules/formatInfo.js
 import { FORMAT_INFO_TABLE } from "../../constants";
 import { makeNonDataModule } from "./utils";
 
