@@ -12,13 +12,15 @@ export function getMatrix(
   const base = addPatterns(matrix);
   const populated = addCodewords(base, codewords);
 
-  if (dataMask !== -1) {
+  console.debug("getMatrix", {dataMask});
+  if (parseInt(dataMask) !== -1) {
     const masked = applyMask(populated, dataMask);
     const final = addFormatInfoModules(matrix, errorCorrectionLevel, dataMask);
     return { matrix: masked, dataMask };
   }
 
   // Automatic mask scoring
+  console.debug("getMatrix: automatic dataMask scoring");
   let bestScore = Infinity;
   let bestMask = 0;
   for (let maskIdx = 0; maskIdx < 8; maskIdx++) {
