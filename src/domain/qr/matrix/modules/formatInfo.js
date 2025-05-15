@@ -2,6 +2,12 @@
 import { FORMAT_INFO_TABLE } from "../../constants";
 import { makeNonDataModule } from "./utils";
 
+const placeholder = {
+  name: "FormatInfo",
+  type: "formatInfo",
+  value: "000000000000000"
+}
+
 const source = {
   name: "FormatInfo",
   type: "formatInfo",
