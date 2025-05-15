@@ -8,7 +8,7 @@ const source = {
 };
 
 function getBitsFromFormatInfo(ecLevel, mask = -1) {
-  if (mask === -1) return 0x4000;
+  if (mask === -1 || ecLevel) return 0x4000;
   const info = FORMAT_INFO_TABLE.filter(
     ({ formatInfo: { errorCorrectionLevel, dataMask } }) =>
       errorCorrectionLevel == ecLevel && mask == dataMask
