@@ -12,15 +12,17 @@ export function generateCodewords(segments, version, errorCorrectionLevel) {
   );
 
   const qrBlocks = getBlocks(dataCodewords, ecCodewordsPerBlock, ecBlocks);
+  const numBlocks = qrBlocks.length;
+  console.debug("generateCodewords", {qrBlocks});
 
   const length = qrBlocks.reduce(
-    (total, { codewords }) => total + codewords.length,
+    (total, { data, errorCorrection }) => total + data.length + errorCorrection.length,
     0
   );
   console.debug("generateCodewords", { length });
   return Array.from({ length }, (_, idx) => {
-    const blockIdx = idx % qrBlocks.length;
-    const cwIdx = Math.floor(idx / qrBlocks.length);
+    const blockIdx = idx % numBlocks;
+    const cwIdx = Math.floor(idx / numBlocks);
     const { codewords } = qrBlocks[blockIdx];
     return codewords[cwIdx];
   });

@@ -46,7 +46,8 @@ export function getBlocks(dataCodewords, ecCodewordsPerBlock, ecBlocks) {
       console.debug("getBlocks", { ecCodewords });
 
       return {
-        codewords: [...blockData, ...ecCodewords],
+        data: blockData,
+        errorCorrection: ecCodewords
       };
     })
   );
