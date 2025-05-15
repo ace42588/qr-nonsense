@@ -3,12 +3,16 @@ import { makeNonDataModule } from "./utils";
 
 const source = {
   name: "FormatInfo",
-  type: "placeholder",
-  value: 0x4000,
+  type: "formatInfo",
 };
 
-function getBitsFromFormatInfo(ecLevel, mask = -1) {
-  if (mask === -1 || ecLevel) return 0x4000;
+function getBitsFromFormatInfo(ecLevel = -1, mask = -1) {
+  const errorCorrectionLevel = parseInt(ecLevel);
+  const dataMask = parseInt(mask);
+  console.debug("getBitsFromFormatInfo", {timestamp: Date.now(), errorCorrectionLevel, dataMask});
+  
+  if ((mask === -1) || (ecLevel === -1)) return 0x4000; // return a placeholder value
+  
   const info = FORMAT_INFO_TABLE.filter(
     ({ formatInfo: { errorCorrectionLevel, dataMask } }) =>
       errorCorrectionLevel == ecLevel && mask == dataMask
