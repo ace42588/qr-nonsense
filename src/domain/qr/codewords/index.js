@@ -11,7 +11,7 @@ export function generateCodewords(segments, version, errorCorrectionLevel) {
     version
   );
 
-  const qrBlocks = getBlocks(encodedBits, errorCorrectionLevel, version);
+  const qrBlocks = getBlocks(encodedBits, ecCodewordsPerBlock, ecBlocks);
   
   const length = qrBlocks.reduce(
     (total, { codewords }) => total + codewords.length,
