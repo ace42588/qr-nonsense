@@ -7,16 +7,19 @@ import { bitsToByte } from "./bits";
 const CODEWORD_LENGTH = 8;
 
 function splitIntoDataCodewords(encodedData) {
-  if (encodedData.length % CODEWORD_LENGTH !== 0) throw new Error("Encoded data cannot be broken up into codewords! Check terminator, fill, etc.");
+  if (encodedData.length % CODEWORD_LENGTH !== 0)
+    throw new Error(
+      "Encoded data cannot be broken up into codewords! Check terminator, fill, etc."
+    );
 
-  return Array.from({ length: encodedData.length / CODEWORD_LENGTH }, (_, i) => {
-    const start = i * CODEWORD_LENGTH;
-    const bits = encodedData.slice(start, start + CODEWORD_LENGTH);
-    if (bits.length !== CODEWORD_LENGTH) {
-      throw new Error(`Incomplete codeword at index ${i}: ${bits.length} bits`);
+  return Array.from(
+    { length: encodedData.length / CODEWORD_LENGTH },
+    (_, i) => {
+      const start = i * CODEWORD_LENGTH;
+      const bits = encodedData.slice(start, start + CODEWORD_LENGTH);
+      return getCodeword(bits, "data");
     }
-    return getCodeword(bits, "data");
-  });
+  );
 }
 
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
@@ -25,6 +28,16 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const ecBytes = encoder.encode(dataBytes);
   //return ecBytes.map((b, idx) => getECCodeword(b, dataCodewords[idx]));
   return Array.from(ecBytes, (b, idx) => getECCodeword(b, dataCodewords[idx]));
+}
+
+function generateEcCodewords(ecCodewordsPerBlock, dataCodewords) {
+  const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
+  const dataBytes = dataCodewords.map(({ bits }) => bitsToByte(bits));
+  const ecBytes = encoder.encode(dataBytes);
+
+  return ecBytes.map((byte, idx) =>
+    getECCodeword(byte, dataCodewords[idx % dataCodewords.length])
+  );
 }
 
 function getCodewordsForBlock(
@@ -57,23 +70,32 @@ function getCodewordsForBlock(
 }
 
 export function getBlocks(encodedData, ecCodewordsPerBlock, ecBlocks) {
+  const dataCodewords = splitIntoDataCodewords(encodedData);
+  let offset = 0;
   let numProcessedCodewords = 0;
 
   // ecBlocks is an { numBlocks, dataCodewordsPerBlock }[] used to map
   // the specifics of how to split up codewords for error correction.
   // The capacity of a block can vary within a QR code version.
 
-  return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }, idx) => 
-    Array.from({ length: numBlocks }, (_, blockNumber) => {
-      const blockCodewords = getCodewordsForBlock(
-        dataCodewordsPerBlock,
-        ecCodewordsPerBlock,
-        numProcessedCodewords,
-        encodedData
+  return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }) =>
+    Array.from({ length: numBlocks }, () => {
+      const blockData = dataCodewords.slice(
+        offset,
+        offset + dataCodewordsPerBlock
       );
-      numProcessedCodewords += dataCodewordsPerBlock;
+      if (blockData.length !== dataCodewordsPerBlock) {
+        throw new Error(
+          `Insufficient codewords for block: expected ${dataCodewordsPerBlock}, got ${blockData.length}`
+        );
+      }
+      offset += dataCodewordsPerBlock;
+
       return {
-        codewords: blockCodewords,
+        codewords: [
+          ...blockData,
+          ...getEcCodewords(ecCodewordsPerBlock, blockData),
+        ],
       };
     })
   );
