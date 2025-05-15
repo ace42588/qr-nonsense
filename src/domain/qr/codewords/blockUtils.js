@@ -6,7 +6,6 @@ export function getBlocks(encodedData, errorCorrectionLevel, version) {
     errorCorrectionLevel,
     version
   );
-  let lastBlockId = 0;
   let numProcessedCodewords = 0;
 
   // ecBlocks is an { numBlocks, dataCodewordsPerBlock }[] used to map
@@ -14,10 +13,9 @@ export function getBlocks(encodedData, errorCorrectionLevel, version) {
   // The capacity of a block can vary within a QR code version.
 
   return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }, idx) => {
-    const blocksForType = Array.from(
+    return Array.from(
       { length: numBlocks },
       (_, blockNumber) => {
-        const blockId = lastBlockId + blockNumber;
         const blockCodewords = getCodewordsForBlock(
           dataCodewordsPerBlock,
           ecCodewordsPerBlock,
@@ -27,11 +25,8 @@ export function getBlocks(encodedData, errorCorrectionLevel, version) {
         numProcessedCodewords += dataCodewordsPerBlock;
         return {
           codewords: blockCodewords,
-          id: blockId,
         };
       }
     );
-    lastBlockId = lastBlockId + blocksForType.length;
-    return blocksForType;
   });
 }
