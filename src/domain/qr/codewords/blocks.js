@@ -6,22 +6,6 @@ import { bitsToByte } from "./bits";
 
 const CODEWORD_LENGTH = 8;
 
-function splitIntoDataCodewords(encodedData) {
-  if (encodedData.length % CODEWORD_LENGTH !== 0)
-    throw new Error(
-      "Encoded data cannot be broken up into codewords! Check terminator, fill, etc."
-    );
-
-  return Array.from(
-    { length: encodedData.length / CODEWORD_LENGTH },
-    (_, i) => {
-      const start = i * CODEWORD_LENGTH;
-      const bits = encodedData.slice(start, start + CODEWORD_LENGTH);
-      return getCodeword(bits, "data");
-    }
-  );
-}
-
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
   const dataBytes = dataCodewords.map(({ bits }) => bitsToByte(bits));
@@ -32,43 +16,20 @@ function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   return ecBytes.map((byte) => getECCodeword(byte, source));
 }
 
-function generateEcCodewords(ecCodewordsPerBlock, dataCodewords) {
+function generateEcCodewords(ecCodewordsPerBlock, dataCodewords, blockIndex) {
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
   const dataBytes = dataCodewords.map(({ bits }) => bitsToByte(bits));
   const ecBytes = encoder.encode(dataBytes);
 
-  return ecBytes.map((byte, idx) =>
-    getECCodeword(byte, dataCodewords[idx % dataCodewords.length])
-  );
-}
-
-function getCodewordsForBlock(
-  dataCodewordsPerBlock,
-  ecCodewordsPerBlock,
-  numProcessedCodewords,
-  encodedData
-) {
-  const dataCodewords = Array.from(
-    { length: dataCodewordsPerBlock },
-    (_, i) => {
-      const cwStart = numProcessedCodewords + i * CODEWORD_LENGTH;
-      const bits = encodedData.slice(cwStart, cwStart + CODEWORD_LENGTH);
-      if (bits.length === 8) {
-        return getCodeword(bits, "data");
-      }
-      console.error("Issue creating codeword from data", {
-        cwStart,
-        bits,
-        encodedData,
-      });
-      throw new Error("Issue creating codeword from data");
-    }
-  );
-
-  return [
-    ...dataCodewords,
-    ...getEcCodewords(ecCodewordsPerBlock, dataCodewords),
-  ];
+  return ecBytes.map((byte, idx) => {
+    const source = {
+      name: "ReedSolomon",
+      type: "ec",
+      block: blockIndex,
+      index: idx, // index within the EC section of the block
+    };
+    return getECCodeword(byte, source);
+  });
 }
 
 export function getBlocks(dataCodewords, ecCodewordsPerBlock, ecBlocks) {
@@ -79,7 +40,7 @@ export function getBlocks(dataCodewords, ecCodewordsPerBlock, ecBlocks) {
   // The capacity of a block can vary within a QR code version.
 
   return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }) =>
-    Array.from({ length: numBlocks }, () => {
+    Array.from({ length: numBlocks }, (_, idx) => {
       const blockData = dataCodewords.slice(
         offset,
         offset + dataCodewordsPerBlock
@@ -94,7 +55,7 @@ export function getBlocks(dataCodewords, ecCodewordsPerBlock, ecBlocks) {
       return {
         codewords: [
           ...blockData,
-          ...getEcCodewords(ecCodewordsPerBlock, blockData),
+          ...getEcCodewords(ecCodewordsPerBlock, blockData, idx),
         ],
       };
     })

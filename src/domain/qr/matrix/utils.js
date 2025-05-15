@@ -1,5 +1,6 @@
 import { calculatePenalty } from "./calculatePenalty";
 import { makeModule } from "./modules";
+import { getRemainderBits } from "../versionUtils";
 
 export const DATA_MASKS = [
   (p) => (p.y + p.x) % 2 === 0,
@@ -58,8 +59,13 @@ export function applyMask(matrix, maskIndex) {
 }
 
 export function addCodewords(matrix, codewords) {
-  console.debug("addCodewords", { codewords });
-  const bits = codewords.flatMap((cw) => cw.bits);
+  const numRemainder = getRemainderBits(matrix.length);
+  const remainder = Array.from({ length: numRemainder }).map(
+    () => remainderBit
+  );
+  console.debug("addCodewords", { codewords, remainder });
+  const codewordBits = codewords.flatMap((cw) => cw.bits);
+  const bits = [...codewordBits, ...remainder];
   console.debug("addCodewords", { bits });
   return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
     const bit = bits[idx];

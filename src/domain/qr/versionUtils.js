@@ -40,3 +40,8 @@ export function gerVersionInfo(errorCorrectionLevel, version) {
     requiredDataCodewords: getRequiredCodewords(versionInfo.ecBlocks),
   };
 }
+
+export function getRemainderBits(matrixWidth) {
+  const version = (matrixWidth - 17) / 4;
+  return REMAINDER_BITS[version];
+}
