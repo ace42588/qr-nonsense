@@ -1,4 +1,4 @@
-import { getBits, getBitsFromSegments } from "./bits";
+import { getBits } from "./bits";
 
 const CODEWORD_LENGTH = 8;
 
@@ -16,15 +16,23 @@ export function getCodeword(bits, type) {
   };
 }
 
-export function getECCodeword(byte, sourceCodeword) {
+export function getECCodeword(byte, source) {
   //console.debug("getEcCodewords", {byte, sourceCodeword});
   const id = getId();
   return {
     type: "errorCorrection",
-    sourceCodeword,
+    source,
     id,
     bits: getBits(byte, CODEWORD_LENGTH, { id }),
   };
+}
+
+function getBitsFromSegments(segments) {
+  return segments.flatMap((s) => {
+    const bits = getBits(s.value, s.length, s);
+    s.bitIds = bits.map((b) => b.id);
+    return bits;
+  });
 }
 
 export function getCodewordsFromSegments(segments) {

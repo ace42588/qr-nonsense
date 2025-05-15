@@ -4,24 +4,12 @@ import { gerVersionInfo } from "../versionUtils";
 import { getCodeword, getECCodeword } from "./utils";
 import { bitsToByte } from "./bits";
 
-const CODEWORD_LENGTH = 8;
-
-function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
-  const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
-  const dataBytes = dataCodewords.map(({ bits }) => bitsToByte(bits));
-  const ecBytes = encoder.encode(dataBytes);
-  //return ecBytes.map((b, idx) => getECCodeword(b, dataCodewords[idx]));
-  //return Array.from(ecBytes, (b, idx) => getECCodeword(b, dataCodewords[idx]));
-  const source = { name: "ReedSolomon", type: "ec" };
-  return ecBytes.map((byte) => getECCodeword(byte, source));
-}
-
 function generateEcCodewords(ecCodewordsPerBlock, dataCodewords, blockIndex) {
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
   const dataBytes = dataCodewords.map(({ bits }) => bitsToByte(bits));
   const ecBytes = encoder.encode(dataBytes);
 
-  return ecBytes.map((byte, idx) => {
+  return Array.from(ecBytes, ((byte, idx) => {
     const source = {
       name: "ReedSolomon",
       type: "ec",
@@ -29,7 +17,7 @@ function generateEcCodewords(ecCodewordsPerBlock, dataCodewords, blockIndex) {
       index: idx, // index within the EC section of the block
     };
     return getECCodeword(byte, source);
-  });
+  }));
 }
 
 export function getBlocks(dataCodewords, ecCodewordsPerBlock, ecBlocks) {
@@ -52,11 +40,15 @@ export function getBlocks(dataCodewords, ecCodewordsPerBlock, ecBlocks) {
       }
       offset += dataCodewordsPerBlock;
 
+      const ecCodewords = generateEcCodewords(
+        ecCodewordsPerBlock,
+        blockData,
+        idx
+      );
+      console.debug("getBlocks", { ecCodewords });
+
       return {
-        codewords: [
-          ...blockData,
-          ...getEcCodewords(ecCodewordsPerBlock, blockData, idx),
-        ],
+        codewords: [...blockData, ...ecCodewords],
       };
     })
   );

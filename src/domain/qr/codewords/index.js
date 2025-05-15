@@ -1,4 +1,3 @@
-import { getBitsFromSegments } from "./bits";
 import { getBlocks } from "./blocks";
 import { gerVersionInfo } from "../versionUtils";
 import { getCodewordsFromSegments } from "./utils";

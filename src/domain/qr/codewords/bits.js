@@ -47,14 +47,6 @@ export function getBits(value, length, source) {
   }
 }
 
-export function getBitsFromSegments(segments) {
-  return segments.flatMap((s) => {
-    const bits = getBits(s.value, s.length, s);
-    s.bitIds = bits.map((b) => b.id);
-    return bits;
-  });
-}
-
 export function bitsToByte(bits) {
   if (bits.length !== 8) throw new Error("Invalid bits!" + JSON.stringify(bits));
   return bits.reduce((byte, { value }, idx) => (byte << 1) | value, 0);
