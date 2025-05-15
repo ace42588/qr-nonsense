@@ -12,7 +12,7 @@ function getBitsFromFormatInfo(ecLevel = -1, mask = -1) {
   const dataMask = parseInt(mask);
   console.debug("getBitsFromFormatInfo", {timestamp: Date.now(), errorCorrectionLevel, dataMask});
   
-  if ((mask === -1) || (ecLevel === -1)) return 0x4000; // return a placeholder value
+  if ((dataMask === -1) || (errorCorrectionLevel === -1)) return 0x4000; // return a placeholder value
   
   const info = FORMAT_INFO_TABLE.filter(
     ({ formatInfo: { errorCorrectionLevel, dataMask } }) =>

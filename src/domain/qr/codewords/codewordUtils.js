@@ -53,7 +53,7 @@ export function getCodewordsForBlock(
       if (bits.length === 8) {
         return getCodeword(bits, "data");
       }
-      throw new Error("Issue creating codeword from data");
+      throw new Error("Issue creating codeword from data", {cwStart, bits, encodedData});
     }
   );
 
