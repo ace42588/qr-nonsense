@@ -1,7 +1,18 @@
+// src/domain/qr/codewords/blocks.js
+import { ReedSolomonEncoder } from "../reedsolomon/";
 import { gerVersionInfo } from "../versionUtils";
-import { getCodeword, getEcCodewords } from "./utils";
+import { getCodeword, getECCodeword } from "./utils";
 
 const CodewordLength = 8;
+
+function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
+  const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
+  const dataBytes = Array.from(dataCodewords, ({ bits }) =>
+    bits.reduce((byte, { value }, idx) => (byte << 1) | value, 0)
+  );
+  const ecBytes = encoder.encode(dataBytes);
+  return Array.from(ecBytes, (b, idx) => getECCodeword(b, dataCodewords[idx]));
+}
 
 function getCodewordsForBlock(
   dataCodewordsPerBlock,
@@ -17,7 +28,11 @@ function getCodewordsForBlock(
       if (bits.length === 8) {
         return getCodeword(bits, "data");
       }
-      console.error("Issue creating codeword from data", {cwStart, bits, encodedData});
+      console.error("Issue creating codeword from data", {
+        cwStart,
+        bits,
+        encodedData,
+      });
       throw new Error("Issue creating codeword from data");
     }
   );
@@ -36,20 +51,17 @@ export function getBlocks(encodedData, ecCodewordsPerBlock, ecBlocks) {
   // The capacity of a block can vary within a QR code version.
 
   return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }, idx) => {
-    return Array.from(
-      { length: numBlocks },
-      (_, blockNumber) => {
-        const blockCodewords = getCodewordsForBlock(
-          dataCodewordsPerBlock,
-          ecCodewordsPerBlock,
-          numProcessedCodewords,
-          encodedData
-        );
-        numProcessedCodewords += dataCodewordsPerBlock;
-        return {
-          codewords: blockCodewords,
-        };
-      }
-    );
+    return Array.from({ length: numBlocks }, (_, blockNumber) => {
+      const blockCodewords = getCodewordsForBlock(
+        dataCodewordsPerBlock,
+        ecCodewordsPerBlock,
+        numProcessedCodewords,
+        encodedData
+      );
+      numProcessedCodewords += dataCodewordsPerBlock;
+      return {
+        codewords: blockCodewords,
+      };
+    });
   });
 }

@@ -1,3 +1,4 @@
+// src/domain/qr/codewords/bits.js
 function getId() {
   return `${crypto.randomUUID()}`;
 }
