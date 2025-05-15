@@ -1,5 +1,5 @@
 import { calculatePenalty } from "./calculatePenalty";
-import { addFormatInfoModules, makeModule } from "./modules";
+import { makeModule } from "./modules";
 
 export const DATA_MASKS = [
   (p) => (p.y + p.x) % 2 === 0,

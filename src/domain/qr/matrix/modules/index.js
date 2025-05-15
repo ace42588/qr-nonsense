@@ -2,11 +2,11 @@ import { addFinderPatterns } from "./finderPattern";
 import { addSeparators } from "./separators";
 import { addAlignmentPatterns } from "./alignmentPatterns";
 import { addTimingPatterns } from "./timingPatterns";
-import { addFormatInfoModules } from "./formatInfo";
+import { addFormatInfoPlaceholders } from "./formatInfo";
 import { addVersionInfo } from "./versionInfo";
 
 export { makeModule } from "./utils";
-export { addFormatInfoModules } from "./formatInfo";
+export { updateFormatInfoModules } from "./formatInfo";
 export { addVersionInfo } from "./versionInfo";
 
 export function addPatterns(matrix) {
@@ -15,7 +15,7 @@ export function addPatterns(matrix) {
   addSeparators(matrix);
   addAlignmentPatterns(matrix);
   addTimingPatterns(matrix);
-  addFormatInfoModules(matrix); // add placeholder
+  addFormatInfoPlaceholders(matrix); // add placeholder
   addVersionInfo(matrix);
   return matrix;
 }

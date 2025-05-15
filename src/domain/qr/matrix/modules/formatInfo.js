@@ -28,9 +28,8 @@ function getBitsFromFormatInfo(ecLevel = -1, mask = -1) {
   return info.bits;
 }
 
-function placeModules(matrix, formatInfo = 0x4000) {
+function placeModules(matrix, bits) {
   const size = matrix.length;
-  const values = formatInfo.toString(2);
   //console.debug("placeModules", {formatInfo, values});
   // Horizontal
   [
@@ -51,7 +50,7 @@ function placeModules(matrix, formatInfo = 0x4000) {
     { x: size - 1, y: 8 },
   ].forEach(
     ({ x, y }, idx) =>
-      (matrix[y][x] = makeNonDataModule(values[idx], source, x, y))
+      (matrix[y][x] = makeNonDataModule(bits[idx], source, x, y))
   );
   // Vertical
   [
@@ -72,7 +71,7 @@ function placeModules(matrix, formatInfo = 0x4000) {
     { x: 8, y: 0 },
   ].forEach(
     ({ x, y }, idx) =>
-      (matrix[y][x] = makeNonDataModule(values[idx], source, x, y))
+      (matrix[y][x] = makeNonDataModule(bits[idx], source, x, y))
   );
 
   // Add the dark module
@@ -85,13 +84,13 @@ function placeModules(matrix, formatInfo = 0x4000) {
   return matrix;
 }
 
-export function addFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
+export function addFormatInfoPlaceholders(matrix) {
+  const dummyBits = "000000000000000";
+  placeModules(matrix, dummyBits);
+}
+
+export function updateFormatInfoModules(matrix, errorCorrectionLevel, dataMask) {
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
-  console.debug("addFormatInfoModules", {
-    errorCorrectionLevel,
-    dataMask,
-    formatInfo,
-  });
-  placeModules(matrix, formatInfo);
+  placeModules(matrix, formatInfo.toString(2));
   return matrix;
 }
