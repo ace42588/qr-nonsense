@@ -1,5 +1,4 @@
-import { ReedSolomonEncoder } from "../reedsolomon/";
-import { getBits } from "./bitUtils";
+import { getBits } from "./bits";
 
 const CodewordLength = 8;
 

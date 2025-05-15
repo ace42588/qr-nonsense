@@ -54,3 +54,8 @@ export function getBitsFromSegments(segments) {
     return bits;
   });
 }
+
+export function bitsToByte(bits) {
+  if (bits.length !== 8) throw new Error("Invalid bits!" + JSON.stringify(bits));
+  return bits.reduce((byte, { value }, idx) => (byte << 1) | value, 0);
+}

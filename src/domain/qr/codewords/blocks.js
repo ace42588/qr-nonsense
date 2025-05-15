@@ -2,14 +2,13 @@
 import { ReedSolomonEncoder } from "../reedsolomon/";
 import { gerVersionInfo } from "../versionUtils";
 import { getCodeword, getECCodeword } from "./utils";
+import { bitsToByte } from "./bits";
 
 const CodewordLength = 8;
 
 function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
-  const dataBytes = Array.from(dataCodewords, ({ bits }) =>
-    bits.reduce((byte, { value }, idx) => (byte << 1) | value, 0)
-  );
+  const dataBytes = dataCodewords.map(({ bits }) => bitsToByte(bits));
   const ecBytes = encoder.encode(dataBytes);
   return Array.from(ecBytes, (b, idx) => getECCodeword(b, dataCodewords[idx]));
 }
@@ -50,8 +49,8 @@ export function getBlocks(encodedData, ecCodewordsPerBlock, ecBlocks) {
   // the specifics of how to split up codewords for error correction.
   // The capacity of a block can vary within a QR code version.
 
-  return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }, idx) => {
-    return Array.from({ length: numBlocks }, (_, blockNumber) => {
+  return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }, idx) => 
+    Array.from({ length: numBlocks }, (_, blockNumber) => {
       const blockCodewords = getCodewordsForBlock(
         dataCodewordsPerBlock,
         ecCodewordsPerBlock,
@@ -62,6 +61,6 @@ export function getBlocks(encodedData, ecCodewordsPerBlock, ecBlocks) {
       return {
         codewords: blockCodewords,
       };
-    });
-  });
+    })
+  );
 }
