@@ -6,6 +6,7 @@ export { getMatrix } from "./matrix";
 export { evaluateQRCodeQuality } from "./evaluator.js";
 
 export function getEncodedMessage(inputs, sVersion, errorCorrectionLevel) {
+  sVersion = parseInt(sVersion);
   const [encodedInputs, numDataBits] = encodeAll(inputs);
   const [version, numDataCodewords] =
     sVersion === -1

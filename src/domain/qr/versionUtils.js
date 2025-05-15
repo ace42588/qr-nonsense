@@ -1,5 +1,14 @@
 import { EC_INFO } from "./constants";
 
+function getRequiredCodewords(ecBlocks) {
+  return ecBlocks.reduce(
+        (total, { numBlocks, dataCodewordsPerBlock }) =>
+          total + numBlocks * dataCodewordsPerBlock,
+        0
+      );
+  
+}
+
 export function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
   // Try each version until one is found that fits the data.
   for (let version = 1; version <= 40; version++) {
@@ -9,11 +18,7 @@ export function getMinimumQRCodeVersion(totalDataBits, errorCorrectionLevel) {
     );
 
     if (totalDataBits <= capacity) {
-      let requiredDataCodewords = ecBlocks.reduce(
-        (total, { numBlocks, dataCodewordsPerBlock }) =>
-          total + numBlocks * dataCodewordsPerBlock,
-        0
-      );
+      const requiredDataCodewords = getRequiredCodewords(ecBlocks);
       return [version, requiredDataCodewords];
     }
   }
