@@ -62,7 +62,7 @@ export function addCodewords(matrix, codewords) {
   const bits = codewords.flatMap((cw) => cw.bits);
   console.debug("addCodewords", { bits });
   return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
-    const bit = bits[idx] || remainderBit;
+    const bit = bits[idx];
     return makeModule({ bit, x, y });
   });
 }

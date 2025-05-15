@@ -1,3 +1,7 @@
+export const REMAINDER_BITS = {
+  
+};
+
 export const EC_INFO = {
   "0": {
     "1": {
