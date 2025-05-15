@@ -2,25 +2,22 @@ import { createMatrix, addCodewords, applyMask } from "./utils";
 import { calculatePenalty } from "./calculatePenalty";
 import { addPatterns, updateFormatInfoModules } from "./modules";
 
-export function getMatrix(
-  codewords,
-  dataMask,
-  version,
-  errorCorrectionLevel
-) {
+export function getMatrix(codewords, dataMask, version, errorCorrectionLevel) {
   const matrix = createMatrix(version);
   const base = addPatterns(matrix);
   const populated = addCodewords(base, codewords);
 
-  console.debug("getMatrix", {dataMask});
   if (parseInt(dataMask) !== -1) {
     const masked = applyMask(populated, dataMask);
-    const final = updateFormatInfoModules(matrix, errorCorrectionLevel, dataMask);
-    return { matrix: masked, dataMask };
+    const final = updateFormatInfoModules(
+      matrix,
+      errorCorrectionLevel,
+      dataMask
+    );
+    return { matrix: final, dataMask };
   }
 
   // Automatic mask scoring
-  console.debug("getMatrix: automatic dataMask scoring");
   let bestScore = Infinity;
   let bestMask = 0;
   let bestMatrix;
@@ -32,13 +29,16 @@ export function getMatrix(
       maskIdx
     );
     const score = calculatePenalty(testMatrix);
-    //console.debug("getMatrix", {bestScore, score});
+    console.debug("getMatrix", { bestScore, score });
     if (score < bestScore) {
       bestScore = score;
       bestMask = maskIdx;
       bestMatrix = testMatrix;
     }
   }
+  console.debug("getMatrix", { bestMask });
+  const masked = applyMask(populated, bestMask);
+  const final = updateFormatInfoModules(matrix, errorCorrectionLevel, bestMask);
 
-  return { matrix: bestMatrix, dataMask: bestMask };
+  return { matrix: final, dataMask: bestMask };
 }

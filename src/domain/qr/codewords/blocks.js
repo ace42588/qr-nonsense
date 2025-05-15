@@ -11,8 +11,6 @@ function generateEcCodewords(ecCodewordsPerBlock, dataCodewords, blockIndex) {
 
   return Array.from(ecBytes, ((byte, idx) => {
     const source = {
-      name: "ReedSolomon",
-      type: "ec",
       block: blockIndex,
       index: idx, // index within the EC section of the block
     };
