@@ -1,4 +1,4 @@
-import { EC_INFO } from "./constants";
+import { EC_INFO, REMAINDER_BITS } from "./constants";
 
 function getRequiredCodewords(ecBlocks) {
   return ecBlocks.reduce(
@@ -36,6 +36,7 @@ export function gerVersionInfo(errorCorrectionLevel, version) {
   return {
     version,
     ...versionInfo,
+    remainderBits: REMAINDER_BITS[version],
     requiredDataCodewords: getRequiredCodewords(versionInfo.ecBlocks),
   };
 }

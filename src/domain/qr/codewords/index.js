@@ -1,9 +1,15 @@
 import { getBitsFromSegments } from "./bitUtils";
 import { getBlocks } from "./blockUtils";
+import { gerVersionInfo } from "../versionUtils";
 
 export function generateCodewords(segments, version, errorCorrectionLevel) {
 
   const encodedBits = getBitsFromSegments(segments);
+  
+  const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
+    errorCorrectionLevel,
+    version
+  );
 
   const qrBlocks = getBlocks(encodedBits, errorCorrectionLevel, version);
   

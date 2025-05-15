@@ -7,7 +7,7 @@ function getId() {
   return `${crypto.randomUUID()}`;
 }
 
-function getCodeword(bits, type) {
+export function getCodeword(bits, type) {
   if (!bits || bits.length !== CodewordLength)
     throw new Error(`Invalid bits for getCodeword(): ${bits}`);
   return {
@@ -18,7 +18,7 @@ function getCodeword(bits, type) {
   };
 }
 
-function getECCodeword(byte, sourceCodeword) {
+export function getECCodeword(byte, sourceCodeword) {
   //console.debug("getEcCodewords", {byte, sourceCodeword});
   const id = getId();
   return {
@@ -30,7 +30,7 @@ function getECCodeword(byte, sourceCodeword) {
   };
 }
 
-function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
+export function getEcCodewords(ecCodewordsPerBlock, dataCodewords) {
   const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
   const dataBytes = Array.from(dataCodewords, ({ bits }) =>
     bits.reduce((byte, { value }, idx) => (byte << 1) | value, 0)
