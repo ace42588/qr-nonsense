@@ -6,7 +6,7 @@ import { getMinimumQRCodeVersion } from "../versionUtils";
 
 export function encodeInput(mode, input, options = {}) {
   console.debug("encodeInput", { mode, input, options });
-  if (!input || input === "") return [];
+
   switch (mode) {
     case "numeric":
       return encodeNumeric(input, options);
