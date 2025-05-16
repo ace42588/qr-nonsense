@@ -90,7 +90,7 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
     for (let i = 0; i < totalBytes; i++) {
       bytes[i] = (result >> (8 * (totalBytes - i - 1))) & 0xff;
     }
-
+    console.debug("encodeFieldsToBytes", { bytes });
     return bytes;
   } catch (e) {
     console.warn(e);
