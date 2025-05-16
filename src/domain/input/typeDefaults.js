@@ -1,5 +1,5 @@
 // domain/inputDefaults.ts
-import {predefinedSchemas} from "./serializationSchemas";
+import { jsonSchema } from "./serializationSchemas";
 
 const basicExample = {
   id: crypto.randomUUID(),
@@ -56,7 +56,7 @@ const typeDefaults = {
         { v: 1234, q: 2 },
       ],
     },
-    schema: predefinedSchemas.jsonSchema,
+    schema: jsonSchema,
     format: "None",
   },
   bitfield: {

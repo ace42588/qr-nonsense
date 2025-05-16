@@ -1,4 +1,4 @@
-const bitSchema = {
+export const bitSchema = {
   type: "object",
   properties: {
     p: {
@@ -32,7 +32,7 @@ const bitSchema = {
   },
 };
 
-const jsonSchema = {
+export const jsonSchema = {
   type: "object",
   properties: {
     p: {
@@ -61,7 +61,7 @@ const jsonSchema = {
   },
 };
 
-const alphaNumericSchema = {
+export const alphaNumericSchema = {
   type: "object",
   properties: {
     encapsulator: "$",
@@ -96,9 +96,3 @@ const alphaNumericSchema = {
     },
   },
 };
-
-export const predefinedSchemas = {
-  bitSchema,
-  jsonSchema,
-  alphaNumericSchema
-}

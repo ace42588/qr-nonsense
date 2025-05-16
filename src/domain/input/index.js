@@ -2,6 +2,11 @@ import { parseBasic } from "./parsers/parseBasic";
 import { parseJson } from "./parsers/parseJson";
 import { parseBitField } from "./parsers/parseBitField";
 import { generateMAC } from "./parsers/generateMAC";
+import {
+  alphaNumericSchema,
+  bitSchema,
+  jsonSchema,
+} from "./serializationSchemas";
 
 const INPUT_PARSERS = {
   basic: parseBasic,
@@ -42,3 +47,9 @@ export function parseAll(inputs) {
 
   return obj;
 }
+
+export const predefinedSchemas = {
+  bitSchema,
+  jsonSchema,
+  alphaNumericSchema,
+};

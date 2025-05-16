@@ -29,14 +29,14 @@ export function getMatrix(codewords, dataMask, version, errorCorrectionLevel) {
       maskIdx
     );
     const score = calculatePenalty(testMatrix);
-    console.debug("getMatrix", { bestScore, score });
+    //console.debug("getMatrix", { bestScore, score });
     if (score < bestScore) {
       bestScore = score;
       bestMask = maskIdx;
       bestMatrix = testMatrix;
     }
   }
-  console.debug("getMatrix", { bestMask });
+  //console.debug("getMatrix", { bestMask });
   const masked = applyMask(populated, bestMask);
   const final = updateFormatInfoModules(matrix, errorCorrectionLevel, bestMask);
 

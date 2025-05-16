@@ -63,10 +63,10 @@ export function addCodewords(matrix, codewords) {
   const remainder = Array.from({ length: numRemainder }).map(
     () => remainderBit
   );
-  console.debug("addCodewords", { codewords, remainder });
+  //console.debug("addCodewords", { codewords, remainder });
   const codewordBits = codewords.flatMap((cw) => cw.bits);
   const bits = [...codewordBits, ...remainder];
-  console.debug("addCodewords", { bits });
+  //console.debug("addCodewords", { bits });
   return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
     const bit = bits[idx];
     return makeModule({ bit, x, y });

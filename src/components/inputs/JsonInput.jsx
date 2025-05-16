@@ -1,8 +1,8 @@
 import { useState } from "react";
 import Editor from "@monaco-editor/react";
 import { useParsedInputs, useInputDispatch } from "../../state";
-import { predefinedSchemas } from "../../domain/input/serializationSchemas";
-import { ENCODING_STRATEGIES } from "../../domain/input/serializationSchemas";
+import { predefinedSchemas } from "../../domain/input";
+import { ENCODING_STRATEGIES } from "../../domain/encoders";
 import { TabSwitcher } from "../shared/TabSwitcher";
 
 import "../styles/styles.css";
@@ -70,6 +70,20 @@ export function JsonInput({ id, input }) {
         </div>
       ) : (
         <div style={{ marginTop: 8 }}>
+          <label>Schema</label>
+          <select
+            value={input.schema}
+            onChange={(e) => {
+              const selected = predefinedSchemas[e.target.value];
+              updateSchema(selected);
+            }}
+          >
+            {Object.entries(predefinedSchemas).map(([name]) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
           <Editor
             height="180px"
             defaultLanguage="json"
@@ -80,20 +94,17 @@ export function JsonInput({ id, input }) {
         </div>
       )}
 
-      <div className="label-select-row">
-        <label htmlFor="format">Encoding Format:</label>
-        <select
-          id="format"
-          value={format}
-          onChange={(e) => emitChange("format", e.target.value)}
-        >
-          {formats.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      <label>Encoding</label>
+      <select
+        value={input.encoding}
+        onChange={(e) => updateEncoding(e.target.value)}
+      >
+        {ENCODING_STRATEGIES.map((name) => (
+          <option key={name} value={name}>
+            {name}
+          </option>
+        ))}
+      </select>
 
       {format !== "None" && (
         <div style={{ marginTop: 12 }}>
