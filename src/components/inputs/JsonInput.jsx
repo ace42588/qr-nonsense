@@ -1,10 +1,11 @@
 import { useState } from "react";
 import Editor from "@monaco-editor/react";
 import { useParsedInputs, useInputDispatch } from "../../state";
-import "../styles/styles.css";
-
-//import { encodeJson } from "./utils";
+import { predefinedSchemas } from "../../domain/input/serializationSchemas";
+import { ENCODING_STRATEGIES } from "../../domain/input/serializationSchemas";
 import { TabSwitcher } from "../shared/TabSwitcher";
+
+import "../styles/styles.css";
 
 const formats = [
   { value: "None", label: "Direct JSON" },
@@ -13,6 +14,13 @@ const formats = [
   { value: "PER-ModHex", label: "Packed Encoding Rule, ModHex" },
   { value: "PER-NTRU", label: "Packed Encoding Rule, NTRU" },
 ];
+
+const options = {
+  minimap: { enabled: false },
+  scrollbar: { vertical: "hidden", horizontal: "hidden" },
+  overviewRulerLanes: 0,
+  lineNumbers: "off",
+};
 
 export function JsonInput({ id, input }) {
   const { updateInput, updateEncoding, updateSchema } = useInputDispatch();
@@ -31,13 +39,6 @@ export function JsonInput({ id, input }) {
     } catch {
       // Invalid JSON; ignore or show error
     }
-  };
-
-  const options = {
-    minimap: { enabled: false },
-    scrollbar: { vertical: "hidden", horizontal: "hidden" },
-    overviewRulerLanes: 0,
-    lineNumbers: "off",
   };
 
   return (
