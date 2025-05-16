@@ -2,6 +2,17 @@ import { getBlocks } from "./blocks";
 import { gerVersionInfo } from "../versionUtils";
 import { getCodewordsFromSegments } from "./utils";
 
+const interleave = (blocks) => {
+  const maxLength = Math.max(...blocks.map((cw) => cw.length));
+  const result = [];
+  for (let i = 0; i < maxLength; i++) {
+    for (const block of blocks) {
+      result.push(block[i]);
+    }
+  }
+  return result
+}
+
 export function generateCodewords(segments, version, errorCorrectionLevel) {
   //const encodedBits = getBitsFromSegments(segments);
   const dataCodewords = getCodewordsFromSegments(segments);
