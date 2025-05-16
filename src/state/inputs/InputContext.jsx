@@ -26,7 +26,7 @@ export function InputProvider({ children }) {
       dispatch({ type: Actions.Update, id: payload.id, partial: payload });
     }, []),
     updateEncoding: useCallback((id, encoding) => {
-      dispatch({ type: Actions.Update, id, encoding  });
+      dispatch({ type: Actions.Update, id, encoding });
     }, []),
     updateSchema: useCallback((id, schema) => {
       dispatch({ type: Actions.Update, id, schema });
