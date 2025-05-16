@@ -31,6 +31,9 @@ export function InputProvider({ children }) {
     updateSchema: useCallback((id, schema) => {
       dispatch({ type: Actions.UpdateSchema, id, schema });
     }, []),
+    updateSchemaName: useCallback((id, name) => {
+      dispatch({ type: Actions.SetSchemaName, id, name });
+    }, []),
     removeInput: useCallback((payload) => {
       dispatch({ type: Actions.Remove, payload });
     }, []),

@@ -11,6 +11,7 @@ export const Actions = {
   ChangeType: "CHANGE_TYPE",
   ChangeMeta: "CHANGE_META",
   SetInputs: "SET_INPUTS",
+  SetSchemaName: "SET_SCHEMA_NAME",
   UpdateSchema: "UPDATE_SERIALIZATION_SCHEMA",
   UpdateEncoding: "UPDATE_ENCODING_STRATEGY",
 };
@@ -51,6 +52,15 @@ export function inputReducer(state, action) {
         inputs: updateInputById(prev, action.id, action.partial),
       };
     }
+    case Actions.SetSchemaName: {
+      const prev = state.inputs;
+      return {
+        ...state,
+        inputs: prev.map((input) =>
+          input.id === action.id ? { ...input, schemaName: action.name } : input
+        ),
+      };
+    }
     case Actions.UpdateSchema: {
       const prev = state.inputs;
       return {
@@ -60,7 +70,6 @@ export function inputReducer(state, action) {
         ),
       };
     }
-
     case Actions.UpdateEncoding: {
       const prev = state.inputs;
       return {

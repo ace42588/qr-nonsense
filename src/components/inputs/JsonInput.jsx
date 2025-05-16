@@ -23,7 +23,8 @@ const options = {
 };
 
 export function JsonInput({ id, input }) {
-  const { updateInput, updateEncoding, updateSchema } = useInputDispatch();
+  const { updateInput, updateEncoding, updateSchema, updateSchemaName } =
+    useInputDispatch();
   const { obj, schema, format } = input;
   const preview = useParsedInputs()[id];
 
@@ -39,6 +40,18 @@ export function JsonInput({ id, input }) {
     } catch {
       // Invalid JSON; ignore or show error
     }
+  };
+
+  const handleSchemaSelect = (e) => {
+    const name = e.target.value;
+    const schema = predefinedSchemas[name];
+    updateSchema(schema);
+    updateSchemaName(name);
+  };
+
+  const handleCustomSchemaChange = (schema) => {
+    updateSchema(schema);
+    updateSchemaName("custom");
   };
 
   return (
@@ -73,10 +86,7 @@ export function JsonInput({ id, input }) {
           <label>Schema</label>
           <select
             value={schema}
-            onChange={(e) => {
-              const selected = predefinedSchemas[e.target.value];
-              updateSchema(id, selected);
-            }}
+            onChange={handleSchemaSelect}
           >
             {Object.entries(predefinedSchemas).map(([name]) => (
               <option key={name} value={name}>
