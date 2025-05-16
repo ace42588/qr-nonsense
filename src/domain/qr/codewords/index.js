@@ -10,7 +10,7 @@ const interleave = (blocks) => {
       result.push(block[i]);
     }
   }
-  return result
+  return result;
 }
 
 export function generateCodewords(segments, version, errorCorrectionLevel) {
@@ -23,6 +23,11 @@ export function generateCodewords(segments, version, errorCorrectionLevel) {
   );
 
   const qrBlocks = getBlocks(dataCodewords, ecCodewordsPerBlock, ecBlocks);
+  return [
+    ...interleave(qrBlocks.map((b) => b.data)),
+    ...interleave(qrBlocks.map((b) => b.errorCorrection))
+  ];
+  
   const numBlocks = qrBlocks.length;
   console.debug("generateCodewords", {qrBlocks});
 

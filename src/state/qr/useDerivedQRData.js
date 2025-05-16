@@ -21,6 +21,7 @@ export function useDerivedQRData() {
     () => getCodewords(segments, version, errorCorrectionLevel),
     [parsedInputs, selectedVersion, errorCorrectionLevel]
   );
+  console.debug({codewords});
 
   const { matrix, dataMask } = useMemo(
     () => getMatrix(codewords, selectedDataMask, version, errorCorrectionLevel),
