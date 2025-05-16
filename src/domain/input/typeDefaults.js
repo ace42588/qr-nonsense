@@ -3,28 +3,28 @@
 const bitSchema = {
   type: "object",
   properties: {
-    platform: {
+    p: {
       type: "integer",
       bits: 2,
     },
-    conferenceCode: {
+    cc: {
       type: "integer",
       bits: 8,
     },
-    transactionId: {
+    txn: {
       type: "integer",
       bits: 20,
     },
-    items: {
+    i: {
       type: "array",
       items: {
         type: "object",
         properties: {
-          variant: {
+          v: {
             type: "integer",
             bits: 16,
           },
-          quantity: {
+          q: {
             type: "integer",
             bits: 8,
           },
@@ -67,27 +67,28 @@ const alphaNumericSchema = {
   type: "object",
   properties: {
     encapsulator: "$",
-    format: {
+    separator: "%",
+    fmt: {
       type: "integer",
     },
-    platform: {
+    p: {
       type: "string",
     },
-    conferenceCode: {
+    cc: {
       type: "integer",
     },
-    transactionId: {
+    txn: {
       type: "integer",
     },
-    items: {
+    i: {
       type: "array",
       items: {
         type: "object",
         properties: {
-          variant: {
+          v: {
             type: "integer",
           },
-          quantity: {
+          q: {
             type: "integer",
           },
           separator: ":",
@@ -95,7 +96,6 @@ const alphaNumericSchema = {
         },
       },
     },
-    separator: "%",
   },
 };
 

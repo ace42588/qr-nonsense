@@ -14,7 +14,6 @@ const INPUT_PARSERS = {
 };
 
 function handleInput(inputData) {
-  //console.debug("handleInput", { inputData });
   const encodeFn = INPUT_PARSERS[inputData.type];
   if (!encodeFn) throw new Error(`Unknown input type: ${inputData.type}`);
   return encodeFn(inputData);
@@ -40,7 +39,6 @@ export function parseAll(inputs) {
   const obj = Object.fromEntries(
     inputs.map(({ id }) => [id, { ...first, ...second }[id]])
   );
-  //console.debug("parseAll", { first, second, obj });
 
   return obj;
 }
