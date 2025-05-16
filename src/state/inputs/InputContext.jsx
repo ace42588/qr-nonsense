@@ -25,6 +25,12 @@ export function InputProvider({ children }) {
     updateInput: useCallback((payload) => {
       dispatch({ type: Actions.Update, id: payload.id, partial: payload });
     }, []),
+    updateEncoding: useCallback((id, encoding) => {
+      dispatch({ type: Actions.Update, id, encoding  });
+    }, []),
+    updateSchema: useCallback((id, schema) => {
+      dispatch({ type: Actions.Update, id, schema });
+    }, []),
     removeInput: useCallback((payload) => {
       dispatch({ type: Actions.Remove, payload });
     }, []),
@@ -35,7 +41,6 @@ export function InputProvider({ children }) {
       dispatch({ type: Actions.Reorder, oldIndex, newIndex });
     }, []),
     setType: useCallback((id, type) => {
-      //console.debug("setType", {id, type})
       dispatch({
         type: Actions.ChangeType,
         id,

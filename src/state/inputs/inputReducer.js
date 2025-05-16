@@ -12,7 +12,7 @@ export const Actions = {
   ChangeMeta: "CHANGE_META",
   SetInputs: "SET_INPUTS",
   UpdateSchema: "UPDATE_SERIALIZATION_SCHEMA",
-  UpdateEncoding: "UPDATE_ENCODING_STRATEGY"
+  UpdateEncoding: "UPDATE_ENCODING_STRATEGY",
 };
 
 export const initialInput = {
@@ -51,6 +51,27 @@ export function inputReducer(state, action) {
         inputs: updateInputById(prev, action.id, action.partial),
       };
     }
+    case Actions.UpdateSchema: {
+      const prev = state.inputs;
+      return {
+        ...state,
+        inputs: prev.map((input) =>
+          input.id === action.id ? { ...input, schema: action.schema } : input
+        ),
+      };
+    }
+
+    case Actions.UpdateEncoding: {
+      const prev = state.inputs;
+      return {
+        ...state,
+        inputs: prev.map((input) =>
+          input.id === action.id
+            ? { ...input, encoding: action.encoding }
+            : input
+        ),
+      };
+    }
     case Actions.Reorder: {
       const { oldIndex, newIndex } = action;
       const prev = state.inputs;
@@ -77,19 +98,6 @@ export function inputReducer(state, action) {
     case Actions.SetInputs: {
       return { ...state, ...action.payload };
     }
-      case Actions.UpdateSchema:
-  return state.map(input =>
-    input.id === action.id
-      ? { ...input, serializationSchema: action.schema }
-      : input
-  );
-
-case Actions.UpdateEncoding:
-  return state.map(input =>
-    input.id === action.id
-      ? { ...input, encoding: action.encoding }
-      : input
-  );
 
     default:
       return state;
