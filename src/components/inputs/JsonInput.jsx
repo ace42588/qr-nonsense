@@ -36,7 +36,7 @@ export function JsonInput({ id, input }) {
   const handleJsonChange = (field, text) => {
     try {
       const parsed = JSON.parse(text);
-      //emitChange(field, parsed);
+      emitChange(field, parsed);
     } catch {
       // Invalid JSON; ignore or show error
     }

@@ -64,12 +64,13 @@ export function generateBitLayoutFromSchema(schema, prefix = "") {
 }
 
 export function encodeFieldsToBytes(fieldsLayout, values) {
-  //console.debug("encodeFieldsToBytes", { fieldsLayout, values });
+  console.debug("encodeFieldsToBytes", { fieldsLayout, values });
   let result = 0;
 
   try {
     fieldsLayout.forEach((field) => {
       const value = getValueFromPath(values, field.label);
+      console.debug("encodeFieldsToBytes", { value });
       if (value === undefined) {
         throw new Error(`Missing value for field: ${field.label}`);
       }
@@ -91,7 +92,8 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
     }
 
     return bytes;
-  } catch {
+  } catch (e) {
+    console.warn(e);
     return null;
   }
 }

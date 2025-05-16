@@ -39,11 +39,11 @@ function separateSchemaParts(schema) {
 }
 
 function encodeToBytes(obj, schema) {
-  console.debug("encodeToBytes", {obj, schema});
   const { rootSchema, arrayField, arraySchema } = separateSchemaParts(schema);
 
   const rootLayout = generateBitLayoutFromSchema(rootSchema);
   const rootBytes = encodeFieldsToBytes(rootLayout, obj);
+  console.debug("encodeToBytes", {rootLayout, rootBytes});
 
   let itemBytes = [];
 
@@ -144,7 +144,6 @@ function getSchemaType(schema) {
   const rootPropKeys = Object.keys(properties);
   if (rootPropKeys.some((k) => specialTypes.includes(k))) return 'Alphanumeric';
   const rootPropFields = Object.values(properties).flatMap((p) => Object.keys(p));
-  console.debug("getSchemaType", {rootPropFields});
   if (rootPropFields.includes("bits")) return "Byte";
   return "String";
 }
