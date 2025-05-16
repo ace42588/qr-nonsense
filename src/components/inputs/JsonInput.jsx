@@ -45,12 +45,12 @@ export function JsonInput({ id, input }) {
   const handleSchemaSelect = (e) => {
     const name = e.target.value;
     const schema = predefinedSchemas[name];
-    updateSchema(schema);
-    updateSchemaName(name);
+    updateSchema(id, schema);
+    updateSchemaName(id, name);
   };
 
   const handleCustomSchemaChange = (schema) => {
-    updateSchema(schema);
+    updateSchema(id, schema);
     updateSchemaName("custom");
   };
 
@@ -85,7 +85,7 @@ export function JsonInput({ id, input }) {
         <div style={{ marginTop: 8 }}>
           <label>Schema</label>
           <select
-            value={schema}
+            value={input.schemaName}
             onChange={handleSchemaSelect}
           >
             {Object.entries(predefinedSchemas).map(([name]) => (
