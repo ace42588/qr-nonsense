@@ -5,10 +5,11 @@ import {
 } from "./utils/bitFieldUtils";
 import { ModHex, NTRU } from "../../encoders";
 
+const specialTypes = ["encapsulator", "separator", "terminator"];
+
 // Extracts top-level integers and the first array of objects (if present)
 function separateSchemaParts(schema) {
   const flatTypes = ["integer", "string", "number", "boolean"];
-  const specialTypes = ["encapsulator", "separator", "terminator"];
   const rootFields = {};
   let arrayField = null;
   let arraySchema = null;
@@ -120,7 +121,11 @@ const JSON_PARSERS = {
 };
 
 function getSchemaType(schema) {
-  
+  const { rootSchema: {properties} } = separateSchemaParts(schema);
+  const rootPropKeys = Object.keys(properties);
+  if (rootPropKeys.some((k) => specialTypes.includes(k))) return 'Alphanumeric';
+  const rootPropFields = Object.values(properties).map((p) => Object.keys(p))
+  if (Object.values(properties).map)
 }
 
 export function parseJson(input) {
