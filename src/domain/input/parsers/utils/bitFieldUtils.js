@@ -70,7 +70,7 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
   try {
     fieldsLayout.forEach((field) => {
       const value = getValueFromPath(values, field.label);
-      console.debug("encodeFieldsToBytes", { value });
+      console.debug("encodeFieldsToBytes", { field });
       if (value === undefined) {
         throw new Error(`Missing value for field: ${field.label}`);
       }
