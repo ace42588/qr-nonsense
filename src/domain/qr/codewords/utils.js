@@ -51,3 +51,14 @@ export function getCodewordsFromSegments(segments) {
     }
   );
 }
+
+export function interleave(blocks) {
+  const maxLength = Math.max(...blocks.map((cw) => cw.length));
+  const result = [];
+  for (let i = 0; i < maxLength; i++) {
+    for (const block of blocks) {
+      if (i < block.length) result.push(block[i]);
+    }
+  }
+  return result;
+}
