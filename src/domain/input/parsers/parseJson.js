@@ -80,7 +80,6 @@ function encodeToAlphanumeric(obj, schema) {
     const first = propKeys.shift();
     encodedItems = obj[arrayField]
       .map((item) => {
-      console.debug("encodeToAlphanumeric", {propKeys, first, firstVal: item[first]});
         return propKeys.reduce(
           (str, k) => `${str}${separator}${item[k]}${terminator}`,
           item[first]
@@ -120,12 +119,30 @@ const JSON_PARSERS = {
   }),
 };
 
+const SERIALIZERS = {
+  Alphanumeric: (obj, schema) => ({
+    data: encodeToAlphanumeric(obj, schema),
+    mode: "alphanumeric",
+  }),
+  Byte: (obj, schema) => ({
+    mode: "byte",
+    encoding: "hex",
+    data: encodeToHex(obj, schema),
+  }),
+  String: (obj, schema) => ({
+    data: JSON.stringify(obj),
+    mode: "byte",
+    encoding: "utf-8",
+  }),
+}
+
 function getSchemaType(schema) {
   const { rootSchema: {properties} } = separateSchemaParts(schema);
   const rootPropKeys = Object.keys(properties);
   if (rootPropKeys.some((k) => specialTypes.includes(k))) return 'Alphanumeric';
   const rootPropFields = Object.values(properties).map((p) => Object.keys(p))
-  if (Object.values(properties).map)
+  if (rootPropFields.includes("bits")) return "Byte";
+  return "String";
 }
 
 export function parseJson(input) {
@@ -141,8 +158,8 @@ export function parseJson(input) {
     };
   }
 
-  const encodeFn = JSON_PARSERS[schema.name];
-  if (!encodeFn) throw new Error(`Unknown input type: ${schema.name}`);
+  const serializeFn = SERIALIZERS[getSchemaType(schema)];
+  const serialized = serializeFn(obj, schema);
 
-  return encodeFn(obj, schema);
+  return serialized;
 }
