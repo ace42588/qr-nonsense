@@ -119,8 +119,12 @@ const JSON_PARSERS = {
   }),
 };
 
+function getSchemaType(schema) {
+  
+}
+
 export function parseJson(input) {
-  const { obj, schema, format } = input;
+  const { obj, schema, encoding } = input;
   console.debug("parseJson", { input });
   if (!obj || !schema) return input;
 
@@ -132,8 +136,8 @@ export function parseJson(input) {
     };
   }
 
-  const encodeFn = JSON_PARSERS[format];
-  if (!encodeFn) throw new Error(`Unknown input type: ${format}`);
+  const encodeFn = JSON_PARSERS[schema.name];
+  if (!encodeFn) throw new Error(`Unknown input type: ${schema.name}`);
 
   return encodeFn(obj, schema);
 }

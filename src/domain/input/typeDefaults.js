@@ -57,7 +57,7 @@ const typeDefaults = {
       ],
     },
     schema: jsonSchema,
-    format: "None",
+    encoding: "None",
   },
   bitfield: {
     type: "bitfield",
