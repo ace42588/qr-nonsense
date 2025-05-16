@@ -39,6 +39,7 @@ function separateSchemaParts(schema) {
 }
 
 function encodeToBytes(obj, schema) {
+  console.debug("encodeToBytes", {obj, schema});
   const { rootSchema, arrayField, arraySchema } = separateSchemaParts(schema);
 
   const rootLayout = generateBitLayoutFromSchema(rootSchema);
@@ -56,11 +57,13 @@ function encodeToBytes(obj, schema) {
   const combined = new Uint8Array(rootBytes.length + itemBytes.length);
   combined.set(rootBytes, 0);
   combined.set(itemBytes, rootBytes.length);
+  console.debug("encodeToBytes", {combined});
   return combined;
 }
 
 function encodeToHex(obj, schema) {
   const bytes = encodeToBytes(obj, schema);
+  console.debug("encodeToHex", {bytes});
   return bytesToHex(bytes);
 }
 
@@ -140,7 +143,8 @@ function getSchemaType(schema) {
   const { rootSchema: {properties} } = separateSchemaParts(schema);
   const rootPropKeys = Object.keys(properties);
   if (rootPropKeys.some((k) => specialTypes.includes(k))) return 'Alphanumeric';
-  const rootPropFields = Object.values(properties).map((p) => Object.keys(p))
+  const rootPropFields = Object.values(properties).flatMap((p) => Object.keys(p));
+  console.debug("getSchemaType", {rootPropFields});
   if (rootPropFields.includes("bits")) return "Byte";
   return "String";
 }
