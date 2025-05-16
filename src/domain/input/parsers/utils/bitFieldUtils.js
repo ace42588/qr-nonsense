@@ -39,6 +39,8 @@ export function generateBitLayout(fields = []) {
 export function generateBitLayoutFromSchema(schema, prefix = "") {
   const layout = [];
   const properties = schema.properties || {};
+  
+  const totalBits = 0;
 
   for (const [key, propSchema] of Object.entries(properties)) {
     const name = prefix ? `${prefix}.${key}` : key;
@@ -49,6 +51,7 @@ export function generateBitLayoutFromSchema(schema, prefix = "") {
       if (typeof propSchema.bits !== "number") {
         throw new Error(`Missing 'bits' for field: ${name}`);
       }
+      totalBits += propSchema.bits;
       layout.push({
         label: name,
         type: "integer",
