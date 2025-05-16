@@ -26,10 +26,10 @@ export function InputProvider({ children }) {
       dispatch({ type: Actions.Update, id: payload.id, partial: payload });
     }, []),
     updateEncoding: useCallback((id, encoding) => {
-      dispatch({ type: Actions.Update, id, encoding });
+      dispatch({ type: Actions.UpdateEncoding, id, encoding });
     }, []),
     updateSchema: useCallback((id, schema) => {
-      dispatch({ type: Actions.Update, id, schema });
+      dispatch({ type: Actions.UpdateSchema, id, schema });
     }, []),
     removeInput: useCallback((payload) => {
       dispatch({ type: Actions.Remove, payload });

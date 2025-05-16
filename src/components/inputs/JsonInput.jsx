@@ -35,7 +35,7 @@ export function JsonInput({ id, input }) {
   const handleJsonChange = (field, text) => {
     try {
       const parsed = JSON.parse(text);
-      emitChange(field, parsed);
+      //emitChange(field, parsed);
     } catch {
       // Invalid JSON; ignore or show error
     }
@@ -72,10 +72,10 @@ export function JsonInput({ id, input }) {
         <div style={{ marginTop: 8 }}>
           <label>Schema</label>
           <select
-            value={input.schema}
+            value={schema}
             onChange={(e) => {
               const selected = predefinedSchemas[e.target.value];
-              updateSchema(selected);
+              updateSchema(id, selected);
             }}
           >
             {Object.entries(predefinedSchemas).map(([name]) => (
@@ -97,7 +97,7 @@ export function JsonInput({ id, input }) {
       <label>Encoding</label>
       <select
         value={input.encoding}
-        onChange={(e) => updateEncoding(e.target.value)}
+        onChange={(e) => updateEncoding(id, e.target.value)}
       >
         {ENCODING_STRATEGIES.map((name) => (
           <option key={name} value={name}>

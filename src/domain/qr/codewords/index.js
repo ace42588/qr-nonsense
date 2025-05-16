@@ -5,7 +5,7 @@ import { getCodewordsFromSegments, interleave } from "./utils";
 export function generateCodewords(segments, version, errorCorrectionLevel) {
   //const encodedBits = getBitsFromSegments(segments);
   const dataCodewords = getCodewordsFromSegments(segments);
-  console.debug("generateCodewords", {dataCodewords});
+  //console.debug("generateCodewords", {dataCodewords});
 
   const { ecCodewordsPerBlock, ecBlocks, remainderBits } = gerVersionInfo(
     errorCorrectionLevel,
@@ -13,7 +13,7 @@ export function generateCodewords(segments, version, errorCorrectionLevel) {
   );
 
   const qrBlocks = getBlocks(dataCodewords, ecCodewordsPerBlock, ecBlocks);
-  console.debug("generateCodewords", {qrBlocks});
+  //console.debug("generateCodewords", {qrBlocks});
   return [
     ...interleave(qrBlocks.map((b) => b.data)),
     ...interleave(qrBlocks.map((b) => b.errorCorrection))
