@@ -15,7 +15,7 @@ const formats = [
 ];
 
 export function JsonInput({ id, input }) {
-  const { updateInput } = useInputDispatch();
+  const { updateInput, updateEncoding, updateSchema } = useInputDispatch();
   const { obj, schema, format } = input;
   const preview = useParsedInputs()[id];
 
