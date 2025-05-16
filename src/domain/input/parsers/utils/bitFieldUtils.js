@@ -81,6 +81,7 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
       }
 
       result |= (value & ((1 << field.width) - 1)) << field.endBit;
+      console.debug("encodeFieldsToBytes", { result });
     });
 
     const totalBits = fieldsLayout[0].startBit + 1;
