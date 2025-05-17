@@ -28,7 +28,7 @@ export default defineConfig({
   },
   server: {
     host: "0.0.0.0",
-    allowedHosts: "verbena-dear-paradox.glitch.me",
+    allowedHosts: ["verbena-dear-paradox.glitch.me"],
     port: 3000,
     strictPort: true,
     hmr: {
