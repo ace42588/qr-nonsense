@@ -96,8 +96,7 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
     }
     console.debug("encodeFieldsToBytes", { bytes });
     return bytes;
-  } catch (e) {
-    console.warn(e);
+  } catch {
     return null;
   }
 }
