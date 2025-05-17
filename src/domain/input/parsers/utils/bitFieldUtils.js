@@ -8,21 +8,10 @@ function getValueFromPath(obj, path) {
   return path.split(".").reduce((acc, part) => acc?.[part], obj);
 }
 
-function mapLayoutBits() {
-  
-}
-
-export function generateBitLayout(fields = []) {
-  //console.debug("generateBitLayout", { fields });
-  const withBits = fields.map((field) => ({
-    ...field,
-    bits: bitsNeeded(field.max),
-  }));
-
-  const totalBits = withBits.reduce((sum, field) => sum + field.bits, 0);
-
+function mapLayoutBits(fields) {
+  const totalBits = fields.reduce((sum, field) => sum + field.bits, 0);
   let currentBit = totalBits - 1;
-  const layout = withBits.map((field) => {
+  const layout = fields.map((field) => {
     const start = currentBit;
     const end = currentBit - field.bits + 1;
     currentBit -= field.bits;
@@ -36,8 +25,17 @@ export function generateBitLayout(fields = []) {
       width: field.bits,
     };
   });
-
   return { layout, totalBits };
+}
+
+export function generateBitLayout(fields = []) {
+  //console.debug("generateBitLayout", { fields });
+  const withBits = fields.map((field) => ({
+    ...field,
+    bits: bitsNeeded(field.max),
+  }));
+
+  return mapLayoutBits(withBits);
 }
 
 export function generateBitLayoutFromSchema(schema, prefix = "") {
@@ -65,7 +63,7 @@ export function generateBitLayoutFromSchema(schema, prefix = "") {
     // Arrays are handled separately
   }
   const totalBits = layout.reduce((sum, field) => sum + field.bits, 0);
-  console.debug("generateBitLayoutFromSchema", {totalBits});
+  console.debug("generateBitLayoutFromSchema", { totalBits });
 
   return layout;
 }
