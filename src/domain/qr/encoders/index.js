@@ -2,7 +2,6 @@ import { encodeNumeric } from "./numeric";
 import { encodeAlphanumeric } from "./alphanumeric";
 import { encodeByte } from "./byte";
 import { addFill, addPadding, addTerminator, getNumBits } from "./utils";
-import { getMinimumQRCodeVersion } from "../versionUtils";
 
 export function encodeInput(mode, input, options = {}) {
   console.debug("encodeInput", { mode, input, options });
