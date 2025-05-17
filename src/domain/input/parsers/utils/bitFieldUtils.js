@@ -62,10 +62,8 @@ export function generateBitLayoutFromSchema(schema, prefix = "") {
     }
     // Arrays are handled separately
   }
-  const totalBits = layout.reduce((sum, field) => sum + field.bits, 0);
-  console.debug("generateBitLayoutFromSchema", { totalBits });
 
-  return layout;
+  return mapLayoutBits(layout).layout;
 }
 
 export function encodeFieldsToBytes(fieldsLayout, values) {
