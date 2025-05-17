@@ -7,12 +7,6 @@ export default defineConfig({
   plugins: [
     react(),
     tsconfigPaths(),
-    {
-      name: "watch-logger",
-      handleHotUpdate({ file }) {
-        console.log("[watch] change detected in:", file);
-      },
-    },
   ],
   build: {
     outDir: "build",
