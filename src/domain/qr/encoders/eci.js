@@ -10,7 +10,7 @@ const mode = {
 
 // TODO: Update for ECI
 function encoder(data) {
-  validateLength(data, 1, 3, "Numeric");
+  validateLength(data, 1, 3, "ECI");
   const value = parseInt(data, 10);
   const length = value.toString().length * 3 + 1;
   return {
