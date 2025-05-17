@@ -1,15 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import path from "path";
-import tailwindcss from "@tailwindcss/vite";
-
-var __vite_injected_original_dirname = "/app";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    tailwindcss(),
     {
       name: "watch-logger",
       handleHotUpdate({ file }) {
@@ -17,11 +12,6 @@ export default defineConfig({
       },
     },
   ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__vite_injected_original_dirname, "./src"),
-    },
-  },
   build: {
     outDir: "build",
   },

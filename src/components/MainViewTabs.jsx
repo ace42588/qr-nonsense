@@ -4,6 +4,9 @@ import { InputForm } from "./InputForm";
 import { VideoScanner } from "./VideoScanner";
 import { TabSwitcher } from "./shared/TabSwitcher";
 import { InputProvider } from "../state";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 export function MainViewTabs() {
   const [tab, setTab] = useState("input");
