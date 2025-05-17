@@ -22,7 +22,8 @@
     "libsodium-wrappers-sumo": "^0.7.15",
     "js-sha3": "^0.9.3",
     "tailwindcss": "^4.1.7",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "@tailwindcss/postcss": "^4.1.7"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
