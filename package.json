@@ -22,7 +22,8 @@
     "@monaco-editor/react": "^4.7.0",
     "libsodium-wrappers-sumo": "^0.7.15",
     "js-sha3": "^0.9.3",
-    "@tailwindcss/vite": "^4.1.7"
+    "@tailwindcss/vite": "^4.1.7",
+    "tailwindcss": "^4.1.7"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
