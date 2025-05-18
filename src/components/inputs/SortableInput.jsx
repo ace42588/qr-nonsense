@@ -57,23 +57,13 @@ export function SortableInput({ input }) {
           <>
             <Tabs defaultValue="basic" className="w-half">
         <TabsList>
-          <TabsTrigger value="fields">Fields</TabsTrigger>
-          <TabsTrigger value="values">Values</TabsTrigger>
+          {INPUT_TYPES.map(({value, label}) => (<TabsTrigger value={value}>{label}</TabsTrigger>))}
         </TabsList>
+              
+              {INPUT_TYPES.map(({value}) => (<TabsContent value={value}>
+          <InputComponent id={id} input={input} />
+        </TabsContent>))}
 
-        <TabsContent value="fields">
-          <BitFieldValues id={id} input={input} />
-        </TabsContent>
-
-        <TabsContent value="values">
-          <BitFieldEditor id={id} input={input} />
-        </TabsContent>
-      </Tabs>
-            <TabSwitcher
-              options={INPUT_TYPES}
-              active={type}
-              onChange={(e) => setType(id, e)}
-            />
             <button type="button" onClick={() => removeInput(id)}>
               ✖
             </button>
