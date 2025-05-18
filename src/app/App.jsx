@@ -2,10 +2,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  SegmentDisplay,
-  CodewordDisplay,
-} from "../components";
+import { SegmentDisplay, CodewordDisplay } from "../components";
 
 import { InputProvider, QRDataProvider } from "../state";
 
@@ -16,45 +13,53 @@ import { QRImageHalftone } from "../components/halftone/QRImageHalftone";
 
 export default function App() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-svh">
-      <InputProvider>
-        <Tabs defaultValue="manual" className="w-half">
-          <TabsList>
-            <TabsTrigger value="manual">Input</TabsTrigger>
-            <TabsTrigger value="scanner">Scanner</TabsTrigger>
-          </TabsList>
+    <InputProvider>
+      <QRDataProvider>
+        <div className="grid min-h-svh lg:grid-cols-2">
+          <div className="flex flex-col gap-4 p-6 md:p-10">
+            <div className="flex flex-1 items-center justify-center">
+              <div className="w-full max-w-xs">
+                <Tabs defaultValue="manual" className="w-half">
+                  <TabsList>
+                    <TabsTrigger value="manual">Input</TabsTrigger>
+                    <TabsTrigger value="scanner">Scanner</TabsTrigger>
+                  </TabsList>
 
-          <TabsContent value="manual">
-            <InputForm />
-          </TabsContent>
+                  <TabsContent value="manual">
+                    <InputForm />
+                  </TabsContent>
 
-          <TabsContent value="scanner">
-            <VideoScanner />
-          </TabsContent>
-        </Tabs>
-        <QRDataProvider>
-          <Tabs defaultValue="qr" className="w-half">
-            <TabsList>
-              <TabsTrigger value="qr">QR</TabsTrigger>
-              <TabsTrigger value="hqr">HQR</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="qr">
-              <QRCodeCanvas />
-            </TabsContent>
-
-            <TabsContent value="hqr">
-              <QRImageHalftone />
-            </TabsContent>
-          </Tabs>
-          <div className="row">
-            <SegmentDisplay />
+                  <TabsContent value="scanner">
+                    <VideoScanner />
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </div>
           </div>
-          <div className="row">
-            <CodewordDisplay />
+          <div className="relative hidden bg-muted lg:block">
+            <Tabs defaultValue="qr" className="w-half">
+              <TabsList>
+                <TabsTrigger value="qr">QR</TabsTrigger>
+                <TabsTrigger value="hqr">HQR</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="qr">
+                <QRCodeCanvas />
+              </TabsContent>
+
+              <TabsContent value="hqr">
+                <QRImageHalftone />
+              </TabsContent>
+            </Tabs>
           </div>
-        </QRDataProvider>
-      </InputProvider>
-    </div>
+        </div>
+        <div className="row">
+          <SegmentDisplay />
+        </div>
+        <div className="row">
+          <CodewordDisplay />
+        </div>
+      </QRDataProvider>
+    </InputProvider>
   );
 }
