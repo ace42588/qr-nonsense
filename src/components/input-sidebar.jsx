@@ -27,7 +27,7 @@ import { AddInput } from "add-input-form";
 import { useInputs, useInputDispatch, useDerivedQRData } from "../state";
 import { SortableInput } from "./inputs/SortableInput";
 
-export function AppSidebar({ ...props }) {
+export function InputSidebar({ ...props }) {
   const { inputs } = useInputs();
   return (
     <Sidebar {...props}>

@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { QRCodeCanvas } from "../components/QRCanvas";
@@ -11,55 +16,76 @@ import { CodewordDisplay } from "../components/CodewordDisplay";
 
 import { InputProvider, QRDataProvider } from "../state";
 
+import { InputSidebar } from "../components/input-sidebar";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+
 export default function App() {
   return (
     <InputProvider>
-      <QRDataProvider>
-        <div className="grid min-h-svh lg:grid-cols-2">
-          <div className="flex flex-col gap-4 p-6 md:p-10">
-            <div className="flex flex-1 items-center justify-center">
-              <div className="w-full max-w-xs">
-                <Tabs defaultValue="manual" className="w-half">
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <QRDataProvider>
+            <div className="flex flex-1 flex-col gap-4 p-4">
+          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+            <div className="aspect-video rounded-xl bg-muted/50" />
+            <div className="aspect-video rounded-xl bg-muted/50" />
+            <div className="aspect-video rounded-xl bg-muted/50" />
+          </div>
+          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        </div>
+            <div className="grid min-h-svh lg:grid-cols-2">
+              <div className="flex flex-col gap-4 p-6 md:p-10">
+                <div className="flex flex-1 items-center justify-center">
+                  <div className="w-full max-w-xs">
+                    <Tabs defaultValue="manual" className="w-half">
+                      <TabsList>
+                        <TabsTrigger value="manual">Input</TabsTrigger>
+                        <TabsTrigger value="scanner">Scanner</TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="manual">
+                        <InputForm />
+                      </TabsContent>
+
+                      <TabsContent value="scanner">
+                        <VideoScanner />
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                </div>
+              </div>
+              <div className="relative hidden bg-muted lg:block">
+                <Tabs defaultValue="qr" className="w-half">
                   <TabsList>
-                    <TabsTrigger value="manual">Input</TabsTrigger>
-                    <TabsTrigger value="scanner">Scanner</TabsTrigger>
+                    <TabsTrigger value="qr">QR</TabsTrigger>
+                    <TabsTrigger value="hqr">HQR</TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="manual">
-                    <InputForm />
+                  <TabsContent value="qr">
+                    <QRCodeCanvas />
                   </TabsContent>
 
-                  <TabsContent value="scanner">
-                    <VideoScanner />
+                  <TabsContent value="hqr">
+                    <QRImageHalftone />
                   </TabsContent>
                 </Tabs>
               </div>
             </div>
-          </div>
-          <div className="relative hidden bg-muted lg:block">
-            <Tabs defaultValue="qr" className="w-half">
-              <TabsList>
-                <TabsTrigger value="qr">QR</TabsTrigger>
-                <TabsTrigger value="hqr">HQR</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="qr">
-                <QRCodeCanvas />
-              </TabsContent>
-
-              <TabsContent value="hqr">
-                <QRImageHalftone />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-        <div className="row">
-          <SegmentDisplay />
-        </div>
-        <div className="row">
-          <CodewordDisplay />
-        </div>
-      </QRDataProvider>
+            <div className="row">
+              <SegmentDisplay />
+            </div>
+            <div className="row">
+              <CodewordDisplay />
+            </div>
+          </QRDataProvider>
+        </SidebarInset>
+      </SidebarProvider>
     </InputProvider>
   );
 }
