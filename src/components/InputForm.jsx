@@ -38,7 +38,7 @@ export function InputForm() {
 
   return (
     <Accordion type="single" collapsible>
-      <AccordionItem value="item-1">
+      <AccordionItem value="formatInfo">
         <AccordionTrigger>Format Info</AccordionTrigger>
         <AccordionContent>
       <QRInfoInput />

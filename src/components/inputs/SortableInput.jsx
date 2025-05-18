@@ -22,30 +22,11 @@ import {
   TabsTrigger,
 } from "../../components/ui/tabs";
 
-const INPUT_TYPES = [
-  { value: "basic", label: "Basic" },
-  { value: "json", label: "JSON" },
-  { value: "bitfield", label: "BitField" },
-  { value: "mac", label: "MAC" },
-];
-
-const componentMap = {
-  basic: BasicInput,
-  byte: BasicInput,
-  numeric: BasicInput,
-  alphanumeric: BasicInput,
-  json: JsonInput,
-  bitfield: BitFieldInput,
-  mac: MACGenerator,
-};
-
 export function SortableInput({ input }) {
   const { id, label, type } = input;
   const { updateInput, removeInput, setType } = useInputDispatch();
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
-
-  const InputComponent = componentMap[type];
 
   return (
     <div ref={setNodeRef} {...attributes}>
@@ -59,18 +40,30 @@ export function SortableInput({ input }) {
           <Tabs defaultValue="basic" className="w-half">
             <TabsList>
               <TabsTrigger value="basic">Basic</TabsTrigger>
-              {INPUT_TYPES.map(({ value, label }) => (
-                <TabsTrigger value={value}>{label}</TabsTrigger>
-              ))}
+              <TabsTrigger value="json">JSON</TabsTrigger>
+              <TabsTrigger value="bitfield">BitField</TabsTrigger>
+              <TabsTrigger value="mac">MAC</TabsTrigger>
               <TabsTrigger value="remove" onClick={() => removeInput(id)}>
                 ✖
               </TabsTrigger>
             </TabsList>
-            {INPUT_TYPES.map(({ value }) => (
-              <TabsContent value={value}>
-                <InputComponent id={id} input={input} />
-              </TabsContent>
-            ))}
+            
+            <TabsContent value="basic">
+              <BasicInput id={id} input={input} />
+            </TabsContent>
+            
+            <TabsContent value="json">
+              <JsonInput id={id} input={input} />
+            </TabsContent>
+            
+            <TabsContent value="bitfield">
+              <BitFieldInput id={id} input={input} />
+            </TabsContent>
+            
+            <TabsContent value="mac">
+              <MACGenerator id={id} input={input} />
+            </TabsContent>
+            
           </Tabs>
         </AccordionContent>
       </AccordionItem>
