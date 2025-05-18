@@ -106,8 +106,6 @@ function InputMenu() {
   )
 }
 
-
-
 export function SortableInput({ input, index }) {
   const { id, label, type } = input;
   const { updateInput, removeInput, setType } = useInputDispatch();
