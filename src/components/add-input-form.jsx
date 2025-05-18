@@ -1,4 +1,4 @@
-import { Search } from "lucide-react"
+import { Plus } from "lucide-react"
 
 import { Label } from "@/components/ui/label"
 import {
@@ -16,11 +16,26 @@ export function AddInput({ ...props }) {
             Add
           </Label>
           <SidebarInput
-            id="input"
+            id="inputLabel"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
             placeholder="Add an input..."
             className="pl-8"
           />
-          <Search className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
+          <input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder="Input Label"
+            required
+          />
+
+          <button
+            onClick={() => {
+              addInput(label !== "" ? label : `Input ${nextLabel.current++}`);
+              setLabel("");
+            }}
+          >
+          <Plus className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
         </SidebarGroupContent>
       </SidebarGroup>
     </form>
