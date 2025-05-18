@@ -9,8 +9,6 @@ import { JsonInput } from "./JsonInput";
 import { BitFieldInput } from "./BitFieldInput";
 import { MACGenerator } from "./MACGenerator";
 
-import { TabSwitcher } from "../shared/TabSwitcher";
-
 const INPUT_TYPES = [
   { value: "basic", label: "Basic" },
   { value: "json", label: "JSON" },
