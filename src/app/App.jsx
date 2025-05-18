@@ -17,18 +17,17 @@ import { CodewordDisplay } from "../components/CodewordDisplay";
 import { InputProvider, QRDataProvider } from "../state";
 
 import { InputSidebar } from "../components/input-sidebar";
-import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
+} from "../components/ui/sidebar";
 
 export default function App() {
   return (
     <InputProvider>
       <SidebarProvider>
-        <AppSidebar />
+        <InputSidebar />
         <SidebarInset>
           <QRDataProvider>
             <div className="flex flex-1 flex-col gap-4 p-4">

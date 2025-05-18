@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { FormatInput } from "./format-input";
-import { AddInput } from "add-input-form";
+import { AddInput } from "./add-input-form";
 
 import { useInputs, useInputDispatch, useDerivedQRData } from "../state";
 import { SortableInput } from "./inputs/SortableInput";
