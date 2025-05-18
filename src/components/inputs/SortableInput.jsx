@@ -49,6 +49,7 @@ export function SortableInput({ input }) {
 
   return (
     <div ref={setNodeRef} {...attributes}>
+      <AccordionItem value={id}>
       <div className="input-button-row">
         <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
           ☰
@@ -73,13 +74,9 @@ export function SortableInput({ input }) {
           <h3 onClick={() => setExpanded((e) => !e)}>{label}</h3>
         )}
       </div>
-      {INPUT_TYPES.map(({ value }) => (
-        <TabsContent value={value}>
-          <InputComponent id={id} input={input} />
-        </TabsContent>
-      ))}
       {expanded && <InputComponent id={id} input={input} />}
       {expanded && <p onClick={() => setExpanded((e) => !e)}>Collapse</p>}
+      </AccordionItem>
     </div>
   );
 }

@@ -13,6 +13,13 @@ import {
   verticalListSortingStrategy,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../components/ui/accordion"
+
 
 import { QRInfoInput } from "./FormatInput";
 import { useInputs, useInputDispatch } from "../state";
@@ -30,8 +37,13 @@ export function InputForm() {
   );
 
   return (
-    <div className="input-form">
+    <Accordion type="single" collapsible>
+      <AccordionItem value="item-1">
+        <AccordionTrigger>Format Info</AccordionTrigger>
+        <AccordionContent>
       <QRInfoInput />
+        </AccordionContent>
+      </AccordionItem>
       <div>
         <DndContext
           sensors={sensors}
@@ -65,6 +77,6 @@ export function InputForm() {
           </button>
         </div>
       </div>
-    </div>
+    </Accordion>
   );
 }
