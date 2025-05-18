@@ -1,6 +1,116 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group";
 
-export function QRCanvasCard
-return (
+import { useRef, useEffect, useState } from "react";
+import { useQRData, useQRDataDispatch } from "../state";
+
+function getCanvasContext(canvasRef) {
+  const canvas = canvasRef.current;
+  if (!canvas) return null;
+  return canvas.getContext("2d");
+}
+
+function getCanvasDrawConfig(matrix, canvas) {
+  const dimension = matrix.length;
+  const quietZone = 4;
+  const totalDimension = dimension + quietZone * 2;
+  const moduleSize = canvas.width / totalDimension;
+  return { dimension, quietZone, moduleSize };
+}
+
+function drawMatrixLayer(ctx, matrix, config) {
+  const { dimension, quietZone, moduleSize } = config;
+
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  for (let y = 0; y < dimension; y++) {
+    for (let x = 0; x < dimension; x++) {
+      const m = matrix[y][x];
+      if (!m) continue;
+
+      ctx.fillStyle = m.isDark ? "black" : "white";
+      ctx.fillRect(
+        (x + quietZone) * moduleSize,
+        (y + quietZone) * moduleSize,
+        moduleSize,
+        moduleSize
+      );
+    }
+  }
+}
+
+function drawHighlightLayer(ctx, matrix, highlightedIds, config) {
+  const { dimension, quietZone, moduleSize } = config;
+  const highlightedSet = new Set(highlightedIds);
+
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.strokeStyle = "red";
+  ctx.lineWidth = 2;
+
+  for (let y = 0; y < dimension; y++) {
+    for (let x = 0; x < dimension; x++) {
+      const m = matrix[y][x];
+      if (!m || !highlightedSet.has(m.bitId)) continue;
+
+      ctx.strokeRect(
+        (x + quietZone) * moduleSize,
+        (y + quietZone) * moduleSize,
+        moduleSize,
+        moduleSize
+      );
+    }
+  }
+}
+
+export function QRCanvasCard() {
+  const [qrType, setQRT]
+  const qrRef = useRef(null);
+  const highlightRef = useRef(null);
+  const { highlightedIds, matrix } = useQRData();
+  const { highlightSegment } = useQRDataDispatch();
+  //console.debug("QRCodeCanvas", { matrix, highlightedIds });
+
+  useEffect(() => {
+    const ctx = getCanvasContext(qrRef);
+    if (!ctx || !matrix) return;
+
+    const config = getCanvasDrawConfig(matrix, ctx.canvas);
+    drawMatrixLayer(ctx, matrix, config);
+  }, [matrix]);
+
+  useEffect(() => {
+    const ctx = getCanvasContext(highlightRef);
+    if (!ctx || !matrix) return;
+
+    const config = getCanvasDrawConfig(matrix, ctx.canvas);
+    drawHighlightLayer(ctx, matrix, highlightedIds, config);
+  }, [highlightedIds, matrix]);
+
+  return (
     <Card className="@container/card">
       <CardHeader className="relative">
         <CardTitle>Total Visitors</CardTitle>
