@@ -18,6 +18,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
+import { GalleryVerticalEnd, Minus, Plus } from "lucide-react"
+
 import { useInputs, useDerivedQRData, useInputDispatch } from "../state";
 
 const levels = [

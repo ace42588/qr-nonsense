@@ -47,7 +47,7 @@ export function InputSidebar({ ...props }) {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <SearchForm />
+        <AddInput />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
