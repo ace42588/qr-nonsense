@@ -2,9 +2,14 @@ import React, { useMemo, useState, useEffect } from "react";
 import { BitFieldEditor } from "./BitField/BitFieldEditor";
 import { BitFieldValues } from "./BitField/BitFieldValues";
 import { BitFieldVisualizer } from "./BitField/BitFieldVisualizer";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../components/ui/tabs";
 
-
-import { useParsedInputs } from "../state";
+import { useParsedInputs } from "../../state";
 
 export function BitFieldInput({ id, input }) {
   const { encodedBytes } = useParsedInputs()[id];

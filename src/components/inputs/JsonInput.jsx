@@ -8,7 +8,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../components/ui/tabs";
+} from "../../components/ui/tabs";
 
 const options = {
   minimap: { enabled: false },

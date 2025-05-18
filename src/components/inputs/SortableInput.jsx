@@ -9,6 +9,13 @@ import { JsonInput } from "./JsonInput";
 import { BitFieldInput } from "./BitFieldInput";
 import { MACGenerator } from "./MACGenerator";
 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../components/ui/tabs";
+
 const INPUT_TYPES = [
   { value: "basic", label: "Basic" },
   { value: "json", label: "JSON" },
@@ -38,25 +45,30 @@ export function SortableInput({ input }) {
     setExpanded((prev) => !prev);
   }
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    border: "1px solid #aaa",
-    borderRadius: 8,
-    padding: 16,
-    maxWidth: 900,
-    marginBottom: 8,
-  };
   const InputComponent = componentMap[type];
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
+    <div ref={setNodeRef} {...attributes}>
       <div className="input-button-row">
         <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
           ☰
         </span>
         {expanded ? (
           <>
+            <Tabs defaultValue="fields" className="w-half">
+        <TabsList>
+          <TabsTrigger value="fields">Fields</TabsTrigger>
+          <TabsTrigger value="values">Values</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="fields">
+          <BitFieldValues id={id} input={input} />
+        </TabsContent>
+
+        <TabsContent value="values">
+          <BitFieldEditor id={id} input={input} />
+        </TabsContent>
+      </Tabs>
             <TabSwitcher
               options={INPUT_TYPES}
               active={type}
