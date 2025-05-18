@@ -18,10 +18,9 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "../components/ui/accordion"
+} from "../components/ui/accordion";
 
-
-import { QRInfoInput } from "./FormatInput";
+import { FormatInput } from "./FormatInput";
 import { useInputs, useInputDispatch } from "../state";
 import { SortableInput } from "./inputs/SortableInput";
 
@@ -41,7 +40,7 @@ export function InputForm() {
       <AccordionItem value="formatInfo">
         <AccordionTrigger>Format Info</AccordionTrigger>
         <AccordionContent>
-      <QRInfoInput />
+          <FormatInput />
         </AccordionContent>
       </AccordionItem>
       <div>

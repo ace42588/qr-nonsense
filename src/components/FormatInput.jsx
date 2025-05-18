@@ -27,7 +27,7 @@ const masks = [
   { label: "None", value: null },
 ];
 
-export function QRInfoInput() {
+export function FormatInput() {
   const { errorCorrectionLevel, version, dataMask } = useInputs();
   const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
   const { setErrorCorrection, setVersion, setDataMask } = useInputDispatch();

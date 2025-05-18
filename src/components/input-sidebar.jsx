@@ -21,6 +21,10 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
+import { FormatInput } from "./FormatInput";
+import { useInputs, useInputDispatch } from "../state";
+import { SortableInput } from "./inputs/SortableInput";
+
 export function AppSidebar({ ...props }) {
   return (
     <Sidebar {...props}>
@@ -45,6 +49,35 @@ export function AppSidebar({ ...props }) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
+                          <Collapsible
+                key="formatInfo"
+                defaultOpen={false}
+                className="group/collapsible"
+              >
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton>
+                      Format Info
+                      <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
+                      <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {item.items.map((item) => (
+                          <SidebarMenuSubItem key={item.title}>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={item.isActive}
+                            >
+                              <a href={item.url}>{item.title}</a>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
             {data.navMain.map((item, index) => (
               <Collapsible
                 key={item.title}
