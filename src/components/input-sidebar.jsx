@@ -1,7 +1,6 @@
 import * as React from "react";
 import { GalleryVerticalEnd, Minus, Plus } from "lucide-react";
 
-import { SearchForm } from "@/components/search-form";
 import {
   Collapsible,
   CollapsibleContent,
@@ -21,14 +20,28 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
+import { BasicInput } from "./inputs/BasicInput";
+import { JsonInput } from "./inputs/JsonInput";
+import { BitFieldInput } from "./inputs/BitFieldInput";
+import { MACGenerator } from "./inputs/MACGenerator";
+
 import { FormatInput } from "./format-input";
 import { AddInput } from "./add-input-form";
 
 import { useInputs, useInputDispatch, useDerivedQRData } from "../state";
 import { SortableInput } from "./inputs/SortableInput";
 
+const INPUT_TYPES = {
+  basic: BasicInput,
+  json: JsonInput,
+  bitfield: BitFieldInput,
+  mac: MACGenerator
+}
+
+
 export function InputSidebar({ ...props }) {
   const { inputs } = useInputs();
+  
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -67,7 +80,6 @@ export function InputSidebar({ ...props }) {
                       <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
-                  {item.items?.length ? (
                     <CollapsibleContent>
                       <SidebarMenuSub>
                         {item.items.map((item) => (
@@ -82,7 +94,6 @@ export function InputSidebar({ ...props }) {
                         ))}
                       </SidebarMenuSub>
                     </CollapsibleContent>
-                  ) : null}
                 </SidebarMenuItem>
               </Collapsible>
             ))}
