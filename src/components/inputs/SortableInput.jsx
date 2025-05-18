@@ -3,11 +3,17 @@ import { useState, useMemo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { useInputs, useInputDispatch } from "../../state";
+import { useInputDispatch } from "../../state";
 import { BasicInput } from "./BasicInput";
 import { JsonInput } from "./JsonInput";
 import { BitFieldInput } from "./BitFieldInput";
 import { MACGenerator } from "./MACGenerator";
+
+import {
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../../components/ui/accordion";
 
 import {
   Tabs,
@@ -39,24 +45,20 @@ export function SortableInput({ input }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
-  const [expanded, setExpanded] = useState(true);
-
-  function toggleExpanded() {
-    setExpanded((prev) => !prev);
-  }
-
   const InputComponent = componentMap[type];
 
   return (
     <div ref={setNodeRef} {...attributes}>
       <AccordionItem value={id}>
-      <div className="input-button-row">
-        <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
-          ☰
-        </span>
-        {expanded ? (
+        <AccordionTrigger>
+          <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
+            ☰ {label}
+          </span>
+        </AccordionTrigger>
+        <AccordionContent>
           <Tabs defaultValue="basic" className="w-half">
             <TabsList>
+              <TabsTrigger value="basic">Basic</TabsTrigger>
               {INPUT_TYPES.map(({ value, label }) => (
                 <TabsTrigger value={value}>{label}</TabsTrigger>
               ))}
@@ -70,12 +72,7 @@ export function SortableInput({ input }) {
               </TabsContent>
             ))}
           </Tabs>
-        ) : (
-          <h3 onClick={() => setExpanded((e) => !e)}>{label}</h3>
-        )}
-      </div>
-      {expanded && <InputComponent id={id} input={input} />}
-      {expanded && <p onClick={() => setExpanded((e) => !e)}>Collapse</p>}
+        </AccordionContent>
       </AccordionItem>
     </div>
   );
