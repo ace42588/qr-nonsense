@@ -18,7 +18,7 @@ export default function App() {
   return (
     <div className="flex flex-col items-center justify-center min-h-svh">
       <InputProvider>
-        <Tabs defaultValue="manual" className="w-full">
+        <Tabs defaultValue="manual" className="w-half">
           <TabsList>
             <TabsTrigger value="manual">Input</TabsTrigger>
             <TabsTrigger value="scanner">Scanner</TabsTrigger>
@@ -33,7 +33,7 @@ export default function App() {
           </TabsContent>
         </Tabs>
         <QRDataProvider>
-          <Tabs defaultValue="qr" className="w-full">
+          <Tabs defaultValue="qr" className="w-half">
             <TabsList>
               <TabsTrigger value="qr">QR</TabsTrigger>
               <TabsTrigger value="hqr">HQR</TabsTrigger>
