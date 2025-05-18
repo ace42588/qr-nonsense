@@ -12,12 +12,12 @@ export function SearchForm({ ...props }) {
     <form {...props}>
       <SidebarGroup className="py-0">
         <SidebarGroupContent className="relative">
-          <Label htmlFor="search" className="sr-only">
-            Search
+          <Label htmlFor="input" className="sr-only">
+            Add
           </Label>
           <SidebarInput
-            id="search"
-            placeholder="Search the docs..."
+            id="input"
+            placeholder="Add an input..."
             className="pl-8"
           />
           <Search className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
