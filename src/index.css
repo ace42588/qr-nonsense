@@ -1,3 +1,7 @@
+body {
+  background: magenta !important;
+}
+
 
 @import "tw-animate-css";
 
@@ -6,11 +10,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-
-@import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
