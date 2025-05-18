@@ -35,23 +35,11 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 
-import { BasicInput } from "./inputs/BasicInput";
-import { JsonInput } from "./inputs/JsonInput";
-import { BitFieldInput } from "./inputs/BitFieldInput";
-import { MACGenerator } from "./inputs/MACGenerator";
-
 import { FormatInput } from "./format-input";
 import { AddInput } from "./add-input-form";
 
 import { useInputs, useInputDispatch, useDerivedQRData } from "../state";
-import { SortableInput } from "./inputs/SortableInput";
-
-const INPUT_TYPES = {
-  basic: BasicInput,
-  json: JsonInput,
-  bitfield: BitFieldInput,
-  mac: MACGenerator,
-};
+import { SortableInput } from "./sortable-input";
 
 export function InputSidebar({ ...props }) {
   const { inputs } = useInputs();
@@ -95,31 +83,9 @@ export function InputSidebar({ ...props }) {
             <SidebarGroup>
               <SidebarMenu>
                 <FormatInput />
-                {inputs.map((item, index) => {
-                  const InputComponent = INPUT_TYPES[item.type];
-                  return (
-                    <Collapsible
-                      key={item.title}
-                      defaultOpen={index === 0}
-                      className="group/collapsible"
-                    >
-                      <SidebarMenuItem>
-                        <CollapsibleTrigger asChild>
-                          <SidebarMenuButton>
-                            {item.label}{" "}
-                            <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
-                            <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
-                          </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <SidebarMenuSub>
-                            <InputComponent id={item.id} input={item} />
-                          </SidebarMenuSub>
-                        </CollapsibleContent>
-                      </SidebarMenuItem>
-                    </Collapsible>
-                  );
-                })}
+                {inputs.map((input, idx) => (
+                  <SortableInput input={input} index={idx} />
+                ))}
               </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>

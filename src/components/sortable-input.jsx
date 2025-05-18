@@ -3,12 +3,32 @@ import { useState, useMemo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { useInputDispatch } from "../../state";
-import { BasicInput } from "./BasicInput";
-import { JsonInput } from "./JsonInput";
-import { BitFieldInput } from "./BitFieldInput";
-import { MACGenerator } from "./MACGenerator";
+import { Minus, Plus } from "lucide-react";
 
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from "@/components/ui/sidebar";
+
+import { useInputDispatch } from "../state";
+import { BasicInput } from "./inputs/BasicInput";
+import { JsonInput } from "./inputs/JsonInput";
+import { BitFieldInput } from "./inputs/BitFieldInput";
+import { MACGenerator } from "./inputs/MACGenerator";
 
 const INPUT_TYPES = {
   basic: BasicInput,
@@ -17,25 +37,28 @@ const INPUT_TYPES = {
   mac: MACGenerator,
 };
 
-export function SortableInput({ input }) {
+export function SortableInput({ input, index }) {
   const { id, label, type } = input;
   const { updateInput, removeInput, setType } = useInputDispatch();
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
+  const InputComponent = INPUT_TYPES[type];
+
   return (
     <Collapsible
       key={id}
-      defaultOpen={false}
+      defaultOpen={index === 0}
       className="group/collapsible"
-      ref={setNodeRef} {...attributes}
+      ref={setNodeRef}
+      {...attributes}
     >
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
           <SidebarMenuButton>
             <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
-            ☰ {label}
-          </span>
+              ☰ {label}
+            </span>
             <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
             <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
           </SidebarMenuButton>
