@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 
-import { Plus } from "lucide-react";
+import { PlusCircleIcon } from "lucide-react";
 
 import { Label } from "@/components/ui/label";
 import {
@@ -30,7 +30,7 @@ export function AddInput({ ...props }) {
           className="pl-8"
         />
 
-        <Plus className="absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none" onClick={() => {
+        <PlusCircleIcon className="absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none" onClick={() => {
             addInput(label !== "" ? label : `Input ${nextLabel.current++}`);
             setLabel("");
           }}/>
