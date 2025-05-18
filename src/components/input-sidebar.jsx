@@ -20,6 +20,21 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
+import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  KeyboardSensor,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+
 import { BasicInput } from "./inputs/BasicInput";
 import { JsonInput } from "./inputs/JsonInput";
 import { BitFieldInput } from "./inputs/BitFieldInput";
@@ -40,6 +55,12 @@ const INPUT_TYPES = {
 
 export function InputSidebar({ ...props }) {
   const { inputs } = useInputs();
+  const { reorderInputs } = useInputDispatch();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   return (
     <Sidebar {...props}>
@@ -61,38 +82,49 @@ export function InputSidebar({ ...props }) {
         </SidebarMenu>
         <AddInput />
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu>
-            <FormatInput />
-            {inputs.map((item, index) => {
-              const InputComponent = INPUT_TYPES[item.type];
-              return (
-                <Collapsible
-                  key={item.title}
-                  defaultOpen={index === 1}
-                  className="group/collapsible"
-                >
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton>
-                        {item.label}{" "}
-                        <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
-                        <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        <InputComponent id={item.id} input={item} />
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              );
-            })}
-          </SidebarMenu>
-        </SidebarGroup>
-      </SidebarContent>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={reorderInputs}
+      >
+        <SortableContext
+          items={inputs.map((i) => i.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarMenu>
+                <FormatInput />
+                {inputs.map((item, index) => {
+                  const InputComponent = INPUT_TYPES[item.type];
+                  return (
+                    <Collapsible
+                      key={item.title}
+                      defaultOpen={index === 1}
+                      className="group/collapsible"
+                    >
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton>
+                            {item.label}{" "}
+                            <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
+                            <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            <InputComponent id={item.id} input={item} />
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroup>
+          </SidebarContent>
+        </SortableContext>
+      </DndContext>
       <SidebarRail />
     </Sidebar>
   );
