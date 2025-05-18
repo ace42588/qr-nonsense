@@ -35,13 +35,12 @@ const INPUT_TYPES = {
   basic: BasicInput,
   json: JsonInput,
   bitfield: BitFieldInput,
-  mac: MACGenerator
-}
-
+  mac: MACGenerator,
+};
 
 export function InputSidebar({ ...props }) {
   const { inputs } = useInputs();
-  
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -66,37 +65,31 @@ export function InputSidebar({ ...props }) {
         <SidebarGroup>
           <SidebarMenu>
             <FormatInput />
-            {inputs.map((item, index) => (
-              <Collapsible
-                key={item.title}
-                defaultOpen={index === 1}
-                className="group/collapsible"
-              >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton>
-                      {item.label}{" "}
-                      <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
-                      <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
+            {inputs.map((item, index) => {
+              const InputComponent = INPUT_TYPES[item.type];
+              return (
+                <Collapsible
+                  key={item.title}
+                  defaultOpen={index === 1}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton>
+                        {item.label}{" "}
+                        <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
+                        <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
-                        {item.items.map((item) => (
-                          <SidebarMenuSubItem key={item.label}>
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={item.isActive}
-                            >
-                              <a href={item.url}>{item.label}</a>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
+                        <InputComponent id={item.id} input={item} />
                       </SidebarMenuSub>
                     </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            ))}
+                  </SidebarMenuItem>
+                </Collapsible>
+              );
+            })}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
