@@ -1,8 +1,6 @@
 import { useRef, useEffect, useState } from "react";
-import "../styles/styles.css";
-
-import { useQRData, useQRDataDispatch } from "../../state";
-import { evaluateQRCodeQuality } from "../../domain/qr";
+import { useQRData, useQRDataDispatch } from "../state";
+import { evaluateQRCodeQuality } from "../domain/qr";
 
 function getCanvasContext(canvasRef) {
   const canvas = canvasRef.current;

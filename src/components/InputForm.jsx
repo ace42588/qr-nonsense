@@ -14,8 +14,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 
-import "./styles/styles.css";
-import { QRInfoInput } from "./qr/QRInfoInput";
+import { QRInfoInput } from "./FormatInput";
 import { useInputs, useInputDispatch } from "../state";
 import { SortableInput } from "./inputs/SortableInput";
 

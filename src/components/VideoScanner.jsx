@@ -1,7 +1,6 @@
 import React, { useCallback, useRef, useEffect, useState } from "react";
 import { useQRDataDispatch, useInputDispatch } from "../state";
 import jsQR from "jsqr";
-import "./styles/styles.css";
 
 export function VideoScanner() {
   const videoRef = useRef(null);

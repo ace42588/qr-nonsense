@@ -1,7 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { useQRData, useQRDataDispatch } from "../../state";
-
-import "../styles/styles.css";
+import { useQRData, useQRDataDispatch } from "../state";
 
 export function SegmentDisplay() {
   const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
