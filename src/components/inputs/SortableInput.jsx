@@ -54,24 +54,30 @@ export function SortableInput({ input }) {
           ☰
         </span>
         {expanded ? (
-          <>
-            <Tabs defaultValue="basic" className="w-half">
-        <TabsList>
-          {INPUT_TYPES.map(({value, label}) => (<TabsTrigger value={value}>{label}</TabsTrigger>))}
-        </TabsList>
-              
-              {INPUT_TYPES.map(({value}) => (<TabsContent value={value}>
-          <InputComponent id={id} input={input} />
-        </TabsContent>))}
-
-            <button type="button" onClick={() => removeInput(id)}>
-              ✖
-            </button>
-          </>
+          <Tabs defaultValue="basic" className="w-half">
+            <TabsList>
+              {INPUT_TYPES.map(({ value, label }) => (
+                <TabsTrigger value={value}>{label}</TabsTrigger>
+              ))}
+              <TabsTrigger value="remove" onClick={() => removeInput(id)}>
+                ✖
+              </TabsTrigger>
+            </TabsList>
+            {INPUT_TYPES.map(({ value }) => (
+              <TabsContent value={value}>
+                <InputComponent id={id} input={input} />
+              </TabsContent>
+            ))}
+          </Tabs>
         ) : (
           <h3 onClick={() => setExpanded((e) => !e)}>{label}</h3>
         )}
       </div>
+      {INPUT_TYPES.map(({ value }) => (
+        <TabsContent value={value}>
+          <InputComponent id={id} input={input} />
+        </TabsContent>
+      ))}
       {expanded && <InputComponent id={id} input={input} />}
       {expanded && <p onClick={() => setExpanded((e) => !e)}>Collapse</p>}
     </div>
