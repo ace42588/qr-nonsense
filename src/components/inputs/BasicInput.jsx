@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useInputs, useInputDispatch } from "../../state";
-import "../styles/styles.css";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
@@ -11,15 +10,8 @@ export function BasicInput({ id, input }) {
   const handleChange = (field, value) =>
     updateInput?.({ ...input, [field]: value });
 
-  const style = {
-    border: "1px solid #aaa",
-    borderRadius: 8,
-    padding: 16,
-    maxWidth: 900,
-  };
-
   return (
-    <div style={style}>
+    <div>
       <div className="input-group">
         <div className="label-select-checkbox-row">
           <label htmlFor="inputMode">Input Mode:</label>

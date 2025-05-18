@@ -2,14 +2,12 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { SegmentDisplay, CodewordDisplay } from "../components";
-
 import { InputProvider, QRDataProvider } from "../state";
 
-import { QRCodeCanvas } from "../components/qr/QRCodeCanvas";
-import { InputForm } from "../components/InputForm";
-import { VideoScanner } from "../components/VideoScanner";
-import { QRImageHalftone } from "../components/halftone/QRImageHalftone";
+import { QRCodeCanvas } from "@/components/QRCodeCanvas";
+import { InputForm } from "@/components/InputForm";
+import { VideoScanner } from "@/components/VideoScanner";
+import { QRImageHalftone } from "@/components/QRImageHalftone";
 
 export default function App() {
   return (

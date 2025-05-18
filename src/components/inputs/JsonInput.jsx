@@ -5,16 +5,6 @@ import { predefinedSchemas } from "../../domain/input";
 import { ENCODING_STRATEGIES } from "../../domain/encoders";
 import { TabSwitcher } from "../shared/TabSwitcher";
 
-import "../styles/styles.css";
-
-const formats = [
-  { value: "None", label: "Direct JSON" },
-  { value: "Alphanumeric", label: "Alphanumeric Only" },
-  { value: "PER", label: "Packed Encoding Rule" },
-  { value: "PER-ModHex", label: "Packed Encoding Rule, ModHex" },
-  { value: "PER-NTRU", label: "Packed Encoding Rule, NTRU" },
-];
-
 const options = {
   minimap: { enabled: false },
   scrollbar: { vertical: "hidden", horizontal: "hidden" },
