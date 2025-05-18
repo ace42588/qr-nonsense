@@ -9,18 +9,13 @@ import { JsonInput } from "./JsonInput";
 import { BitFieldInput } from "./BitFieldInput";
 import { MACGenerator } from "./MACGenerator";
 
-import {
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../../components/ui/accordion";
 
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../components/ui/tabs";
+const INPUT_TYPES = {
+  basic: BasicInput,
+  json: JsonInput,
+  bitfield: BitFieldInput,
+  mac: MACGenerator,
+};
 
 export function SortableInput({ input }) {
   const { id, label, type } = input;
@@ -29,44 +24,28 @@ export function SortableInput({ input }) {
     useSortable({ id });
 
   return (
-    <div ref={setNodeRef} {...attributes}>
-      <AccordionItem value={id}>
-        <AccordionTrigger>
-          <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
+    <Collapsible
+      key={id}
+      defaultOpen={false}
+      className="group/collapsible"
+      ref={setNodeRef} {...attributes}
+    >
+      <SidebarMenuItem>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton>
+            <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
             ☰ {label}
           </span>
-        </AccordionTrigger>
-        <AccordionContent>
-          <Tabs defaultValue="basic" className="w-half">
-            <TabsList>
-              <TabsTrigger value="basic">Basic</TabsTrigger>
-              <TabsTrigger value="json">JSON</TabsTrigger>
-              <TabsTrigger value="bitfield">BitField</TabsTrigger>
-              <TabsTrigger value="mac">MAC</TabsTrigger>
-              <TabsTrigger value="remove" onClick={() => removeInput(id)}>
-                ✖
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="basic">
-              <BasicInput id={id} input={input} />
-            </TabsContent>
-            
-            <TabsContent value="json">
-              <JsonInput id={id} input={input} />
-            </TabsContent>
-            
-            <TabsContent value="bitfield">
-              <BitFieldInput id={id} input={input} />
-            </TabsContent>
-            
-            <TabsContent value="mac">
-              <MACGenerator id={id} input={input} />
-            </TabsContent>
-            
-          </Tabs>
-        </AccordionContent>
-      </AccordionItem>
-    </div>
+            <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
+            <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            <InputComponent id={id} input={input} />
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
   );
 }

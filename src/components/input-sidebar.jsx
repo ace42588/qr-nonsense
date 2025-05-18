@@ -100,7 +100,7 @@ export function InputSidebar({ ...props }) {
                   return (
                     <Collapsible
                       key={item.title}
-                      defaultOpen={index === 1}
+                      defaultOpen={index === 0}
                       className="group/collapsible"
                     >
                       <SidebarMenuItem>
