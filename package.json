@@ -28,6 +28,7 @@
     "react-spring": "^10.0.0",
     "shadcn": "^2.5.0",
     "tailwind-merge": "^3.3.0",
+    "tailwindcss": "^4.1.7",
     "vite-tsconfig-paths": "^5.1.4",
     "wouter": "^3.7.0"
   },
