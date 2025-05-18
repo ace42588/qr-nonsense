@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useInputs, useDerivedQRData, useInputDispatch } from "../../state";
 
-import "../styles/styles.css";
-
 const levels = [
   { label: "Low (L) – 7% redundancy", value: 0 },
   { label: "Medium (M) – 15% redundancy", value: 1 },
@@ -36,14 +34,7 @@ export function QRInfoInput() {
   const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
   const { setErrorCorrection, setVersion, setDataMask } = useInputDispatch();
   return (
-    <div
-      style={{
-        border: "1px solid #aaa",
-        borderRadius: 8,
-        padding: 16,
-        maxWidth: 900,
-      }}
-    >
+    <div>
       {expanded ? (
         <>
           <div className="label-select-row">

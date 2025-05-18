@@ -33,7 +33,7 @@ export function InputForm() {
   return (
     <div className="input-form">
       <QRInfoInput />
-      <div style={{ marginBottom: 32 }}>
+      <div>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -61,7 +61,6 @@ export function InputForm() {
               addInput(label !== "" ? label : `Input ${nextLabel.current++}`);
               setLabel("");
             }}
-            style={{ marginTop: 8 }}
           >
             Add
           </button>

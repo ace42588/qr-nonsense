@@ -13,12 +13,6 @@ export function CodewordDisplay() {
     highlightedIds.includes(id);
   };
 
-  const getClassName = (segment) => {
-    return `${segment.type}-button${
-      isHighlighted(segment.id) ? "-highlighted" : ""
-    }`;
-  };
-
   return (
     <div className="segment-display">
       <h3>Codewords</h3>
@@ -26,7 +20,6 @@ export function CodewordDisplay() {
         {codewords.map((codeword, index) => (
           <button
             key={codeword.id}
-            className={getClassName(codeword)}
             onClick={() => {
               highlightModules(codeword.bits.map((b) => b.id));
               setClicked(!clicked);
@@ -39,7 +32,7 @@ export function CodewordDisplay() {
             }}
             title={`Codeword ${codeword.id}`}
           >
-            {codeword.subtype}
+            {codeword.type}
           </button>
         ))}
       </div>
