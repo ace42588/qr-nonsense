@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 //import QRCode from "qrcode";
-import { useQRData } from "../../state";
+import { useQRData } from "../state";
 
 // Generate all possible 3x3 patterns with given center value
 function generatePatterns(center) {

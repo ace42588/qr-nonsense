@@ -3,7 +3,12 @@ import Editor from "@monaco-editor/react";
 import { useParsedInputs, useInputDispatch } from "../../state";
 import { predefinedSchemas } from "../../domain/input";
 import { ENCODING_STRATEGIES } from "../../domain/encoders";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
 
 const options = {
   minimap: { enabled: false },
@@ -45,24 +50,14 @@ export function JsonInput({ id, input }) {
   };
 
   return (
-    <div
-      style={{
-        border: "1px solid #aaa",
-        borderRadius: 8,
-        padding: 16,
-        maxWidth: 900,
-      }}
-    >
-      <TabSwitcher
-        options={[
-          { value: "fields", label: "Schema" },
-          { value: "values", label: "JSON" },
-        ]}
-        active={tab}
-        onChange={setTab}
-      />
-      {tab === "values" ? (
-        <div style={{ marginTop: 8 }}>
+    <div>
+      <Tabs defaultValue="json" className="w-half">
+        <TabsList>
+          <TabsTrigger value="json">Values</TabsTrigger>
+          <TabsTrigger value="schema">Schema</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="json">
           <Editor
             height="300px"
             defaultLanguage="json"
@@ -70,14 +65,11 @@ export function JsonInput({ id, input }) {
             onChange={(e) => handleJsonChange("obj", e)}
             options={options}
           />
-        </div>
-      ) : (
-        <div style={{ marginTop: 8 }}>
+        </TabsContent>
+
+        <TabsContent value="schema">
           <label>Schema</label>
-          <select
-            value={input.schemaName}
-            onChange={handleSchemaSelect}
-          >
+          <select value={input.schemaName} onChange={handleSchemaSelect}>
             {Object.entries(predefinedSchemas).map(([name]) => (
               <option key={name} value={name}>
                 {name}
@@ -91,8 +83,8 @@ export function JsonInput({ id, input }) {
             onChange={(e) => handleJsonChange("schema", e)}
             options={options}
           />
-        </div>
-      )}
+        </TabsContent>
+      </Tabs>
 
       <label>Encoding</label>
       <select
