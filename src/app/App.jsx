@@ -16,8 +16,7 @@ import { QRImageHalftone } from "../components/halftone/QRImageHalftone";
 
 export default function App() {
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-red-500 text-3xl">Tailwind test</h1>
+    <div className="flex flex-col items-center justify-center min-h-svh">
       <InputProvider>
         <Tabs defaultValue="manual" className="w-full">
           <TabsList>
