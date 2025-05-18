@@ -23,11 +23,11 @@ export function BitFieldInput({ id, input }) {
         </TabsList>
 
         <TabsContent value="fields">
-          <BitFieldValues id={id} input={input} />
+          <BitFieldEditor id={id} input={input} />
         </TabsContent>
 
         <TabsContent value="values">
-          <BitFieldEditor id={id} input={input} />
+          <BitFieldValues id={id} input={input} />
         </TabsContent>
       </Tabs>
 
