@@ -55,7 +55,7 @@ export function SortableInput({ input }) {
         </span>
         {expanded ? (
           <>
-            <Tabs defaultValue="fields" className="w-half">
+            <Tabs defaultValue="basic" className="w-half">
         <TabsList>
           <TabsTrigger value="fields">Fields</TabsTrigger>
           <TabsTrigger value="values">Values</TabsTrigger>
