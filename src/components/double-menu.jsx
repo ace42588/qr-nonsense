@@ -42,7 +42,7 @@ import { SortableInput } from "./sortable-input";
 function DragHandle({ id }) {
   const { attributes, listeners } = useSortable({
     id,
-  })
+  });
 
   return (
     <Button
@@ -55,39 +55,51 @@ function DragHandle({ id }) {
       <GripVerticalIcon className="size-3 text-muted-foreground" />
       <span className="sr-only">Drag to reorder</span>
     </Button>
-  )
-}
-
-function DraggableRow({
-  input
-}) {
-  const { transform, transition, setNodeRef, isDragging } = useSortable({
-    id: input.id,
-  })
-
-  return (
-    <SidebarMenuItem
-      data-dragging={isDragging}
-      ref={setNodeRef}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition: transition,
-      }}>
-      <SidebarMenuButton tooltip={input.label}>
-                {input.icon && <item.icon />}
-                <span>{input.label}</span>
-              </SidebarMenuButton>
-    </SidebarMenuItem>
   );
 }
 
+
 export function AppSidebar({ ...props }) {
-  // Note: I'm using state to show active item.
-  // IRL you should use the url/router.
-  const [activeItem, setActiveItem] = useState(data.navMain[0])
-  const [mails, setMails] = useState(data.mails)
-  const { setOpen } = useSidebar()
+  const { inputs } = useInputs();
+  const { reorderInputs } = useInputDispatch();
+  const { setOpen } = useSidebar();
+  
+  const [activeItem, setActiveItem] = useState(inputs[0]);
+  
+  function DraggableRow({ input }) {
+    const { transform, transition, setNodeRef, isDragging } = useSortable({
+      id: input.id,
+    });
+
+    return (
+      <SidebarMenuItem
+        data-dragging={isDragging}
+        ref={setNodeRef}
+        className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+        style={{
+          transform: CSS.Transform.toString(transform),
+          transition: transition,
+        }}
+      >
+        <SidebarMenuButton tooltip={input.label} onClick={() => {
+                          setActiveItem(item);
+                          const mail = data.mails.sort(() => Math.random() - 0.5);
+                          setMails(
+                            mail.slice(
+                              0,
+                              Math.max(5, Math.floor(Math.random() * 10) + 1)
+                            )
+                          );
+                          setOpen(true);
+                        }}
+                        isActive={activeItem?.title === item.title}
+                        className="px-2.5 md:px-2">
+          <DragHandle id={input.id} />
+          <span>{input.label}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  }
 
   return (
     <Sidebar
@@ -98,38 +110,13 @@ export function AppSidebar({ ...props }) {
       {/* This is the first sidebar */}
       {/* We disable collapsible and adjust width to icon. */}
       {/* This will make the sidebar appear as icons. */}
-      <Sidebar
-        collapsible="none"
-      >
+      <Sidebar collapsible="none">
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent className="px-1.5 md:px-0">
               <SidebarMenu>
-                {data.navMain.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      tooltip={{
-                        children: item.title,
-                        hidden: false,
-                      }}
-                      onClick={() => {
-                        setActiveItem(item)
-                        const mail = data.mails.sort(() => Math.random() - 0.5)
-                        setMails(
-                          mail.slice(
-                            0,
-                            Math.max(5, Math.floor(Math.random() * 10) + 1)
-                          )
-                        )
-                        setOpen(true)
-                      }}
-                      isActive={activeItem?.title === item.title}
-                      className="px-2.5 md:px-2"
-                    >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                {inputs.map((input) => (
+                  <DraggableRow input={input} />
                 ))}
               </SidebarMenu>
             </SidebarGroupContent>
@@ -176,5 +163,5 @@ export function AppSidebar({ ...props }) {
         </SidebarContent>
       </Sidebar>
     </Sidebar>
-  )
+  );
 }
