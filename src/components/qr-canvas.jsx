@@ -18,10 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 import { useRef, useEffect, useState } from "react";
 import { useQRData, useQRDataDispatch } from "../state";
@@ -147,20 +144,12 @@ export function QRCanvasCard() {
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <div className="qr-code-canvas-container">
-      <div className="relative w-[420px] h-[420px]">
-
-        <canvas className="absolute top-0 left-0 block w-full h-full pointer-events-none border border-black" id="qrCode" ref={qrRef} width="420" height="420"></canvas>
-        <canvas
-          className="absolute top-0 left-0 block w-full h-full pointer-events-none border border-black"
-          id="canvas"
-          ref={highlightRef}
-          width="420"
-          height="420"
-          style={{ border: "1px solid #000" }}
-        ></canvas>
-      </div>
-    </div>
+          <div className="relative w-[420px] h-[420px]">
+            <canvas className="canvas-layer pointer-events-none" />
+            <canvas className="canvas-layer pointer-events-auto" />
+          </div>
+        </div>
       </CardContent>
     </Card>
-  )
+  );
 }
