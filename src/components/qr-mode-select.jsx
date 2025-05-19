@@ -1,3 +1,6 @@
+import { useState, useEffect } from "react";
+import { useInputs, useInputDispatch } from "../../state";
+
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
 
@@ -32,37 +35,56 @@ const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
           )}
         </div>
 
-export function QRModeSelect() {
+export function QRModeSelect({input, id}) {
+  const { updateInput } = useInputDispatch();
+  const { text, mode, encoding } = input;
+
+  const handleChange = (field, value) =>
+    updateInput?.({ ...input, [field]: value });
+  
   return (
-    <div className="flex items-center gap-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
             <ColumnsIcon />
-            <span className="hidden lg:inline">Customize Columns</span>
-            <span className="lg:hidden">Columns</span>
+            <span className="hidden lg:inline">Change Mode</span>
+            <span className="lg:hidden">Mode</span>
             <ChevronDownIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          {modes.map((column) => {
+          {modes.map((mode) => {
               return (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  className="capitalize"
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                >
-                  {column.id}
-                </DropdownMenuCheckboxItem>
+                <DropdownMenuItem className="capitalize">{mode}</DropdownMenuItem>
               );
             })}
         </DropdownMenuContent>
+      <Select
+            value={mode}
+            onChange={(e) => handleChange("mode", e.target.value)}
+          >
+            {modes.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </Select>
+      <Select value={mode} onValueChange={(e) => handleChange("mode", e.target.value)}>
+            <SelectTrigger
+              className="@[767px]/card:hidden flex w-40"
+              aria-label="Select a value"
+            >
+              <SelectValue placeholder="Basic" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="basic" className="rounded-lg">
+                Basic
+              </SelectItem>
+              <SelectItem value="halftone" className="rounded-lg">
+                Halftone
+              </SelectItem>
+            </SelectContent>
+          </Select>
       </DropdownMenu>
-      <Button variant="outline" size="sm">
-        <PlusIcon />
-        <span className="hidden lg:inline">Add Section</span>
-      </Button>
-    </div>
   );
 }
