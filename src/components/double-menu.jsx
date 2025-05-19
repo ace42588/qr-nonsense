@@ -66,7 +66,7 @@ function DraggableRow({
   })
 
   return (
-    <TableRow
+    <SidebarMenuItem
       data-state={row.getIsSelected() && "selected"}
       data-dragging={isDragging}
       ref={setNodeRef}
