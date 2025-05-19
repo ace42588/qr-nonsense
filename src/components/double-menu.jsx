@@ -59,15 +59,14 @@ function DragHandle({ id }) {
 }
 
 function DraggableRow({
-  row
+  input
 }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
-    id: row.original.id,
+    id: input.id,
   })
 
   return (
     <SidebarMenuItem
-      data-state={row.getIsSelected() && "selected"}
       data-dragging={isDragging}
       ref={setNodeRef}
       className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
@@ -75,12 +74,11 @@ function DraggableRow({
         transform: CSS.Transform.toString(transform),
         transition: transition,
       }}>
-      {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id}>
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </TableCell>
-      ))}
-    </TableRow>
+      <SidebarMenuButton tooltip={input.label}>
+                {input.icon && <item.icon />}
+                <span>{input.label}</span>
+              </SidebarMenuButton>
+    </SidebarMenuItem>
   );
 }
 
