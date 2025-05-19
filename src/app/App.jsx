@@ -16,7 +16,7 @@ import { CodewordDisplay } from "../components/CodewordDisplay";
 
 import { InputProvider, QRDataProvider } from "../state";
 
-import { InputSidebar } from "../components/input-sidebar";
+import { InputSidebar } from "../components/double-menu";
 import {
   SidebarInset,
   SidebarProvider,

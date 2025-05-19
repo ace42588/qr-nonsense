@@ -1,10 +1,34 @@
 import { useState } from "react";
-import { ArchiveX, Command, File, Inbox, Send, Trash2 } from "lucide-react";
+import {
+  ArchiveX,
+  Command,
+  File,
+  GripVerticalIcon,
+  Inbox,
+  Send,
+  Trash2,
+} from "lucide-react";
 
-import { useSortable } from "@dnd-kit/sortable";
+import {
+  DndContext,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -58,14 +82,13 @@ function DragHandle({ id }) {
   );
 }
 
-
-export function AppSidebar({ ...props }) {
+export function InputSidebar({ ...props }) {
   const { inputs } = useInputs();
   const { reorderInputs } = useInputDispatch();
   const { setOpen } = useSidebar();
-  
-  const [activeItem, setActiveItem] = useState(inputs[0]);
-  
+
+  const [activeInput, setActiveInput] = useState(inputs[0]);
+
   function DraggableRow({ input }) {
     const { transform, transition, setNodeRef, isDragging } = useSortable({
       id: input.id,
@@ -81,19 +104,15 @@ export function AppSidebar({ ...props }) {
           transition: transition,
         }}
       >
-        <SidebarMenuButton tooltip={input.label} onClick={() => {
-                          setActiveItem(item);
-                          const mail = data.mails.sort(() => Math.random() - 0.5);
-                          setMails(
-                            mail.slice(
-                              0,
-                              Math.max(5, Math.floor(Math.random() * 10) + 1)
-                            )
-                          );
-                          setOpen(true);
-                        }}
-                        isActive={activeItem?.title === item.title}
-                        className="px-2.5 md:px-2">
+        <SidebarMenuButton
+          tooltip={input.label}
+          onClick={() => {
+            setActiveInput(input);
+            setOpen(true);
+          }}
+          isActive={activeInput?.label === input.label}
+          className="px-2.5 md:px-2"
+        >
           <DragHandle id={input.id} />
           <span>{input.label}</span>
         </SidebarMenuButton>
@@ -130,7 +149,7 @@ export function AppSidebar({ ...props }) {
         <SidebarHeader className="gap-3.5 border-b p-4">
           <div className="flex w-full items-center justify-between">
             <div className="text-base font-medium text-foreground">
-              {activeItem?.title}
+              {activeInput?.label}
             </div>
             <Label className="flex items-center gap-2 text-sm">
               <span>Unreads</span>
@@ -142,22 +161,12 @@ export function AppSidebar({ ...props }) {
         <SidebarContent>
           <SidebarGroup className="px-0">
             <SidebarGroupContent>
-              {mails.map((mail) => (
-                <a
-                  href="#"
-                  key={mail.email}
-                  className="flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                >
-                  <div className="flex w-full items-center gap-2">
-                    <span>{mail.name}</span>{" "}
-                    <span className="ml-auto text-xs">{mail.date}</span>
-                  </div>
-                  <span className="font-medium">{mail.subject}</span>
-                  <span className="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">
-                    {mail.teaser}
-                  </span>
-                </a>
-              ))}
+              {() => {
+                const InputComponent = INPUT_TYPES[activeInput.type];
+                return (
+                  <InputComponent id={activeInput.id} input={activeInput} />
+                );
+              }}
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
