@@ -140,6 +140,32 @@ const data = {
   ],
 }
 
+import { FormatInput } from "./format-input";
+import { AddInput } from "./add-input-form";
+
+import { useInputs, useInputDispatch, useDerivedQRData } from "../state";
+import { SortableInput } from "./sortable-input";
+
+// Create a separate component for the drag handle
+function DragHandle({ id }) {
+  const { attributes, listeners } = useSortable({
+    id,
+  })
+
+  return (
+    <Button
+      {...attributes}
+      {...listeners}
+      variant="ghost"
+      size="icon"
+      className="size-7 text-muted-foreground hover:bg-transparent"
+    >
+      <GripVerticalIcon className="size-3 text-muted-foreground" />
+      <span className="sr-only">Drag to reorder</span>
+    </Button>
+  )
+}
+
 export function AppSidebar({ ...props }) {
   // Note: I'm using state to show active item.
   // IRL you should use the url/router.
@@ -159,23 +185,6 @@ export function AppSidebar({ ...props }) {
       <Sidebar
         collapsible="none"
       >
-        <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
-                <a href="#">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                    <Command className="size-4" />
-                  </div>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Acme Inc</span>
-                    <span className="truncate text-xs">Enterprise</span>
-                  </div>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent className="px-1.5 md:px-0">
