@@ -4,7 +4,7 @@ import { ArchiveX, Command, File, Inbox, Send, Trash2 } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { Label } from "@/components/ui/label"
+import { Label } from "@/components/ui/label";
 import {
   Sidebar,
   SidebarContent,
@@ -17,8 +17,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { Switch } from "@/components/ui/switch"
+} from "@/components/ui/sidebar";
+import { Switch } from "@/components/ui/switch";
+
+import { BasicInput } from "./inputs/BasicInput";
+import { JsonInput } from "./inputs/JsonInput";
+import { BitFieldInput } from "./inputs/BitFieldInput";
+import { MACGenerator } from "./inputs/MACGenerator";
 
 // This is sample data
 const data = {
@@ -55,6 +60,13 @@ const data = {
     },
   ],
 }
+
+const INPUT_TYPES = {
+  basic: BasicInput,
+  json: JsonInput,
+  bitfield: BitFieldInput,
+  mac: MACGenerator,
+};
 
 import { FormatInput } from "./format-input";
 import { AddInput } from "./add-input-form";
