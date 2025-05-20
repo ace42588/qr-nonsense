@@ -107,92 +107,45 @@ export function QRCanvasCard() {
   }, [highlightedIds, matrix]);
 
   return (
-        <Tabs
+    <Tabs
       defaultValue="basic"
       className="flex w-full flex-col justify-start gap-6"
     >
-      <div className="flex items-center justify-between px-4 lg:px-6">
-        <Label htmlFor="view-selector" className="sr-only">
-          View
-        </Label>
-        <Select defaultValue="basic">
-          <SelectTrigger
-            className="@4xl/main:hidden flex w-fit"
-            id="view-selector"
-          >
-            <SelectValue placeholder="Select a view" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="basic">Basic</SelectItem>
-            <SelectItem value="halftone">Halftone</SelectItem>
-          </SelectContent>
-        </Select>
-        <TabsList className="@4xl/main:flex hidden">
-          <TabsTrigger value="basic">Basic</TabsTrigger>
-          <TabsTrigger value="halftone">Halftone</TabsTrigger>
-        </TabsList>
-        <TabsContent
+      <Label htmlFor="view-selector" className="sr-only">
+        View
+      </Label>
+      <Select defaultValue="basic">
+        <SelectTrigger
+          className="@4xl/main:hidden flex w-fit"
+          id="view-selector"
+        >
+          <SelectValue placeholder="Select a view" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="basic">Basic</SelectItem>
+          <SelectItem value="halftone">Halftone</SelectItem>
+        </SelectContent>
+      </Select>
+      <TabsList className="@4xl/main:flex hidden">
+        <TabsTrigger value="basic">Basic</TabsTrigger>
+        <TabsTrigger value="halftone">Halftone</TabsTrigger>
+      </TabsList>
+      <TabsContent
         value="basic"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
         <div className="overflow-hidden rounded-lg border">
           <div className="qr-code-canvas-container">
-          <div className="relative w-[420px] h-[420px]">
-            <canvas className="canvas-layer pointer-events-none" />
-            <canvas className="canvas-layer pointer-events-auto" />
+            <div className="relative w-[420px] h-[420px]">
+              <canvas className="canvas-layer pointer-events-none" />
+              <canvas className="canvas-layer pointer-events-auto" />
+            </div>
           </div>
         </div>
-          </div>
-        </TabsContent>
-        <TabsContent
-        value="past-performance"
-        className="flex flex-col px-4 lg:px-6"
-      >
+      </TabsContent>
+      <TabsContent value="halftone" className="flex flex-col px-4 lg:px-6">
         <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
       </TabsContent>
-    <Card className="@container/card">
-      <CardHeader className="relative">
-        <div className="absolute right-4 top-4">
-          <ToggleGroup
-            type="single"
-            value={qrType}
-            onValueChange={setQrType}
-            variant="outline"
-            className="@[767px]/card:flex hidden"
-          >
-            <ToggleGroupItem value="basic" className="h-8 px-2.5">
-              Basic
-            </ToggleGroupItem>
-            <ToggleGroupItem value="halftone" className="h-8 px-2.5">
-              Halftone
-            </ToggleGroupItem>
-          </ToggleGroup>
-          <Select value={qrType} onValueChange={setQrType}>
-            <SelectTrigger
-              className="@[767px]/card:hidden flex w-40"
-              aria-label="Select a value"
-            >
-              <SelectValue placeholder="Basic" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl">
-              <SelectItem value="basic" className="rounded-lg">
-                Basic
-              </SelectItem>
-              <SelectItem value="halftone" className="rounded-lg">
-                Halftone
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </CardHeader>
-      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <div className="qr-code-canvas-container">
-          <div className="relative w-[420px] h-[420px]">
-            <canvas className="canvas-layer pointer-events-none" />
-            <canvas className="canvas-layer pointer-events-auto" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    </Tabs>
   );
 }
