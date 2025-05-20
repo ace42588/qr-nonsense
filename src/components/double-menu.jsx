@@ -114,6 +114,7 @@ export function InputSidebar({ ...props }) {
           isActive={activeInput?.label === input.label}
           className="px-2.5 md:px-2"
         >
+          <GripVerticalIcon className="size-3 text-muted-foreground" />
           <span>{input.label}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -146,18 +147,6 @@ export function InputSidebar({ ...props }) {
       {/* This is the second sidebar */}
       {/* We disable collapsible and let it fill remaining space */}
       <Sidebar collapsible="none" className="hidden flex-1 md:flex">
-        <SidebarHeader className="gap-3.5 border-b p-4">
-          <div className="flex w-full items-center justify-between">
-            <div className="text-base font-medium text-foreground">
-              {activeInput?.label}
-            </div>
-            <Label className="flex items-center gap-2 text-sm">
-              <span>Unreads</span>
-              <Switch className="shadow-none" />
-            </Label>
-          </div>
-          <SidebarInput placeholder="Type to search..." />
-        </SidebarHeader>
         <SidebarContent>
           <SidebarGroup className="px-0">
             <SidebarGroupContent>
