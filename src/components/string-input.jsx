@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { SidebarInput } from "@/components/ui/sidebar";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 import { useInputs, useInputDispatch } from "../state";
 
