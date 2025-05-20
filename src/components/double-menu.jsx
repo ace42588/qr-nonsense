@@ -113,7 +113,6 @@ export function InputSidebar({ ...props }) {
           transition: transition,
         }}
       >
-        <DragHandle id={input.id} />
         <SidebarMenuButton
           tooltip={input.label}
           onClick={() => {
@@ -122,8 +121,9 @@ export function InputSidebar({ ...props }) {
           }}
           isActive={activeInput?.label === input.label}
           className="px-2.5 md:px-2"
+          asChild
         >
-          <GripVerticalIcon className="size-3 text-muted-foreground" />
+          <DragHandle id={input.id} />
           <span>{input.label}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
