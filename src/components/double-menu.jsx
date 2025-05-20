@@ -49,10 +49,10 @@ import { JsonInput } from "./inputs/JsonInput";
 import { BitFieldInput } from "./inputs/BitFieldInput";
 import { MACGenerator } from "./inputs/MACGenerator";
 
-import {}
+import { StringInput } from "./string-input";
 
 const INPUT_TYPES = {
-  basic: BasicInput,
+  basic: StringInput,
   json: JsonInput,
   bitfield: BitFieldInput,
   mac: MACGenerator,
