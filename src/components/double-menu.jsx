@@ -119,11 +119,12 @@ export function InputSidebar({ ...props }) {
             setActiveInput(input);
             setOpen(true);
           }}
+          {...attributes}
+      {...listeners}
           isActive={activeInput?.label === input.label}
           className="px-2.5 md:px-2"
-          asChild
         >
-          <DragHandle id={input.id} />
+          <GripVerticalIcon className="size-3 text-muted-foreground" />
           <span>{input.label}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
