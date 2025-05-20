@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import {
   ArchiveX,
   Command,
@@ -89,14 +89,15 @@ export function InputSidebar({ ...props }) {
 
   const [activeInput, setActiveInput] = useState(inputs[0]);
 
+  const sortableId = useId();
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
     useSensor(TouchSensor, {}),
     useSensor(KeyboardSensor, {})
   );
-  
+
   const inputIds = useMemo(() => inputs?.map(({ id }) => id) || [], [inputs]);
-  
+
   function DraggableRow({ input }) {
     const { transform, transition, setNodeRef, isDragging } = useSortable({
       id: input.id,
@@ -145,19 +146,23 @@ export function InputSidebar({ ...props }) {
             modifiers={[restrictToVerticalAxis]}
             onDragEnd={reorderInputs}
             sensors={sensors}
-            id={sortableId}>
-          <SidebarGroup>
-            <SidebarGroupContent className="px-1.5 md:px-0">
-              <SidebarMenu>
-                  <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
-                {inputs.map((input) => (
-                  <DraggableRow input={input} />
-                ))}
-                </SortableContext>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </DndContext>
+            id={sortableId}
+          >
+            <SidebarGroup>
+              <SidebarGroupContent className="px-1.5 md:px-0">
+                <SidebarMenu>
+                  <SortableContext
+                    items={inputIds}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {inputs.map((input) => (
+                      <DraggableRow input={input} />
+                    ))}
+                  </SortableContext>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </DndContext>
         </SidebarContent>
       </Sidebar>
 
