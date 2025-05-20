@@ -89,6 +89,11 @@ export function InputSidebar({ ...props }) {
 
   const [activeInput, setActiveInput] = useState(inputs[0]);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
   function DraggableRow({ input }) {
     const { transform, transition, setNodeRef, isDragging } = useSortable({
       id: input.id,
@@ -132,21 +137,24 @@ export function InputSidebar({ ...props }) {
       {/* This will make the sidebar appear as icons. */}
       <Sidebar collapsible="none">
         <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent className="px-1.5 md:px-0">
-              <SidebarMenu>
-                <DndContext
+          <DndContext
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
             onDragEnd={handleDragEnd}
             sensors={sensors}
             id={sortableId}>
+          <SidebarGroup>
+            <SidebarGroupContent className="px-1.5 md:px-0">
+              <SidebarMenu>
+                  <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
                 {inputs.map((input) => (
                   <DraggableRow input={input} />
                 ))}
+                </SortableContext>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+        </DndContext>
         </SidebarContent>
       </Sidebar>
 
