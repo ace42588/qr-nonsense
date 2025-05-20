@@ -135,6 +135,12 @@ export function InputSidebar({ ...props }) {
           <SidebarGroup>
             <SidebarGroupContent className="px-1.5 md:px-0">
               <SidebarMenu>
+                <DndContext
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragEnd={handleDragEnd}
+            sensors={sensors}
+            id={sortableId}>
                 {inputs.map((input) => (
                   <DraggableRow input={input} />
                 ))}
