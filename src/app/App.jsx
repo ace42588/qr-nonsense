@@ -16,7 +16,7 @@ import { CodewordDisplay } from "../components/CodewordDisplay";
 
 import { InputProvider, QRDataProvider } from "../state";
 
-import { InputSidebar } from "../components/double-menu";
+import { InputSidebar } from "../components/input-sidebar";
 import {
   SidebarInset,
   SidebarProvider,
@@ -31,95 +31,45 @@ export default function App() {
         <SidebarInset>
           <QRDataProvider>
             <div className="flex flex-1 flex-col gap-4 p-4">
-              <div className="grid auto-rows-min gap-4 md:grid-cols-2>
-                <Tabs defaultValue="manual" className="w-half">
-                  <TabsList>
-                    <TabsTrigger value="manual">Input</TabsTrigger>
-                    <TabsTrigger value="scanner">Scanner</TabsTrigger>
-                  </TabsList>
+              <div className="grid auto-rows-min gap-4 md:grid-cols-2">
+                <div className="flex flex-1 items-center justify-center rounded-xl">
+                  <Tabs defaultValue="manual" className="w-half">
+                    <TabsList>
+                      <TabsTrigger value="manual">Input</TabsTrigger>
+                      <TabsTrigger value="scanner">Scanner</TabsTrigger>
+                    </TabsList>
 
-                  <TabsContent value="manual">
-                    <InputForm />
-                  </TabsContent>
+                    <TabsContent value="manual">
+                      <InputForm />
+                    </TabsContent>
 
-                  <TabsContent value="scanner">
-                    <VideoScanner />
-                  </TabsContent>
-                </Tabs>
-                <Tabs defaultValue="qr" className="w-half">
-                  <TabsList>
-                    <TabsTrigger value="qr">QR</TabsTrigger>
-                    <TabsTrigger value="hqr">HQR</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="qr">
-                    <QRCodeCanvas />
-                  </TabsContent>
-
-                  <TabsContent value="hqr">
-                    <QRImageHalftone />
-                  </TabsContent>
-                </Tabs>
-              </div>
-              <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
-                <Tabs defaultValue="qr" className="w-half">
-                  <TabsList>
-                    <TabsTrigger value="qr">QR</TabsTrigger>
-                    <TabsTrigger value="hqr">HQR</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="qr">
-                    <QRCodeCanvas />
-                  </TabsContent>
-
-                  <TabsContent value="hqr">
-                    <QRImageHalftone />
-                  </TabsContent>
-                </Tabs>
-              </div>
-            </div>
-            <div className="grid min-h-svh lg:grid-cols-2">
-              <div className="flex flex-col gap-4 p-6 md:p-10">
+                    <TabsContent value="scanner">
+                      <VideoScanner />
+                    </TabsContent>
+                  </Tabs>
+                </div>
                 <div className="flex flex-1 items-center justify-center">
-                  <div className="w-full max-w-xs">
-                    <Tabs defaultValue="manual" className="w-half">
-                      <TabsList>
-                        <TabsTrigger value="manual">Input</TabsTrigger>
-                        <TabsTrigger value="scanner">Scanner</TabsTrigger>
-                      </TabsList>
+                  <Tabs defaultValue="qr" className="w-half">
+                    <TabsList>
+                      <TabsTrigger value="qr">QR</TabsTrigger>
+                      <TabsTrigger value="hqr">HQR</TabsTrigger>
+                    </TabsList>
 
-                      <TabsContent value="manual">
-                        <InputForm />
-                      </TabsContent>
+                    <TabsContent value="qr">
+                      <QRCodeCanvas />
+                    </TabsContent>
 
-                      <TabsContent value="scanner">
-                        <VideoScanner />
-                      </TabsContent>
-                    </Tabs>
-                  </div>
+                    <TabsContent value="hqr">
+                      <QRImageHalftone />
+                    </TabsContent>
+                  </Tabs>
                 </div>
               </div>
-              <div className="relative hidden bg-muted lg:block">
-                <Tabs defaultValue="qr" className="w-half">
-                  <TabsList>
-                    <TabsTrigger value="qr">QR</TabsTrigger>
-                    <TabsTrigger value="hqr">HQR</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="qr">
-                    <QRCodeCanvas />
-                  </TabsContent>
-
-                  <TabsContent value="hqr">
-                    <QRImageHalftone />
-                  </TabsContent>
-                </Tabs>
-              </div>
             </div>
-            <div className="row">
+            <div className="grid auto-rows-min gap-4">
               <SegmentDisplay />
             </div>
-            <div className="row">
+            <div className="grid auto-rows-min gap-4">
               <CodewordDisplay />
             </div>
           </QRDataProvider>
