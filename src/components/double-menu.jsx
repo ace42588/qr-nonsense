@@ -99,7 +99,7 @@ export function InputSidebar({ ...props }) {
   const inputIds = useMemo(() => inputs?.map(({ id }) => id) || [], [inputs]);
 
   function DraggableRow({ input }) {
-    const { transform, transition, setNodeRef, isDragging } = useSortable({
+    const { attributes, listeners, transform, transition, setNodeRef, isDragging } = useSortable({
       id: input.id,
     });
 
@@ -130,6 +130,8 @@ export function InputSidebar({ ...props }) {
       </SidebarMenuItem>
     );
   }
+  
+  const InputComponent = INPUT_TYPES[activeInput.type];
 
   return (
     <Sidebar
@@ -173,12 +175,7 @@ export function InputSidebar({ ...props }) {
         <SidebarContent>
           <SidebarGroup className="px-0">
             <SidebarGroupContent>
-              {() => {
-                const InputComponent = INPUT_TYPES[activeInput.type];
-                return (
-                  <InputComponent id={activeInput.id} input={activeInput} />
-                );
-              }}
+              <InputComponent id={activeInput.id} input={activeInput} />
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
