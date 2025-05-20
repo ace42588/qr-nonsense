@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArchiveX,
   Command,
@@ -90,10 +90,13 @@ export function InputSidebar({ ...props }) {
   const [activeInput, setActiveInput] = useState(inputs[0]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(MouseSensor, {}),
+    useSensor(TouchSensor, {}),
+    useSensor(KeyboardSensor, {})
   );
-
+  
+  const inputIds = useMemo(() => inputs?.map(({ id }) => id) || [], [inputs]);
+  
   function DraggableRow({ input }) {
     const { transform, transition, setNodeRef, isDragging } = useSortable({
       id: input.id,
@@ -140,7 +143,7 @@ export function InputSidebar({ ...props }) {
           <DndContext
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
-            onDragEnd={handleDragEnd}
+            onDragEnd={reorderInputs}
             sensors={sensors}
             id={sortableId}>
           <SidebarGroup>
