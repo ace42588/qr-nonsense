@@ -49,6 +49,8 @@ import { JsonInput } from "./inputs/JsonInput";
 import { BitFieldInput } from "./inputs/BitFieldInput";
 import { MACGenerator } from "./inputs/MACGenerator";
 
+import {}
+
 const INPUT_TYPES = {
   basic: BasicInput,
   json: JsonInput,
@@ -99,7 +101,14 @@ export function InputSidebar({ ...props }) {
   const inputIds = useMemo(() => inputs?.map(({ id }) => id) || [], [inputs]);
 
   function DraggableRow({ input }) {
-    const { attributes, listeners, transform, transition, setNodeRef, isDragging } = useSortable({
+    const {
+      attributes,
+      listeners,
+      transform,
+      transition,
+      setNodeRef,
+      isDragging,
+    } = useSortable({
       id: input.id,
     });
 
@@ -120,7 +129,7 @@ export function InputSidebar({ ...props }) {
             setOpen(true);
           }}
           {...attributes}
-      {...listeners}
+          {...listeners}
           isActive={activeInput?.label === input.label}
           className="px-2.5 md:px-2"
         >
@@ -130,7 +139,7 @@ export function InputSidebar({ ...props }) {
       </SidebarMenuItem>
     );
   }
-  
+
   const InputComponent = INPUT_TYPES[activeInput.type];
 
   return (
@@ -142,7 +151,10 @@ export function InputSidebar({ ...props }) {
       {/* This is the first sidebar */}
       {/* We disable collapsible and adjust width to icon. */}
       {/* This will make the sidebar appear as icons. */}
-      <Sidebar collapsible="none">
+      <Sidebar
+        collapsible="none"
+        className="!w-[calc(var(--sidebar-width-icon)_+_1px)] border-r"
+      >
         <SidebarContent>
           <DndContext
             collisionDetection={closestCenter}

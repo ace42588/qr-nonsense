@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { SidebarInput } from "@/components/ui/sidebar";
+
 import { useInputs, useInputDispatch } from "../../state";
 
 import { QRModeSelect } from "./qr-mode-select";
@@ -13,17 +15,21 @@ export function StringInput({ id, input }) {
     updateInput?.({ ...input, [field]: value });
 
   return (
-    <div className="flex w-full items-center justify-between">
-            <div className="text-base font-medium text-foreground">
-              {activeItem?.title}
-            </div>
-            <Label className="flex items-center gap-2 text-sm">
-              <span>Unreads</span>
-              <Switch className="shadow-none" />
-            </Label>
-          </div>
-    <SidebarInput placeholder="Type to search..." value={text}
-            onChange={(e) => handleChange("text", e.target.value)}/>
-
+    <>
+      <div className="flex w-full items-center justify-between">
+        <div className="text-base font-medium text-foreground">
+          {input?.label}
+        </div>
+        <Label className="flex items-center gap-2 text-sm">
+          <span>Unreads</span>
+          <Switch className="shadow-none" />
+        </Label>
+      </div>
+      <SidebarInput
+        placeholder="Type to search..."
+        value={text}
+        onChange={(e) => handleChange("text", e.target.value)}
+      />
+    </>
   );
 }
