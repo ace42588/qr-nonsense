@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useInputs, useInputDispatch } from "../../state";
+import { useInputs, useInputDispatch } from "../state";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 

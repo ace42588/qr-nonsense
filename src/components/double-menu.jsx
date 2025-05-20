@@ -153,7 +153,6 @@ export function InputSidebar({ ...props }) {
       {/* This will make the sidebar appear as icons. */}
       <Sidebar
         collapsible="none"
-        className="!w-[calc(var(--sidebar-width-icon)_+_1px)] border-r"
       >
         <SidebarContent>
           <DndContext
