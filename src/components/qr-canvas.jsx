@@ -107,6 +107,48 @@ export function QRCanvasCard() {
   }, [highlightedIds, matrix]);
 
   return (
+        <Tabs
+      defaultValue="basic"
+      className="flex w-full flex-col justify-start gap-6"
+    >
+      <div className="flex items-center justify-between px-4 lg:px-6">
+        <Label htmlFor="view-selector" className="sr-only">
+          View
+        </Label>
+        <Select defaultValue="basic">
+          <SelectTrigger
+            className="@4xl/main:hidden flex w-fit"
+            id="view-selector"
+          >
+            <SelectValue placeholder="Select a view" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="basic">Basic</SelectItem>
+            <SelectItem value="halfto">Past Performance</SelectItem>
+          </SelectContent>
+        </Select>
+        <TabsList className="@4xl/main:flex hidden">
+          <TabsTrigger value="outline">Outline</TabsTrigger>
+          <TabsTrigger value="past-performance" className="gap-1">
+            Past Performance{" "}
+            <Badge
+              variant="secondary"
+              className="flex h-5 w-5 items-center justify-center rounded-full bg-muted-foreground/30"
+            >
+              3
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="key-personnel" className="gap-1">
+            Key Personnel{" "}
+            <Badge
+              variant="secondary"
+              className="flex h-5 w-5 items-center justify-center rounded-full bg-muted-foreground/30"
+            >
+              2
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
+        </TabsList>
     <Card className="@container/card">
       <CardHeader className="relative">
         <div className="absolute right-4 top-4">
