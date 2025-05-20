@@ -124,31 +124,32 @@ export function QRCanvasCard() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="basic">Basic</SelectItem>
-            <SelectItem value="halfto">Past Performance</SelectItem>
+            <SelectItem value="halftone">Halftone</SelectItem>
           </SelectContent>
         </Select>
         <TabsList className="@4xl/main:flex hidden">
-          <TabsTrigger value="outline">Outline</TabsTrigger>
-          <TabsTrigger value="past-performance" className="gap-1">
-            Past Performance{" "}
-            <Badge
-              variant="secondary"
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-muted-foreground/30"
-            >
-              3
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="key-personnel" className="gap-1">
-            Key Personnel{" "}
-            <Badge
-              variant="secondary"
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-muted-foreground/30"
-            >
-              2
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
+          <TabsTrigger value="basic">Basic</TabsTrigger>
+          <TabsTrigger value="halftone">Halftone</TabsTrigger>
         </TabsList>
+        <TabsContent
+        value="basic"
+        className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
+      >
+        <div className="overflow-hidden rounded-lg border">
+          <div className="qr-code-canvas-container">
+          <div className="relative w-[420px] h-[420px]">
+            <canvas className="canvas-layer pointer-events-none" />
+            <canvas className="canvas-layer pointer-events-auto" />
+          </div>
+        </div>
+          </div>
+        </TabsContent>
+        <TabsContent
+        value="past-performance"
+        className="flex flex-col px-4 lg:px-6"
+      >
+        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
+      </TabsContent>
     <Card className="@container/card">
       <CardHeader className="relative">
         <div className="absolute right-4 top-4">
