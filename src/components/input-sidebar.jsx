@@ -65,7 +65,23 @@ import { AddInput } from "./add-input-form";
 import { useInputs, useInputDispatch, useDerivedQRData } from "../state";
 import { SortableInput } from "./sortable-input";
 
-function DraggableInput({ input }) {
+export function InputSidebar({ ...props }) {
+  const { inputs } = useInputs();
+  const { errorCorrectionLevel, version, dataMask } = useInputs();
+
+  const { addInput, reorderInputs, removeInput } = useInputDispatch();
+  const { setErrorCorrection, setVersion, setDataMask } = useInputDispatch();
+  
+  const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
+  
+  const nextLabel = React.useRef(inputs?.length || 0);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+  
+  function DraggableInput({ input }) {
   const {
     attributes,
     listeners,
@@ -93,6 +109,7 @@ function DraggableInput({ input }) {
           <Button
             {...attributes}
             {...listeners}
+            style={{ cursor: "grab"}}
             variant="ghost"
             size="icon"
             className="size-7 text-muted-foreground hover:bg-transparent"
@@ -113,7 +130,7 @@ function DraggableInput({ input }) {
           <DropdownMenuItem>
             <span>Rename</span>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => removeInput(input.id)}>
             <span>Remove</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -122,26 +139,11 @@ function DraggableInput({ input }) {
   );
 }
 
-export function InputSidebar({ ...props }) {
-  const { inputs } = useInputs();
-
-  const { addInput, reorderInputs } = useInputDispatch();
-  const nextLabel = React.useRef(inputs?.length || 0);
-
-  const { errorCorrectionLevel, version, dataMask } = useInputs();
-  const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
-  const { setErrorCorrection, setVersion, setDataMask } = useInputDispatch();
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
   return (
     <Sidebar {...props}>
       <SidebarHeader>
         <SidebarMenu>
-          <SidebarMenuItem>
+          <SidebarMenuItem key="header">
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">

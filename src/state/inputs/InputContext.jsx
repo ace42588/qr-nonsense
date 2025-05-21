@@ -37,13 +37,13 @@ export function InputProvider({ children }) {
     removeInput: useCallback((payload) => {
       dispatch({ type: Actions.Remove, payload });
     }, []),
-    reorderInputs: useCallback(({ active, over }) => {
-      console.debug("reorderInputs", {active, over});
+    reorderInputs: ({ active, over }) => {
+      console.debug("reorderInputs", { active, over });
       if (!over || active.id === over.id) return;
       const oldIndex = state.inputs.findIndex((i) => i.id === active.id);
       const newIndex = state.inputs.findIndex((i) => i.id === over.id);
       dispatch({ type: Actions.Reorder, oldIndex, newIndex });
-    }, []),
+    },
     setType: useCallback((id, type) => {
       dispatch({
         type: Actions.ChangeType,
