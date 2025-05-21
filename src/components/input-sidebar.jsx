@@ -142,13 +142,14 @@ export function InputSidebar({ ...props }) {
           </SidebarMenu>
         </SidebarGroup>
       </Collapsible>
-      <Collapsible
-        key="formatInfo"
-        defaultOpen={false}
-        className="group/collapsible"
-      >
+      <Collapsible key="inputs" defaultOpen className="group/collapsible">
         <SidebarGroup>
-          <SidebarGroupLabel>Inputs</SidebarGroupLabel>
+          <SidebarGroupLabel asChild>
+            <CollapsibleTrigger>
+              Inputs
+              <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+            </CollapsibleTrigger>
+          </SidebarGroupLabel>
           <SidebarGroupAction title="Add Input">
             <Plus /> <span className="sr-only">Add Input</span>
           </SidebarGroupAction>
