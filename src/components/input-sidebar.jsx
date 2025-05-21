@@ -1,7 +1,6 @@
 import * as React from "react";
 
-import { Button } from "@/components/ui/button"
-
+import { Button } from "@/components/ui/button";
 
 import {
   GalleryVerticalEnd,
@@ -79,16 +78,17 @@ function DraggableInput({ input }) {
   });
 
   return (
-    <SidebarMenuItem
-      key={input.id}
-      data-dragging={isDragging}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition: transition,
-      }}
-    >
-      <SidebarMenuButton asChild>
+    <SidebarMenuItem key={input.id}>
+      <SidebarMenuButton
+        data-dragging={isDragging}
+        ref={setNodeRef}
+        className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+        style={{
+          transform: CSS.Transform.toString(transform),
+          transition: transition,
+        }}
+        asChild
+      >
         <a href="#">
           <Button
             {...attributes}

@@ -38,6 +38,7 @@ export function InputProvider({ children }) {
       dispatch({ type: Actions.Remove, payload });
     }, []),
     reorderInputs: useCallback(({ active, over }) => {
+      console.debug("reorderInputs", {active, over});
       if (!over || active.id === over.id) return;
       const oldIndex = state.inputs.findIndex((i) => i.id === active.id);
       const newIndex = state.inputs.findIndex((i) => i.id === over.id);
