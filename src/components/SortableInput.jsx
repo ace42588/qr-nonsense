@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { useInputDispatch } from "../../state";
+import { useInputDispatch } from "../state";
 import { BasicInput } from "./BasicInput";
 import { JsonInput } from "./JsonInput";
 import { BitFieldInput } from "./BitFieldInput";
@@ -13,14 +13,14 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "../../components/ui/accordion";
+} from "../components/ui/accordion";
 
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs";
+} from "../components/ui/tabs";
 
 export function SortableInput({ input }) {
   const { id, label, type } = input;

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useParsedInputs, useInputs, useInputDispatch } from "../../../state";
+import { useParsedInputs, useInputs, useInputDispatch } from "../../state";
 const encoder = new TextEncoder("utf-8");
 
 const types = [

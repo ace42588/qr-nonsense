@@ -14,7 +14,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { SortableField } from "./SortableField";
-import { useInputs, useInputDispatch } from "../../../state";
+import { useInputs, useInputDispatch } from "../../state";
 
 const DEFAULT_FIELD = {
   label: "",

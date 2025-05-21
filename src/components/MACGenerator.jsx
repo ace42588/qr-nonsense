@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { useParsedInputs, useInputs, useInputDispatch } from "../../state";
-import { MAC_FUNCTIONS } from "../../domain";
+import { useParsedInputs, useInputs, useInputDispatch } from "../state";
+import { MAC_FUNCTIONS } from "../domain";
 
 export function MACGenerator({ id, input }) {
   const {inputs: allInputs} = useInputs();

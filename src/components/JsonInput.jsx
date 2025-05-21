@@ -1,14 +1,14 @@
 import { useState } from "react";
 import Editor from "@monaco-editor/react";
-import { useParsedInputs, useInputDispatch } from "../../state";
-import { predefinedSchemas } from "../../domain/input";
-import { ENCODING_STRATEGIES } from "../../domain/encoders";
+import { useParsedInputs, useInputDispatch } from "../state";
+import { predefinedSchemas } from "../domain/input";
+import { ENCODING_STRATEGIES } from "../domain/encoders";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs";
+} from "../components/ui/tabs";
 
 const options = {
   minimap: { enabled: false },

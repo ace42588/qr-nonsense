@@ -7,9 +7,9 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs";
+} from "../components/ui/tabs";
 
-import { useParsedInputs } from "../../state";
+import { useParsedInputs } from "../state";
 
 export function BitFieldInput({ id, input }) {
   const { encodedBytes } = useParsedInputs()[id];

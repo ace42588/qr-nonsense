@@ -52,8 +52,10 @@ const INPUT_TYPES = {
 export default function App() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const [scanning, setScanning] = useState(true);
+  const [scanning, setScanning] = useState(false);
   const { setInputs } = useInputDispatch();
+  
+  const [inputMethod, setInputMethod] = useState("manual");
   
   return (
     <InputProvider>
@@ -64,7 +66,7 @@ export default function App() {
             <div className="flex flex-1 items-center gap-2 px-3">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="mr-2 h-4" />
-              <ToggleGroup type="single" size="sm">
+              <ToggleGroup type="single" value={inputMethod} onValueChange={setInputMethod} size="sm">
                 <ToggleGroupItem value="manual" aria-label="Toggle bold">
                   <SquarePen className="h-4 w-4" />
                 </ToggleGroupItem>
@@ -78,6 +80,7 @@ export default function App() {
             <div className="flex flex-1 flex-col gap-4 p-4">
               <div className="grid auto-rows-min gap-4 md:grid-cols-2">
                 <div className="flex flex-1 items-center justify-center rounded-xl">
+                  {const InputComponent = INPUT_TYPES[type]}
                   <Tabs defaultValue="manual" className="w-half">
                     <TabsList>
                       <TabsTrigger value="manual">Input</TabsTrigger>
