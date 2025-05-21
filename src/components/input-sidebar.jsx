@@ -93,110 +93,93 @@ export function InputSidebar({ ...props }) {
               <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
             </CollapsibleTrigger>
           </SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem key="Error Correction Level">
-              <SidebarMenuButton asChild isActive={true}>
-                <select
-                  id="ec-level"
-                  value={errorCorrectionLevel}
-                  onChange={(e) => setErrorCorrection(e.target.value)}
-                >
-                  {levels.map((level) => (
-                    <option key={level.value} value={level.value}>
-                      {level.label}
-                    </option>
-                  ))}
-                </select>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem key="QR Code Version">
-              <SidebarMenuButton asChild isActive={true}>
-                <select
-                  id="qr-version"
-                  value={cVersion || version}
-                  onChange={(e) => setVersion(e.target.value)}
-                >
-                  {versions.map((ver) => (
-                    <option key={ver.value} value={ver.value}>
-                      {ver.label}
-                    </option>
-                  ))}
-                </select>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem key="Data Mask">
-              <SidebarMenuButton asChild isActive={true}>
-                <select
-                  id="data-mask"
-                  value={cDataMask || dataMask}
-                  onChange={(e) => setDataMask(e.target.value)}
-                >
-                  {masks.map((mask) => (
-                    <option key={mask.value} value={mask.value}>
-                      {mask.label}
-                    </option>
-                  ))}
-                </select>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-      </Collapsible>
-      <Collapsible key="inputs" defaultOpen className="group/collapsible">
-        <SidebarGroup>
-          <SidebarGroupLabel asChild>
-            <CollapsibleTrigger>
-              Inputs
-              <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
-            </CollapsibleTrigger>
-          </SidebarGroupLabel>
-          <SidebarGroupAction title="Add Input">
-            <Plus /> <span className="sr-only">Add Input</span>
-          </SidebarGroupAction>
-          <SidebarMenu>
-            <Collapsible
-              key="inputs"
-              asChild
-              defaultOpen={true}
-              className="group/collapsible"
-            >
-              <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip="Inputs">
-                    <span>Inputs</span>
-                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <AddInput />
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={reorderInputs}
+          <CollapsibleContent>
+            <SidebarMenu>
+              <SidebarMenuItem key="Error Correction Level">
+                <SidebarMenuButton asChild isActive={true}>
+                  <select
+                    id="ec-level"
+                    value={errorCorrectionLevel}
+                    onChange={(e) => setErrorCorrection(e.target.value)}
                   >
-                    <SortableContext
-                      items={inputs.map((i) => i.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      <SidebarMenuSub>
-                        {inputs.map((input, idx) => (
-                          <SidebarMenuSubItem key={inputs.label}>
-                            <SidebarMenuSubButton asChild>
-                              <a href="#">
-                                <span>{inputs.label}</span>
-                              </a>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    </SortableContext>
-                  </DndContext>
-                </CollapsibleContent>
+                    {levels.map((level) => (
+                      <option key={level.value} value={level.value}>
+                        {level.label}
+                      </option>
+                    ))}
+                  </select>
+                </SidebarMenuButton>
               </SidebarMenuItem>
-            </Collapsible>
-          </SidebarMenu>
+              <SidebarMenuItem key="QR Code Version">
+                <SidebarMenuButton asChild isActive={true}>
+                  <select
+                    id="qr-version"
+                    value={cVersion || version}
+                    onChange={(e) => setVersion(e.target.value)}
+                  >
+                    {versions.map((ver) => (
+                      <option key={ver.value} value={ver.value}>
+                        {ver.label}
+                      </option>
+                    ))}
+                  </select>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem key="Data Mask">
+                <SidebarMenuButton asChild isActive={true}>
+                  <select
+                    id="data-mask"
+                    value={cDataMask || dataMask}
+                    onChange={(e) => setDataMask(e.target.value)}
+                  >
+                    {masks.map((mask) => (
+                      <option key={mask.value} value={mask.value}>
+                        {mask.label}
+                      </option>
+                    ))}
+                  </select>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </CollapsibleContent>
         </SidebarGroup>
       </Collapsible>
+      <SidebarGroup>
+        <SidebarGroupLabel asChild>Inputs</SidebarGroupLabel>
+        <SidebarGroupAction title="Add Input">
+          <Plus /> <span className="sr-only">Add Input</span>
+        </SidebarGroupAction>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton tooltip="Inputs">
+              <span>Inputs</span>
+            </SidebarMenuButton>
+            <AddInput />
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={reorderInputs}
+            >
+              <SortableContext
+                items={inputs.map((i) => i.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <SidebarMenuSub>
+                  {inputs.map((input, idx) => (
+                    <SidebarMenuSubItem key={inputs.label}>
+                      <SidebarMenuSubButton asChild>
+                        <a href="#">
+                          <span>{inputs.label}</span>
+                        </a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
+                </SidebarMenuSub>
+              </SortableContext>
+            </DndContext>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroup>
 
       <SidebarRail />
     </Sidebar>
