@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+
+import { useQRDataDispatch, useInputDispatch } from "../state";
+import jsQR from "jsqr";
 
 import {
   SquarePen,
@@ -34,7 +37,24 @@ import {
   SidebarTrigger,
 } from "../components/ui/sidebar";
 
+import { BasicInput } from "@/components/BasicInput";
+import { JsonInput } from "@/components/JsonInput";
+import { BitFieldInput } from "@/components/BitFieldInput";
+import { MACGenerator } from "@/components/MACGenerator";
+
+const INPUT_TYPES = {
+  basic: BasicInput,
+  json: JsonInput,
+  bitfield: BitFieldInput,
+  mac: MACGenerator,
+};
+
 export default function App() {
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [scanning, setScanning] = useState(true);
+  const { setInputs } = useInputDispatch();
+  
   return (
     <InputProvider>
       <SidebarProvider>

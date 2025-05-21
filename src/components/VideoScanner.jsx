@@ -8,14 +8,6 @@ export function VideoScanner() {
   const [scanning, setScanning] = useState(true);
   const { setInputs } = useInputDispatch();
 
-  const updateQRData = useCallback(
-    ({ chunks, version, formatInfo }) => {
-      console.debug("updateQRData", { chunks, version, formatInfo });
-      setInputs({ chunks, version, formatInfo });
-    },
-    [setInputs]
-  );
-
   useEffect(() => {
     if (!scanning) return;
 
@@ -59,7 +51,7 @@ export function VideoScanner() {
 
         if (code && code.data !== "") {
           setScanning(false); // Stop scanning when a QR code is found
-          updateQRData(code);
+          setInputs(code);
         } else {
           requestAnimationFrame(scanQR);
         }
@@ -76,7 +68,7 @@ export function VideoScanner() {
       }
       setScanning(false);
     };
-  }, [scanning, updateQRData]);
+  }, [scanning, setInputs]);
 
   return (
     <div

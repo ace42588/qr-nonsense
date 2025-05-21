@@ -247,7 +247,7 @@ export function InputSidebar({ ...props }) {
             >
               <SidebarMenu>
                 {inputs.map((input, idx) => (
-                  <DraggableInput input={input} />
+                  <DraggableInput key={input.id} input={input} />
                 ))}
               </SidebarMenu>
             </SortableContext>
