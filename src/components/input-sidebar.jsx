@@ -67,7 +67,7 @@ import { useInputs, useInputDispatch, useDerivedQRData } from "../state";
 import { SortableInput } from "./sortable-input";
 
 export function InputSidebar({ ...props }) {
-  const { inputs, activeInput } = useInputs();
+  const { inputs, activeInputID } = useInputs();
   const { errorCorrectionLevel, version, dataMask } = useInputs();
 
   const { addInput, reorderInputs, removeInput, setActiveInput } =
@@ -108,7 +108,7 @@ export function InputSidebar({ ...props }) {
             transition: transition,
           }}
           asChild
-          isActive={activeInput.id === input.id}
+          isActive={activeInputID === input.id}
         >
           <a href="#">
             <Button

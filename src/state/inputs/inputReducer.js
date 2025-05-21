@@ -109,7 +109,7 @@ export function inputReducer(state, action) {
       return { ...state, ...action.payload };
     }
     case Actions.SetActiveInput: {
-      return {...state, activeInput: state.inputs.find(({id}) => id === action.id)}
+      return {...state, activeInputID: action.id}
     }
 
     default:

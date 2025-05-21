@@ -70,7 +70,9 @@ const INPUT_TYPES = {
 };
 
 export function InputCard() {
-  const { activeInput } = useInputs();
+  const { inputs, activeInputID } = useInputs();
+  console.debug({activeInputID, inputs});
+  const activeInput = inputs.find(({id}) => id == activeInputID);
   const InputComponent = INPUT_TYPES[activeInput.type];
   return (
     <Card className="w-[350px]">

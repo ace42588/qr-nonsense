@@ -10,7 +10,7 @@ const initialState = {
   version: -1, // "auto"
   dataMask: -1, // "auto"
   inputs: [initialInput],
-  activeInput: initialInput
+  activeInputID: initialInput.id
 };
 
 export function InputProvider({ children }) {
