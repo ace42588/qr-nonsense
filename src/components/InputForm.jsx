@@ -22,7 +22,7 @@ import {
 
 import { FormatInput } from "./FormatInput";
 import { useInputs, useInputDispatch } from "../state";
-import { SortableInput } from "./inputs/SortableInput";
+import { SortableInput } from "./SortableInput";
 
 export function InputForm() {
   const { inputs } = useInputs();

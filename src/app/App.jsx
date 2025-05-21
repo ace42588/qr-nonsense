@@ -83,21 +83,7 @@ export default function App() {
             <div className="flex flex-1 flex-col gap-4 p-4">
               <div className="grid auto-rows-min gap-4 md:grid-cols-2">
                 <div className="flex flex-1 items-center justify-center rounded-xl">
-                  {const InputComponent = INPUT_TYPES[type]}
-                  <Tabs defaultValue="manual" className="w-half">
-                    <TabsList>
-                      <TabsTrigger value="manual">Input</TabsTrigger>
-                      <TabsTrigger value="scanner">Scanner</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="manual">
-                      <InputForm />
-                    </TabsContent>
-
-                    <TabsContent value="scanner">
-                      <VideoScanner />
-                    </TabsContent>
-                  </Tabs>
+                  <InputComponent id={activeInput.id} input={activeInput} />
                 </div>
                 <div className="flex flex-1 items-center justify-center">
                   <Tabs defaultValue="qr" className="w-half">

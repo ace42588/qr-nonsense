@@ -25,10 +25,10 @@ import {
 } from "@/components/ui/sidebar";
 
 import { useInputDispatch } from "../state";
-import { BasicInput } from "./inputs/BasicInput";
-import { JsonInput } from "./inputs/JsonInput";
-import { BitFieldInput } from "./inputs/BitFieldInput";
-import { MACGenerator } from "./inputs/MACGenerator";
+import { BasicInput } from "./BasicInput";
+import { JsonInput } from "./JsonInput";
+import { BitFieldInput } from "./BitFieldInput";
+import { MACGenerator } from "./MACGenerator";
 
 const INPUT_TYPES = {
   basic: BasicInput,
