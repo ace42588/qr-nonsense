@@ -17,6 +17,7 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupAction,
+  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
@@ -26,6 +27,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 
 import {
@@ -145,40 +147,32 @@ export function InputSidebar({ ...props }) {
         </SidebarGroup>
       </Collapsible>
       <SidebarGroup>
-        <SidebarGroupLabel asChild>Inputs</SidebarGroupLabel>
+        <SidebarGroupLabel>Inputs</SidebarGroupLabel>
         <SidebarGroupAction title="Add Input">
           <Plus /> <span className="sr-only">Add Input</span>
         </SidebarGroupAction>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Inputs">
-              <span>Inputs</span>
-            </SidebarMenuButton>
-            <AddInput />
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={reorderInputs}
+        <SidebarGroupContent>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={reorderInputs}
+          >
+            <SortableContext
+              items={inputs.map((i) => i.id)}
+              strategy={verticalListSortingStrategy}
             >
-              <SortableContext
-                items={inputs.map((i) => i.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <SidebarMenuSub>
-                  {inputs.map((input, idx) => (
-                    <SidebarMenuSubItem key={inputs.label}>
-                      <SidebarMenuSubButton asChild>
-                        <a href="#">
-                          <span>{inputs.label}</span>
-                        </a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </SortableContext>
-            </DndContext>
-          </SidebarMenuItem>
-        </SidebarMenu>
+              <SidebarMenu>
+                {inputs.map((input, idx) => (
+                  <SidebarMenuItem key={inputs.label}>
+                    <SidebarMenuButton>
+                      {input.label}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SortableContext>
+          </DndContext>
+        </SidebarGroupContent>
       </SidebarGroup>
 
       <SidebarRail />
