@@ -18,7 +18,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -51,6 +51,7 @@ import {
   arrayMove,
   verticalListSortingStrategy,
   sortableKeyboardCoordinates,
+  useSortable,
 } from "@dnd-kit/sortable";
 
 import { FormatInput } from "./format-input";
@@ -58,6 +59,57 @@ import { AddInput } from "./add-input-form";
 
 import { useInputs, useInputDispatch, useDerivedQRData } from "../state";
 import { SortableInput } from "./sortable-input";
+
+function DraggableInput({ input }) {
+  const {
+    attributes,
+    listeners,
+    transform,
+    transition,
+    setNodeRef,
+    isDragging,
+  } = useSortable({
+    id: input.id,
+  });
+
+  return (
+    <SidebarMenuItem key={input.id}>
+      <SidebarMenuButton
+        data-dragging={isDragging}
+        className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+        style={{
+          transform: CSS.Transform.toString(transform),
+          transition: transition,
+        }}
+        asChild
+      >
+        <a href="#">
+          <GripVerticalIcon
+            {...attributes}
+            {...listeners}
+            className="size-3 text-muted-foreground hover:bg-transparent"
+          />
+          <span>{input.label}</span>
+        </a>
+      </SidebarMenuButton>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <SidebarMenuAction>
+            <MoreHorizontal />
+          </SidebarMenuAction>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="right" align="start">
+          <DropdownMenuItem>
+            <span>Rename</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <span>Remove</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </SidebarMenuItem>
+  );
+}
 
 export function InputSidebar({ ...props }) {
   const { inputs } = useInputs();
@@ -160,7 +212,10 @@ export function InputSidebar({ ...props }) {
       <SidebarSeparator />
       <SidebarGroup>
         <SidebarGroupLabel>Inputs</SidebarGroupLabel>
-        <SidebarGroupAction title="Add Input">
+        <SidebarGroupAction
+          title="Add Input"
+          onClick={() => addInput(`Input ${nextLabel.current++}`)}
+        >
           <Plus /> <span className="sr-only">Add Input</span>
         </SidebarGroupAction>
         <SidebarGroupContent>
@@ -178,20 +233,20 @@ export function InputSidebar({ ...props }) {
                   <SidebarMenuItem key={inputs.label}>
                     <SidebarMenuButton>{input.label}</SidebarMenuButton>
                     <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <SidebarMenuAction>
-        <MoreHorizontal />
-      </SidebarMenuAction>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent side="right" align="start">
-      <DropdownMenuItem>
-        <span>Rename</span>
-      </DropdownMenuItem>
-      <DropdownMenuItem>
-        <span>Remove</span>
-      </DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuAction>
+                          <MoreHorizontal />
+                        </SidebarMenuAction>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent side="right" align="start">
+                        <DropdownMenuItem>
+                          <span>Rename</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <span>Remove</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
