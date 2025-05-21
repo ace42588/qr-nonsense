@@ -14,6 +14,7 @@ export const Actions = {
   SetSchemaName: "SET_SCHEMA_NAME",
   UpdateSchema: "UPDATE_SERIALIZATION_SCHEMA",
   UpdateEncoding: "UPDATE_ENCODING_STRATEGY",
+  SetActiveInput: "SET_ACTIVE_INPUT"
 };
 
 export const initialInput = {
@@ -106,6 +107,9 @@ export function inputReducer(state, action) {
     }
     case Actions.SetInputs: {
       return { ...state, ...action.payload };
+    }
+    case Actions.SetActiveInput: {
+      return {...state, activeInput: state.inputs.find(({id}) => id === action.id)}
     }
 
     default:

@@ -121,7 +121,7 @@ export function InputSidebar({ ...props }) {
               <GripVerticalIcon className="size-3 text-muted-foreground" />
               <span className="sr-only">Drag to reorder</span>
             </Button>
-            <span>{input.label}</span>
+            <span onClick={}>{input.label}</span>
           </a>
         </SidebarMenuButton>
         <DropdownMenu>

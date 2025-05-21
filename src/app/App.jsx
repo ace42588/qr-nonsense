@@ -56,6 +56,7 @@ export default function App() {
   const { setInputs } = useInputDispatch();
   
   const [inputMethod, setInputMethod] = useState("manual");
+  const [activeInput, setActiveInput] = useState()
   
   return (
     <InputProvider>
