@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GalleryVerticalEnd, Minus, Plus } from "lucide-react";
+import { GalleryVerticalEnd, Minus, Plus, ChevronRight } from "lucide-react";
 
 import {
   Collapsible,
@@ -10,6 +10,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -70,61 +71,104 @@ export function InputSidebar({ ...props }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarGroup>
-      <SidebarGroupLabel>Inputs</SidebarGroupLabel>
-        <AddInput />
-      <SidebarMenu>
+        <SidebarGroupLabel>Format</SidebarGroupLabel>
+        <SidebarMenu>
+            <SidebarMenuSubItem key="Error Correction Level">
+              <SidebarMenuSubButton asChild isActive={true}>
+                <select
+                  id="ec-level"
+                  value={errorCorrectionLevel}
+                  onChange={(e) => setErrorCorrection(e.target.value)}
+                >
+                  {levels.map((level) => (
+                    <option key={level.value} value={level.value}>
+                      {level.label}
+                    </option>
+                  ))}
+                </select>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
+            <SidebarMenuSubItem key="QR Code Version">
+              <SidebarMenuSubButton asChild isActive={true}>
+                <select
+                  id="qr-version"
+                  value={cVersion || version}
+                  onChange={(e) => setVersion(e.target.value)}
+                >
+                  {versions.map((ver) => (
+                    <option key={ver.value} value={ver.value}>
+                      {ver.label}
+                    </option>
+                  ))}
+                </select>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
+            <SidebarMenuSubItem key="Data Mask">
+              <SidebarMenuSubButton asChild isActive={true}>
+                <select
+                  id="data-mask"
+                  value={cDataMask || dataMask}
+                  onChange={(e) => setDataMask(e.target.value)}
+                >
+                  {masks.map((mask) => (
+                    <option key={mask.value} value={mask.value}>
+                      {mask.label}
+                    </option>
+                  ))}
+                </select>
+              </SidebarMenuSubButton>
+            </SidebarMenuSubItem>
+          </SidebarMenu>
+      </SidebarGroup>
+      <SidebarGroup>
+        <SidebarGroupLabel>Inputs</SidebarGroupLabel>
+        <SidebarGroupAction title="Add Input">
+        <Plus /> <span className="sr-only">Add Input</span>
+      </SidebarGroupAction>
+        <SidebarMenu>
           <Collapsible
-            key={item.title}
+            key="inputs"
             asChild
-            defaultOpen={item.isActive}
+            defaultOpen={true}
             className="group/collapsible"
           >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
+                <SidebarMenuButton tooltip="Inputs">
+                  <span>Inputs</span>
                   <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <SidebarMenuSub>
-                  {item.items?.map((subItem) => (
-                    <SidebarMenuSubItem key={subItem.title}>
+                <AddInput />
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={reorderInputs}
+                >
+                  <SortableContext
+                    items={inputs.map((i) => i.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <SidebarMenuSub>
+                      {inputs.map((input, idx) => (
+                        <SidebarMenuSubItem key={inputs.label}>
                       <SidebarMenuSubButton asChild>
-                        <a href={subItem.url}>
-                          <span>{subItem.title}</span>
+                        <a href="#">
+                          <span>{inputs.label}</span>
                         </a>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
+                      ))}
+                    </SidebarMenuSub>
+                  </SortableContext>
+                </DndContext>
               </CollapsibleContent>
             </SidebarMenuItem>
           </Collapsible>
-      </SidebarMenu>
-    </SidebarGroup>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={reorderInputs}
-      >
-        <SortableContext
-          items={inputs.map((i) => i.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarMenu>
-                <FormatInput />
-                {inputs.map((input, idx) => (
-                  <SortableInput input={input} index={idx} />
-                ))}
-              </SidebarMenu>
-            </SidebarGroup>
-          </SidebarContent>
-        </SortableContext>
-      </DndContext>
+        </SidebarMenu>
+      </SidebarGroup>
+
       <SidebarRail />
     </Sidebar>
   );
