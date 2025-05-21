@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 import { QRModeSelect } from "@/components/qr-mode-select";
 
@@ -25,7 +26,7 @@ import { JsonInput } from "@/components/JsonInput";
 import { BitFieldInput } from "@/components/BitFieldInput";
 import { MACGenerator } from "@/components/MACGenerator";
 
-function BasicInput({ id, input }) {
+function BasicInput({ input }) {
   const { updateInput } = useInputDispatch();
   const { text, mode, encoding } = input;
 
@@ -33,36 +34,30 @@ function BasicInput({ id, input }) {
     updateInput?.({ ...input, [field]: value });
 
   return (
-    <div>
-      <div className="input-group">
-        <div className="label-select-checkbox-row">
-          <label htmlFor="inputMode">Input Mode:</label>
-          <QRModeSelect input={input} />
-          {mode === "byte" && (
-            <>
-              <label htmlFor="forceUtf8">Force UTF-8</label>
-              <input
-                id="forceUtf8"
-                type="checkbox"
-                checked={encoding === "utf-8"}
-                onChange={(e) =>
-                  handleChange(
-                    "encoding",
-                    e.target.checked ? "utf-8" : undefined
-                  )
-                }
-              />
-            </>
-          )}
-        </div>
-        <div className="input-button-row">
-          <input
-            type="text"
-            value={text}
-            onChange={(e) => handleChange("text", e.target.value)}
-          />
-        </div>
+    <div className="grid w-full items-center gap-4">
+      <div className="flex flex-col space-y-1.5">
+        <QRModeSelect input={input} />
       </div>
+      <div className="flex flex-col space-y-1.5">
+        <Label htmlFor="name">Text</Label>
+        <Input
+          id="name"
+          type="text"
+          value={text}
+          onChange={(e) => handleChange("text", e.target.value)}
+        />
+      </div>
+      {mode === "byte" && (
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="force-utf-8"
+            onChange={(e) =>
+              handleChange("encoding", e.target.checked ? "utf-8" : undefined)
+            }
+          />
+          <Label htmlFor="force-utf-8">Force UTF-8</Label>
+        </div>
+      )}
     </div>
   );
 }
@@ -90,5 +85,5 @@ export function InputCard() {
         <Button>Deploy</Button>
       </CardFooter>
     </Card>
-    );
+  );
 }
