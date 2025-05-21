@@ -2,6 +2,7 @@ import * as React from "react";
 import {
   GalleryVerticalEnd,
   Minus,
+  MoreHorizontal,
   Plus,
   ChevronRight,
   ChevronDown,
@@ -13,6 +14,12 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
@@ -21,6 +28,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -53,7 +61,9 @@ import { SortableInput } from "./sortable-input";
 
 export function InputSidebar({ ...props }) {
   const { inputs } = useInputs();
-  const { reorderInputs } = useInputDispatch();
+
+  const { addInput, reorderInputs } = useInputDispatch();
+  const nextLabel = React.useRef(inputs?.length || 0);
 
   const { errorCorrectionLevel, version, dataMask } = useInputs();
   const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
@@ -83,6 +93,7 @@ export function InputSidebar({ ...props }) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+      <SidebarSeparator />
       <Collapsible
         key="formatInfo"
         defaultOpen={false}
@@ -146,6 +157,7 @@ export function InputSidebar({ ...props }) {
           </CollapsibleContent>
         </SidebarGroup>
       </Collapsible>
+      <SidebarSeparator />
       <SidebarGroup>
         <SidebarGroupLabel>Inputs</SidebarGroupLabel>
         <SidebarGroupAction title="Add Input">
@@ -164,9 +176,22 @@ export function InputSidebar({ ...props }) {
               <SidebarMenu>
                 {inputs.map((input, idx) => (
                   <SidebarMenuItem key={inputs.label}>
-                    <SidebarMenuButton>
-                      {input.label}
-                    </SidebarMenuButton>
+                    <SidebarMenuButton>{input.label}</SidebarMenuButton>
+                    <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <SidebarMenuAction>
+        <MoreHorizontal />
+      </SidebarMenuAction>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent side="right" align="start">
+      <DropdownMenuItem>
+        <span>Rename</span>
+      </DropdownMenuItem>
+      <DropdownMenuItem>
+        <span>Remove</span>
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -174,7 +199,7 @@ export function InputSidebar({ ...props }) {
           </DndContext>
         </SidebarGroupContent>
       </SidebarGroup>
-
+      <SidebarSeparator />
       <SidebarRail />
     </Sidebar>
   );
