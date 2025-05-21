@@ -1,9 +1,41 @@
 import { useState, useEffect } from "react";
+
+import {
+  ColumnsIcon,
+  ChevronDownIcon
+} from "lucide-react";
+
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 import { useInputs, useInputDispatch } from "../state";
 
 const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
-export function QRModeSelect({ input, id }) {
+export function QRModeSelect({ input }) {
   const { updateInput } = useInputDispatch();
   const { text, mode, encoding } = input;
 
