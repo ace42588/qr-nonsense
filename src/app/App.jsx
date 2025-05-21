@@ -1,4 +1,10 @@
 import { useState } from "react";
+
+import {
+  SquarePen,
+  Video
+} from "lucide-react";
+
 import {
   Tabs,
   TabsContent,
@@ -16,8 +22,12 @@ import { CodewordDisplay } from "../components/CodewordDisplay";
 
 import { InputProvider, QRDataProvider } from "../state";
 
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group"
 import { InputSidebar } from "../components/input-sidebar";
-import { Separator } from "@/components/ui/separator"
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
@@ -31,8 +41,18 @@ export default function App() {
         <InputSidebar />
         <SidebarInset>
           <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
-            <SidebarTrigger className="-ml-1" />
-             <Separator orientation="vertical" className="mr-2 h-4" />
+            <div className="flex flex-1 items-center gap-2 px-3">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <ToggleGroup type="single" size="sm">
+                <ToggleGroupItem value="manual" aria-label="Toggle bold">
+                  <SquarePen className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="scanner" aria-label="Toggle italic">
+                  <Video className="h-4 w-4" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
           </header>
           <QRDataProvider>
             <div className="flex flex-1 flex-col gap-4 p-4">
