@@ -1,8 +1,5 @@
 import { useRef, useState } from "react";
 
-import { useQRDataDispatch, useInputDispatch, useInputs } from "../state";
-import jsQR from "jsqr";
-
 import {
   SquarePen,
   Video
@@ -37,29 +34,11 @@ import {
   SidebarTrigger,
 } from "../components/ui/sidebar";
 
-import { BasicInput } from "@/components/BasicInput";
-import { JsonInput } from "@/components/JsonInput";
-import { BitFieldInput } from "@/components/BitFieldInput";
-import { MACGenerator } from "@/components/MACGenerator";
-
-const INPUT_TYPES = {
-  basic: BasicInput,
-  json: JsonInput,
-  bitfield: BitFieldInput,
-  mac: MACGenerator,
-};
+import { InputCard } from "@/components/input-card";
 
 export default function App() {
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [scanning, setScanning] = useState(false);
-  const { setInputs } = useInputDispatch();
-  
   const [inputMethod, setInputMethod] = useState("manual");
-  
-  const { activeInput } = useInputs();
-  const InputComponent = INPUT_TYPES[activeInput.type];
-  
+
   return (
     <InputProvider>
       <SidebarProvider>
@@ -83,7 +62,7 @@ export default function App() {
             <div className="flex flex-1 flex-col gap-4 p-4">
               <div className="grid auto-rows-min gap-4 md:grid-cols-2">
                 <div className="flex flex-1 items-center justify-center rounded-xl">
-                  <InputComponent id={activeInput.id} input={activeInput} />
+                  <InputCard />
                 </div>
                 <div className="flex flex-1 items-center justify-center">
                   <Tabs defaultValue="qr" className="w-half">
