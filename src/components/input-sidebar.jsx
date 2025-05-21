@@ -67,10 +67,11 @@ import { useInputs, useInputDispatch, useDerivedQRData } from "../state";
 import { SortableInput } from "./sortable-input";
 
 export function InputSidebar({ ...props }) {
-  const { inputs } = useInputs();
+  const { inputs, activeInput } = useInputs();
   const { errorCorrectionLevel, version, dataMask } = useInputs();
 
-  const { addInput, reorderInputs, removeInput } = useInputDispatch();
+  const { addInput, reorderInputs, removeInput, setActiveInput } =
+    useInputDispatch();
   const { setErrorCorrection, setVersion, setDataMask } = useInputDispatch();
 
   const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
@@ -82,7 +83,6 @@ export function InputSidebar({ ...props }) {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const [activeInput, setActiveInput] = React.useState(inputs[0]);
   const { setOpen } = useSidebar();
 
   function DraggableInput({ input }) {
@@ -108,6 +108,7 @@ export function InputSidebar({ ...props }) {
             transition: transition,
           }}
           asChild
+          isActive={activeInput.id === input.id}
         >
           <a href="#">
             <Button
@@ -121,7 +122,7 @@ export function InputSidebar({ ...props }) {
               <GripVerticalIcon className="size-3 text-muted-foreground" />
               <span className="sr-only">Drag to reorder</span>
             </Button>
-            <span onClick={}>{input.label}</span>
+            <span onClick={() => setActiveInput(input.id)}>{input.label}</span>
           </a>
         </SidebarMenuButton>
         <DropdownMenu>

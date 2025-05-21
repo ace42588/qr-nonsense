@@ -10,6 +10,7 @@ const initialState = {
   version: -1, // "auto"
   dataMask: -1, // "auto"
   inputs: [initialInput],
+  activeInput: initialInput
 };
 
 export function InputProvider({ children }) {
@@ -84,6 +85,7 @@ export function InputProvider({ children }) {
         },
       });
     },
+    setActiveInput: (id) => dispatch({ type: Actions.SetActiveInput, id }),
   };
 
   return (

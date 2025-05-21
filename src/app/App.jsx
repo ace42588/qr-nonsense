@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 
-import { useQRDataDispatch, useInputDispatch } from "../state";
+import { useQRDataDispatch, useInputDispatch, useInputs } from "../state";
 import jsQR from "jsqr";
 
 import {
@@ -56,7 +56,9 @@ export default function App() {
   const { setInputs } = useInputDispatch();
   
   const [inputMethod, setInputMethod] = useState("manual");
-  const [activeInput, setActiveInput] = useState()
+  
+  const { activeInput } = useInputs();
+  const InputComponent = INPUT_TYPES[activeInput.type];
   
   return (
     <InputProvider>
