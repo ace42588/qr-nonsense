@@ -1,6 +1,11 @@
 import * as React from "react";
+
+import { Button } from "@/components/ui/button"
+
+
 import {
   GalleryVerticalEnd,
+  GripVerticalIcon,
   Minus,
   MoreHorizontal,
   Plus,
@@ -53,6 +58,7 @@ import {
   sortableKeyboardCoordinates,
   useSortable,
 } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import { FormatInput } from "./format-input";
 import { AddInput } from "./add-input-form";
@@ -73,22 +79,27 @@ function DraggableInput({ input }) {
   });
 
   return (
-    <SidebarMenuItem key={input.id}>
-      <SidebarMenuButton
-        data-dragging={isDragging}
-        className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
-        style={{
-          transform: CSS.Transform.toString(transform),
-          transition: transition,
-        }}
-        asChild
-      >
+    <SidebarMenuItem
+      key={input.id}
+      data-dragging={isDragging}
+      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition: transition,
+      }}
+    >
+      <SidebarMenuButton asChild>
         <a href="#">
-          <GripVerticalIcon
+          <Button
             {...attributes}
             {...listeners}
-            className="size-3 text-muted-foreground hover:bg-transparent"
-          />
+            variant="ghost"
+            size="icon"
+            className="size-7 text-muted-foreground hover:bg-transparent"
+          >
+            <GripVerticalIcon className="size-3 text-muted-foreground" />
+            <span className="sr-only">Drag to reorder</span>
+          </Button>
           <span>{input.label}</span>
         </a>
       </SidebarMenuButton>
@@ -230,24 +241,7 @@ export function InputSidebar({ ...props }) {
             >
               <SidebarMenu>
                 {inputs.map((input, idx) => (
-                  <SidebarMenuItem key={inputs.label}>
-                    <SidebarMenuButton>{input.label}</SidebarMenuButton>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <SidebarMenuAction>
-                          <MoreHorizontal />
-                        </SidebarMenuAction>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent side="right" align="start">
-                        <DropdownMenuItem>
-                          <span>Rename</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <span>Remove</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </SidebarMenuItem>
+                  <DraggableInput input={input} />
                 ))}
               </SidebarMenu>
             </SortableContext>
