@@ -17,6 +17,7 @@ import { CodewordDisplay } from "../components/CodewordDisplay";
 import { InputProvider, QRDataProvider } from "../state";
 
 import { InputSidebar } from "../components/input-sidebar";
+import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
   SidebarProvider,
@@ -29,6 +30,10 @@ export default function App() {
       <SidebarProvider>
         <InputSidebar />
         <SidebarInset>
+          <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
+            <SidebarTrigger className="-ml-1" />
+             <Separator orientation="vertical" className="mr-2 h-4" />
+          </header>
           <QRDataProvider>
             <div className="flex flex-1 flex-col gap-4 p-4">
               <div className="grid auto-rows-min gap-4 md:grid-cols-2">

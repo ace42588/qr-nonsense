@@ -40,6 +40,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 import {
@@ -71,73 +72,76 @@ export function InputSidebar({ ...props }) {
 
   const { addInput, reorderInputs, removeInput } = useInputDispatch();
   const { setErrorCorrection, setVersion, setDataMask } = useInputDispatch();
-  
+
   const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
-  
+
   const nextLabel = React.useRef(inputs?.length || 0);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
-  
-  function DraggableInput({ input }) {
-  const {
-    attributes,
-    listeners,
-    transform,
-    transition,
-    setNodeRef,
-    isDragging,
-  } = useSortable({
-    id: input.id,
-  });
 
-  return (
-    <SidebarMenuItem key={input.id}>
-      <SidebarMenuButton
-        data-dragging={isDragging}
-        ref={setNodeRef}
-        className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
-        style={{
-          transform: CSS.Transform.toString(transform),
-          transition: transition,
-        }}
-        asChild
-      >
-        <a href="#">
-          <Button
-            {...attributes}
-            {...listeners}
-            style={{ cursor: "grab"}}
-            variant="ghost"
-            size="icon"
-            className="size-7 text-muted-foreground hover:bg-transparent"
-          >
-            <GripVerticalIcon className="size-3 text-muted-foreground" />
-            <span className="sr-only">Drag to reorder</span>
-          </Button>
-          <span>{input.label}</span>
-        </a>
-      </SidebarMenuButton>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <SidebarMenuAction>
-            <MoreHorizontal />
-          </SidebarMenuAction>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent side="right" align="start">
-          <DropdownMenuItem>
-            <span>Rename</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => removeInput(input.id)}>
-            <span>Remove</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </SidebarMenuItem>
-  );
-}
+  const [activeInput, setActiveInput] = React.useState(inputs[0]);
+  const { setOpen } = useSidebar();
+
+  function DraggableInput({ input }) {
+    const {
+      attributes,
+      listeners,
+      transform,
+      transition,
+      setNodeRef,
+      isDragging,
+    } = useSortable({
+      id: input.id,
+    });
+
+    return (
+      <SidebarMenuItem key={input.id}>
+        <SidebarMenuButton
+          data-dragging={isDragging}
+          ref={setNodeRef}
+          className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+          style={{
+            transform: CSS.Transform.toString(transform),
+            transition: transition,
+          }}
+          asChild
+        >
+          <a href="#">
+            <Button
+              {...attributes}
+              {...listeners}
+              style={{ cursor: "grab" }}
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground hover:bg-transparent"
+            >
+              <GripVerticalIcon className="size-3 text-muted-foreground" />
+              <span className="sr-only">Drag to reorder</span>
+            </Button>
+            <span>{input.label}</span>
+          </a>
+        </SidebarMenuButton>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuAction>
+              <MoreHorizontal />
+            </SidebarMenuAction>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="right" align="start">
+            <DropdownMenuItem>
+              <span>Rename</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => removeInput(input.id)}>
+              <span>Remove</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    );
+  }
 
   return (
     <Sidebar {...props}>
