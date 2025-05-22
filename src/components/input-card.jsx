@@ -42,6 +42,7 @@ import {
   updateJsonObject,
   updateSchema,
   updateEncoding,
+  updateInput,
   setSchemaName,
   setMacKey,
   setMacAlgorithm,
@@ -82,15 +83,15 @@ const COLORS = [
   "#f97316",
   "#6366f1",
 ];
+const dispatch = useInputDispatch();
 
 function QRModeSelect({ input }) {
   const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
-  const { updateInput } = useInputDispatch();
   const { text, mode, encoding } = input;
 
   const handleChange = (field, value) =>
-    updateInput?.({ ...input, [field]: value });
+    dispatch(updateInput(input.id, {[field]: value }));
 
   return (
     <Select defaultValue="byte">
@@ -112,7 +113,6 @@ function QRModeSelect({ input }) {
 }
 
 function BasicInput({ input }) {
-  const { updateInput } = useInputDispatch();
   const { text, mode, encoding } = input;
 
   const handleChange = (field, value) =>
@@ -157,85 +157,111 @@ function BasicInput({ input }) {
   );
 }
 
-function JsonInput({ input }) {
-  const { updateInput, updateEncoding, updateSchema, updateSchemaName } =
-    useInputDispatch();
-  const { obj, schema, format, id } = input;
-  const preview = useParsedInputs()[id];
-
-  const options = {
+function JsonInput({ id, input }) {
+  const editorOptions = {
     minimap: { enabled: false },
     scrollbar: { vertical: "hidden", horizontal: "hidden" },
     overviewRulerLanes: 0,
+    lineNumbers: "off",
   };
 
-  const emitChange = (field, value) =>
-    updateInput?.({ ...input, [field]: value });
+  const { obj, schema, format } = input;
+  const preview = useParsedInputs()[id];
+  const [tab, setTab] = useState("values");
 
   const handleJsonChange = (field, text) => {
     try {
       const parsed = JSON.parse(text);
-      emitChange(field, parsed);
+      if (field === "obj") dispatch(updateJsonObject(id, parsed));
+      if (field === "schema") dispatch(updateSchema(id, parsed));
     } catch {
-      // Invalid JSON; ignore or show error
+      // Optionally show error
     }
   };
 
-  const handleSchemaSelect = (e) => {
-    const name = e.target.value;
-    const schema = predefinedSchemas[name];
-    updateSchema(id, schema);
-    setSchemaName(id, name);
+  const handleSchemaSelect = (name) => {
+    dispatch(updateSchema(id, predefinedSchemas[name]));
+    dispatch(setSchemaName(id, name));
   };
 
-  const handleCustomSchemaChange = (schema) => {
-    updateSchema(id, schema);
-    setSchemaName("custom");
-  };
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{input.label}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid w-full items-center gap-4">
-          <Tabs defaultValue="json">
-            <TabsList>
-              <TabsTrigger value="json">Values</TabsTrigger>
-              <TabsTrigger value="schema">Schema</TabsTrigger>
-            </TabsList>
+    <div className="space-y-6">
+      <Tabs
+        defaultValue={tab}
+        onValueChange={setTab}
+        className="w-full max-w-3xl"
+      >
+        <TabsList>
+          <TabsTrigger value="json">Values</TabsTrigger>
+          <TabsTrigger value="schema">Schema</TabsTrigger>
+        </TabsList>
 
-            <TabsContent value="json">
-              <Editor
-                height="300px"
-                defaultLanguage="json"
-                value={JSON.stringify(obj, null, 2)}
-                onChange={(e) => handleJsonChange("obj", e)}
-                options={options}
-              />
-            </TabsContent>
+        <TabsContent value="json" className="mt-4">
+          <Editor
+            height="300px"
+            defaultLanguage="json"
+            value={JSON.stringify(obj, null, 2)}
+            onChange={(e) => handleJsonChange("obj", e)}
+            options={editorOptions}
+          />
+        </TabsContent>
 
-            <TabsContent value="schema">
-              <Label>Schema</Label>
-              <Select value={input.schemaName} onChange={handleSchemaSelect}>
-                {Object.entries(predefinedSchemas).map(([name]) => (
-                  <option key={name} value={name}>
+        <TabsContent value="schema" className="space-y-4 mt-4">
+          <div className="space-y-2">
+            <Label htmlFor="schema-select">Predefined Schema</Label>
+            <Select value={input.schemaName} onValueChange={handleSchemaSelect}>
+              <SelectTrigger id="schema-select" className="w-64">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(predefinedSchemas).map((name) => (
+                  <SelectItem key={name} value={name}>
                     {name}
-                  </option>
+                  </SelectItem>
                 ))}
-              </Select>
-              <Editor
-                height="300px"
-                defaultLanguage="json"
-                value={JSON.stringify(schema, null, 2)}
-                onChange={(e) => handleJsonChange("schema", e)}
-                options={options}
-              />
-            </TabsContent>
-          </Tabs>
+              </SelectContent>
+            </Select>
+          </div>
+          <Editor
+            height="300px"
+            defaultLanguage="json"
+            value={JSON.stringify(schema, null, 2)}
+            onChange={(e) => handleJsonChange("schema", e)}
+            options={editorOptions}
+          />
+        </TabsContent>
+      </Tabs>
+
+      <Separator />
+
+      <div className="space-y-2">
+        <Label htmlFor="encoding-select">Encoding</Label>
+        <Select
+          value={input.encoding}
+          onValueChange={(val) => dispatch(updateEncoding(id, val))}
+        >
+          <SelectTrigger id="encoding-select" className="w-64">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ENCODING_STRATEGIES.map((name) => (
+              <SelectItem key={name} value={name}>
+                {name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {format !== "None" && (
+        <div className="space-y-2">
+          <Label htmlFor="preview">Preview</Label>
+          <ScrollArea className="border rounded p-2 max-h-48 bg-muted text-sm whitespace-pre-wrap">
+            <pre id="preview">{preview?.data}</pre>
+          </ScrollArea>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }
 
