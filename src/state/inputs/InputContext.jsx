@@ -1,4 +1,4 @@
-// state/inputs/InputListContext.jsx
+// src/state/inputs/InputContext.jsx
 import { createContext, useCallback, useContext, useReducer } from "react";
 import { Actions, inputReducer, initialInput } from "./inputReducer";
 

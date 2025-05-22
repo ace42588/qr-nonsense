@@ -1,4 +1,4 @@
-// state/inputs/inputReducer.js
+// src/state/inputs/inputReducer.js
 import { arrayMove } from "@dnd-kit/sortable";
 import { createInput, updateInputById } from "../utils";
 import { getTypeExtensions } from "../../domain";
@@ -112,8 +112,10 @@ export function inputReducer(state, action) {
     case Actions.SetActiveInput: {
       return {...state, activeInputID: action.id}
     }
-    case Actions.AddBitFieldField: {
-      
+    case Actions.AddBitFieldToBitField: {
+      const targetIdx = state.inputs.findIndex(action.id);
+      const prev = state.inputs[targetIdx];
+      return {...state, inputs: []}
     }
 
     default:
