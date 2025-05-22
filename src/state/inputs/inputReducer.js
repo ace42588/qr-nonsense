@@ -16,7 +16,18 @@ export const initialState = {
 };
 
 function updateInputs(inputs, action) {
-  const { id, partial, name, schema, encoding, newType, oldIndex, newIndex, label } = action.payload || {};
+  const {
+    id,
+    partial,
+    name,
+    schema,
+    encoding,
+    newType,
+    oldIndex,
+    newIndex,
+    label,
+    newField,
+  } = action.payload || {};
   switch (action.type) {
     case Actions.Add:
       return [...inputs, createInput({ label })];
@@ -64,6 +75,15 @@ function updateInputs(inputs, action) {
               ...input,
               type: newType,
               ...getTypeDefaults(newType),
+            }
+          : input
+      );
+    case Actions.AddBitFieldField:
+      return inputs.map((input) =>
+        input.id === id
+          ? {
+              ...input,
+              fields: [...(input.fields || []), newField],
             }
           : input
       );

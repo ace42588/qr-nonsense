@@ -1,5 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
-
+import React, { useMemo, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -23,7 +22,15 @@ import {
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "../components/ui/select";
 import { useInputs, useInputDispatch, useParsedInputs } from "../state";
 
 const DEFAULT_FIELD = {
@@ -32,29 +39,22 @@ const DEFAULT_FIELD = {
   max: 255,
   bitWidth: 8,
   type: "base10",
-  mode: "bits", // or "max"
+  mode: "bits",
 };
 
-const encoder = new TextEncoder("utf-8");
-
-const types = [
-  { value: "base10", label: "Dec" },
-  { value: "base16", label: "Hex" },
-  { value: "string", label: "String" },
-];
-
-// Color palette (cycle through for each field)
 const COLORS = [
-  "#3b82f6", // Blue
-  "#10b981", // Green
-  "#f59e0b", // Amber
-  "#ef4444", // Red
-  "#8b5cf6", // Violet
-  "#ec4899", // Pink
-  "#14b8a6", // Teal
-  "#f97316", // Orange
-  "#6366f1", // Indigo
+  "#3b82f6",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#ec4899",
+  "#14b8a6",
+  "#f97316",
+  "#6366f1",
 ];
+
+const encoder = new TextEncoder("utf-8");
 
 function bitsNeeded(max) {
   return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
@@ -65,7 +65,6 @@ function maxFromBits(bits) {
 }
 
 function SortableField({ field, onChange, onRemove }) {
-  
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: field.id });
 
@@ -78,35 +77,45 @@ function SortableField({ field, onChange, onRemove }) {
     field.mode === "max" ? bitsNeeded(field.max) : field.bitWidth || 1;
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
-      <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
+    <div
+      ref={setNodeRef}
+      className="flex items-center gap-2 mb-2 p-2 rounded border border-muted"
+      style={style}
+      {...attributes}
+    >
+      <span {...listeners} className="cursor-grab text-muted-foreground">
         ☰
       </span>
-      <input
-        type="text"
+
+      <Input
         placeholder="Label"
         value={field.label}
         onChange={(e) => onChange(field.id, "label", e.target.value)}
-        style={{ width: 100, marginRight: 8 }}
+        className="w-24"
       />
 
-      <select
+      <Select
         value={field.mode}
-        onChange={(e) => onChange(field.id, "mode", e.target.value)}
-        style={{ marginRight: 8 }}
+        onValueChange={(val) => onChange(field.id, "mode", val)}
       >
-        <option value="max">Max Value</option>
-        <option value="bits">Bit Width</option>
-      </select>
+        <SelectTrigger className="w-[110px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="max">Max Value</SelectItem>
+          <SelectItem value="bits">Bit Width</SelectItem>
+        </SelectContent>
+      </Select>
+
       {field.mode === "max" ? (
-        <input
+        <Input
           type="number"
           value={field.max}
           onChange={(e) => onChange(field.id, "max", Number(e.target.value))}
-          style={{ width: 80 }}
+          className="w-20"
         />
       ) : (
-        <input
+        <Input
           type="number"
           value={field.bitWidth}
           onChange={(e) => {
@@ -116,27 +125,17 @@ function SortableField({ field, onChange, onRemove }) {
               max: maxFromBits(bw),
             });
           }}
-          style={{ width: 80 }}
+          className="w-20"
         />
       )}
+
       {field.mode === "max" && (
-        <div style={{ marginLeft: 8, fontSize: 12, color: "#666" }}>
-          ({bitCount} bits)
-        </div>
+        <span className="text-xs text-muted-foreground">({bitCount} bits)</span>
       )}
-      <button
-        onClick={() => onRemove(field.id)}
-        style={{
-          marginLeft: 8,
-          color: "red",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-        }}
-        title="Remove"
-      >
+
+      <Button variant="ghost" size="icon" onClick={() => onRemove(field.id)}>
         ✕
-      </button>
+      </Button>
     </div>
   );
 }
@@ -144,7 +143,7 @@ function SortableField({ field, onChange, onRemove }) {
 function BitFieldEditor({ input }) {
   const { updateInput } = useInputDispatch();
   const { fields = [] } = input;
-  
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -153,39 +152,36 @@ function BitFieldEditor({ input }) {
   const emitChange = (field, value) =>
     updateInput({ ...input, [field]: value });
 
-  function handleAddField() {
+  const handleAddField = () => {
     const newField = { ...DEFAULT_FIELD, id: crypto.randomUUID() };
     emitChange("fields", [...fields, newField]);
-  }
+  };
 
-  function handleChange(id, key, value) {
+  const handleChange = (id, key, value) => {
     emitChange(
       "fields",
       fields.map((f) =>
         f.id === id ? { ...f, ...(key ? { [key]: value } : value) } : f
       )
     );
-  }
+  };
 
-  function handleRemove(id) {
+  const handleRemove = (id) => {
     emitChange(
       "fields",
       fields.filter((f) => f.id !== id)
     );
-  }
+  };
 
-  function handleDragEnd(event) {
-    const { active, over } = event;
-    if (!over) return;
-    if (active.id !== over.id) {
-      const oldIndex = fields.findIndex((f) => f.id === active.id);
-      const newIndex = fields.findIndex((f) => f.id === over.id);
-      emitChange("fields", arrayMove(fields, oldIndex, newIndex));
-    }
-  }
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const oldIndex = fields.findIndex((f) => f.id === active.id);
+    const newIndex = fields.findIndex((f) => f.id === over.id);
+    emitChange("fields", arrayMove(fields, oldIndex, newIndex));
+  };
 
   return (
-    <div style={{ marginBottom: 32 }}>
+    <div className="space-y-4">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -206,9 +202,9 @@ function BitFieldEditor({ input }) {
         </SortableContext>
       </DndContext>
 
-      <button onClick={handleAddField} style={{ marginTop: 8 }}>
+      <Button onClick={handleAddField} variant="secondary">
         + Add Field
-      </button>
+      </Button>
     </div>
   );
 }
@@ -224,103 +220,71 @@ function BitFieldValues({ id, input }) {
   const handleInputChange = (e, field) => {
     let newValue = e.target.value;
     switch (type) {
-      case "base10": {
+      case "base10":
         newValue = Number(newValue);
         break;
-      }
-      case "base16": {
+      case "base16":
         newValue = parseInt(newValue, 16);
         break;
-      }
-      case "string": {
+      case "string":
         newValue = encoder.encode(newValue);
         break;
-      }
-      default: {
+      default:
         newValue = undefined;
-      }
     }
-    const newValues = {
-      ...values,
-      [field.label]: newValue,
-    };
-    //console.debug("BitFieldValues: handleInputChange", { newValues });
-    emitChange("values", {
-      ...values,
-      [field.label]: newValue,
-    });
+    emitChange("values", { ...values, [field.label]: newValue });
   };
 
   return (
-    <>
+    <div className="space-y-3 mt-2">
       {layout.map((field) => (
-        <div
-          key={field.label}
-          style={{
-            marginBottom: 8,
-            display: "flex",
-            alignItems: "center",
-            gap: 0.5,
-            justifyContent: "space-between",
-          }}
-        >
-          <label style={{ marginRight: 8, minWidth: 100 }}>{field.label}</label>
-          <select
-            id="fieldType"
-            value={field.type}
-            onChange={(e) => setType(e.target.value)}
-          >
-            {types.map((level) => (
-              <option key={level.value} value={level.value}>
-                {level.label}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
+        <div key={field.label} className="flex items-center gap-2">
+          <label className="w-28">{field.label}</label>
+
+          <Select value={type} onValueChange={setType}>
+            <SelectTrigger className="w-28">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {["base10", "base16", "string"].map((v) => (
+                <SelectItem key={v} value={v}>
+                  {v}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Input
             value={values[field.label] ?? ""}
             onChange={(e) => handleInputChange(e, field)}
-            style={{ maxWidth: 100 }}
+            className="w-24"
           />
         </div>
       ))}
-    </>
+    </div>
   );
 }
 
-function BitFieldVisualizer({ id, input }) {
+function BitFieldVisualizer({ id }) {
   const { totalBits, layout = [] } = useParsedInputs()[id];
 
   return (
-    <div style={{ marginTop: 12 }}>
+    <div className="mt-4">
       <div
-        style={{
-          display: "flex",
-          height: 30,
-          width: "100%",
-          maxWidth: 600,
-          border: "1px solid #ccc",
-          borderRadius: 6,
-          overflow: "hidden",
-          fontSize: 10,
-          lineHeight: "30px",
-        }}
+        className="flex border rounded overflow-hidden text-white text-xs"
+        style={{ height: 30, maxWidth: 600 }}
       >
         {layout.map((field, idx) => {
           const widthPercent = (field.width / totalBits) * 100;
-          const color = COLORS[idx % COLORS.length];
-
           return (
             <div
               key={field.label}
+              className="text-center whitespace-nowrap overflow-hidden"
               title={`${field.label} (${field.width} bits)`}
               style={{
                 width: `${widthPercent}%`,
-                backgroundColor: color,
-                color: "white",
-                textAlign: "center",
-                overflow: "hidden",
-                whiteSpace: "nowrap",
+                backgroundColor: COLORS[idx % COLORS.length],
+                lineHeight: "30px",
               }}
             >
               {field.label}: {field.startBit}→{field.endBit}
@@ -328,8 +292,7 @@ function BitFieldVisualizer({ id, input }) {
           );
         })}
       </div>
-
-      <div style={{ marginTop: 8, fontSize: 12, color: "#666" }}>
+      <div className="text-muted-foreground text-sm mt-2">
         {totalBits} bits total
       </div>
     </div>
@@ -340,30 +303,29 @@ export function BitFieldInput({ id, input }) {
   const { encodedBytes } = useParsedInputs()[id];
 
   return (
-    <div>
-      <Tabs defaultValue="fields" className="w-half">
+    <div className="space-y-4">
+      <Tabs defaultValue="fields" className="w-full max-w-3xl">
         <TabsList>
           <TabsTrigger value="fields">Fields</TabsTrigger>
           <TabsTrigger value="values">Values</TabsTrigger>
         </TabsList>
-
         <TabsContent value="fields">
           <BitFieldEditor id={id} input={input} />
         </TabsContent>
-
         <TabsContent value="values">
           <BitFieldValues id={id} input={input} />
         </TabsContent>
       </Tabs>
 
       <BitFieldVisualizer id={id} input={input} />
-      <div style={{ marginTop: 8 }}>
+
+      <div className="text-sm mt-2">
         {encodedBytes ? (
-          <>
+          <span>
             <b>Encoded Bytes:</b> {encodedBytes}
-          </>
+          </span>
         ) : (
-          <span style={{ color: "red" }}>(missing or invalid values)</span>
+          <span className="text-destructive">(missing or invalid values)</span>
         )}
       </div>
     </div>

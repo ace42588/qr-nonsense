@@ -11,6 +11,7 @@ export const Actions = {
   UpdateSchema: "UPDATE_SERIALIZATION_SCHEMA",
   UpdateEncoding: "UPDATE_ENCODING_STRATEGY",
   SetActiveInput: "SET_ACTIVE_INPUT",
+  AddBitFieldField: "ADD_BITFIELD_FIELD",
 };
 
 export const addInput = (label) => ({ type: Actions.Add, payload: { label } });
@@ -24,3 +25,4 @@ export const changeType = (id, newType) => ({ type: Actions.ChangeType, payload:
 export const setMetaField = (field, value) => ({ type: Actions.ChangeMeta, payload: { field, value } });
 export const setInputs = (payload) => ({ type: Actions.SetInputs, payload });
 export const setActiveInput = (id) => ({ type: Actions.SetActiveInput, payload: { id } });
+export const addBitFieldField = (id, newField) => ({ type: Actions.AddBitFieldField, payload: { id, newField } });

@@ -1,4 +1,5 @@
 // src/state/inputs/InputContext.jsx
+/*
 import { createContext, useCallback, useContext, useReducer } from "react";
 import { Actions, inputReducer, initialInput } from "./inputReducer";
 
@@ -99,7 +100,7 @@ export function InputProvider({ children }) {
 
 export const useInputs = () => useContext(InputContext);
 export const useInputDispatch = () => useContext(DispatchContext);
-
+*/
 
 // src/state/inputs/InputContext.jsx
 import { createContext, useContext, useReducer } from "react";
