@@ -61,7 +61,7 @@ export default function App() {
           <QRDataProvider>
             <div className="flex flex-1 flex-col gap-4 p-4">
               <div className="grid auto-rows-min gap-4 md:grid-cols-2">
-                <div className="flex flex-1 items-center justify-center rounded-xl">
+                <div className="flex flex-1 justify-center rounded-xl">
                   <InputCard />
                 </div>
                 <div className="flex flex-1 items-center justify-center">

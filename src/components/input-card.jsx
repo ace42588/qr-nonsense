@@ -89,7 +89,6 @@ function JsonInput({ input }) {
     minimap: { enabled: false },
     scrollbar: { vertical: "hidden", horizontal: "hidden" },
     overviewRulerLanes: 0,
-    lineNumbers: "off",
   };
 
   const emitChange = (field, value) =>
@@ -120,40 +119,44 @@ function JsonInput({ input }) {
       <CardHeader>
         <CardTitle>{input.label}</CardTitle>
       </CardHeader>
-      <Tabs defaultValue="json">
-        <TabsList>
-          <TabsTrigger value="json">Values</TabsTrigger>
-          <TabsTrigger value="schema">Schema</TabsTrigger>
-        </TabsList>
+      <CardContent>
+        <div className="grid w-full items-center gap-4">
+          <Tabs defaultValue="json">
+            <TabsList>
+              <TabsTrigger value="json">Values</TabsTrigger>
+              <TabsTrigger value="schema">Schema</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="json">
-          <Editor
-            height="300px"
-            defaultLanguage="json"
-            value={JSON.stringify(obj, null, 2)}
-            onChange={(e) => handleJsonChange("obj", e)}
-            options={options}
-          />
-        </TabsContent>
+            <TabsContent value="json">
+              <Editor
+                height="300px"
+                defaultLanguage="json"
+                value={JSON.stringify(obj, null, 2)}
+                onChange={(e) => handleJsonChange("obj", e)}
+                options={options}
+              />
+            </TabsContent>
 
-        <TabsContent value="schema">
-          <label>Schema</label>
-          <select value={input.schemaName} onChange={handleSchemaSelect}>
-            {Object.entries(predefinedSchemas).map(([name]) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
-          <Editor
-            height="300px"
-            defaultLanguage="json"
-            value={JSON.stringify(schema, null, 2)}
-            onChange={(e) => handleJsonChange("schema", e)}
-            options={options}
-          />
-        </TabsContent>
-      </Tabs>
+            <TabsContent value="schema">
+              <Label>Schema</Label>
+              <Select value={input.schemaName} onChange={handleSchemaSelect}>
+                {Object.entries(predefinedSchemas).map(([name]) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </Select>
+              <Editor
+                height="300px"
+                defaultLanguage="json"
+                value={JSON.stringify(schema, null, 2)}
+                onChange={(e) => handleJsonChange("schema", e)}
+                options={options}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </CardContent>
     </Card>
   );
 }
