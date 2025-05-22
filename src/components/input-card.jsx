@@ -100,6 +100,13 @@ export function InputCard() {
   const selectedIds = input.includedFields || [];
   const selectableInputs = inputs.filter((i) => i.id !== activeInputID);
 
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const oldIndex = input.fields?.findIndex((f) => f.id === active.id);
+    const newIndex = input.fields?.findIndex((f) => f.id === over.id);
+    dispatch(reorderBitFieldFields(activeInputID, oldIndex, newIndex));
+  };
+
   return (
     <Tabs
       defaultValue={input.type}
@@ -175,10 +182,7 @@ export function InputCard() {
           </CardHeader>
           <CardContent>
             <div className="grid w-full items-center gap-4">
-              <Tabs
-                defaultValue="json"
-                className="w-full max-w-3xl"
-              >
+              <Tabs defaultValue="json" className="w-full max-w-3xl">
                 <TabsList>
                   <TabsTrigger value="json">Values</TabsTrigger>
                   <TabsTrigger value="schema">Schema</TabsTrigger>
@@ -293,25 +297,10 @@ export function InputCard() {
                         })
                       )}
                       collisionDetection={closestCenter}
-                      onDragEnd={({ active, over }) => {
-                        if (!over || active.id === over.id) return;
-                        const oldIndex = input.fields?.findIndex(
-                          (f) => f.id === active.id
-                        );
-                        const newIndex = input.fields?.findIndex(
-                          (f) => f.id === over.id
-                        );
-                        dispatch(
-                          reorderBitFieldFields(
-                            activeInputID,
-                            oldIndex,
-                            newIndex
-                          )
-                        );
-                      }}
+                      onDragEnd={handleDragEnd}
                     >
                       <SortableContext
-                        items={input.fields?.map((f) => f.id)}
+                        items={input.fields?.map((f) => f.id) || []}
                         strategy={verticalListSortingStrategy}
                       >
                         {input.fields?.map((field) => {
