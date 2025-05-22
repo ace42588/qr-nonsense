@@ -1,4 +1,11 @@
-import { useQRDataDispatch, useInputDispatch, useInputs } from "../state";
+import Editor from "@monaco-editor/react";
+import {
+  useQRDataDispatch,
+  useInputDispatch,
+  useInputs,
+  useParsedInputs,
+} from "../state";
+import { predefinedSchemas } from "../domain/input";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +30,6 @@ import { Switch } from "@/components/ui/switch";
 
 import { QRModeSelect } from "@/components/qr-mode-select";
 
-import { JsonInput } from "@/components/JsonInput";
 import { BitFieldInput } from "@/components/BitFieldInput";
 import { MACGenerator } from "@/components/MACGenerator";
 
@@ -36,40 +42,85 @@ function BasicInput({ input }) {
 
   return (
     <Card>
-          <CardHeader>
-            <CardTitle>{activeInput.label}</CardTitle>
-          </CardHeader>
-          <CardContent>
-    <div className="grid w-full items-center gap-4">
-      <div className="flex flex-col space-y-1.5">
-        <QRModeSelect input={input} />
-      </div>
-      <div className="flex flex-col space-y-1.5">
-        <Label htmlFor="name">Text</Label>
-        <Input
-          id="name"
-          type="text"
-          value={text}
-          onChange={(e) => handleChange("text", e.target.value)}
-        />
-      </div>
-      {mode === "byte" && (
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="force-utf-8"
-            onChange={(e) =>
-              handleChange("encoding", e.target.checked ? "utf-8" : undefined)
-            }
-          />
-          <Label htmlFor="force-utf-8">Force UTF-8</Label>
+      <CardHeader>
+        <CardTitle>{input.label}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid w-full items-center gap-4">
+          <div className="flex flex-col space-y-1.5">
+            <QRModeSelect input={input} />
+          </div>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="name">Text</Label>
+            <Input
+              id="name"
+              type="text"
+              value={text}
+              onChange={(e) => handleChange("text", e.target.value)}
+            />
+          </div>
+          {mode === "byte" && (
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="force-utf-8"
+                onChange={(e) =>
+                  handleChange(
+                    "encoding",
+                    e.target.checked ? "utf-8" : undefined
+                  )
+                }
+              />
+              <Label htmlFor="force-utf-8">Force UTF-8</Label>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
 function JsonInput({ input }) {
-  return (<Tabs defaultValue="json" className="w-half">
+  const { updateInput, updateEncoding, updateSchema, updateSchemaName } =
+    useInputDispatch();
+  const { obj, schema, format, id } = input;
+  const preview = useParsedInputs()[id];
+
+  const options = {
+    minimap: { enabled: false },
+    scrollbar: { vertical: "hidden", horizontal: "hidden" },
+    overviewRulerLanes: 0,
+    lineNumbers: "off",
+  };
+
+  const emitChange = (field, value) =>
+    updateInput?.({ ...input, [field]: value });
+
+  const handleJsonChange = (field, text) => {
+    try {
+      const parsed = JSON.parse(text);
+      emitChange(field, parsed);
+    } catch {
+      // Invalid JSON; ignore or show error
+    }
+  };
+
+  const handleSchemaSelect = (e) => {
+    const name = e.target.value;
+    const schema = predefinedSchemas[name];
+    updateSchema(id, schema);
+    updateSchemaName(id, name);
+  };
+
+  const handleCustomSchemaChange = (schema) => {
+    updateSchema(id, schema);
+    updateSchemaName("custom");
+  };
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{input.label}</CardTitle>
+      </CardHeader>
+      <Tabs defaultValue="json">
         <TabsList>
           <TabsTrigger value="json">Values</TabsTrigger>
           <TabsTrigger value="schema">Schema</TabsTrigger>
@@ -102,8 +153,9 @@ function JsonInput({ input }) {
             options={options}
           />
         </TabsContent>
-      </Tabs>)
-
+      </Tabs>
+    </Card>
+  );
 }
 
 const INPUT_TYPES = {
@@ -127,21 +179,10 @@ export function InputCard() {
         <TabsTrigger value="mac">MAC</TabsTrigger>
       </TabsList>
       <TabsContent value="string">
-        <Card>
-          <CardHeader>
-            <CardTitle>{activeInput.label}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BasicInput input={activeInput} />
-          </CardContent>
-        </Card>
+        <BasicInput input={activeInput} />
       </TabsContent>
       <TabsContent value="json">
-        <Card>
-          <CardContent>
-            <InputComponent id={activeInput.id} input={activeInput} />
-          </CardContent>
-        </Card>
+        <JsonInput input={activeInput} />
       </TabsContent>
     </Tabs>
   );
