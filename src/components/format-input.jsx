@@ -18,6 +18,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -28,10 +29,10 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-import { GalleryVerticalEnd, Minus, Plus } from "lucide-react";
+import { ChevronDown, Minus, Plus } from "lucide-react";
 
 import {
-  setErrorCorrection,
+  setErrorCorrectionLevel,
   setVersion,
   setDataMask,
 } from "../state/inputs/inputActions";
@@ -89,7 +90,7 @@ export function FormatInput() {
                 <select
                   id="ec-level"
                   value={errorCorrectionLevel}
-                  onChange={(e) => dispatch(setErrorCorrection(e.target.value))}
+                  onChange={(e) => dispatch(setErrorCorrectionLevel(e.target.value))}
                 >
                   {levels.map((level) => (
                     <option key={level.value} value={level.value}>

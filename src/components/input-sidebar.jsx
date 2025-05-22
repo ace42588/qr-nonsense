@@ -64,6 +64,8 @@ import { FormatInput } from "./format-input";
 
 import { useInputs, useInputDispatch, useDerivedQRData } from "../state";
 
+import { addInput, reorderInputs } from "../state/inputs/inputActions";
+
 export function InputSidebar({ ...props }) {
   const { inputs, activeInputID } = useInputs();
   const { errorCorrectionLevel, version, dataMask } = useInputs();
@@ -140,6 +142,13 @@ export function InputSidebar({ ...props }) {
     );
   }
 
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const oldIndex = inputs.findIndex((i) => i.id === active.id);
+    const newIndex = inputs.findIndex((i) => i.id === over.id);
+    dispatch(reorderInputs(oldIndex, newIndex));
+  };
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -160,7 +169,9 @@ export function InputSidebar({ ...props }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarSeparator />
+
       <FormatInput />
+
       <SidebarSeparator />
       <SidebarGroup>
         <SidebarGroupLabel>Inputs</SidebarGroupLabel>
@@ -174,7 +185,7 @@ export function InputSidebar({ ...props }) {
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
-            onDragEnd={reorderInputs}
+            onDragEnd={handleDragEnd}
           >
             <SortableContext
               items={inputs.map((i) => i.id)}
@@ -194,30 +205,3 @@ export function InputSidebar({ ...props }) {
     </Sidebar>
   );
 }
-
-const levels = [
-  { label: "Low (L) – 7% redundancy", value: 0 },
-  { label: "Medium (M) – 15% redundancy", value: 1 },
-  { label: "Quartile (Q) – 25% redundancy", value: 2 },
-  { label: "High (H) – 30% redundancy", value: 3 },
-];
-
-const versions = [{ label: "Auto", value: -1 }].concat(
-  Array.from({ length: 40 }, (_, i) => ({
-    label: `Version ${i + 1}`,
-    value: i + 1,
-  }))
-);
-
-const masks = [
-  { label: "Auto", value: -1 },
-  { label: "Mask 0", value: 0 },
-  { label: "Mask 1", value: 1 },
-  { label: "Mask 2", value: 2 },
-  { label: "Mask 3", value: 3 },
-  { label: "Mask 4", value: 4 },
-  { label: "Mask 5", value: 5 },
-  { label: "Mask 6", value: 6 },
-  { label: "Mask 7", value: 7 },
-  { label: "None", value: null },
-];
