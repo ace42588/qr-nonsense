@@ -161,6 +161,40 @@ function JsonInput({ input }) {
   );
 }
 
+function BitFieldInput({ id, input }) {
+  const { encodedBytes } = useParsedInputs()[id];
+
+  return (
+    <div>
+      <Tabs defaultValue="fields" className="w-half">
+        <TabsList>
+          <TabsTrigger value="fields">Fields</TabsTrigger>
+          <TabsTrigger value="values">Values</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="fields">
+          <BitFieldEditor id={id} input={input} />
+        </TabsContent>
+
+        <TabsContent value="values">
+          <BitFieldValues id={id} input={input} />
+        </TabsContent>
+      </Tabs>
+
+      <BitFieldVisualizer id={id} input={input} />
+      <div style={{ marginTop: 8 }}>
+        {encodedBytes ? (
+          <>
+            <b>Encoded Bytes:</b> {encodedBytes}
+          </>
+        ) : (
+          <span style={{ color: "red" }}>(missing or invalid values)</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const INPUT_TYPES = {
   basic: BasicInput,
   json: JsonInput,
