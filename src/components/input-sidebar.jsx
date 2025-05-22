@@ -68,9 +68,7 @@ export function InputSidebar({ ...props }) {
   const { inputs, activeInputID } = useInputs();
   const { errorCorrectionLevel, version, dataMask } = useInputs();
 
-  const { addInput, reorderInputs, removeInput, setActiveInput } =
-    useInputDispatch();
-  const { setErrorCorrection, setVersion, setDataMask } = useInputDispatch();
+  const dispatch = useInputDispatch();
 
   const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
 

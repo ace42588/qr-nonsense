@@ -86,39 +86,14 @@ const COLORS = [
   "#6366f1",
 ];
 
-function QRModeSelect({ input }) {
-  const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
-  
-  const dispatch = useInputDispatch();
-  const { text, mode, encoding } = input;
-  const handleChange = (field, value) =>
-    dispatch(updateInput(input.id, {[field]: value }));
-
-  return (
-    <Select defaultValue="byte">
-      <SelectTrigger>
-        <SelectValue placeholder="Select Mode" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          <SelectLabel>Modes</SelectLabel>
-          {modes.map((mode) => (
-            <SelectItem className="capitalize" value={mode}>
-              {mode}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
-  );
-}
-
 function BasicInput({ input }) {
+  const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
+
   const { text, mode, encoding } = input;
-  
+
   const dispatch = useInputDispatch();
   const handleChange = (field, value) =>
-    dispatch(updateInput(input.id, {[field]: value }));
+    dispatch(updateInput(input.id, { [field]: value }));
 
   return (
     <Card>
@@ -128,7 +103,21 @@ function BasicInput({ input }) {
       <CardContent>
         <div className="grid w-full items-center gap-4">
           <div className="flex flex-col space-y-1.5">
-            <QRModeSelect input={input} />
+            <Select defaultValue="byte">
+              <SelectTrigger>
+                <SelectValue placeholder="Select Mode" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Modes</SelectLabel>
+                  {modes.map((mode) => (
+                    <SelectItem className="capitalize" value={mode}>
+                      {mode}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col space-y-1.5">
             <Label htmlFor="name">Text</Label>
@@ -353,7 +342,7 @@ function SortableField({ inputId, field, dispatch }) {
   );
 }
 
-function BitFieldEditor({ id, input }) {
+function BitFieldEditor({ input }) {
   const dispatch = useInputDispatch();
   const { fields = [] } = input;
 
@@ -364,7 +353,7 @@ function BitFieldEditor({ id, input }) {
 
   const handleAddField = () => {
     dispatch(
-      addBitFieldField(id, {
+      addBitFieldField(input.id, {
         ...structuredClone(DEFAULT_FIELD),
         id: crypto.randomUUID(),
       })
@@ -392,7 +381,7 @@ function BitFieldEditor({ id, input }) {
           {fields.map((field) => (
             <SortableField
               key={field.id}
-              inputId={id}
+              inputId={input.id}
               field={field}
               dispatch={dispatch}
             />
@@ -407,9 +396,9 @@ function BitFieldEditor({ id, input }) {
   );
 }
 
-function BitFieldValues({ id, input }) {
+function BitFieldValues({ input }) {
   const dispatch = useInputDispatch();
-  const { values = {}, layout = [] } = useParsedInputs()[id];
+  const { values = {}, layout = [] } = useParsedInputs()[input.id];
   const [type, setType] = useState("base10");
 
   const handleInputChange = (e, field) => {
@@ -427,7 +416,7 @@ function BitFieldValues({ id, input }) {
       default:
         newValue = undefined;
     }
-    dispatch(setBitFieldValues(id, { ...values, [field.label]: newValue }));
+    dispatch(setBitFieldValues(input.id, { ...values, [field.label]: newValue }));
   };
 
   return (
@@ -494,8 +483,8 @@ function BitFieldVisualizer({ id }) {
   );
 }
 
-function BitFieldInput({ id, input }) {
-  const { encodedBytes } = useParsedInputs()[id];
+function BitFieldInput({ input }) {
+  const { encodedBytes } = useParsedInputs()[input.id];
 
   return (
     <div className="space-y-4">
@@ -505,14 +494,14 @@ function BitFieldInput({ id, input }) {
           <TabsTrigger value="values">Values</TabsTrigger>
         </TabsList>
         <TabsContent value="fields">
-          <BitFieldEditor id={id} input={input} />
+          <BitFieldEditor input={input} />
         </TabsContent>
         <TabsContent value="values">
-          <BitFieldValues id={id} input={input} />
+          <BitFieldValues input={input} />
         </TabsContent>
       </Tabs>
 
-      <BitFieldVisualizer id={id} input={input} />
+      <BitFieldVisualizer id={input.id} />
 
       <div className="text-sm mt-2">
         {encodedBytes ? (
@@ -527,20 +516,20 @@ function BitFieldInput({ id, input }) {
   );
 }
 
-function MACGenerator({ id, input }) {
+function MACGenerator({ input }) {
   const { inputs: allInputs } = useInputs();
   const dispatch = useInputDispatch();
   const previews = useParsedInputs();
 
   const selectedIds = input.includedFields || [];
-  const selectableInputs = allInputs.filter((i) => i.id !== id);
-  const preview = previews?.[id];
+  const selectableInputs = allInputs.filter((i) => i.id !== input.id);
+  const preview = previews?.[input.id];
 
   const toggleSelection = (toggleId) => {
     const next = selectedIds.includes(toggleId)
       ? selectedIds.filter((x) => x !== toggleId)
       : [...selectedIds, toggleId];
-    dispatch(setIncludedFields(id, next));
+    dispatch(setIncludedFields(input.id, next));
   };
 
   return (
@@ -554,7 +543,7 @@ function MACGenerator({ id, input }) {
           <Input
             id="mac-key"
             value={input.key}
-            onChange={(e) => dispatch(setMacKey(id, e.target.value))}
+            onChange={(e) => dispatch(setMacKey(input.id, e.target.value))}
             placeholder="Enter shared secret"
           />
         </div>
@@ -587,7 +576,7 @@ function MACGenerator({ id, input }) {
           <Label htmlFor="mac-algo">MAC Algorithm</Label>
           <Select
             value={input.algo}
-            onValueChange={(value) => dispatch(setMacAlgorithm(id, value))}
+            onValueChange={(value) => dispatch(setMacAlgorithm(input.id, value))}
           >
             <SelectTrigger id="mac-algo" className="w-full">
               <SelectValue />
@@ -615,18 +604,11 @@ function MACGenerator({ id, input }) {
   );
 }
 
-const INPUT_TYPES = {
-  basic: BasicInput,
-  json: JsonInput,
-  bitfield: BitFieldInput,
-  mac: MACGenerator,
-};
 
 export function InputCard() {
   const { inputs, activeInputID } = useInputs();
   console.debug({ activeInputID, inputs });
   const activeInput = inputs.find(({ id }) => id == activeInputID);
-  const InputComponent = INPUT_TYPES[activeInput.type];
   return (
     <Tabs defaultValue="string" className="w-[400px]">
       <TabsList className="@4xl/main:flex">
@@ -640,6 +622,12 @@ export function InputCard() {
       </TabsContent>
       <TabsContent value="json">
         <JsonInput input={activeInput} />
+      </TabsContent>
+      <TabsContent value="bitfield">
+        <BitFieldInput input={activeInput} />
+      </TabsContent>
+      <TabsContent value="mac">
+        <MACGenerator input={activeInput} />
       </TabsContent>
     </Tabs>
   );
