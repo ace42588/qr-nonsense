@@ -96,14 +96,15 @@ const editorOptions = {
   lineNumbers: "off",
 };
 
-function bitsNeeded(max) {
-  return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
-}
-function maxFromBits(bits) {
-  return Math.pow(2, bits) - 1;
-}
-
 function SortableField({ inputId, field, dispatch }) {
+  function bitsNeeded(max) {
+    return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
+  }
+
+  function maxFromBits(bits) {
+    return Math.pow(2, bits) - 1;
+  }
+
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: field.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
@@ -235,9 +236,15 @@ function BitFieldEditor({ input }) {
   );
 }
 
-function BitFieldValues({ input }) {
+export function InputCard() {
+  const { inputs, activeInputID } = useInputs();
   const dispatch = useInputDispatch();
-  const { values = {}, layout = [] } = useParsedInputs()[input.id];
+
+  const input = inputs.find(({ id }) => id == activeInputID);
+  const preview = useParsedInputs()[input.id];
+
+  const [tab, setTab] = useState("values");
+
   const [type, setType] = useState("base10");
 
   const handleInputChange = (e, field) => {
@@ -256,48 +263,12 @@ function BitFieldValues({ input }) {
         newValue = undefined;
     }
     dispatch(
-      setBitFieldValues(input.id, { ...values, [field.label]: newValue })
+      setBitFieldValues(input.id, {
+        ...preview.values,
+        [field.label]: newValue,
+      })
     );
   };
-
-  return (
-    <div className="space-y-3 mt-2">
-      {layout.map((field) => (
-        <div key={field.label} className="flex items-center gap-2">
-          <label className="w-28">{field.label}</label>
-
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger className="w-28">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {["base10", "base16", "string"].map((v) => (
-                <SelectItem key={v} value={v}>
-                  {v}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Input
-            value={values[field.label] ?? ""}
-            onChange={(e) => handleInputChange(e, field)}
-            className="w-24"
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export function InputCard() {
-  const { inputs, activeInputID } = useInputs();
-  const dispatch = useInputDispatch();
-
-  const input = inputs.find(({ id }) => id == activeInputID);
-  const preview = useParsedInputs()[input.id];
-
-  const [tab, setTab] = useState("values");
 
   const handleChange = (field, value) =>
     dispatch(updateInput(input.id, { [field]: value }));
@@ -497,7 +468,35 @@ export function InputCard() {
                   <BitFieldEditor input={input} />
                 </TabsContent>
                 <TabsContent value="values">
-                  <BitFieldValues input={input} />
+                  <div className="space-y-3 mt-2">
+                    {preview?.layout?.map((field) => (
+                      <div
+                        key={field.label}
+                        className="flex items-center gap-2"
+                      >
+                        <label className="w-28">{field.label}</label>
+
+                        <Select value={type} onValueChange={setType}>
+                          <SelectTrigger className="w-28">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {["base10", "base16", "string"].map((v) => (
+                              <SelectItem key={v} value={v}>
+                                {v}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <Input
+                          value={preview.values[field.label] ?? ""}
+                          onChange={(e) => handleInputChange(e, field)}
+                          className="w-24"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </TabsContent>
               </Tabs>
 

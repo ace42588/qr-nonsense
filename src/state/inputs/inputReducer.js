@@ -5,6 +5,8 @@ import { Actions } from "./inputActions";
 
 const firstInput = createInput({ label: "Input 0" });
 
+const DEFAULT_FIELD = getTypeDefaults("bitfield").layout[0];
+
 export const initialState = {
   formatInfo: {
     errorCorrectionLevel: 0,
