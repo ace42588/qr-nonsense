@@ -44,11 +44,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import {
-  useInputDispatch,
-  useInputs,
-  useParsedInputs,
-} from "../state";
+import { useInputDispatch, useInputs, useParsedInputs } from "../state";
 import { predefinedSchemas } from "../domain/input";
 import {
   addBitFieldField,
@@ -92,15 +88,15 @@ const editorOptions = {
   lineNumbers: "off",
 };
 
+function bitsNeeded(max) {
+  return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
+}
+
+function maxFromBits(bits) {
+  return Math.pow(2, bits) - 1;
+}
+
 function SortableField({ inputId, field, dispatch }) {
-  function bitsNeeded(max) {
-    return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
-  }
-
-  function maxFromBits(bits) {
-    return Math.pow(2, bits) - 1;
-  }
-
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: field.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
@@ -500,7 +496,7 @@ export function InputCard() {
                   {preview.totalBits} bits total
                 </div>
               </div>
-
+              <Separator />
               <div className="text-sm mt-2">
                 {preview?.encodedBytes ? (
                   <span>
