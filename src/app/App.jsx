@@ -14,7 +14,6 @@ import {
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { QRCodeCanvas } from "../components/QRCanvas";
-import { InputForm } from "../components/InputForm";
 import { VideoScanner } from "../components/VideoScanner";
 import { QRImageHalftone } from "../components/Halftone";
 import { SegmentDisplay } from "../components/SegmentDisplay";

@@ -61,10 +61,8 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 import { FormatInput } from "./format-input";
-import { AddInput } from "./add-input-form";
 
 import { useInputs, useInputDispatch, useDerivedQRData } from "../state";
-import { SortableInput } from "./sortable-input";
 
 export function InputSidebar({ ...props }) {
   const { inputs, activeInputID } = useInputs();

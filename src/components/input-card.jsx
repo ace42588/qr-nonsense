@@ -27,7 +27,9 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Separator, ScrollArea, Checkbox } from "../components/ui";
+import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { useState, useMemo } from "react";
 
@@ -40,7 +42,7 @@ import {
   updateJsonObject,
   updateSchema,
   updateEncoding,
-  updateSchemaName,
+  setSchemaName,
   setMacKey,
   setMacAlgorithm,
   setIncludedFields,
@@ -183,12 +185,12 @@ function JsonInput({ input }) {
     const name = e.target.value;
     const schema = predefinedSchemas[name];
     updateSchema(id, schema);
-    updateSchemaName(id, name);
+    setSchemaName(id, name);
   };
 
   const handleCustomSchemaChange = (schema) => {
     updateSchema(id, schema);
-    updateSchemaName("custom");
+    setSchemaName("custom");
   };
   return (
     <Card>
