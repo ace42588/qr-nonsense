@@ -86,94 +86,33 @@ const COLORS = [
   "#6366f1",
 ];
 
-function BasicInput({ input }) {
-  const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
+const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
-  const { text, mode, encoding } = input;
+const editorOptions = {
+  minimap: { enabled: false },
+  scrollbar: { vertical: "hidden", horizontal: "hidden" },
+  overviewRulerLanes: 0,
+  lineNumbers: "off",
+};
 
-  const dispatch = useInputDispatch();
-  const handleChange = (field, value) =>
-    dispatch(updateInput(input.id, { [field]: value }));
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{input.label}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid w-full items-center gap-4">
-          <div className="flex flex-col space-y-1.5">
-            <Select defaultValue="byte">
-              <SelectTrigger>
-                <SelectValue placeholder="Select Mode" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Modes</SelectLabel>
-                  {modes.map((mode) => (
-                    <SelectItem className="capitalize" value={mode}>
-                      {mode}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col space-y-1.5">
-            <Label htmlFor="name">Text</Label>
-            <Input
-              id="name"
-              type="text"
-              value={text}
-              onChange={(e) => handleChange("text", e.target.value)}
-            />
-          </div>
-          {mode === "byte" && (
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="force-utf-8"
-                onChange={(e) =>
-                  handleChange(
-                    "encoding",
-                    e.target.checked ? "utf-8" : undefined
-                  )
-                }
-              />
-              <Label htmlFor="force-utf-8">Force UTF-8</Label>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function JsonInput({ id, input }) {
-  const editorOptions = {
-    minimap: { enabled: false },
-    scrollbar: { vertical: "hidden", horizontal: "hidden" },
-    overviewRulerLanes: 0,
-    lineNumbers: "off",
-  };
-
-  const { obj, schema, format } = input;
-  const preview = useParsedInputs()[id];
+function JsonInput({ input }) {
+  const preview = useParsedInputs()[input.id];
   const [tab, setTab] = useState("values");
 
   const dispatch = useInputDispatch();
   const handleJsonChange = (field, text) => {
     try {
       const parsed = JSON.parse(text);
-      if (field === "obj") dispatch(updateJsonObject(id, parsed));
-      if (field === "schema") dispatch(updateSchema(id, parsed));
+      if (field === "obj") dispatch(updateJsonObject(input.id, parsed));
+      if (field === "schema") dispatch(updateSchema(input.id, parsed));
     } catch {
       // Optionally show error
     }
   };
 
   const handleSchemaSelect = (name) => {
-    dispatch(updateSchema(id, predefinedSchemas[name]));
-    dispatch(setSchemaName(id, name));
+    dispatch(updateSchema(input.id, predefinedSchemas[name]));
+    dispatch(setSchemaName(input.id, name));
   };
 
   return (
@@ -192,7 +131,7 @@ function JsonInput({ id, input }) {
           <Editor
             height="300px"
             defaultLanguage="json"
-            value={JSON.stringify(obj, null, 2)}
+            value={JSON.stringify(input.obj, null, 2)}
             onChange={(e) => handleJsonChange("obj", e)}
             options={editorOptions}
           />
@@ -217,7 +156,7 @@ function JsonInput({ id, input }) {
           <Editor
             height="300px"
             defaultLanguage="json"
-            value={JSON.stringify(schema, null, 2)}
+            value={JSON.stringify(input.schema, null, 2)}
             onChange={(e) => handleJsonChange("schema", e)}
             options={editorOptions}
           />
@@ -230,7 +169,7 @@ function JsonInput({ id, input }) {
         <Label htmlFor="encoding-select">Encoding</Label>
         <Select
           value={input.encoding}
-          onValueChange={(val) => dispatch(updateEncoding(id, val))}
+          onValueChange={(val) => dispatch(updateEncoding(input.id, val))}
         >
           <SelectTrigger id="encoding-select" className="w-64">
             <SelectValue />
@@ -245,7 +184,7 @@ function JsonInput({ id, input }) {
         </Select>
       </div>
 
-      {format !== "None" && (
+      {input.format !== "None" && (
         <div className="space-y-2">
           <Label htmlFor="preview">Preview</Label>
           <ScrollArea className="border rounded p-2 max-h-48 bg-muted text-sm whitespace-pre-wrap">
@@ -364,7 +303,7 @@ function BitFieldEditor({ input }) {
     if (!over || active.id === over.id) return;
     const oldIndex = fields.findIndex((f) => f.id === active.id);
     const newIndex = fields.findIndex((f) => f.id === over.id);
-    dispatch(reorderBitFieldFields(id, oldIndex, newIndex));
+    dispatch(reorderBitFieldFields(input.id, oldIndex, newIndex));
   };
 
   return (
@@ -416,7 +355,9 @@ function BitFieldValues({ input }) {
       default:
         newValue = undefined;
     }
-    dispatch(setBitFieldValues(input.id, { ...values, [field.label]: newValue }));
+    dispatch(
+      setBitFieldValues(input.id, { ...values, [field.label]: newValue })
+    );
   };
 
   return (
@@ -576,7 +517,9 @@ function MACGenerator({ input }) {
           <Label htmlFor="mac-algo">MAC Algorithm</Label>
           <Select
             value={input.algo}
-            onValueChange={(value) => dispatch(setMacAlgorithm(input.id, value))}
+            onValueChange={(value) =>
+              dispatch(setMacAlgorithm(input.id, value))
+            }
           >
             <SelectTrigger id="mac-algo" className="w-full">
               <SelectValue />
@@ -604,11 +547,31 @@ function MACGenerator({ input }) {
   );
 }
 
-
 export function InputCard() {
   const { inputs, activeInputID } = useInputs();
-  console.debug({ activeInputID, inputs });
+  const dispatch = useInputDispatch();
+
   const activeInput = inputs.find(({ id }) => id == activeInputID);
+  const preview = useParsedInputs()[activeInput.id];
+
+  const handleChange = (field, value) =>
+    dispatch(updateInput(activeInput.id, { [field]: value }));
+  
+  const handleJsonChange = (field, text) => {
+    try {
+      const parsed = JSON.parse(text);
+      if (field === "obj") dispatch(updateJsonObject(activeInput.id, parsed));
+      if (field === "schema") dispatch(updateSchema(activeInput.id, parsed));
+    } catch {
+      // Optionally show error
+    }
+  };
+  
+  const handleSchemaSelect = (name) => {
+    dispatch(updateSchema(activeInput.id, predefinedSchemas[name]));
+    dispatch(setSchemaName(activeInput.id, name));
+  };
+
   return (
     <Tabs defaultValue="string" className="w-[400px]">
       <TabsList className="@4xl/main:flex">
@@ -618,10 +581,140 @@ export function InputCard() {
         <TabsTrigger value="mac">MAC</TabsTrigger>
       </TabsList>
       <TabsContent value="string">
-        <BasicInput input={activeInput} />
+        <Card>
+          <CardHeader>
+            <CardTitle>{activeInput.label}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid w-full items-center gap-4">
+              <div className="flex flex-col space-y-1.5">
+                <Select defaultValue="byte">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Modes</SelectLabel>
+                      {modes.map((mode) => (
+                        <SelectItem className="capitalize" value={mode}>
+                          {mode}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="name">Text</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={activeInput.text}
+                  onChange={(e) => handleChange("text", e.target.value)}
+                />
+              </div>
+              {activeInput.mode === "byte" && (
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="force-utf-8"
+                    onChange={(e) =>
+                      handleChange(
+                        "encoding",
+                        e.target.checked ? "utf-8" : undefined
+                      )
+                    }
+                  />
+                  <Label htmlFor="force-utf-8">Force UTF-8</Label>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </TabsContent>
       <TabsContent value="json">
-        <JsonInput input={activeInput} />
+        <Card>
+          <CardHeader>
+            <CardTitle>{activeInput.label}</CardTitle>
+          </CardHeader>
+          <CardContent>
+      <Tabs
+        defaultValue={tab}
+        onValueChange={setTab}
+        className="w-full max-w-3xl"
+      >
+        <TabsList>
+          <TabsTrigger value="json">Values</TabsTrigger>
+          <TabsTrigger value="schema">Schema</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="json" className="mt-4">
+          <Editor
+            height="300px"
+            defaultLanguage="json"
+            value={JSON.stringify(input.obj, null, 2)}
+            onChange={(e) => handleJsonChange("obj", e)}
+            options={editorOptions}
+          />
+        </TabsContent>
+
+        <TabsContent value="schema" className="space-y-4 mt-4">
+          <div className="space-y-2">
+            <Label htmlFor="schema-select">Predefined Schema</Label>
+            <Select value={input.schemaName} onValueChange={handleSchemaSelect}>
+              <SelectTrigger id="schema-select" className="w-64">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(predefinedSchemas).map((name) => (
+                  <SelectItem key={name} value={name}>
+                    {name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Editor
+            height="300px"
+            defaultLanguage="json"
+            value={JSON.stringify(input.schema, null, 2)}
+            onChange={(e) => handleJsonChange("schema", e)}
+            options={editorOptions}
+          />
+        </TabsContent>
+      </Tabs>
+
+      <Separator />
+
+      <div className="space-y-2">
+        <Label htmlFor="encoding-select">Encoding</Label>
+        <Select
+          value={input.encoding}
+          onValueChange={(val) => dispatch(updateEncoding(input.id, val))}
+        >
+          <SelectTrigger id="encoding-select" className="w-64">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ENCODING_STRATEGIES.map((name) => (
+              <SelectItem key={name} value={name}>
+                {name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {input.format !== "None" && (
+        <div className="space-y-2">
+          <Label htmlFor="preview">Preview</Label>
+          <ScrollArea className="border rounded p-2 max-h-48 bg-muted text-sm whitespace-pre-wrap">
+            <pre id="preview">{preview?.data}</pre>
+          </ScrollArea>
+        </div>
+      )}
+          </CardContent>
+        </Card>
+    </div>
       </TabsContent>
       <TabsContent value="bitfield">
         <BitFieldInput input={activeInput} />
