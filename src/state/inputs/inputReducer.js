@@ -190,7 +190,7 @@ export function inputReducer(state, action) {
         inputs: updateInputs(state.inputs, action),
       };
 
-      // 🧠 If the removed input was the active one, update activeInputID
+      // if the removed input was the active one, update activeInputID
       if (action.type === Actions.Remove && action.payload?.id === state.activeInputID) {
         const newActive = nextState.inputs[0]?.id ?? null;
         nextState.activeInputID = newActive;
