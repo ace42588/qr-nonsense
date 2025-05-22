@@ -58,93 +58,6 @@ import {
   updateInput,
 } from "../state/inputs/inputActions";
 
-function DraggableInput({
-  input,
-  dispatch,
-  renamingId,
-  setRenamingId,
-  isActive,
-}) {
-  const {
-    attributes,
-    listeners,
-    transform,
-    transition,
-    setNodeRef,
-    isDragging,
-  } = useSortable({
-    id: input.id,
-  });
-
-  const [editValue, setEditValue] = React.useState(input.label);
-
-  const handleRenameCommit = () => {
-    dispatch(updateInput({ id: input.id, label: editValue }));
-    setRenamingId(null);
-  };
-
-  return (
-    <SidebarMenuItem key={input.id}>
-      <SidebarMenuButton
-        data-dragging={isDragging}
-        ref={setNodeRef}
-        className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
-        style={{
-          transform: CSS.Transform.toString(transform),
-          transition: transition,
-        }}
-        asChild
-        isActive={isActive}
-      >
-        <a href="#">
-          <Button
-            {...attributes}
-            {...listeners}
-            style={{ cursor: "grab" }}
-            variant="ghost"
-            size="icon"
-            className="size-7 text-muted-foreground hover:bg-transparent"
-          >
-            <GripVerticalIcon className="size-3 text-muted-foreground" />
-            <span className="sr-only">Drag to reorder</span>
-          </Button>
-          {renamingId === input.id ? (
-            <input
-              autoFocus
-              className="ml-2 bg-transparent border-b border-input px-1 text-sm focus:outline-none"
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onBlur={handleRenameCommit}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleRenameCommit();
-                if (e.key === "Escape") setRenamingId(null);
-              }}
-            />
-          ) : (
-            <span onClick={() => dispatch(setActiveInput(input.id))}>
-              {input.label}
-            </span>
-          )}
-        </a>
-      </SidebarMenuButton>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <SidebarMenuAction>
-            <MoreHorizontal />
-          </SidebarMenuAction>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent side="right" align="start">
-          <DropdownMenuItem onClick={() => setRenamingId(input.id)}>
-            <span>Rename</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => dispatch(removeInput(input.id))}>
-            <span>Remove</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </SidebarMenuItem>
-  );
-}
 
 export function InputSidebar({ ...props }) {
   const { inputs, activeInputID } = useInputs();
@@ -169,10 +82,9 @@ export function InputSidebar({ ...props }) {
     });
 
     const [editValue, setEditValue] = React.useState(input.label);
-    const dispatchGlobal = useInputDispatch();
 
     const handleRenameCommit = () => {
-      dispatchGlobal(updateInput({ id: input.id, label: editValue }));
+      dispatch(updateInput( input.id, { label: editValue }));
       setRenamingId(null);
     };
 
