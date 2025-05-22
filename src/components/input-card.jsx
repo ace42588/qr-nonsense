@@ -1,11 +1,6 @@
+import { useState } from "react";
+
 import Editor from "@monaco-editor/react";
-import {
-  useQRDataDispatch,
-  useInputDispatch,
-  useInputs,
-  useParsedInputs,
-} from "../state";
-import { predefinedSchemas } from "../domain/input";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -33,28 +28,6 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-import { useState, useMemo } from "react";
-
-import {
-  addBitFieldField,
-  removeBitFieldField,
-  updateBitFieldField,
-  reorderBitFieldFields,
-  setBitFieldValues,
-  updateJsonObject,
-  updateSchema,
-  updateEncoding,
-  updateInput,
-  setSchemaName,
-  setMacKey,
-  setMacAlgorithm,
-  setIncludedFields,
-  setInputType,
-} from "../state/inputs/inputActions";
-
-import { MAC_FUNCTIONS } from "../domain";
-import { ENCODING_STRATEGIES } from "../domain/encoders";
-
 import {
   DndContext,
   closestCenter,
@@ -71,10 +44,33 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+import {
+  useInputDispatch,
+  useInputs,
+  useParsedInputs,
+} from "../state";
+import { predefinedSchemas } from "../domain/input";
+import {
+  addBitFieldField,
+  removeBitFieldField,
+  updateBitFieldField,
+  reorderBitFieldFields,
+  setBitFieldValues,
+  updateJsonObject,
+  updateSchema,
+  updateEncoding,
+  updateInput,
+  setSchemaName,
+  setMacKey,
+  setMacAlgorithm,
+  setIncludedFields,
+  setInputType,
+} from "../state/inputs/inputActions";
+import { MAC_FUNCTIONS } from "../domain";
+import { ENCODING_STRATEGIES } from "../domain/encoders";
 import { getTypeDefaults } from "../state/inputs/inputFactory";
 
 const encoder = new TextEncoder("utf-8");
-const DEFAULT_FIELD = getTypeDefaults("bitfield").layout[0];
 const COLORS = [
   "#3b82f6",
   "#10b981",
@@ -187,59 +183,13 @@ export function InputCard() {
   const dispatch = useInputDispatch();
 
   const input = inputs.find(({ id }) => id == activeInputID);
-  const preview = useParsedInputs()[input.id];
+  const preview = useParsedInputs()[activeInputID];
 
   const [tab, setTab] = useState("values");
-
   const [type, setType] = useState("base10");
-
-  const handleInputChange = (e, field) => {
-    let newValue = e.target.value;
-    switch (type) {
-      case "base10":
-        newValue = Number(newValue);
-        break;
-      case "base16":
-        newValue = parseInt(newValue, 16);
-        break;
-      case "string":
-        newValue = encoder.encode(newValue);
-        break;
-      default:
-        newValue = undefined;
-    }
-    dispatch(
-      setBitFieldValues(input.id, {
-        ...preview.values,
-        [field.label]: newValue,
-      })
-    );
-  };
-
-  const handleJsonChange = (field, text) => {
-    try {
-      const parsed = JSON.parse(text);
-      if (field === "obj") dispatch(updateJsonObject(input.id, JSON.parse(text)));
-      if (field === "schema") dispatch(updateSchema(input.id, JSON.parse(text)));
-    } catch {
-      // Optionally show error
-    }
-  };
-
-  const handleSchemaSelect = (name) => {
-    dispatch(updateSchema(input.id, predefinedSchemas[name]));
-    dispatch(setSchemaName(input.id, name));
-  };
 
   const selectedIds = input.includedFields || [];
   const selectableInputs = inputs.filter((i) => i.id !== activeInputID);
-
-  const toggleSelection = (toggleId) => {
-    const next = selectedIds.includes(toggleId)
-      ? selectedIds.filter((x) => x !== toggleId)
-      : [...selectedIds, toggleId];
-    dispatch(setIncludedFields(input.id, next));
-  };
 
   return (
     <Tabs
@@ -283,7 +233,11 @@ export function InputCard() {
                   id="name"
                   type="text"
                   value={input.text}
-                  onChange={(e) => dispatch(updateInput(activeInputID, { text: e.target.value }))}
+                  onChange={(e) =>
+                    dispatch(
+                      updateInput(activeInputID, { text: e.target.value })
+                    )
+                  }
                 />
               </div>
               {input.mode === "byte" && (
@@ -291,8 +245,11 @@ export function InputCard() {
                   <Switch
                     id="force-utf-8"
                     onChange={(e) =>
-                dispatch(updateInput(activeInputID, { encoding:  e.target.checked ? "utf-8" : "" }))
-
+                      dispatch(
+                        updateInput(activeInputID, {
+                          encoding: e.target.checked ? "utf-8" : "",
+                        })
+                      )
                     }
                   />
                   <Label htmlFor="force-utf-8">Force UTF-8</Label>
@@ -324,7 +281,11 @@ export function InputCard() {
                     height="300px"
                     defaultLanguage="json"
                     value={JSON.stringify(input.obj, null, 2)}
-                    onChange={(e) => dispatch(updateJsonObject(input.id, JSON.parse(text))}
+                    onChange={(text) => {
+                      try {
+                        dispatch(updateJsonObject(input.id, JSON.parse(text)));
+                      } catch {}
+                    }}
                     options={editorOptions}
                   />
                 </TabsContent>
@@ -334,7 +295,12 @@ export function InputCard() {
                     <Label htmlFor="schema-select">Predefined Schema</Label>
                     <Select
                       value={input.schemaName}
-                      onValueChange={handleSchemaSelect}
+                      onValueChange={(name) => {
+                        dispatch(
+                          updateSchema(activeInputID, predefinedSchemas[name])
+                        );
+                        dispatch(setSchemaName(activeInputID, name));
+                      }}
                     >
                       <SelectTrigger id="schema-select" className="w-64">
                         <SelectValue />
@@ -352,7 +318,11 @@ export function InputCard() {
                     height="300px"
                     defaultLanguage="json"
                     value={JSON.stringify(input.schema, null, 2)}
-                    onChange={(e) => handleJsonChange("schema", e)}
+                    onChange={(text) => {
+                      try {
+                        dispatch(updateSchema(activeInputID, JSON.parse(text)));
+                      } catch {}
+                    }}
                     options={editorOptions}
                   />
                 </TabsContent>
@@ -475,7 +445,28 @@ export function InputCard() {
 
                         <Input
                           value={preview.values[field.label] ?? ""}
-                          onChange={(e) => handleInputChange(e, field)}
+                          onChange={(e) => {
+                            let newValue = e.target.value;
+                            switch (type) {
+                              case "base10":
+                                newValue = Number(newValue);
+                                break;
+                              case "base16":
+                                newValue = parseInt(newValue, 16);
+                                break;
+                              case "string":
+                                newValue = encoder.encode(newValue);
+                                break;
+                              default:
+                                newValue = undefined;
+                            }
+                            dispatch(
+                              setBitFieldValues(activeInputID, {
+                                ...preview.values,
+                                [field.label]: newValue,
+                              })
+                            );
+                          }}
                           className="w-24"
                         />
                       </div>
@@ -550,7 +541,12 @@ export function InputCard() {
                       <Checkbox
                         id={`chk-${i.id}`}
                         checked={selectedIds.includes(i.id)}
-                        onCheckedChange={() => toggleSelection(i.id)}
+                        onCheckedChange={() => {
+                          const next = selectedIds.includes(i.id)
+                            ? selectedIds.filter((x) => x !== i.id)
+                            : [...selectedIds, i.id];
+                          dispatch(setIncludedFields(activeInputID, next));
+                        }}
                       />
                       <Label htmlFor={`chk-${i.id}`} className="cursor-pointer">
                         {i.label || i.id}
