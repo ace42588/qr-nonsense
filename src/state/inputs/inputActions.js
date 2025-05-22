@@ -12,17 +12,69 @@ export const Actions = {
   UpdateEncoding: "UPDATE_ENCODING_STRATEGY",
   SetActiveInput: "SET_ACTIVE_INPUT",
   AddBitFieldField: "ADD_BITFIELD_FIELD",
+  RemoveBitFieldField: "REMOVE_BITFIELD_FIELD",
+  UpdateBitFieldField: "UPDATE_BITFIELD_FIELD",
+  ReorderBitFieldFields: "REORDER_BITFIELD_FIELDS",
+  SetBitFieldValues: "SET_BITFIELD_VALUES",
 };
 
 export const addInput = (label) => ({ type: Actions.Add, payload: { label } });
 export const removeInput = (id) => ({ type: Actions.Remove, payload: { id } });
-export const updateInput = (id, partial) => ({ type: Actions.Update, payload: { id, partial } });
-export const updateEncoding = (id, encoding) => ({ type: Actions.UpdateEncoding, payload: { id, encoding } });
-export const updateSchema = (id, schema) => ({ type: Actions.UpdateSchema, payload: { id, schema } });
-export const setSchemaName = (id, name) => ({ type: Actions.SetSchemaName, payload: { id, name } });
-export const reorderInputs = (oldIndex, newIndex) => ({ type: Actions.Reorder, payload: { oldIndex, newIndex } });
-export const changeType = (id, newType) => ({ type: Actions.ChangeType, payload: { id, newType } });
-export const setMetaField = (field, value) => ({ type: Actions.ChangeMeta, payload: { field, value } });
+export const updateInput = (id, partial) => ({
+  type: Actions.Update,
+  payload: { id, partial },
+});
+export const updateEncoding = (id, encoding) => ({
+  type: Actions.UpdateEncoding,
+  payload: { id, encoding },
+});
+export const updateSchema = (id, schema) => ({
+  type: Actions.UpdateSchema,
+  payload: { id, schema },
+});
+export const setSchemaName = (id, name) => ({
+  type: Actions.SetSchemaName,
+  payload: { id, name },
+});
+export const reorderInputs = (oldIndex, newIndex) => ({
+  type: Actions.Reorder,
+  payload: { oldIndex, newIndex },
+});
+export const changeType = (id, newType) => ({
+  type: Actions.ChangeType,
+  payload: { id, newType },
+});
+export const setMetaField = (field, value) => ({
+  type: Actions.ChangeMeta,
+  payload: { field, value },
+});
 export const setInputs = (payload) => ({ type: Actions.SetInputs, payload });
-export const setActiveInput = (id) => ({ type: Actions.SetActiveInput, payload: { id } });
-export const addBitFieldField = (id, newField) => ({ type: Actions.AddBitFieldField, payload: { id, newField } });
+
+export const setActiveInput = (id) => ({
+  type: Actions.SetActiveInput,
+  payload: { id },
+});
+export const addBitFieldField = (id, newField) => ({
+  type: Actions.AddBitFieldField,
+  payload: { id, newField },
+});
+
+export const removeBitFieldField = (id, fieldId) => ({
+  type: Actions.RemoveBitFieldField,
+  payload: { id, fieldId },
+});
+
+export const updateBitFieldField = (id, fieldId, partial) => ({
+  type: Actions.UpdateBitFieldField,
+  payload: { id, fieldId, partial },
+});
+
+export const reorderBitFieldFields = (id, oldIndex, newIndex) => ({
+  type: Actions.ReorderBitFieldFields,
+  payload: { id, oldIndex, newIndex },
+});
+
+export const setBitFieldValues = (id, updatedValues) => ({
+  type: Actions.SetBitFieldValues,
+  payload: { id, updatedValues },
+});

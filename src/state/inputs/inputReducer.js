@@ -16,18 +16,7 @@ export const initialState = {
 };
 
 function updateInputs(inputs, action) {
-  const {
-    id,
-    partial,
-    name,
-    schema,
-    encoding,
-    newType,
-    oldIndex,
-    newIndex,
-    label,
-    newField,
-  } = action.payload || {};
+  const { id, partial, name, schema, encoding, newType, oldIndex, newIndex, label, newField, fieldId, updatedValues } = action.payload || {};
   switch (action.type) {
     case Actions.Add:
       return [...inputs, createInput({ label })];
@@ -78,6 +67,7 @@ function updateInputs(inputs, action) {
             }
           : input
       );
+
     case Actions.AddBitFieldField:
       return inputs.map((input) =>
         input.id === id
@@ -86,6 +76,43 @@ function updateInputs(inputs, action) {
               fields: [...(input.fields || []), newField],
             }
           : input
+      );
+
+    case Actions.RemoveBitFieldField:
+      return inputs.map((input) =>
+        input.id === id
+          ? {
+              ...input,
+              fields: input.fields.filter((f) => f.id !== fieldId),
+            }
+          : input
+      );
+
+    case Actions.UpdateBitFieldField:
+      return inputs.map((input) =>
+        input.id === id
+          ? {
+              ...input,
+              fields: input.fields.map((f) =>
+                f.id === fieldId ? { ...f, ...partial } : f
+              ),
+            }
+          : input
+      );
+
+    case Actions.ReorderBitFieldFields:
+      return inputs.map((input) =>
+        input.id === id
+          ? {
+              ...input,
+              fields: arrayMove(input.fields, oldIndex, newIndex),
+            }
+          : input
+      );
+
+    case Actions.SetBitFieldValues:
+      return inputs.map((input) =>
+        input.id === id ? { ...input, values: updatedValues } : input
       );
 
     default:
@@ -103,6 +130,11 @@ export function inputReducer(state, action) {
     case Actions.UpdateEncoding:
     case Actions.Reorder:
     case Actions.ChangeType:
+    case Actions.AddBitFieldField:
+    case Actions.RemoveBitFieldField:
+    case Actions.UpdateBitFieldField:
+    case Actions.ReorderBitFieldFields:
+    case Actions.SetBitFieldValues:
       return {
         ...state,
         inputs: updateInputs(state.inputs, action),

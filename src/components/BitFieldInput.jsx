@@ -32,6 +32,7 @@ import {
   SelectItem,
 } from "../components/ui/select";
 import { useInputs, useInputDispatch, useParsedInputs } from "../state";
+import { addBitFieldField } from "../state/inputs/inputActions";
 
 const DEFAULT_FIELD = {
   label: "",
@@ -141,7 +142,7 @@ function SortableField({ field, onChange, onRemove }) {
 }
 
 function BitFieldEditor({ input }) {
-  const { updateInput } = useInputDispatch();
+  const { dispatch } = useInputDispatch();
   const { fields = [] } = input;
 
   const sensors = useSensors(
@@ -153,8 +154,10 @@ function BitFieldEditor({ input }) {
     updateInput({ ...input, [field]: value });
 
   const handleAddField = () => {
-    const newField = { ...DEFAULT_FIELD, id: crypto.randomUUID() };
-    emitChange("fields", [...fields, newField]);
+    dispatch(addBitFieldField(input.id, {
+  ...structuredClone(DEFAULT_FIELD),
+  id: crypto.randomUUID(),
+}));
   };
 
   const handleChange = (id, key, value) => {
