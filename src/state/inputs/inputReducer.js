@@ -14,7 +14,8 @@ export const Actions = {
   SetSchemaName: "SET_SCHEMA_NAME",
   UpdateSchema: "UPDATE_SERIALIZATION_SCHEMA",
   UpdateEncoding: "UPDATE_ENCODING_STRATEGY",
-  SetActiveInput: "SET_ACTIVE_INPUT"
+  SetActiveInput: "SET_ACTIVE_INPUT",
+  AddBitFieldField: "ADD_BITFIELD_FIELD"
 };
 
 export const initialInput = {
@@ -23,7 +24,7 @@ export const initialInput = {
   label: "Input 0",
   mode: "byte",
   text: "Hello world",
-  encoding: "utf-8",
+  encoding: "",
 };
 
 export function inputReducer(state, action) {
@@ -110,6 +111,9 @@ export function inputReducer(state, action) {
     }
     case Actions.SetActiveInput: {
       return {...state, activeInputID: action.id}
+    }
+    case Actions.AddBitFieldField: {
+      
     }
 
     default:

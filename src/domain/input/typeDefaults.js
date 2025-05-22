@@ -1,6 +1,17 @@
 // domain/inputDefaults.ts
 import { jsonSchema } from "./serializationSchemas";
 
+const DEFAULT_FIELD = {
+  label: "Field",
+  min: 0,
+  max: 255,
+  bitWidth: 8,
+  type: "base10",
+  mode: "bits", // or "max"
+};
+
+const DEFAULT_VALUE = {"Field": 0};
+
 const basicExample = {
   id: crypto.randomUUID(),
   type: "basic",
@@ -62,8 +73,8 @@ const typeDefaults = {
   },
   bitfield: {
     type: "bitfield",
-    layout: [{ label: "Field A", type: "base10" }],
-    values: {},
+    layout: [DEFAULT_FIELD],
+    values: DEFAULT_VALUE,
   },
   mac: {
     type: "mac",
