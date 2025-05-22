@@ -83,13 +83,12 @@ const COLORS = [
   "#f97316",
   "#6366f1",
 ];
-const dispatch = useInputDispatch();
 
 function QRModeSelect({ input }) {
   const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
-
+  
+  const dispatch = useInputDispatch();
   const { text, mode, encoding } = input;
-
   const handleChange = (field, value) =>
     dispatch(updateInput(input.id, {[field]: value }));
 
@@ -116,7 +115,7 @@ function BasicInput({ input }) {
   const { text, mode, encoding } = input;
 
   const handleChange = (field, value) =>
-    updateInput?.({ ...input, [field]: value });
+    dispatch(updateInput(input.id, {[field]: value }));
 
   return (
     <Card>
