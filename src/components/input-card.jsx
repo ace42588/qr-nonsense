@@ -2,12 +2,15 @@ import { useState } from "react";
 
 import Editor from "@monaco-editor/react";
 
+import {
+  GripVerticalIcon,
+  Plus
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -64,7 +67,6 @@ import {
 } from "../state/inputs/inputActions";
 import { MAC_FUNCTIONS } from "../domain";
 import { ENCODING_STRATEGIES } from "../domain/encoders";
-import { getTypeDefaults } from "../state/inputs/inputFactory";
 
 const encoder = new TextEncoder("utf-8");
 const COLORS = [
@@ -96,84 +98,6 @@ function maxFromBits(bits) {
   return Math.pow(2, bits) - 1;
 }
 
-function SortableField({ inputId, field, dispatch }) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: field.id });
-  const style = { transform: CSS.Transform.toString(transform), transition };
-  const bitCount =
-    field.mode === "max" ? bitsNeeded(field.max) : field.bitWidth || 1;
-
-  const update = (key, value) => {
-    dispatch(
-      updateBitFieldField(inputId, field.id, key ? { [key]: value } : value)
-    );
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      className="flex items-center gap-2 mb-2 p-2 rounded border border-muted"
-      style={style}
-      {...attributes}
-    >
-      <span {...listeners} className="cursor-grab text-muted-foreground">
-        ☰
-      </span>
-
-      <Input
-        placeholder="Label"
-        value={field.label}
-        onChange={(e) => update("label", e.target.value)}
-        className="w-24"
-      />
-
-      <Select value={field.mode} onValueChange={(val) => update("mode", val)}>
-        <SelectTrigger className="w-[110px]">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="max">Max Value</SelectItem>
-          <SelectItem value="bits">Bit Width</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {field.mode === "max" ? (
-        <Input
-          type="number"
-          value={field.max}
-          onChange={(e) => update("max", Number(e.target.value))}
-          className="w-20"
-        />
-      ) : (
-        <Input
-          type="number"
-          value={field.bitWidth}
-          onChange={(e) => {
-            const bw = Number(e.target.value);
-            update(null, {
-              bitWidth: bw,
-              max: maxFromBits(bw),
-            });
-          }}
-          className="w-20"
-        />
-      )}
-
-      {field.mode === "max" && (
-        <span className="text-xs text-muted-foreground">({bitCount} bits)</span>
-      )}
-
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => dispatch(removeBitFieldField(inputId, field.id))}
-      >
-        ✕
-      </Button>
-    </div>
-  );
-}
-
 export function InputCard() {
   const { inputs, activeInputID } = useInputs();
   const dispatch = useInputDispatch();
@@ -190,7 +114,7 @@ export function InputCard() {
   return (
     <Tabs
       defaultValue={input.type}
-      className="w-[400px]"
+      className="w-[600px]"
       onValueChange={(type) => dispatch(setInputType(activeInputID, type))}
     >
       <TabsList className="@4xl/main:flex">
@@ -280,7 +204,7 @@ export function InputCard() {
                     onChange={(text) => {
                       try {
                         dispatch(updateJsonObject(input.id, JSON.parse(text)));
-                      } catch {}
+                      } catch { }
                     }}
                     options={editorOptions}
                   />
@@ -317,7 +241,7 @@ export function InputCard() {
                     onChange={(text) => {
                       try {
                         dispatch(updateSchema(activeInputID, JSON.parse(text)));
-                      } catch {}
+                      } catch { }
                     }}
                     options={editorOptions}
                   />
@@ -390,7 +314,7 @@ export function InputCard() {
                           (f) => f.id === over.id
                         );
                         dispatch(
-                          reorderBitFieldFields(input.id, oldIndex, newIndex)
+                          reorderBitFieldFields(activeInputID, oldIndex, newIndex)
                         );
                       }}
                     >
@@ -398,22 +322,93 @@ export function InputCard() {
                         items={input.fields?.map((f) => f.id)}
                         strategy={verticalListSortingStrategy}
                       >
-                        {input.fields?.map((field) => (
-                          <SortableField
-                            key={field.id}
-                            inputId={input.id}
-                            field={field}
-                            dispatch={dispatch}
-                          />
-                        ))}
+                        {input.fields?.map((field) => {
+                          const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+                            useSortable({ id: field.id });
+                          return (
+                            <div
+                              data-dragging={isDragging}
+                              ref={setNodeRef}
+                              className="flex items-center gap-2 mb-2 p-2 rounded border border-muted"
+                              style={{
+                                transform: CSS.Transform.toString(transform),
+                                transition: transition,
+                              }}
+                              {...attributes}
+                            >
+                              <Button
+                                {...attributes}
+                                {...listeners}
+                                style={{ cursor: "grab" }}
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 text-muted-foreground hover:bg-transparent"
+                              >
+                                <GripVerticalIcon className="size-3 text-muted-foreground" />
+                                <span className="sr-only">Drag to reorder</span>
+                              </Button>
+
+                              <Input
+                                placeholder="Label"
+                                value={field.label}
+                                onChange={(e) => dispatch(updateBitFieldField(activeInputID, field.id, { label: e.target.value }))}
+                                className="w-24"
+                              />
+
+                              <Select value={field.mode} onValueChange={(val) => dispatch(updateBitFieldField(activeInputID, field.id, { mode: val }))}>
+                                <SelectTrigger className="w-[110px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="max">Max Value</SelectItem>
+                                  <SelectItem value="bits">Bit Width</SelectItem>
+                                </SelectContent>
+                              </Select>
+
+                              {field.mode === "max" ? (
+                                <Input
+                                  type="number"
+                                  value={field.max}
+                                  onChange={(e) => dispatch(updateBitFieldField(activeInputID, field.id, { max: Number(e.target.value) }))}
+                                  className="w-20"
+                                />
+                              ) : (
+                                <Input
+                                  type="number"
+                                  value={field.bitWidth}
+                                  onChange={(e) => {
+                                    const bw = Number(e.target.value);
+                                    dispatch(updateBitFieldField(activeInputID, field.id, {
+                                      bitWidth: bw,
+                                      max: maxFromBits(bw),
+                                    }));
+                                  }}
+                                  className="w-20"
+                                />
+                              )}
+
+                              {field.mode === "max" && (
+                                <span className="text-xs text-muted-foreground">({field.mode === "max" ? bitsNeeded(field.max) : field.bitWidth || 1} bits)</span>
+                              )}
+
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => dispatch(removeBitFieldField(activeInputID, field.id))}
+                              >
+                                ✕
+                              </Button>
+                            </div>
+                          );
+                        })}
                       </SortableContext>
                     </DndContext>
 
                     <Button
-                      onClick={() => dispatch(addBitFieldField(input.id))}
+                      onClick={() => dispatch(addBitFieldField(activeInputID))}
                       variant="secondary"
                     >
-                      + Add Field
+                      <Plus /> <span className="sr-only">Add Field</span>
                     </Button>
                   </div>
                 </TabsContent>

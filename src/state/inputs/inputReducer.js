@@ -165,6 +165,8 @@ function updateInputs(inputs, action) {
 }
 
 export function inputReducer(state, action) {
+  let nextState;
+  
   switch (action.type) {
     case Actions.Add:
     case Actions.Remove:
@@ -183,10 +185,18 @@ export function inputReducer(state, action) {
     case Actions.SetMacKey:
     case Actions.SetMacAlgorithm:
     case Actions.SetIncludedFields:
-      return {
+      nextState = {
         ...state,
         inputs: updateInputs(state.inputs, action),
       };
+
+      // 🧠 If the removed input was the active one, update activeInputID
+      if (action.type === Actions.Remove && action.payload?.id === state.activeInputID) {
+        const newActive = nextState.inputs[0]?.id ?? null;
+        nextState.activeInputID = newActive;
+      }
+
+      return nextState;
     case Actions.SetErrorCorrectionLevel:
     case Actions.SetVersion:
     case Actions.SetDataMask:

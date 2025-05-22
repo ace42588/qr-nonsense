@@ -5,18 +5,10 @@ import { Button } from "@/components/ui/button";
 import {
   GalleryVerticalEnd,
   GripVerticalIcon,
-  Minus,
   MoreHorizontal,
   Plus,
-  ChevronRight,
-  ChevronDown,
 } from "lucide-react";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +17,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
-  SidebarContent,
   SidebarGroup,
   SidebarGroupAction,
   SidebarGroupContent,
@@ -35,12 +26,8 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
   SidebarSeparator,
-  useSidebar,
 } from "@/components/ui/sidebar";
 
 import {
@@ -53,7 +40,6 @@ import {
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  arrayMove,
   verticalListSortingStrategy,
   sortableKeyboardCoordinates,
   useSortable,
@@ -64,25 +50,22 @@ import { FormatInput } from "./format-input";
 
 import { useInputs, useInputDispatch, useDerivedQRData } from "../state";
 
-import { addInput, reorderInputs } from "../state/inputs/inputActions";
+import {
+  addInput,
+  removeInput,
+  reorderInputs,
+  setActiveInput,
+} from "../state/inputs/inputActions";
 
 export function InputSidebar({ ...props }) {
   const { inputs, activeInputID } = useInputs();
-  const { errorCorrectionLevel, version, dataMask } = useInputs();
-
   const dispatch = useInputDispatch();
-
-  const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
-
   const nextLabel = React.useRef(inputs?.length || 0);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
-
-  const { setOpen } = useSidebar();
-
   function DraggableInput({ input }) {
     const {
       attributes,
@@ -120,7 +103,9 @@ export function InputSidebar({ ...props }) {
               <GripVerticalIcon className="size-3 text-muted-foreground" />
               <span className="sr-only">Drag to reorder</span>
             </Button>
-            <span onClick={() => setActiveInput(input.id)}>{input.label}</span>
+            <span onClick={() => dispatch(setActiveInput(input.id))}>
+              {input.label}
+            </span>
           </a>
         </SidebarMenuButton>
         <DropdownMenu>
@@ -133,7 +118,7 @@ export function InputSidebar({ ...props }) {
             <DropdownMenuItem>
               <span>Rename</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => removeInput(input.id)}>
+            <DropdownMenuItem onClick={() => dispatch(removeInput(input.id))}>
               <span>Remove</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
