@@ -1,22 +1,22 @@
-// src/domain/input/typeDefaults.ts
-import { jsonSchema } from "./serializationSchemas";
+// src/state/inputs/inputFactory.js
+import { jsonSchema } from "../../domain/input/serializationSchemas";
 
 const BITFIELD_DEFAULTS = {
-  FIELD: {
+  DEFAULT_FIELD: {
     label: "Field",
     min: 0,
     max: 255,
     bitWidth: 8,
     type: "base10",
-    mode: "bits", // or "max"
+    mode: "bits",
   },
-  VALUE: { Field: 0 },
+  DEFAULT_VALUE: { Field: 0 },
 };
 
 const typeDefaults = {
   basic: {
     type: "basic",
-    text: "hello world",
+    text: "Hello world",
     mode: "byte",
     encoding: "utf-8",
   },
@@ -49,8 +49,17 @@ const typeDefaults = {
   },
 };
 
-export function getTypeExtensions(type) {
+export function getTypeDefaults(type = "basic") {
   return {
-    ...(typeDefaults[type] ?? {}),
+    ...typeDefaults[type],
+  };
+}
+
+export function createInput({ type = "basic", id, label = "New Input", ...overrides } = {}) {
+  return {
+    id: id || crypto.randomUUID(),
+    label,
+    ...getTypeDefaults(type),
+    ...overrides,
   };
 }
