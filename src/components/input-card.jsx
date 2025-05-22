@@ -2,18 +2,10 @@ import { useState } from "react";
 
 import Editor from "@monaco-editor/react";
 
-import {
-  GripVerticalIcon,
-  Plus
-} from "lucide-react";
+import { GripVerticalIcon, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -204,7 +196,7 @@ export function InputCard() {
                     onChange={(text) => {
                       try {
                         dispatch(updateJsonObject(input.id, JSON.parse(text)));
-                      } catch { }
+                      } catch {}
                     }}
                     options={editorOptions}
                   />
@@ -241,7 +233,7 @@ export function InputCard() {
                     onChange={(text) => {
                       try {
                         dispatch(updateSchema(activeInputID, JSON.parse(text)));
-                      } catch { }
+                      } catch {}
                     }}
                     options={editorOptions}
                   />
@@ -314,7 +306,11 @@ export function InputCard() {
                           (f) => f.id === over.id
                         );
                         dispatch(
-                          reorderBitFieldFields(activeInputID, oldIndex, newIndex)
+                          reorderBitFieldFields(
+                            activeInputID,
+                            oldIndex,
+                            newIndex
+                          )
                         );
                       }}
                     >
@@ -323,8 +319,14 @@ export function InputCard() {
                         strategy={verticalListSortingStrategy}
                       >
                         {input.fields?.map((field) => {
-                          const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-                            useSortable({ id: field.id });
+                          const {
+                            attributes,
+                            listeners,
+                            setNodeRef,
+                            transform,
+                            transition,
+                            isDragging,
+                          } = useSortable({ id: field.id });
                           return (
                             <div
                               data-dragging={isDragging}
@@ -351,17 +353,38 @@ export function InputCard() {
                               <Input
                                 placeholder="Label"
                                 value={field.label}
-                                onChange={(e) => dispatch(updateBitFieldField(activeInputID, field.id, { label: e.target.value }))}
+                                onChange={(e) =>
+                                  dispatch(
+                                    updateBitFieldField(
+                                      activeInputID,
+                                      field.id,
+                                      { label: e.target.value }
+                                    )
+                                  )
+                                }
                                 className="w-24"
                               />
 
-                              <Select value={field.mode} onValueChange={(val) => dispatch(updateBitFieldField(activeInputID, field.id, { mode: val }))}>
+                              <Select
+                                value={field.mode}
+                                onValueChange={(val) =>
+                                  dispatch(
+                                    updateBitFieldField(
+                                      activeInputID,
+                                      field.id,
+                                      { mode: val }
+                                    )
+                                  )
+                                }
+                              >
                                 <SelectTrigger className="w-[110px]">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="max">Max Value</SelectItem>
-                                  <SelectItem value="bits">Bit Width</SelectItem>
+                                  <SelectItem value="bits">
+                                    Bit Width
+                                  </SelectItem>
                                 </SelectContent>
                               </Select>
 
@@ -369,7 +392,15 @@ export function InputCard() {
                                 <Input
                                   type="number"
                                   value={field.max}
-                                  onChange={(e) => dispatch(updateBitFieldField(activeInputID, field.id, { max: Number(e.target.value) }))}
+                                  onChange={(e) =>
+                                    dispatch(
+                                      updateBitFieldField(
+                                        activeInputID,
+                                        field.id,
+                                        { max: Number(e.target.value) }
+                                      )
+                                    )
+                                  }
                                   className="w-20"
                                 />
                               ) : (
@@ -378,23 +409,39 @@ export function InputCard() {
                                   value={field.bitWidth}
                                   onChange={(e) => {
                                     const bw = Number(e.target.value);
-                                    dispatch(updateBitFieldField(activeInputID, field.id, {
-                                      bitWidth: bw,
-                                      max: maxFromBits(bw),
-                                    }));
+                                    dispatch(
+                                      updateBitFieldField(
+                                        activeInputID,
+                                        field.id,
+                                        {
+                                          bitWidth: bw,
+                                          max: maxFromBits(bw),
+                                        }
+                                      )
+                                    );
                                   }}
                                   className="w-20"
                                 />
                               )}
 
                               {field.mode === "max" && (
-                                <span className="text-xs text-muted-foreground">({field.mode === "max" ? bitsNeeded(field.max) : field.bitWidth || 1} bits)</span>
+                                <span className="text-xs text-muted-foreground">
+                                  (
+                                  {field.mode === "max"
+                                    ? bitsNeeded(field.max)
+                                    : field.bitWidth || 1}{" "}
+                                  bits)
+                                </span>
                               )}
 
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => dispatch(removeBitFieldField(activeInputID, field.id))}
+                                onClick={() =>
+                                  dispatch(
+                                    removeBitFieldField(activeInputID, field.id)
+                                  )
+                                }
                               >
                                 ✕
                               </Button>

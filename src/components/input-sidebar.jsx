@@ -58,7 +58,6 @@ import {
   updateInput,
 } from "../state/inputs/inputActions";
 
-
 export function InputSidebar({ ...props }) {
   const { inputs, activeInputID } = useInputs();
   const dispatch = useInputDispatch();
@@ -84,7 +83,7 @@ export function InputSidebar({ ...props }) {
     const [editValue, setEditValue] = React.useState(input.label);
 
     const handleRenameCommit = () => {
-      dispatch(updateInput( input.id, { label: editValue }));
+      dispatch(updateInput(input.id, { label: editValue }));
       setRenamingId(null);
     };
 
@@ -126,9 +125,14 @@ export function InputSidebar({ ...props }) {
                 }}
               />
             ) : (
-              <span onClick={() => dispatch(setActiveInput(input.id))}>
-                {input.label}
-              </span>
+              <div
+                className="flex-1 cursor-pointer px-2 py-1"
+                onClick={() => dispatch(setActiveInput(input.id))}
+              >
+                <span onClick={() => dispatch(setActiveInput(input.id))}>
+                  {input.label}
+                </span>
+              </div>
             )}
           </a>
         </SidebarMenuButton>
