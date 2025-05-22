@@ -41,37 +41,20 @@ export function QRModeSelect({ input }) {
     updateInput?.({ ...input, [field]: value });
 
   return (
-    <>
-      <Select>
+    <Select>
       <SelectTrigger>
         <SelectValue placeholder="Select Mode" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Modes</SelectLabel>
-          <SelectItem value="apple">Apple</SelectItem>
           {modes.map((mode) => (
-            <SelectItem className="capitalize" value={}>{mode}</SelectItem>
+            <SelectItem className="capitalize" value={mode}>
+              {mode}
+            </SelectItem>
           ))}
         </SelectGroup>
       </SelectContent>
     </Select>
-      <Label htmlFor="qrMode">Mode</Label>
-      <DropdownMenu id="qrMode">
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
-            <ColumnsIcon />
-            <span className="hidden lg:inline">Change Mode</span>
-            <span className="lg:hidden">Mode</span>
-            <ChevronDownIcon />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          {modes.map((mode) => (
-            <DropdownMenuItem className="capitalize">{mode}</DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
   );
 }
