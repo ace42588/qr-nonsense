@@ -26,23 +26,6 @@ import {
 
 import { useInputs, useInputDispatch, useParsedInputs } from "../state";
 
-import { CSS } from "@dnd-kit/utilities";
-
-import {
-  DndContext,
-  closestCenter,
-  useSensor,
-  useSensors,
-  PointerSensor,
-  KeyboardSensor,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  verticalListSortingStrategy,
-  sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
-
 const DEFAULT_FIELD = {
   label: "",
   min: 0,
@@ -89,12 +72,6 @@ function SortableField({ field, onChange, onRemove }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    display: "flex",
-    alignItems: "center",
-    marginBottom: 8,
-    background: "#f5f5fa",
-    borderRadius: 6,
-    padding: "8px",
   };
 
   const bitCount =
