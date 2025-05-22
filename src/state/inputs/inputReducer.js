@@ -75,7 +75,7 @@ function updateInputs(inputs, action) {
     case Actions.Reorder:
       return arrayMove(inputs, oldIndex, newIndex);
 
-    case Actions.ChangeType:
+    case Actions.SetInputType:
       return inputs.map((input) =>
         input.id === id
           ? {
@@ -167,7 +167,7 @@ export function inputReducer(state, action) {
     case Actions.UpdateSchema:
     case Actions.UpdateEncoding:
     case Actions.Reorder:
-    case Actions.ChangeType:
+    case Actions.SetInputType:
     case Actions.AddBitFieldField:
     case Actions.RemoveBitFieldField:
     case Actions.UpdateBitFieldField:

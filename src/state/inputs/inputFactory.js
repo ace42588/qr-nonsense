@@ -14,8 +14,8 @@ const BITFIELD_DEFAULTS = {
 };
 
 const typeDefaults = {
-  basic: {
-    type: "basic",
+  string: {
+    type: "string",
     text: "Hello world",
     mode: "byte",
     encoding: "",
@@ -49,13 +49,13 @@ const typeDefaults = {
   },
 };
 
-export function getTypeDefaults(type = "basic") {
+export function getTypeDefaults(type = "string") {
   return {
     ...typeDefaults[type],
   };
 }
 
-export function createInput({ type = "basic", id, label = "New Input", ...overrides } = {}) {
+export function createInput({ type = "string", id, label = "New Input", ...overrides } = {}) {
   return {
     id: id || crypto.randomUUID(),
     label,

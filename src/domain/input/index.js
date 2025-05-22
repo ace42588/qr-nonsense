@@ -9,7 +9,7 @@ import {
 } from "./serializationSchemas";
 
 const INPUT_PARSERS = {
-  basic: parseBasic,
+  string: parseBasic,
   byte: parseBasic,
   alphanumeric: parseBasic,
   numeric: parseBasic,

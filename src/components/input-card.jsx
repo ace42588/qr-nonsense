@@ -323,108 +323,18 @@ function BitFieldVisualizer({ id }) {
   );
 }
 
-function MACGenerator({ input }) {
-  const { inputs: allInputs } = useInputs();
-  const dispatch = useInputDispatch();
-  const previews = useParsedInputs();
-
-  const selectedIds = input.includedFields || [];
-  const selectableInputs = allInputs.filter((i) => i.id !== input.id);
-  const preview = previews?.[input.id];
-
-  const toggleSelection = (toggleId) => {
-    const next = selectedIds.includes(toggleId)
-      ? selectedIds.filter((x) => x !== toggleId)
-      : [...selectedIds, toggleId];
-    dispatch(setIncludedFields(input.id, next));
-  };
-
-  return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-xl">QR MAC Generator</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-1">
-          <Label htmlFor="mac-key">Secret Key</Label>
-          <Input
-            id="mac-key"
-            value={input.key}
-            onChange={(e) => dispatch(setMacKey(input.id, e.target.value))}
-            placeholder="Enter shared secret"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Select Fields</Label>
-          <div className="space-y-1 border rounded p-2">
-            {selectableInputs.length > 0 ? (
-              selectableInputs.map((i) => (
-                <div key={i.id} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`chk-${i.id}`}
-                    checked={selectedIds.includes(i.id)}
-                    onCheckedChange={() => toggleSelection(i.id)}
-                  />
-                  <Label htmlFor={`chk-${i.id}`} className="cursor-pointer">
-                    {i.label || i.id}
-                  </Label>
-                </div>
-              ))
-            ) : (
-              <p className="text-muted-foreground text-sm">
-                No fields available
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="mac-algo">MAC Algorithm</Label>
-          <Select
-            value={input.algo}
-            onValueChange={(value) =>
-              dispatch(setMacAlgorithm(input.id, value))
-            }
-          >
-            <SelectTrigger id="mac-algo" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.keys(MAC_FUNCTIONS).map((alg) => (
-                <SelectItem key={alg} value={alg}>
-                  {alg}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Separator />
-
-        <div className="text-sm bg-muted p-3 rounded">
-          <strong>MAC:</strong>{" "}
-          <code className="text-muted-foreground">
-            {preview?.data || "(calculating…)"}
-          </code>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export function InputCard() {
   const { inputs, activeInputID } = useInputs();
   const dispatch = useInputDispatch();
 
   const input = inputs.find(({ id }) => id == activeInputID);
   const preview = useParsedInputs()[input.id];
-  
+
   const [tab, setTab] = useState("values");
 
   const handleChange = (field, value) =>
     dispatch(updateInput(input.id, { [field]: value }));
-  
+
   const handleJsonChange = (field, text) => {
     try {
       const parsed = JSON.parse(text);
@@ -434,15 +344,15 @@ export function InputCard() {
       // Optionally show error
     }
   };
-  
+
   const handleSchemaSelect = (name) => {
     dispatch(updateSchema(input.id, predefinedSchemas[name]));
     dispatch(setSchemaName(input.id, name));
   };
-  
+
   const selectedIds = input.includedFields || [];
-  const selectableInputs = inputs.filter((i) => i.id !== input.id);
-  
+  const selectableInputs = inputs.filter((i) => i.id !== activeInputID);
+
   const toggleSelection = (toggleId) => {
     const next = selectedIds.includes(toggleId)
       ? selectedIds.filter((x) => x !== toggleId)
@@ -451,7 +361,7 @@ export function InputCard() {
   };
 
   return (
-    <Tabs defaultValue="string" className="w-[400px]">
+    <Tabs defaultValue={input.type} className="w-[400px]" onValueChange={(type) => handleChange("type", type)}>
       <TabsList className="@4xl/main:flex">
         <TabsTrigger value="string">String</TabsTrigger>
         <TabsTrigger value="json">JSON</TabsTrigger>
@@ -516,81 +426,86 @@ export function InputCard() {
           </CardHeader>
           <CardContent>
             <div className="grid w-full items-center gap-4">
-      <Tabs
-        defaultValue={tab}
-        onValueChange={setTab}
-        className="w-full max-w-3xl"
-      >
-        <TabsList>
-          <TabsTrigger value="json">Values</TabsTrigger>
-          <TabsTrigger value="schema">Schema</TabsTrigger>
-        </TabsList>
+              <Tabs
+                defaultValue={tab}
+                onValueChange={setTab}
+                className="w-full max-w-3xl"
+              >
+                <TabsList>
+                  <TabsTrigger value="json">Values</TabsTrigger>
+                  <TabsTrigger value="schema">Schema</TabsTrigger>
+                </TabsList>
 
-        <TabsContent value="json" className="mt-4">
-          <Editor
-            height="300px"
-            defaultLanguage="json"
-            value={JSON.stringify(input.obj, null, 2)}
-            onChange={(e) => handleJsonChange("obj", e)}
-            options={editorOptions}
-          />
-        </TabsContent>
+                <TabsContent value="json" className="mt-4">
+                  <Editor
+                    height="300px"
+                    defaultLanguage="json"
+                    value={JSON.stringify(input.obj, null, 2)}
+                    onChange={(e) => handleJsonChange("obj", e)}
+                    options={editorOptions}
+                  />
+                </TabsContent>
 
-        <TabsContent value="schema" className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="schema-select">Predefined Schema</Label>
-            <Select value={input.schemaName} onValueChange={handleSchemaSelect}>
-              <SelectTrigger id="schema-select" className="w-64">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.keys(predefinedSchemas).map((name) => (
-                  <SelectItem key={name} value={name}>
-                    {name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Editor
-            height="300px"
-            defaultLanguage="json"
-            value={JSON.stringify(input.schema, null, 2)}
-            onChange={(e) => handleJsonChange("schema", e)}
-            options={editorOptions}
-          />
-        </TabsContent>
-      </Tabs>
+                <TabsContent value="schema" className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="schema-select">Predefined Schema</Label>
+                    <Select
+                      value={input.schemaName}
+                      onValueChange={handleSchemaSelect}
+                    >
+                      <SelectTrigger id="schema-select" className="w-64">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(predefinedSchemas).map((name) => (
+                          <SelectItem key={name} value={name}>
+                            {name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Editor
+                    height="300px"
+                    defaultLanguage="json"
+                    value={JSON.stringify(input.schema, null, 2)}
+                    onChange={(e) => handleJsonChange("schema", e)}
+                    options={editorOptions}
+                  />
+                </TabsContent>
+              </Tabs>
 
-      <Separator />
+              <Separator />
 
-      <div className="space-y-2">
-        <Label htmlFor="encoding-select">Encoding</Label>
-        <Select
-          value={input.encoding}
-          onValueChange={(val) => dispatch(updateEncoding(input.id, val))}
-        >
-          <SelectTrigger id="encoding-select" className="w-64">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {ENCODING_STRATEGIES.map((name) => (
-              <SelectItem key={name} value={name}>
-                {name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+              <div className="space-y-2">
+                <Label htmlFor="encoding-select">Encoding</Label>
+                <Select
+                  value={input.encoding}
+                  onValueChange={(val) =>
+                    dispatch(updateEncoding(input.id, val))
+                  }
+                >
+                  <SelectTrigger id="encoding-select" className="w-64">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ENCODING_STRATEGIES.map((name) => (
+                      <SelectItem key={name} value={name}>
+                        {name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-      {input.format !== "None" && (
-        <div className="space-y-2">
-          <Label htmlFor="preview">Preview</Label>
-          <ScrollArea className="border rounded p-2 max-h-48 bg-muted text-sm whitespace-pre-wrap">
-            <pre id="preview">{preview?.data}</pre>
-          </ScrollArea>
-        </div>
-      )}
+              {input.format !== "None" && (
+                <div className="space-y-2">
+                  <Label htmlFor="preview">Preview</Label>
+                  <ScrollArea className="border rounded p-2 max-h-48 bg-muted text-sm whitespace-pre-wrap">
+                    <pre id="preview">{preview?.data}</pre>
+                  </ScrollArea>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -602,105 +517,107 @@ export function InputCard() {
           </CardHeader>
           <CardContent>
             <div className="grid w-full items-center gap-4">
-        <Tabs defaultValue="fields" className="w-full max-w-3xl">
-        <TabsList>
-          <TabsTrigger value="fields">Fields</TabsTrigger>
-          <TabsTrigger value="values">Values</TabsTrigger>
-        </TabsList>
-        <TabsContent value="fields">
-          <BitFieldEditor input={input} />
-        </TabsContent>
-        <TabsContent value="values">
-          <BitFieldValues input={input} />
-        </TabsContent>
-      </Tabs>
+              <Tabs defaultValue="fields" className="w-full max-w-3xl">
+                <TabsList>
+                  <TabsTrigger value="fields">Fields</TabsTrigger>
+                  <TabsTrigger value="values">Values</TabsTrigger>
+                </TabsList>
+                <TabsContent value="fields">
+                  <BitFieldEditor input={input} />
+                </TabsContent>
+                <TabsContent value="values">
+                  <BitFieldValues input={input} />
+                </TabsContent>
+              </Tabs>
 
-      <BitFieldVisualizer id={input.id} />
+              <BitFieldVisualizer id={input.id} />
 
-      <div className="text-sm mt-2">
-        {preview ? (
-          <span>
-            <b>Encoded Bytes:</b> {preview}
-          </span>
-        ) : (
-          <span className="text-destructive">(missing or invalid values)</span>
-        )}
-      </div>
+              <div className="text-sm mt-2">
+                {preview ? (
+                  <span>
+                    <b>Encoded Bytes:</b> {preview}
+                  </span>
+                ) : (
+                  <span className="text-destructive">
+                    (missing or invalid values)
+                  </span>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
       </TabsContent>
       <TabsContent value="mac">
         <Card className="max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-xl">QR MAC Generator</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-1">
-          <Label htmlFor="mac-key">Secret Key</Label>
-          <Input
-            id="mac-key"
-            value={input.key}
-            onChange={(e) => dispatch(setMacKey(input.id, e.target.value))}
-            placeholder="Enter shared secret"
-          />
-        </div>
+          <CardHeader>
+            <CardTitle className="text-xl">QR MAC Generator</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1">
+              <Label htmlFor="mac-key">Secret Key</Label>
+              <Input
+                id="mac-key"
+                value={input.key}
+                onChange={(e) => dispatch(setMacKey(input.id, e.target.value))}
+                placeholder="Enter shared secret"
+              />
+            </div>
 
-        <div className="space-y-2">
-          <Label>Select Fields</Label>
-          <div className="space-y-1 border rounded p-2">
-            {selectableInputs.length > 0 ? (
-              selectableInputs.map((i) => (
-                <div key={i.id} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`chk-${i.id}`}
-                    checked={selectedIds.includes(i.id)}
-                    onCheckedChange={() => toggleSelection(i.id)}
-                  />
-                  <Label htmlFor={`chk-${i.id}`} className="cursor-pointer">
-                    {i.label || i.id}
-                  </Label>
-                </div>
-              ))
-            ) : (
-              <p className="text-muted-foreground text-sm">
-                No fields available
-              </p>
-            )}
-          </div>
-        </div>
+            <div className="space-y-2">
+              <Label>Select Fields</Label>
+              <div className="space-y-1 border rounded p-2">
+                {selectableInputs.length > 0 ? (
+                  selectableInputs.map((i) => (
+                    <div key={i.id} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`chk-${i.id}`}
+                        checked={selectedIds.includes(i.id)}
+                        onCheckedChange={() => toggleSelection(i.id)}
+                      />
+                      <Label htmlFor={`chk-${i.id}`} className="cursor-pointer">
+                        {i.label || i.id}
+                      </Label>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    No fields available
+                  </p>
+                )}
+              </div>
+            </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="mac-algo">MAC Algorithm</Label>
-          <Select
-            value={input.algo}
-            onValueChange={(value) =>
-              dispatch(setMacAlgorithm(input.id, value))
-            }
-          >
-            <SelectTrigger id="mac-algo" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.keys(MAC_FUNCTIONS).map((alg) => (
-                <SelectItem key={alg} value={alg}>
-                  {alg}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            <div className="space-y-1">
+              <Label htmlFor="mac-algo">MAC Algorithm</Label>
+              <Select
+                value={input.algo}
+                onValueChange={(value) =>
+                  dispatch(setMacAlgorithm(input.id, value))
+                }
+              >
+                <SelectTrigger id="mac-algo" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(MAC_FUNCTIONS).map((alg) => (
+                    <SelectItem key={alg} value={alg}>
+                      {alg}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <Separator />
+            <Separator />
 
-        <div className="text-sm bg-muted p-3 rounded">
-          <strong>MAC:</strong>{" "}
-          <code className="text-muted-foreground">
-            {preview?.data || "(calculating…)"}
-          </code>
-        </div>
-      </CardContent>
-    </Card>
+            <div className="text-sm bg-muted p-3 rounded">
+              <strong>MAC:</strong>{" "}
+              <code className="text-muted-foreground">
+                {preview?.data || "(calculating…)"}
+              </code>
+            </div>
+          </CardContent>
+        </Card>
       </TabsContent>
     </Tabs>
   );

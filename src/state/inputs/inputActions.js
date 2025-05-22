@@ -4,8 +4,7 @@ export const Actions = {
   Remove: "REMOVE",
   Update: "UPDATE",
   Reorder: "REORDER",
-  ChangeType: "CHANGE_TYPE",
-  ChangeMeta: "CHANGE_META",
+  SetInputType: "SET_INPUT_TYPE",
   SetErrorCorrectionLevel: "SET_EC_LEVEL",
   SetVersion: "SET_VERSION",
   SetDataMask: "SET_DATA_MASK",
@@ -47,8 +46,8 @@ export const reorderInputs = (oldIndex, newIndex) => ({
   type: Actions.Reorder,
   payload: { oldIndex, newIndex },
 });
-export const changeType = (id, newType) => ({
-  type: Actions.ChangeType,
+export const setInputType = (id, newType) => ({
+  type: Actions.SetInputType,
   payload: { id, newType },
 });
 export const setErrorCorrectionLevel = (value) => ({
