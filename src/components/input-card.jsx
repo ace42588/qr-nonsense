@@ -28,10 +28,35 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 
-import { QRModeSelect } from "@/components/qr-mode-select";
-
-import { BitFieldInput } from "@/components/BitFieldInput";
 import { MACGenerator } from "@/components/MACGenerator";
+
+function QRModeSelect({ input }) {
+  const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
+
+  const { updateInput } = useInputDispatch();
+  const { text, mode, encoding } = input;
+
+  const handleChange = (field, value) =>
+    updateInput?.({ ...input, [field]: value });
+
+  return (
+    <Select defaultValue="byte">
+      <SelectTrigger>
+        <SelectValue placeholder="Select Mode" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>Modes</SelectLabel>
+          {modes.map((mode) => (
+            <SelectItem className="capitalize" value={mode}>
+              {mode}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+}
 
 function BasicInput({ input }) {
   const { updateInput } = useInputDispatch();
@@ -165,7 +190,12 @@ function BitFieldInput({ id, input }) {
   const { encodedBytes } = useParsedInputs()[id];
 
   return (
-    <div>
+    <Card>
+      <CardHeader>
+        <CardTitle>{input.label}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid w-full items-center gap-4">
       <Tabs defaultValue="fields" className="w-half">
         <TabsList>
           <TabsTrigger value="fields">Fields</TabsTrigger>
@@ -180,6 +210,9 @@ function BitFieldInput({ id, input }) {
           <BitFieldValues id={id} input={input} />
         </TabsContent>
       </Tabs>
+        </div>
+      </CardContent>
+      <CardFooter></CardFooter>
 
       <BitFieldVisualizer id={id} input={input} />
       <div style={{ marginTop: 8 }}>
