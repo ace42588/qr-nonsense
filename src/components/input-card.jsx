@@ -35,6 +35,11 @@ function BasicInput({ input }) {
     updateInput?.({ ...input, [field]: value });
 
   return (
+    <Card>
+          <CardHeader>
+            <CardTitle>{activeInput.label}</CardTitle>
+          </CardHeader>
+          <CardContent>
     <div className="grid w-full items-center gap-4">
       <div className="flex flex-col space-y-1.5">
         <QRModeSelect input={input} />
@@ -63,6 +68,44 @@ function BasicInput({ input }) {
   );
 }
 
+function JsonInput({ input }) {
+  return (<Tabs defaultValue="json" className="w-half">
+        <TabsList>
+          <TabsTrigger value="json">Values</TabsTrigger>
+          <TabsTrigger value="schema">Schema</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="json">
+          <Editor
+            height="300px"
+            defaultLanguage="json"
+            value={JSON.stringify(obj, null, 2)}
+            onChange={(e) => handleJsonChange("obj", e)}
+            options={options}
+          />
+        </TabsContent>
+
+        <TabsContent value="schema">
+          <label>Schema</label>
+          <select value={input.schemaName} onChange={handleSchemaSelect}>
+            {Object.entries(predefinedSchemas).map(([name]) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+          <Editor
+            height="300px"
+            defaultLanguage="json"
+            value={JSON.stringify(schema, null, 2)}
+            onChange={(e) => handleJsonChange("schema", e)}
+            options={options}
+          />
+        </TabsContent>
+      </Tabs>)
+
+}
+
 const INPUT_TYPES = {
   basic: BasicInput,
   json: JsonInput,
@@ -77,7 +120,7 @@ export function InputCard() {
   const InputComponent = INPUT_TYPES[activeInput.type];
   return (
     <Tabs defaultValue="string" className="w-[400px]">
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="@4xl/main:flex">
         <TabsTrigger value="string">String</TabsTrigger>
         <TabsTrigger value="json">JSON</TabsTrigger>
         <TabsTrigger value="bitfield">BitField</TabsTrigger>
@@ -85,6 +128,9 @@ export function InputCard() {
       </TabsList>
       <TabsContent value="string">
         <Card>
+          <CardHeader>
+            <CardTitle>{activeInput.label}</CardTitle>
+          </CardHeader>
           <CardContent>
             <BasicInput input={activeInput} />
           </CardContent>

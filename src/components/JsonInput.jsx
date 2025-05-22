@@ -77,7 +77,7 @@ export function JsonInput({ id, input }) {
             ))}
           </select>
           <Editor
-            height="180px"
+            height="300px"
             defaultLanguage="json"
             value={JSON.stringify(schema, null, 2)}
             onChange={(e) => handleJsonChange("schema", e)}

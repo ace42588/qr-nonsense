@@ -41,7 +41,7 @@ export function QRModeSelect({ input }) {
     updateInput?.({ ...input, [field]: value });
 
   return (
-    <Select>
+    <Select defaultValue="byte">
       <SelectTrigger>
         <SelectValue placeholder="Select Mode" />
       </SelectTrigger>
