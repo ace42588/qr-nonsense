@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 
 import { QRModeSelect } from "@/components/qr-mode-select";
@@ -71,21 +72,31 @@ const INPUT_TYPES = {
 
 export function InputCard() {
   const { inputs, activeInputID } = useInputs();
-  console.debug({activeInputID, inputs});
-  const activeInput = inputs.find(({id}) => id == activeInputID);
+  console.debug({ activeInputID, inputs });
+  const activeInput = inputs.find(({ id }) => id == activeInputID);
   const InputComponent = INPUT_TYPES[activeInput.type];
   return (
-    <Card className="w-[350px]">
-      <CardHeader>
-        <CardTitle>{activeInput.label}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <InputComponent id={activeInput.id} input={activeInput} />
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button variant="outline">Cancel</Button>
-        <Button>Deploy</Button>
-      </CardFooter>
-    </Card>
+    <Tabs defaultValue="string" className="w-[400px]">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="string">String</TabsTrigger>
+        <TabsTrigger value="json">JSON</TabsTrigger>
+        <TabsTrigger value="bitfield">BitField</TabsTrigger>
+        <TabsTrigger value="mac">MAC</TabsTrigger>
+      </TabsList>
+      <TabsContent value="string">
+        <Card>
+          <CardContent>
+            <BasicInput input={activeInput} />
+          </CardContent>
+        </Card>
+      </TabsContent>
+      <TabsContent value="json">
+        <Card>
+          <CardContent>
+            <InputComponent id={activeInput.id} input={activeInput} />
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
   );
 }
