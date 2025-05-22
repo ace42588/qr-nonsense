@@ -1,4 +1,4 @@
-// domain/inputDefaults.ts
+// src/domain/input/typeDefaults.ts
 import { jsonSchema } from "./serializationSchemas";
 
 const BITFIELD_DEFAULTS = {
@@ -10,7 +10,7 @@ const BITFIELD_DEFAULTS = {
     type: "base10",
     mode: "bits", // or "max"
   },
-  VALUEL: { Field: 0 },
+  VALUE: { Field: 0 },
 };
 
 const basicExample = {
@@ -74,8 +74,8 @@ const typeDefaults = {
   },
   bitfield: {
     type: "bitfield",
-    layout: [DEFAULT_FIELD],
-    values: DEFAULT_VALUE,
+    layout: [BITFIELD_DEFAULTS.DEFAULT_FIELD],
+    values: BITFIELD_DEFAULTS.DEFAULT_VALUE,
   },
   mac: {
     type: "mac",
