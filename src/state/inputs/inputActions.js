@@ -16,6 +16,10 @@ export const Actions = {
   UpdateBitFieldField: "UPDATE_BITFIELD_FIELD",
   ReorderBitFieldFields: "REORDER_BITFIELD_FIELDS",
   SetBitFieldValues: "SET_BITFIELD_VALUES",
+  UpdateJsonObject: "UPDATE_JSON_OBJ",
+  SetMacKey: "SET_MAC_KEY",
+  SetMacAlgorithm: "SET_MAC_ALGO",
+  SetIncludedFields: "SET_INCLUDED_FIELDS",
 };
 
 export const addInput = (label) => ({ type: Actions.Add, payload: { label } });
@@ -77,4 +81,24 @@ export const reorderBitFieldFields = (id, oldIndex, newIndex) => ({
 export const setBitFieldValues = (id, updatedValues) => ({
   type: Actions.SetBitFieldValues,
   payload: { id, updatedValues },
+});
+
+export const updateJsonObject = (id, obj) => ({
+  type: Actions.UpdateJsonObject,
+  payload: { id, obj },
+});
+
+export const setMacKey = (id, key) => ({
+  type: Actions.SetMacKey,
+  payload: { id, key },
+});
+
+export const setMacAlgorithm = (id, algo) => ({
+  type: Actions.SetMacAlgorithm,
+  payload: { id, algo },
+});
+
+export const setIncludedFields = (id, includedFields) => ({
+  type: Actions.SetIncludedFields,
+  payload: { id, includedFields },
 });

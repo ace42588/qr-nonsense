@@ -16,7 +16,25 @@ export const initialState = {
 };
 
 function updateInputs(inputs, action) {
-  const { id, partial, name, schema, encoding, newType, oldIndex, newIndex, label, newField, fieldId, updatedValues } = action.payload || {};
+  const {
+    id,
+    partial,
+    name,
+    schema,
+    encoding,
+    newType,
+    oldIndex,
+    newIndex,
+    label,
+    newField,
+    fieldId,
+    updatedValues,
+    obj,
+    key,
+    algo,
+    includedFields,
+  } = action.payload || {};
+
   switch (action.type) {
     case Actions.Add:
       return [...inputs, createInput({ label })];
@@ -115,6 +133,26 @@ function updateInputs(inputs, action) {
         input.id === id ? { ...input, values: updatedValues } : input
       );
 
+    case Actions.UpdateJsonObject:
+      return inputs.map((input) =>
+        input.id === id ? { ...input, obj } : input
+      );
+
+    case Actions.SetMacKey:
+      return inputs.map((input) =>
+        input.id === id ? { ...input, key } : input
+      );
+
+    case Actions.SetMacAlgorithm:
+      return inputs.map((input) =>
+        input.id === id ? { ...input, algo } : input
+      );
+
+    case Actions.SetIncludedFields:
+      return inputs.map((input) =>
+        input.id === id ? { ...input, includedFields } : input
+      );
+
     default:
       return inputs;
   }
@@ -135,6 +173,10 @@ export function inputReducer(state, action) {
     case Actions.UpdateBitFieldField:
     case Actions.ReorderBitFieldFields:
     case Actions.SetBitFieldValues:
+    case Actions.UpdateJsonObject:
+    case Actions.SetMacKey:
+    case Actions.SetMacAlgorithm:
+    case Actions.SetIncludedFields:
       return {
         ...state,
         inputs: updateInputs(state.inputs, action),
