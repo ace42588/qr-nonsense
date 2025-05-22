@@ -49,6 +49,7 @@ import {
   setMacKey,
   setMacAlgorithm,
   setIncludedFields,
+  setInputType,
 } from "../state/inputs/inputActions";
 
 import { MAC_FUNCTIONS } from "../domain";
@@ -289,40 +290,6 @@ function BitFieldValues({ input }) {
   );
 }
 
-function BitFieldVisualizer({ id }) {
-  const { totalBits, layout = [] } = useParsedInputs()[id];
-
-  return (
-    <div className="mt-4">
-      <div
-        className="flex border rounded overflow-hidden text-white text-xs"
-        style={{ height: 30, maxWidth: 600 }}
-      >
-        {layout.map((field, idx) => {
-          const widthPercent = (field.width / totalBits) * 100;
-          return (
-            <div
-              key={field.label}
-              className="text-center whitespace-nowrap overflow-hidden"
-              title={`${field.label} (${field.width} bits)`}
-              style={{
-                width: `${widthPercent}%`,
-                backgroundColor: COLORS[idx % COLORS.length],
-                lineHeight: "30px",
-              }}
-            >
-              {field.label}: {field.startBit}→{field.endBit}
-            </div>
-          );
-        })}
-      </div>
-      <div className="text-muted-foreground text-sm mt-2">
-        {totalBits} bits total
-      </div>
-    </div>
-  );
-}
-
 export function InputCard() {
   const { inputs, activeInputID } = useInputs();
   const dispatch = useInputDispatch();
@@ -361,7 +328,11 @@ export function InputCard() {
   };
 
   return (
-    <Tabs defaultValue={input.type} className="w-[400px]" onValueChange={(type) => handleChange("type", type)}>
+    <Tabs
+      defaultValue={input.type}
+      className="w-[400px]"
+      onValueChange={(type) => dispatch(setInputType(activeInputID, type))}
+    >
       <TabsList className="@4xl/main:flex">
         <TabsTrigger value="string">String</TabsTrigger>
         <TabsTrigger value="json">JSON</TabsTrigger>
@@ -530,12 +501,36 @@ export function InputCard() {
                 </TabsContent>
               </Tabs>
 
-              <BitFieldVisualizer id={input.id} />
+              <div className="mt-4">
+                <div className="flex border rounded overflow-hidden text-white text-xs">
+                  {preview?.layout?.map((field, idx) => {
+                    const widthPercent =
+                      (field.width / preview.totalBits) * 100;
+                    return (
+                      <div
+                        key={field.label}
+                        className="text-center whitespace-nowrap overflow-hidden"
+                        title={`${field.label} (${field.width} bits)`}
+                        style={{
+                          width: `${widthPercent}%`,
+                          backgroundColor: COLORS[idx % COLORS.length],
+                          lineHeight: "30px",
+                        }}
+                      >
+                        {field.label}: {field.startBit}→{field.endBit}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="text-muted-foreground text-sm mt-2">
+                  {preview.totalBits} bits total
+                </div>
+              </div>
 
               <div className="text-sm mt-2">
-                {preview ? (
+                {preview?.encodedBytes ? (
                   <span>
-                    <b>Encoded Bytes:</b> {preview}
+                    <b>Encoded Bytes:</b> {preview.encodedBytes}
                   </span>
                 ) : (
                   <span className="text-destructive">
