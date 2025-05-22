@@ -27,8 +27,59 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { Separator, ScrollArea, Checkbox } from "../components/ui";
 
-import { MACGenerator } from "@/components/MACGenerator";
+import { useState, useMemo } from "react";
+
+import {
+  addBitFieldField,
+  removeBitFieldField,
+  updateBitFieldField,
+  reorderBitFieldFields,
+  setBitFieldValues,
+  updateJsonObject,
+  updateSchema,
+  updateEncoding,
+  updateSchemaName,
+  setMacKey,
+  setMacAlgorithm,
+  setIncludedFields,
+} from "../state/inputs/inputActions";
+
+import { MAC_FUNCTIONS } from "../domain";
+import { ENCODING_STRATEGIES } from "../domain/encoders";
+
+import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  KeyboardSensor,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+import { getTypeDefaults } from "../state/inputs/inputFactory";
+
+const encoder = new TextEncoder("utf-8");
+const DEFAULT_FIELD = getTypeDefaults("bitfield").layout[0];
+const COLORS = [
+  "#3b82f6",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#ec4899",
+  "#14b8a6",
+  "#f97316",
+  "#6366f1",
+];
 
 function QRModeSelect({ input }) {
   const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
@@ -186,45 +237,350 @@ function JsonInput({ input }) {
   );
 }
 
+function bitsNeeded(max) {
+  return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
+}
+function maxFromBits(bits) {
+  return Math.pow(2, bits) - 1;
+}
+
+function SortableField({ inputId, field, dispatch }) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: field.id });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+  const bitCount =
+    field.mode === "max" ? bitsNeeded(field.max) : field.bitWidth || 1;
+
+  const update = (key, value) => {
+    dispatch(
+      updateBitFieldField(inputId, field.id, key ? { [key]: value } : value)
+    );
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      className="flex items-center gap-2 mb-2 p-2 rounded border border-muted"
+      style={style}
+      {...attributes}
+    >
+      <span {...listeners} className="cursor-grab text-muted-foreground">
+        ☰
+      </span>
+
+      <Input
+        placeholder="Label"
+        value={field.label}
+        onChange={(e) => update("label", e.target.value)}
+        className="w-24"
+      />
+
+      <Select value={field.mode} onValueChange={(val) => update("mode", val)}>
+        <SelectTrigger className="w-[110px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="max">Max Value</SelectItem>
+          <SelectItem value="bits">Bit Width</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {field.mode === "max" ? (
+        <Input
+          type="number"
+          value={field.max}
+          onChange={(e) => update("max", Number(e.target.value))}
+          className="w-20"
+        />
+      ) : (
+        <Input
+          type="number"
+          value={field.bitWidth}
+          onChange={(e) => {
+            const bw = Number(e.target.value);
+            update(null, {
+              bitWidth: bw,
+              max: maxFromBits(bw),
+            });
+          }}
+          className="w-20"
+        />
+      )}
+
+      {field.mode === "max" && (
+        <span className="text-xs text-muted-foreground">({bitCount} bits)</span>
+      )}
+
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => dispatch(removeBitFieldField(inputId, field.id))}
+      >
+        ✕
+      </Button>
+    </div>
+  );
+}
+
+function BitFieldEditor({ id, input }) {
+  const dispatch = useInputDispatch();
+  const { fields = [] } = input;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleAddField = () => {
+    dispatch(
+      addBitFieldField(id, {
+        ...structuredClone(DEFAULT_FIELD),
+        id: crypto.randomUUID(),
+      })
+    );
+  };
+
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const oldIndex = fields.findIndex((f) => f.id === active.id);
+    const newIndex = fields.findIndex((f) => f.id === over.id);
+    dispatch(reorderBitFieldFields(id, oldIndex, newIndex));
+  };
+
+  return (
+    <div className="space-y-4">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={fields.map((f) => f.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {fields.map((field) => (
+            <SortableField
+              key={field.id}
+              inputId={id}
+              field={field}
+              dispatch={dispatch}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+
+      <Button onClick={handleAddField} variant="secondary">
+        + Add Field
+      </Button>
+    </div>
+  );
+}
+
+function BitFieldValues({ id, input }) {
+  const dispatch = useInputDispatch();
+  const { values = {}, layout = [] } = useParsedInputs()[id];
+  const [type, setType] = useState("base10");
+
+  const handleInputChange = (e, field) => {
+    let newValue = e.target.value;
+    switch (type) {
+      case "base10":
+        newValue = Number(newValue);
+        break;
+      case "base16":
+        newValue = parseInt(newValue, 16);
+        break;
+      case "string":
+        newValue = encoder.encode(newValue);
+        break;
+      default:
+        newValue = undefined;
+    }
+    dispatch(setBitFieldValues(id, { ...values, [field.label]: newValue }));
+  };
+
+  return (
+    <div className="space-y-3 mt-2">
+      {layout.map((field) => (
+        <div key={field.label} className="flex items-center gap-2">
+          <label className="w-28">{field.label}</label>
+
+          <Select value={type} onValueChange={setType}>
+            <SelectTrigger className="w-28">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {["base10", "base16", "string"].map((v) => (
+                <SelectItem key={v} value={v}>
+                  {v}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Input
+            value={values[field.label] ?? ""}
+            onChange={(e) => handleInputChange(e, field)}
+            className="w-24"
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BitFieldVisualizer({ id }) {
+  const { totalBits, layout = [] } = useParsedInputs()[id];
+
+  return (
+    <div className="mt-4">
+      <div
+        className="flex border rounded overflow-hidden text-white text-xs"
+        style={{ height: 30, maxWidth: 600 }}
+      >
+        {layout.map((field, idx) => {
+          const widthPercent = (field.width / totalBits) * 100;
+          return (
+            <div
+              key={field.label}
+              className="text-center whitespace-nowrap overflow-hidden"
+              title={`${field.label} (${field.width} bits)`}
+              style={{
+                width: `${widthPercent}%`,
+                backgroundColor: COLORS[idx % COLORS.length],
+                lineHeight: "30px",
+              }}
+            >
+              {field.label}: {field.startBit}→{field.endBit}
+            </div>
+          );
+        })}
+      </div>
+      <div className="text-muted-foreground text-sm mt-2">
+        {totalBits} bits total
+      </div>
+    </div>
+  );
+}
+
 function BitFieldInput({ id, input }) {
   const { encodedBytes } = useParsedInputs()[id];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{input.label}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid w-full items-center gap-4">
-      <Tabs defaultValue="fields" className="w-half">
+    <div className="space-y-4">
+      <Tabs defaultValue="fields" className="w-full max-w-3xl">
         <TabsList>
           <TabsTrigger value="fields">Fields</TabsTrigger>
           <TabsTrigger value="values">Values</TabsTrigger>
         </TabsList>
-
         <TabsContent value="fields">
           <BitFieldEditor id={id} input={input} />
         </TabsContent>
-
         <TabsContent value="values">
           <BitFieldValues id={id} input={input} />
         </TabsContent>
       </Tabs>
-        </div>
-      </CardContent>
-      <CardFooter></CardFooter>
 
       <BitFieldVisualizer id={id} input={input} />
-      <div style={{ marginTop: 8 }}>
+
+      <div className="text-sm mt-2">
         {encodedBytes ? (
-          <>
+          <span>
             <b>Encoded Bytes:</b> {encodedBytes}
-          </>
+          </span>
         ) : (
-          <span style={{ color: "red" }}>(missing or invalid values)</span>
+          <span className="text-destructive">(missing or invalid values)</span>
         )}
       </div>
     </div>
+  );
+}
+
+function MACGenerator({ id, input }) {
+  const { inputs: allInputs } = useInputs();
+  const dispatch = useInputDispatch();
+  const previews = useParsedInputs();
+
+  const selectedIds = input.includedFields || [];
+  const selectableInputs = allInputs.filter((i) => i.id !== id);
+  const preview = previews?.[id];
+
+  const toggleSelection = (toggleId) => {
+    const next = selectedIds.includes(toggleId)
+      ? selectedIds.filter((x) => x !== toggleId)
+      : [...selectedIds, toggleId];
+    dispatch(setIncludedFields(id, next));
+  };
+
+  return (
+    <Card className="max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle className="text-xl">QR MAC Generator</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-1">
+          <Label htmlFor="mac-key">Secret Key</Label>
+          <Input
+            id="mac-key"
+            value={input.key}
+            onChange={(e) => dispatch(setMacKey(id, e.target.value))}
+            placeholder="Enter shared secret"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Select Fields</Label>
+          <div className="space-y-1 border rounded p-2">
+            {selectableInputs.length > 0 ? (
+              selectableInputs.map((i) => (
+                <div key={i.id} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`chk-${i.id}`}
+                    checked={selectedIds.includes(i.id)}
+                    onCheckedChange={() => toggleSelection(i.id)}
+                  />
+                  <Label htmlFor={`chk-${i.id}`} className="cursor-pointer">
+                    {i.label || i.id}
+                  </Label>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground text-sm">
+                No fields available
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="mac-algo">MAC Algorithm</Label>
+          <Select
+            value={input.algo}
+            onValueChange={(value) => dispatch(setMacAlgorithm(id, value))}
+          >
+            <SelectTrigger id="mac-algo" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.keys(MAC_FUNCTIONS).map((alg) => (
+                <SelectItem key={alg} value={alg}>
+                  {alg}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Separator />
+
+        <div className="text-sm bg-muted p-3 rounded">
+          <strong>MAC:</strong>{" "}
+          <code className="text-muted-foreground">
+            {preview?.data || "(calculating…)"}
+          </code>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

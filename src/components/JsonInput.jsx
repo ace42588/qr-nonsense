@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Editor from "@monaco-editor/react";
-import { useParsedInputs, useInputDispatch } from "../state";
+import { useParsedInputs, useInputs, useInputDispatch } from "../state";
+import {
+  updateJsonObject,
+  updateSchema,
+  updateEncoding,
+  updateSchemaName,
+  setMacKey,
+  setMacAlgorithm,
+  setIncludedFields,
+} from "../state/inputs/inputActions";
 import { predefinedSchemas } from "../domain/input";
+import { MAC_FUNCTIONS } from "../domain";
 import { ENCODING_STRATEGIES } from "../domain/encoders";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/tabs";
+  Tabs, TabsContent, TabsList, TabsTrigger,
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+  Label, Separator, ScrollArea, Input, Card, CardContent, CardHeader, CardTitle, Checkbox
+} from "../components/ui";
 
-const options = {
+const editorOptions = {
   minimap: { enabled: false },
   scrollbar: { vertical: "hidden", horizontal: "hidden" },
   overviewRulerLanes: 0,
@@ -18,90 +27,96 @@ const options = {
 };
 
 export function JsonInput({ id, input }) {
-  const { updateInput, updateEncoding, updateSchema, updateSchemaName } =
-    useInputDispatch();
+  const dispatch = useInputDispatch();
   const { obj, schema, format } = input;
   const preview = useParsedInputs()[id];
-
   const [tab, setTab] = useState("values");
-
-  const emitChange = (field, value) =>
-    updateInput?.({ ...input, [field]: value });
 
   const handleJsonChange = (field, text) => {
     try {
       const parsed = JSON.parse(text);
-      emitChange(field, parsed);
+      if (field === "obj") dispatch(updateJsonObject(id, parsed));
+      if (field === "schema") dispatch(updateSchema(id, parsed));
     } catch {
-      // Invalid JSON; ignore or show error
+      // Optionally show error
     }
   };
 
-  const handleSchemaSelect = (e) => {
-    const name = e.target.value;
-    const schema = predefinedSchemas[name];
-    updateSchema(id, schema);
-    updateSchemaName(id, name);
-  };
-
-  const handleCustomSchemaChange = (schema) => {
-    updateSchema(id, schema);
-    updateSchemaName("custom");
+  const handleSchemaSelect = (name) => {
+    dispatch(updateSchema(id, predefinedSchemas[name]));
+    dispatch(updateSchemaName(id, name));
   };
 
   return (
-    <div>
-      <Tabs defaultValue="json" className="w-half">
+    <div className="space-y-6">
+      <Tabs defaultValue={tab} onValueChange={setTab} className="w-full max-w-3xl">
         <TabsList>
           <TabsTrigger value="json">Values</TabsTrigger>
           <TabsTrigger value="schema">Schema</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="json">
+        <TabsContent value="json" className="mt-4">
           <Editor
             height="300px"
             defaultLanguage="json"
             value={JSON.stringify(obj, null, 2)}
             onChange={(e) => handleJsonChange("obj", e)}
-            options={options}
+            options={editorOptions}
           />
         </TabsContent>
 
-        <TabsContent value="schema">
-          <label>Schema</label>
-          <select value={input.schemaName} onChange={handleSchemaSelect}>
-            {Object.entries(predefinedSchemas).map(([name]) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
+        <TabsContent value="schema" className="space-y-4 mt-4">
+          <div className="space-y-2">
+            <Label htmlFor="schema-select">Predefined Schema</Label>
+            <Select
+              value={input.schemaName}
+              onValueChange={handleSchemaSelect}
+            >
+              <SelectTrigger id="schema-select" className="w-64">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(predefinedSchemas).map((name) => (
+                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Editor
             height="300px"
             defaultLanguage="json"
             value={JSON.stringify(schema, null, 2)}
             onChange={(e) => handleJsonChange("schema", e)}
-            options={options}
+            options={editorOptions}
           />
         </TabsContent>
       </Tabs>
 
-      <label>Encoding</label>
-      <select
-        value={input.encoding}
-        onChange={(e) => updateEncoding(id, e.target.value)}
-      >
-        {ENCODING_STRATEGIES.map((name) => (
-          <option key={name} value={name}>
-            {name}
-          </option>
-        ))}
-      </select>
+      <Separator />
+
+      <div className="space-y-2">
+        <Label htmlFor="encoding-select">Encoding</Label>
+        <Select
+          value={input.encoding}
+          onValueChange={(val) => dispatch(updateEncoding(id, val))}
+        >
+          <SelectTrigger id="encoding-select" className="w-64">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ENCODING_STRATEGIES.map((name) => (
+              <SelectItem key={name} value={name}>{name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {format !== "None" && (
-        <div style={{ marginTop: 12 }}>
-          <label htmlFor="preview">Preview:</label>
-          <pre id="preview">{preview?.data}</pre>
+        <div className="space-y-2">
+          <Label htmlFor="preview">Preview</Label>
+          <ScrollArea className="border rounded p-2 max-h-48 bg-muted text-sm whitespace-pre-wrap">
+            <pre id="preview">{preview?.data}</pre>
+          </ScrollArea>
         </div>
       )}
     </div>
