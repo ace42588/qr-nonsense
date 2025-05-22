@@ -21,7 +21,9 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -113,7 +115,8 @@ function QRModeSelect({ input }) {
 
 function BasicInput({ input }) {
   const { text, mode, encoding } = input;
-
+  
+  const dispatch = useInputDispatch();
   const handleChange = (field, value) =>
     dispatch(updateInput(input.id, {[field]: value }));
 
@@ -168,6 +171,7 @@ function JsonInput({ id, input }) {
   const preview = useParsedInputs()[id];
   const [tab, setTab] = useState("values");
 
+  const dispatch = useInputDispatch();
   const handleJsonChange = (field, text) => {
     try {
       const parsed = JSON.parse(text);

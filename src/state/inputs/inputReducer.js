@@ -6,7 +6,7 @@ import { Actions } from "./inputActions";
 const firstInput = createInput({ label: "Input 0" });
 
 export const initialState = {
-  meta: {
+  formatInfo: {
     errorCorrectionLevel: 0,
     version: -1,
     dataMask: -1,
@@ -182,11 +182,11 @@ export function inputReducer(state, action) {
         inputs: updateInputs(state.inputs, action),
       };
 
-    case Actions.ChangeMeta:
+    case Actions.ChangeformatInfo:
       return {
         ...state,
-        meta: {
-          ...state.meta,
+        formatInfo: {
+          ...state.formatInfo,
           [action.payload.field]: action.payload.value,
         },
       };

@@ -18,7 +18,7 @@ const typeDefaults = {
     type: "basic",
     text: "Hello world",
     mode: "byte",
-    encoding: "utf-8",
+    encoding: "",
   },
   json: {
     type: "json",
