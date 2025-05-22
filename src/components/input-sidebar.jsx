@@ -160,75 +160,13 @@ export function InputSidebar({ ...props }) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarSeparator />
-      <Collapsible
-        key="formatInfo"
-        defaultOpen={false}
-        className="group/collapsible"
-      >
-        <SidebarGroup>
-          <SidebarGroupLabel asChild>
-            <CollapsibleTrigger>
-              Format
-              <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
-            </CollapsibleTrigger>
-          </SidebarGroupLabel>
-          <CollapsibleContent>
-            <SidebarMenu>
-              <SidebarMenuItem key="Error Correction Level">
-                <SidebarMenuButton asChild isActive={true}>
-                  <select
-                    id="ec-level"
-                    value={errorCorrectionLevel}
-                    onChange={(e) => setErrorCorrection(e.target.value)}
-                  >
-                    {levels.map((level) => (
-                      <option key={level.value} value={level.value}>
-                        {level.label}
-                      </option>
-                    ))}
-                  </select>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem key="QR Code Version">
-                <SidebarMenuButton asChild isActive={true}>
-                  <select
-                    id="qr-version"
-                    value={cVersion || version}
-                    onChange={(e) => setVersion(e.target.value)}
-                  >
-                    {versions.map((ver) => (
-                      <option key={ver.value} value={ver.value}>
-                        {ver.label}
-                      </option>
-                    ))}
-                  </select>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem key="Data Mask">
-                <SidebarMenuButton asChild isActive={true}>
-                  <select
-                    id="data-mask"
-                    value={cDataMask || dataMask}
-                    onChange={(e) => setDataMask(e.target.value)}
-                  >
-                    {masks.map((mask) => (
-                      <option key={mask.value} value={mask.value}>
-                        {mask.label}
-                      </option>
-                    ))}
-                  </select>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </CollapsibleContent>
-        </SidebarGroup>
-      </Collapsible>
+      <FormatInput />
       <SidebarSeparator />
       <SidebarGroup>
         <SidebarGroupLabel>Inputs</SidebarGroupLabel>
         <SidebarGroupAction
           title="Add Input"
-          onClick={() => addInput(`Input ${nextLabel.current++}`)}
+          onClick={() => dispatch(addInput(`Input ${nextLabel.current++}`))}
         >
           <Plus /> <span className="sr-only">Add Input</span>
         </SidebarGroupAction>

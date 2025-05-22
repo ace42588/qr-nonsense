@@ -6,6 +6,9 @@ export const Actions = {
   Reorder: "REORDER",
   ChangeType: "CHANGE_TYPE",
   ChangeMeta: "CHANGE_META",
+  SetErrorCorrectionLevel: "SET_EC_LEVEL",
+  SetVersion: "SET_VERSION",
+  SetDataMask: "SET_DATA_MASK",
   SetInputs: "SET_INPUTS",
   SetSchemaName: "SET_SCHEMA_NAME",
   UpdateSchema: "UPDATE_SERIALIZATION_SCHEMA",
@@ -48,9 +51,17 @@ export const changeType = (id, newType) => ({
   type: Actions.ChangeType,
   payload: { id, newType },
 });
-export const setMetaField = (field, value) => ({
-  type: Actions.ChangeMeta,
-  payload: { field, value },
+export const setErrorCorrectionLevel = (value) => ({
+  type: Actions.SetErrorCorrectionLevel,
+  payload: { field: "errorCorrectionLevel", value },
+});
+export const setVersion = (value) => ({
+  type: Actions.SetVersion,
+  payload: { field: "version", value },
+});
+export const setDataMask = (value) => ({
+  type: Actions.SetDataMask,
+  payload: { field: "dataMask", value },
 });
 export const setInputs = (payload) => ({ type: Actions.SetInputs, payload });
 

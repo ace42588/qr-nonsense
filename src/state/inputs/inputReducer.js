@@ -181,8 +181,9 @@ export function inputReducer(state, action) {
         ...state,
         inputs: updateInputs(state.inputs, action),
       };
-
-    case Actions.ChangeformatInfo:
+    case Actions.SetErrorCorrectionLevel:
+    case Actions.SetVersion:
+    case Actions.SetDataMask:
       return {
         ...state,
         formatInfo: {

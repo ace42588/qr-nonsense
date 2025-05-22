@@ -12,7 +12,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 import {
   Sidebar,
@@ -28,7 +28,13 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-import { GalleryVerticalEnd, Minus, Plus } from "lucide-react"
+import { GalleryVerticalEnd, Minus, Plus } from "lucide-react";
+
+import {
+  setErrorCorrection,
+  setVersion,
+  setDataMask,
+} from "../state/inputs/inputActions";
 
 import { useInputs, useDerivedQRData, useInputDispatch } from "../state";
 
@@ -62,29 +68,28 @@ const masks = [
 export function FormatInput() {
   const { errorCorrectionLevel, version, dataMask } = useInputs();
   const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
-  const { setErrorCorrection, setVersion, setDataMask } = useInputDispatch();
+  const dispatch = useInputDispatch();
   return (
     <Collapsible
       key="formatInfo"
       defaultOpen={false}
       className="group/collapsible"
     >
-      <SidebarMenuItem>
-        <CollapsibleTrigger asChild>
-          <SidebarMenuButton>
-            Format Info
-            <Plus className="ml-auto group-data-[state=open]/collapsible:hidden" />
-            <Minus className="ml-auto group-data-[state=closed]/collapsible:hidden" />
-          </SidebarMenuButton>
-        </CollapsibleTrigger>
+      <SidebarGroup>
+        <SidebarGroupLabel asChild>
+          <CollapsibleTrigger>
+            Format
+            <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+          </CollapsibleTrigger>
+        </SidebarGroupLabel>
         <CollapsibleContent>
-          <SidebarMenuSub>
-            <SidebarMenuSubItem key="Error Correction Level">
-              <SidebarMenuSubButton asChild isActive={true}>
+          <SidebarMenu>
+            <SidebarMenuItem key="Error Correction Level">
+              <SidebarMenuButton asChild isActive={true}>
                 <select
                   id="ec-level"
                   value={errorCorrectionLevel}
-                  onChange={(e) => setErrorCorrection(e.target.value)}
+                  onChange={(e) => dispatch(setErrorCorrection(e.target.value))}
                 >
                   {levels.map((level) => (
                     <option key={level.value} value={level.value}>
@@ -92,14 +97,14 @@ export function FormatInput() {
                     </option>
                   ))}
                 </select>
-              </SidebarMenuSubButton>
-            </SidebarMenuSubItem>
-            <SidebarMenuSubItem key="QR Code Version">
-              <SidebarMenuSubButton asChild isActive={true}>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem key="QR Code Version">
+              <SidebarMenuButton asChild isActive={true}>
                 <select
                   id="qr-version"
                   value={cVersion || version}
-                  onChange={(e) => setVersion(e.target.value)}
+                  onChange={(e) => dispatch(setVersion(e.target.value))}
                 >
                   {versions.map((ver) => (
                     <option key={ver.value} value={ver.value}>
@@ -107,14 +112,14 @@ export function FormatInput() {
                     </option>
                   ))}
                 </select>
-              </SidebarMenuSubButton>
-            </SidebarMenuSubItem>
-            <SidebarMenuSubItem key="Data Mask">
-              <SidebarMenuSubButton asChild isActive={true}>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem key="Data Mask">
+              <SidebarMenuButton asChild isActive={true}>
                 <select
                   id="data-mask"
                   value={cDataMask || dataMask}
-                  onChange={(e) => setDataMask(e.target.value)}
+                  onChange={(e) => dispatch(setDataMask(e.target.value))}
                 >
                   {masks.map((mask) => (
                     <option key={mask.value} value={mask.value}>
@@ -122,11 +127,11 @@ export function FormatInput() {
                     </option>
                   ))}
                 </select>
-              </SidebarMenuSubButton>
-            </SidebarMenuSubItem>
-          </SidebarMenuSub>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </CollapsibleContent>
-      </SidebarMenuItem>
+      </SidebarGroup>
     </Collapsible>
   );
 }
