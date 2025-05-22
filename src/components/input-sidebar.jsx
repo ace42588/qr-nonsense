@@ -79,7 +79,7 @@ function DraggableInput({
   const [editValue, setEditValue] = React.useState(input.label);
 
   const handleRenameCommit = () => {
-    dispatch(updateInput({ ...input, label: editValue }));
+    dispatch(updateInput({ id: input.id, label: editValue }));
     setRenamingId(null);
   };
 
@@ -169,9 +169,10 @@ export function InputSidebar({ ...props }) {
     });
 
     const [editValue, setEditValue] = React.useState(input.label);
+    const dispatchGlobal = useInputDispatch();
 
     const handleRenameCommit = () => {
-      dispatch(updateInput({ ...input, label: editValue }));
+      dispatchGlobal(updateInput({ id: input.id, label: editValue }));
       setRenamingId(null);
     };
 
