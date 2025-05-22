@@ -97,9 +97,6 @@ export function InputCard() {
   const input = inputs.find(({ id }) => id == activeInputID);
   const preview = useParsedInputs()[activeInputID];
 
-  const [tab, setTab] = useState("values");
-  const [type, setType] = useState("base10");
-
   const selectedIds = input.includedFields || [];
   const selectableInputs = inputs.filter((i) => i.id !== activeInputID);
 
@@ -179,8 +176,7 @@ export function InputCard() {
           <CardContent>
             <div className="grid w-full items-center gap-4">
               <Tabs
-                defaultValue={tab}
-                onValueChange={setTab}
+                defaultValue="json"
                 className="w-full max-w-3xl"
               >
                 <TabsList>
@@ -468,40 +464,13 @@ export function InputCard() {
                       >
                         <label className="w-28">{field.label}</label>
 
-                        <Select value={type} onValueChange={setType}>
-                          <SelectTrigger className="w-28">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {["base10", "base16", "string"].map((v) => (
-                              <SelectItem key={v} value={v}>
-                                {v}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-
                         <Input
                           value={preview.values[field.label] ?? ""}
                           onChange={(e) => {
-                            let newValue = e.target.value;
-                            switch (type) {
-                              case "base10":
-                                newValue = Number(newValue);
-                                break;
-                              case "base16":
-                                newValue = parseInt(newValue, 16);
-                                break;
-                              case "string":
-                                newValue = encoder.encode(newValue);
-                                break;
-                              default:
-                                newValue = undefined;
-                            }
                             dispatch(
                               setBitFieldValues(activeInputID, {
                                 ...preview.values,
-                                [field.label]: newValue,
+                                [field.label]: Number(e.target.value),
                               })
                             );
                           }}
