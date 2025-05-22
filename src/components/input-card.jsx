@@ -182,60 +182,6 @@ function SortableField({ inputId, field, dispatch }) {
   );
 }
 
-function BitFieldEditor({ input }) {
-  const dispatch = useInputDispatch();
-  const { fields = [] } = input;
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
-  const handleAddField = () => {
-    dispatch(
-      addBitFieldField(input.id, {
-        ...structuredClone(DEFAULT_FIELD),
-        id: crypto.randomUUID(),
-      })
-    );
-  };
-
-  const handleDragEnd = ({ active, over }) => {
-    if (!over || active.id === over.id) return;
-    const oldIndex = fields.findIndex((f) => f.id === active.id);
-    const newIndex = fields.findIndex((f) => f.id === over.id);
-    dispatch(reorderBitFieldFields(input.id, oldIndex, newIndex));
-  };
-
-  return (
-    <div className="space-y-4">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={fields.map((f) => f.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {fields.map((field) => (
-            <SortableField
-              key={field.id}
-              inputId={input.id}
-              field={field}
-              dispatch={dispatch}
-            />
-          ))}
-        </SortableContext>
-      </DndContext>
-
-      <Button onClick={handleAddField} variant="secondary">
-        + Add Field
-      </Button>
-    </div>
-  );
-}
-
 export function InputCard() {
   const { inputs, activeInputID } = useInputs();
   const dispatch = useInputDispatch();
@@ -270,14 +216,11 @@ export function InputCard() {
     );
   };
 
-  const handleChange = (field, value) =>
-    dispatch(updateInput(input.id, { [field]: value }));
-
   const handleJsonChange = (field, text) => {
     try {
       const parsed = JSON.parse(text);
-      if (field === "obj") dispatch(updateJsonObject(input.id, parsed));
-      if (field === "schema") dispatch(updateSchema(input.id, parsed));
+      if (field === "obj") dispatch(updateJsonObject(input.id, JSON.parse(text)));
+      if (field === "schema") dispatch(updateSchema(input.id, JSON.parse(text)));
     } catch {
       // Optionally show error
     }
@@ -340,7 +283,7 @@ export function InputCard() {
                   id="name"
                   type="text"
                   value={input.text}
-                  onChange={(e) => handleChange("text", e.target.value)}
+                  onChange={(e) => dispatch(updateInput(activeInputID, { text: e.target.value }))}
                 />
               </div>
               {input.mode === "byte" && (
@@ -348,10 +291,8 @@ export function InputCard() {
                   <Switch
                     id="force-utf-8"
                     onChange={(e) =>
-                      handleChange(
-                        "encoding",
-                        e.target.checked ? "utf-8" : undefined
-                      )
+                dispatch(updateInput(activeInputID, { encoding:  e.target.checked ? "utf-8" : "" }))
+
                     }
                   />
                   <Label htmlFor="force-utf-8">Force UTF-8</Label>
@@ -383,7 +324,7 @@ export function InputCard() {
                     height="300px"
                     defaultLanguage="json"
                     value={JSON.stringify(input.obj, null, 2)}
-                    onChange={(e) => handleJsonChange("obj", e)}
+                    onChange={(e) => dispatch(updateJsonObject(input.id, JSON.parse(text))}
                     options={editorOptions}
                   />
                 </TabsContent>
@@ -465,7 +406,50 @@ export function InputCard() {
                   <TabsTrigger value="values">Values</TabsTrigger>
                 </TabsList>
                 <TabsContent value="fields">
-                  <BitFieldEditor input={input} />
+                  <div className="space-y-4">
+                    <DndContext
+                      sensors={useSensors(
+                        useSensor(PointerSensor),
+                        useSensor(KeyboardSensor, {
+                          coordinateGetter: sortableKeyboardCoordinates,
+                        })
+                      )}
+                      collisionDetection={closestCenter}
+                      onDragEnd={({ active, over }) => {
+                        if (!over || active.id === over.id) return;
+                        const oldIndex = input.fields?.findIndex(
+                          (f) => f.id === active.id
+                        );
+                        const newIndex = input.fields?.findIndex(
+                          (f) => f.id === over.id
+                        );
+                        dispatch(
+                          reorderBitFieldFields(input.id, oldIndex, newIndex)
+                        );
+                      }}
+                    >
+                      <SortableContext
+                        items={input.fields?.map((f) => f.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {input.fields?.map((field) => (
+                          <SortableField
+                            key={field.id}
+                            inputId={input.id}
+                            field={field}
+                            dispatch={dispatch}
+                          />
+                        ))}
+                      </SortableContext>
+                    </DndContext>
+
+                    <Button
+                      onClick={() => dispatch(addBitFieldField(input.id))}
+                      variant="secondary"
+                    >
+                      + Add Field
+                    </Button>
+                  </div>
                 </TabsContent>
                 <TabsContent value="values">
                   <div className="space-y-3 mt-2">

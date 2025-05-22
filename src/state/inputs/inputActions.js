@@ -68,9 +68,9 @@ export const setActiveInput = (id) => ({
   type: Actions.SetActiveInput,
   payload: { id },
 });
-export const addBitFieldField = (id, newField) => ({
+export const addBitFieldField = (id) => ({
   type: Actions.AddBitFieldField,
-  payload: { id, newField },
+  payload: { id },
 });
 
 export const removeBitFieldField = (id, fieldId) => ({

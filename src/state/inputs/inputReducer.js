@@ -1,11 +1,9 @@
 // src/state/inputs/inputReducer.js
 import { arrayMove } from "@dnd-kit/sortable";
-import { createInput, getTypeDefaults } from "./inputFactory";
+import { createInput, getTypeDefaults, DEFAULT_FIELD } from "./inputFactory";
 import { Actions } from "./inputActions";
 
 const firstInput = createInput({ label: "Input 0" });
-
-const DEFAULT_FIELD = getTypeDefaults("bitfield").layout[0];
 
 export const initialState = {
   formatInfo: {
@@ -93,7 +91,13 @@ function updateInputs(inputs, action) {
         input.id === id
           ? {
               ...input,
-              fields: [...(input.fields || []), newField],
+              fields: [
+                ...(input.fields || []),
+                {
+                  ...DEFAULT_FIELD,
+                  id: crypto.randomUUID(),
+                },
+              ],
             }
           : input
       );
