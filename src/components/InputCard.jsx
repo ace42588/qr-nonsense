@@ -32,7 +32,7 @@ export function InputCard() {
         <StringInputCard input={input} dispatch={dispatch} />
       </TabsContent>
 
-      <TabsContent value="json">
+      <TabsContent value="json" className="w-full max-w-3xl">
         <JsonInputCard input={input} dispatch={dispatch} preview={preview} />
       </TabsContent>
 

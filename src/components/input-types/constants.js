@@ -23,4 +23,5 @@ export const MONACO_EDITOR_OPTIONS = {
   scrollbar: { vertical: "hidden", horizontal: "hidden" },
   overviewRulerLanes: 0,
   lineNumbers: "off",
+  automaticLayout: true,
 };

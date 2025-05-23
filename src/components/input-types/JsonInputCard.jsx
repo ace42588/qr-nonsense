@@ -30,7 +30,7 @@ export function JsonInputCard({ input, preview, dispatch }) {
       <CardHeader>
         <CardTitle>{input.label}</CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-4">
+      <CardContent className="w-full max-w-3xl mx-auto">
         <div className="grid w-full items-center gap-4">
           <Tabs defaultValue="json" className="w-full max-w-3xl">
             <TabsList>
@@ -39,7 +39,7 @@ export function JsonInputCard({ input, preview, dispatch }) {
             </TabsList>
 
             <TabsContent value="json" className="mt-4">
-              <div className="w-full max-w-full overflow-hidden space-y-4">
+              <div className="w-full overflow-hidden space-y-4">
                 <Editor
                   height="300px"
                   width="100%"
@@ -77,7 +77,7 @@ export function JsonInputCard({ input, preview, dispatch }) {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-full max-w-full overflow-hidden space-y-4">
+              <div className="w-full overflow-hidden space-y-4">
                 <Editor
                   height="300px"
                   width="100%"
