@@ -39,17 +39,20 @@ export function JsonInputCard({ input, preview, dispatch }) {
             </TabsList>
 
             <TabsContent value="json" className="mt-4">
-              <Editor
-                height="300px"
-                defaultLanguage="json"
-                value={JSON.stringify(input.obj, null, 2)}
-                onChange={(text) => {
-                  try {
-                    dispatch(updateJsonObject(input.id, JSON.parse(text)));
-                  } catch {}
-                }}
-                options={MONACO_EDITOR_OPTIONS}
-              />
+              <div className="w-full max-w-full overflow-hidden space-y-4">
+                <Editor
+                  height="300px"
+                  width="100%"
+                  defaultLanguage="json"
+                  value={JSON.stringify(input.obj, null, 2)}
+                  onChange={(text) => {
+                    try {
+                      dispatch(updateJsonObject(input.id, JSON.parse(text)));
+                    } catch {}
+                  }}
+                  options={MONACO_EDITOR_OPTIONS}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="schema" className="space-y-4 mt-4">
@@ -74,17 +77,20 @@ export function JsonInputCard({ input, preview, dispatch }) {
                   </SelectContent>
                 </Select>
               </div>
-              <Editor
-                height="300px"
-                defaultLanguage="json"
-                value={JSON.stringify(input.schema, null, 2)}
-                onChange={(text) => {
-                  try {
-                    dispatch(updateSchema(input.id, JSON.parse(text)));
-                  } catch {}
-                }}
-                options={MONACO_EDITOR_OPTIONS}
-              />
+              <div className="w-full max-w-full overflow-hidden space-y-4">
+                <Editor
+                  height="300px"
+                  width="100%"
+                  defaultLanguage="json"
+                  value={JSON.stringify(input.schema, null, 2)}
+                  onChange={(text) => {
+                    try {
+                      dispatch(updateSchema(input.id, JSON.parse(text)));
+                    } catch {}
+                  }}
+                  options={MONACO_EDITOR_OPTIONS}
+                />
+              </div>
             </TabsContent>
           </Tabs>
 
@@ -110,9 +116,9 @@ export function JsonInputCard({ input, preview, dispatch }) {
           </div>
 
           {input.format !== "None" && (
-            <div className="space-y-2">
+            <div className="space-y-2 w-full">
               <Label htmlFor="preview">Preview</Label>
-              <ScrollArea className="border rounded p-2 max-h-48 bg-muted text-sm whitespace-pre-wrap">
+              <ScrollArea className="border rounded p-2 bg-muted text-sm whitespace-pre-wrap max-h-48 w-full overflow-auto">
                 <pre id="preview">{preview?.data}</pre>
               </ScrollArea>
             </div>
