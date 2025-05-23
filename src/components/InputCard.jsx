@@ -18,7 +18,6 @@ export function InputCard() {
   return (
     <Tabs
       defaultValue={input.type}
-      className="w-[600px]"
       onValueChange={(type) => dispatch(setInputType(activeInputID, type))}
     >
       <TabsList className="@4xl/main:flex">

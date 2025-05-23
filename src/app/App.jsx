@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import {
   SquarePen,
@@ -11,10 +11,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
 import { QRCodeCanvas } from "../components/QRCanvas";
-import { VideoScanner } from "../components/VideoScanner";
 import { QRImageHalftone } from "../components/Halftone";
 import { SegmentDisplay } from "../components/SegmentDisplay";
 import { CodewordDisplay } from "../components/CodewordDisplay";
