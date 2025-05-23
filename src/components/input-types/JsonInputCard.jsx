@@ -1,6 +1,7 @@
 import Editor from "@monaco-editor/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -30,83 +31,93 @@ export function JsonInputCard({ input, preview, dispatch }) {
         <CardTitle>{input.label}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <div className="space-y-2">
-          <Label>Values</Label>
-          <Editor
-            height="300px"
-            defaultLanguage="json"
-            value={JSON.stringify(input.obj, null, 2)}
-            onChange={(text) => {
-              try {
-                dispatch(updateJsonObject(input.id, JSON.parse(text)));
-              } catch {}
-            }}
-            options={MONACO_EDITOR_OPTIONS}
-          />
-        </div>
+        <div className="grid w-full items-center gap-4">
+          <Tabs defaultValue="json" className="w-full max-w-3xl">
+            <TabsList>
+              <TabsTrigger value="json">Values</TabsTrigger>
+              <TabsTrigger value="schema">Schema</TabsTrigger>
+            </TabsList>
 
-        <div className="space-y-2">
-          <Label>Predefined Schema</Label>
-          <Select
-            value={input.schemaName}
-            onValueChange={(name) => {
-              dispatch(updateSchema(input.id, predefinedSchemas[name]));
-              dispatch(setSchemaName(input.id, name));
-            }}
-          >
-            <SelectTrigger className="w-64">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.keys(predefinedSchemas).map((name) => (
-                <SelectItem key={name} value={name}>
-                  {name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Editor
-            height="300px"
-            defaultLanguage="json"
-            value={JSON.stringify(input.schema, null, 2)}
-            onChange={(text) => {
-              try {
-                dispatch(updateSchema(input.id, JSON.parse(text)));
-              } catch {}
-            }}
-            options={MONACO_EDITOR_OPTIONS}
-          />
-        </div>
+            <TabsContent value="json" className="mt-4">
+              <Editor
+                height="300px"
+                defaultLanguage="json"
+                value={JSON.stringify(input.obj, null, 2)}
+                onChange={(text) => {
+                  try {
+                    dispatch(updateJsonObject(input.id, JSON.parse(text)));
+                  } catch {}
+                }}
+                options={MONACO_EDITOR_OPTIONS}
+              />
+            </TabsContent>
 
-        <Separator />
+            <TabsContent value="schema" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="schema-select">Predefined Schema</Label>
+                <Select
+                  value={input.schemaName}
+                  onValueChange={(name) => {
+                    dispatch(updateSchema(input.id, predefinedSchemas[name]));
+                    dispatch(setSchemaName(input.id, name));
+                  }}
+                >
+                  <SelectTrigger id="schema-select" className="w-64">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(predefinedSchemas).map((name) => (
+                      <SelectItem key={name} value={name}>
+                        {name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Editor
+                height="300px"
+                defaultLanguage="json"
+                value={JSON.stringify(input.schema, null, 2)}
+                onChange={(text) => {
+                  try {
+                    dispatch(updateSchema(input.id, JSON.parse(text)));
+                  } catch {}
+                }}
+                options={MONACO_EDITOR_OPTIONS}
+              />
+            </TabsContent>
+          </Tabs>
 
-        <div className="space-y-2">
-          <Label>Encoding</Label>
-          <Select
-            value={input.encoding}
-            onValueChange={(val) => dispatch(updateEncoding(input.id, val))}
-          >
-            <SelectTrigger className="w-64">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ENCODING_STRATEGIES.map((name) => (
-                <SelectItem key={name} value={name}>
-                  {name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+          <Separator />
 
-        {input.format !== "None" && (
           <div className="space-y-2">
-            <Label htmlFor="preview">Preview</Label>
-            <ScrollArea className="border rounded p-2 max-h-48 bg-muted text-sm whitespace-pre-wrap">
-              <pre id="preview">{preview?.data}</pre>
-            </ScrollArea>
+            <Label>Encoding</Label>
+            <Select
+              value={input.encoding}
+              onValueChange={(val) => dispatch(updateEncoding(input.id, val))}
+            >
+              <SelectTrigger className="w-64">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ENCODING_STRATEGIES.map((name) => (
+                  <SelectItem key={name} value={name}>
+                    {name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        )}
+
+          {input.format !== "None" && (
+            <div className="space-y-2">
+              <Label htmlFor="preview">Preview</Label>
+              <ScrollArea className="border rounded p-2 max-h-48 bg-muted text-sm whitespace-pre-wrap">
+                <pre id="preview">{preview?.data}</pre>
+              </ScrollArea>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
