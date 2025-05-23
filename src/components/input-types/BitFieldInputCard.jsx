@@ -1,7 +1,19 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  Card, CardHeader, CardTitle, CardContent, Input, Button,
-  Tabs, TabsList, TabsTrigger, TabsContent, Label, Separator,
-} from "../ui";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+
 import {
   DndContext,
   closestCenter,
@@ -27,8 +39,15 @@ import {
 } from "../../state/inputs/inputActions";
 
 const COLORS = [
-  "#3b82f6", "#10b981", "#f59e0b", "#ef4444",
-  "#8b5cf6", "#ec4899", "#14b8a6", "#f97316", "#6366f1"
+  "#3b82f6",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#ec4899",
+  "#14b8a6",
+  "#f97316",
+  "#6366f1",
 ];
 
 function bitsNeeded(max) {
@@ -54,7 +73,9 @@ export function BitFieldInputCard({ input, preview, dispatch }) {
 
   return (
     <Card>
-      <CardHeader><CardTitle>{input.label}</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>{input.label}</CardTitle>
+      </CardHeader>
       <CardContent className="grid gap-4">
         <Tabs defaultValue="fields" className="w-full max-w-3xl">
           <TabsList>
