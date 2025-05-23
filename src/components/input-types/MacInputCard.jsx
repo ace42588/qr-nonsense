@@ -10,8 +10,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+
 import {
-  setMacKey, setMacAlgorithm, setIncludedFields
+  setMacKey,
+  setMacAlgorithm,
+  setIncludedFields,
 } from "../../state/inputs/inputActions";
 import { MAC_FUNCTIONS } from "../../domain";
 
@@ -20,7 +24,7 @@ export function MacInputCard({ input, inputs, dispatch, preview }) {
   const selectableInputs = inputs.filter((i) => i.id !== input.id);
 
   return (
-    <Card className="max-w-md mx-auto">
+    <Card>
       <CardHeader>
         <CardTitle>QR MAC Generator</CardTitle>
       </CardHeader>
@@ -55,7 +59,9 @@ export function MacInputCard({ input, inputs, dispatch, preview }) {
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground text-sm">No fields available</p>
+              <p className="text-muted-foreground text-sm">
+                No fields available
+              </p>
             )}
           </div>
         </div>
@@ -64,12 +70,18 @@ export function MacInputCard({ input, inputs, dispatch, preview }) {
           <Label>MAC Algorithm</Label>
           <Select
             value={input.algo}
-            onValueChange={(value) => dispatch(setMacAlgorithm(input.id, value))}
+            onValueChange={(value) =>
+              dispatch(setMacAlgorithm(input.id, value))
+            }
           >
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               {Object.keys(MAC_FUNCTIONS).map((alg) => (
-                <SelectItem key={alg} value={alg}>{alg}</SelectItem>
+                <SelectItem key={alg} value={alg}>
+                  {alg}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>

@@ -1,11 +1,9 @@
 export const QR_MODES = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
 
-export const ENCODING_STRATEGY_LIST = [
+export const ENCODING_STRATEGIES = [
   "none",
   "alphanumeric",
   "modhex",
-  "base64",
-  "ascii85",
 ];
 
 export const COLORS = [

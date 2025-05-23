@@ -33,7 +33,7 @@ import {
   SidebarTrigger,
 } from "../components/ui/sidebar";
 
-import { InputCard } from "@/components/input-card";
+import { InputCard } from "@/components/InputCard";
 
 export default function App() {
   const [inputMethod, setInputMethod] = useState("manual");

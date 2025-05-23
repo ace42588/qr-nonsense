@@ -21,19 +21,14 @@ import {
   setSchemaName,
 } from "../../state/inputs/inputActions";
 import { predefinedSchemas } from "../../domain/input";
-import { ENCODING_STRATEGIES } from "../../domain/encoders";
-
-const editorOptions = {
-  minimap: { enabled: false },
-  scrollbar: { vertical: "hidden", horizontal: "hidden" },
-  overviewRulerLanes: 0,
-  lineNumbers: "off",
-};
+import { ENCODING_STRATEGIES, MONACO_EDITOR_OPTIONS } from "./constants";
 
 export function JsonInputCard({ input, preview, dispatch }) {
   return (
     <Card>
-      <CardHeader><CardTitle>{input.label}</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>{input.label}</CardTitle>
+      </CardHeader>
       <CardContent className="grid gap-4">
         <div className="space-y-2">
           <Label>Values</Label>
@@ -46,7 +41,7 @@ export function JsonInputCard({ input, preview, dispatch }) {
                 dispatch(updateJsonObject(input.id, JSON.parse(text)));
               } catch {}
             }}
-            options={editorOptions}
+            options={MONACO_EDITOR_OPTIONS}
           />
         </div>
 
@@ -59,10 +54,14 @@ export function JsonInputCard({ input, preview, dispatch }) {
               dispatch(setSchemaName(input.id, name));
             }}
           >
-            <SelectTrigger className="w-64"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-64">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               {Object.keys(predefinedSchemas).map((name) => (
-                <SelectItem key={name} value={name}>{name}</SelectItem>
+                <SelectItem key={name} value={name}>
+                  {name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -75,7 +74,7 @@ export function JsonInputCard({ input, preview, dispatch }) {
                 dispatch(updateSchema(input.id, JSON.parse(text)));
               } catch {}
             }}
-            options={editorOptions}
+            options={MONACO_EDITOR_OPTIONS}
           />
         </div>
 
@@ -87,10 +86,14 @@ export function JsonInputCard({ input, preview, dispatch }) {
             value={input.encoding}
             onValueChange={(val) => dispatch(updateEncoding(input.id, val))}
           >
-            <SelectTrigger className="w-64"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-64">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               {ENCODING_STRATEGIES.map((name) => (
-                <SelectItem key={name} value={name}>{name}</SelectItem>
+                <SelectItem key={name} value={name}>
+                  {name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>

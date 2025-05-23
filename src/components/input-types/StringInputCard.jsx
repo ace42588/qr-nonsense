@@ -18,16 +18,22 @@ import { QR_MODES } from "./constants";
 export function StringInputCard({ input, dispatch }) {
   return (
     <Card>
-      <CardHeader><CardTitle>{input.label}</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>{input.label}</CardTitle>
+      </CardHeader>
       <CardContent className="grid gap-4">
         <Select
           value={input.mode || "byte"}
           onValueChange={(mode) => dispatch(updateInput(input.id, { mode }))}
         >
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             {QR_MODES.map((m) => (
-              <SelectItem key={m} value={m}>{m}</SelectItem>
+              <SelectItem key={m} value={m}>
+                {m}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -48,7 +54,9 @@ export function StringInputCard({ input, dispatch }) {
             <Switch
               checked={input.encoding === "utf-8"}
               onCheckedChange={(checked) =>
-                dispatch(updateInput(input.id, { encoding: checked ? "utf-8" : "" }))
+                dispatch(
+                  updateInput(input.id, { encoding: checked ? "utf-8" : "" })
+                )
               }
             />
             <Label>Force UTF-8</Label>
