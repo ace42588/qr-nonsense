@@ -1,11 +1,19 @@
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Input } from "../ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../ui/select";
-import { Label } from "../ui/label";
-import { Switch } from "../ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { updateInput } from "../../state/inputs/inputActions";
 
-const modes = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
+import { QR_MODES } from "./constants";
 
 export function StringInputCard({ input, dispatch }) {
   return (
@@ -18,7 +26,7 @@ export function StringInputCard({ input, dispatch }) {
         >
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
-            {modes.map((m) => (
+            {QR_MODES.map((m) => (
               <SelectItem key={m} value={m}>{m}</SelectItem>
             ))}
           </SelectContent>
