@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useInputs, useInputDispatch, useParsedInputs } from "../state";
-import { setInputType } from "../state/inputs/inputActions";
+import { setInputType } from "@/state/inputs/inputActions";
+import { useInputs, useInputDispatch } from "@/state/inputs/InputContext";
+import { useParsedInputs } from "@/hooks/useParsedInputs";
 
 import { StringInputCard } from "./input-types/StringInputCard";
 import { JsonInputCard } from "./input-types/JsonInputCard";

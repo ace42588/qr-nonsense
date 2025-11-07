@@ -1,4 +1,3 @@
-import { calculatePenalty } from "./calculatePenalty";
 import { makeModule } from "./modules";
 import { getRemainderBits } from "../versionUtils";
 
@@ -16,7 +15,6 @@ export const DATA_MASKS = [
 const remainderBit = { value: 0, source: "Remainder" };
 
 export function createMatrix(version) {
-  //console.debug("createMatrix", {version});
   const length = version * 4 + 17;
   return Array.from({ length }, () => Array(length).fill(null));
 }
@@ -47,27 +45,38 @@ export function mapQRMatrix(matrix, callbackFn) {
   return matrix;
 }
 
+/**
+ * Applies data mask to matrix modules.
+ * 
+ * CRITICAL: This function must preserve the bit reference from the current module.
+ * The bit.id values are used for highlighting, so they must remain unchanged.
+ * makeModule preserves the bit reference, so bit.id stays the same.
+ */
 export function applyMask(matrix, maskIndex) {
-  //console.debug("applyMask", {matrix, maskIndex})
   const maskFunc = DATA_MASKS[maskIndex] || (() => false); // No mask
   const masked = mapQRMatrix(matrix, ({ x, y, idx }, current) => {
     const isMasked = maskFunc({ x, y });
-    //console.debug("applyMask", {current});
+    // makeModule preserves the bit reference, ensuring bit.id remains unchanged
     return makeModule({ ...current, isMasked });
   });
   return masked;
 }
 
+/**
+ * Adds codeword bits to the matrix.
+ * 
+ * CRITICAL: The bits from codewords are the SAME objects that were used
+ * to set segment.bitIds. This ensures matrix modules have bit.id values
+ * that match segment.bitIds for highlighting to work.
+ */
 export function addCodewords(matrix, codewords) {
   const numRemainder = getRemainderBits(matrix.length);
   const remainder = Array.from({ length: numRemainder }).map(
     () => remainderBit
   );
-  //console.debug("addCodewords", { codewords, remainder });
   const codewordBits = codewords.flatMap((cw) => cw.bits);
   const bits = [...codewordBits, ...remainder];
-  //console.debug("addCodewords", { bits });
-  return mapQRMatrix(matrix, ({ x, y, idx }, current) => {
+  return mapQRMatrix(matrix, ({ x, y, idx }) => {
     const bit = bits[idx];
     return makeModule({ bit, x, y });
   });

@@ -1,3 +1,4 @@
+// UI Components
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,8 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+
+// State and Actions
 import { updateInput } from "../../state/inputs/inputActions";
 
+// Constants
 import { QR_MODES } from "./constants";
 
 export function StringInputCard({ input, dispatch }) {

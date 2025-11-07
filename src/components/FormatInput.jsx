@@ -1,5 +1,31 @@
-import { useInputs, useDerivedQRData, useInputDispatch } from "../state";
+// UI Components
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 
+// Icons
+import { ChevronDown } from "lucide-react";
+
+// State and Actions
+import { useInputs } from "@/state/inputs/InputContext";
+import { useDerivedQRData } from "@/hooks/useDerivedQRData";
+import { useInputDispatch } from "@/state/inputs/InputContext";
+import {
+  setErrorCorrectionLevel,
+  setVersion,
+  setDataMask,
+} from "@/state/inputs/inputActions";
+
+// Constants
 const levels = [
   { label: "Low (L) – 7% redundancy", value: 0 },
   { label: "Medium (M) – 15% redundancy", value: 1 },
@@ -30,51 +56,70 @@ const masks = [
 export function FormatInput() {
   const { errorCorrectionLevel, version, dataMask } = useInputs();
   const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
-  const { setErrorCorrection, setVersion, setDataMask } = useInputDispatch();
+  const dispatch = useInputDispatch();
   return (
-    <>
-      <div className="label-select-row">
-        <label htmlFor="ec-level">Error Correction Level:</label>
-        <select
-          id="ec-level"
-          value={errorCorrectionLevel}
-          onChange={(e) => setErrorCorrection(e.target.value)}
-        >
-          {levels.map((level) => (
-            <option key={level.value} value={level.value}>
-              {level.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="label-select-row">
-        <label htmlFor="qr-version">QR Code Version:</label>
-        <select
-          id="qr-version"
-          value={cVersion || version}
-          onChange={(e) => setVersion(e.target.value)}
-        >
-          {versions.map((ver) => (
-            <option key={ver.value} value={ver.value}>
-              {ver.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="label-select-row">
-        <label htmlFor="data-mask">Data Mask:</label>
-        <select
-          id="data-mask"
-          value={cDataMask || dataMask}
-          onChange={(e) => setDataMask(e.target.value)}
-        >
-          {masks.map((mask) => (
-            <option key={mask.value} value={mask.value}>
-              {mask.label}
-            </option>
-          ))}
-        </select>
-      </div>
-    </>
+    <Collapsible
+      key="formatInfo"
+      defaultOpen={false}
+      className="group/collapsible"
+    >
+      <SidebarGroup>
+        <SidebarGroupLabel asChild>
+          <CollapsibleTrigger>
+            Format
+            <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+          </CollapsibleTrigger>
+        </SidebarGroupLabel>
+        <CollapsibleContent>
+          <SidebarMenu>
+            <SidebarMenuItem key="Error Correction Level">
+              <SidebarMenuButton asChild isActive={true}>
+                <select
+                  id="ec-level"
+                  value={errorCorrectionLevel}
+                  onChange={(e) => dispatch(setErrorCorrectionLevel(Number(e.target.value)))}
+                >
+                  {levels.map((level) => (
+                    <option key={level.value} value={level.value}>
+                      {level.label}
+                    </option>
+                  ))}
+                </select>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem key="QR Code Version">
+              <SidebarMenuButton asChild isActive={true}>
+                <select
+                  id="qr-version"
+                  value={cVersion || version}
+                  onChange={(e) => dispatch(setVersion(Number(e.target.value)))}
+                >
+                  {versions.map((ver) => (
+                    <option key={ver.value} value={ver.value}>
+                      {ver.label}
+                    </option>
+                  ))}
+                </select>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem key="Data Mask">
+              <SidebarMenuButton asChild isActive={true}>
+                <select
+                  id="data-mask"
+                  value={cDataMask || dataMask}
+                  onChange={(e) => dispatch(setDataMask(Number(e.target.value)))}
+                >
+                  {masks.map((mask) => (
+                    <option key={mask.value} value={mask.value}>
+                      {mask.label}
+                    </option>
+                  ))}
+                </select>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </CollapsibleContent>
+      </SidebarGroup>
+    </Collapsible>
   );
 }

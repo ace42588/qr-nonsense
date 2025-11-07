@@ -1,11 +1,21 @@
 {
-  "name": "glitch-hello-react",
+  "name": "qr-nonsense",
   "version": "0.0.5",
   "description": "A simple React single page app, built with Vite and React.",
   "scripts": {
     "start": "vite",
-    "build": "vite build",
-    "serve": "vite preview"
+    "build": "tsc && vite build",
+    "serve": "vite preview",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "prepare": "husky install",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -38,8 +48,8 @@
     "libsodium-wrappers-sumo": "^0.7.15",
     "lucide-react": "^0.511.0",
     "next-themes": "^0.4.6",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-spring": "^10.0.0",
     "recharts": "^2.15.3",
     "sonner": "^2.0.3",
@@ -49,22 +59,40 @@
     "zod": "^3.24.4"
   },
   "devDependencies": {
+    "@types/node": "^22.15.21",
+    "@types/react": "^19.1.5",
+    "@types/react-dom": "^19.1.5",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
     "autoprefixer": "^10.4.21",
+    "eslint": "8.57.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-import-resolver-typescript": "^4.4.1",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "husky": "^9.1.7",
     "postcss": "^8.5.3",
     "postcss-import": "^16.1.0",
     "shadcn": "^2.3.0",
     "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3",
     "vite": "^4.0.0",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/user-event": "^14.5.2",
+    "@vitest/ui": "^2.1.8",
+    "@vitest/coverage-v8": "^2.1.8",
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.8"
   },
   "browserslist": [
     ">0.2%",
     "not dead"
   ],
   "engines": {
-    "node": "16.x"
-  },
-  "glitch": {
-    "projectType": "generated_static"
+    "node": "23.x"
   }
 }

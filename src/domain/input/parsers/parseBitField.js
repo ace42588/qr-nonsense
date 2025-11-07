@@ -6,7 +6,6 @@ import {
 } from "./utils/bitFieldUtils";
 
 export function parseBitField(input) {
-  //console.debug("parseBitField", {input});
   const { fields, values } = input;
   
   const { layout, totalBits } = generateBitLayout(fields);

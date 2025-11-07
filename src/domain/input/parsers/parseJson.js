@@ -4,6 +4,7 @@ import {
   generateBitLayoutFromSchema,
 } from "./utils/bitFieldUtils";
 import { ModHex, NTRU } from "../../encoders";
+import { log } from "@/lib/logger";
 
 const specialTypes = ["encapsulator", "separator", "terminator"];
 
@@ -15,7 +16,6 @@ function separateSchemaParts(schema) {
   let arraySchema = null;
 
   for (const [key, prop] of Object.entries(schema.properties || {})) {
-    //console.debug("separateSchemaParts", { key, prop });
     if (flatTypes.includes(prop.type)) {
       rootFields[key] = prop;
     } else if (
@@ -26,7 +26,6 @@ function separateSchemaParts(schema) {
       arrayField = key;
       arraySchema = prop.items;
     } else if (typeof prop === "string" && specialTypes.includes(key)) {
-      //console.debug("separateSchemaParts: special type", { key, prop });
       rootFields[key] = prop;
     }
   }
@@ -43,7 +42,7 @@ function encodeToBytes(obj, schema) {
 
   const rootLayout = generateBitLayoutFromSchema(rootSchema);
   const rootBytes = encodeFieldsToBytes(rootLayout, obj);
-  console.debug("encodeToBytes", {rootLayout, rootBytes});
+  log.debug("encodeToBytes", {rootLayout, rootBytes});
 
   let itemBytes = [];
 
@@ -57,13 +56,13 @@ function encodeToBytes(obj, schema) {
   const combined = new Uint8Array(rootBytes.length + itemBytes.length);
   combined.set(rootBytes, 0);
   combined.set(itemBytes, rootBytes.length);
-  console.debug("encodeToBytes", {combined});
+  log.debug("encodeToBytes", {combined});
   return combined;
 }
 
 function encodeToHex(obj, schema) {
   const bytes = encodeToBytes(obj, schema);
-  console.debug("encodeToHex", {bytes});
+  log.debug("encodeToHex", {bytes});
   return bytesToHex(bytes);
 }
 
@@ -148,9 +147,32 @@ function getSchemaType(schema) {
   return "String";
 }
 
+/**
+ * Parses a JSON input object according to a provided schema and encoding.
+ * 
+ * This function converts a JavaScript object into QR code data by:
+ * 1. Validating the input object and schema
+ * 2. Applying the specified encoding (if provided) or auto-detecting from schema
+ * 3. Serializing the object according to the schema structure
+ * 4. Returning formatted data ready for QR code encoding
+ * 
+ * Supported encodings:
+ * - "Byte": Binary/hexadecimal encoding
+ * - "Alphanumeric": Alphanumeric string encoding
+ * - "String": UTF-8 string encoding
+ * 
+ * @param {Object} input - Input object containing:
+ *   - obj: {Object} The JavaScript object to parse
+ *   - schema: {Object} JSON schema defining the structure
+ *   - encoding: {string} Optional encoding type ("Byte", "Alphanumeric", "String", or "None")
+ * @returns {Object} Parsed result with:
+ *   - data: {string} Encoded data string
+ *   - mode: {string} QR code mode ("byte", "alphanumeric", etc.)
+ *   - encoding: {string} Encoding format used
+ */
 export function parseJson(input) {
   const { obj, schema, encoding } = input;
-  console.debug("parseJson", { input });
+  log.debug("parseJson", { input });
   if (!obj || !schema) return input;
 
   if (typeof obj !== "object" || obj == null) {
@@ -161,6 +183,12 @@ export function parseJson(input) {
     };
   }
 
+  // First try to use the selected encoding if it exists
+  if (encoding && encoding !== "None" && JSON_PARSERS[encoding]) {
+    return JSON_PARSERS[encoding](obj, schema);
+  }
+
+  // Fallback to schema-based serialization if no encoding selected
   const serializeFn = SERIALIZERS[getSchemaType(schema)];
   const serialized = serializeFn(obj, schema);
 

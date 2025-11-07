@@ -1,4 +1,4 @@
-import { encodeSegment, validateLength, createCodon } from "./utils.js";
+import { encodeSegment, createDataSymbol } from "./utils.js";
 
 const mode = {
   name: "byte",
@@ -11,12 +11,11 @@ const mode = {
 };
 
 const createByte = (value, text, inputEncoding = "utf-8") => {
-  const codon = createCodon(value, text, mode.name, 8);
+  const codon = createDataSymbol(value, text, mode.name, 8);
   return { ...codon, inputEncoding };
 };
 
 export function* iteratorFunc(data, options) {
-  //console.debug("byte:iteratprFunc", { data, options });
   let inputEncoding = options;
 
   switch (inputEncoding) {
@@ -24,7 +23,6 @@ export function* iteratorFunc(data, options) {
       for (let i = 0; i < data.length; i += 2) {
         const hex = data.substring(i, i + 2);
         const byte = parseInt(data.substring(i, i + 2), 16);
-        //console.debug({hex, byte});
         yield createByte(byte, `0x${hex}`, inputEncoding);
       }
       break;

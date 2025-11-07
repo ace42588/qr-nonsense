@@ -9,6 +9,25 @@ import { estimateGridNonuniformity, gradeGridNonuniformity } from "./grid";
 import { estimateModulation, gradeModulation } from "./modulation";
 import { calculateOverallGrade } from "./utils";
 
+/**
+ * Evaluates the quality of a QR code by analyzing multiple quality metrics.
+ * 
+ * This function performs a comprehensive quality assessment based on ISO/IEC 18004
+ * standards, evaluating six key metrics:
+ * - Symbol Contrast: Difference between darkest and lightest elements
+ * - Modulation: Variation in module reflectance
+ * - Fixed Pattern Damage: Integrity of finder patterns and timing patterns
+ * - Axial Nonuniformity: Deviation from square shape
+ * - Grid Nonuniformity: Module alignment and grid regularity
+ * - Format Information Damage: Integrity of format information bits
+ * 
+ * @param {HTMLCanvasElement} canvas - Canvas element containing the rendered QR code
+ * @returns {Object} Quality evaluation results with the following structure:
+ *   - overallGrade: {string} Overall grade (A, B, C, D, or F) - lowest individual grade
+ *   - metrics: {Object} Individual metric results, each containing:
+ *     - value: {number} Raw metric value
+ *     - grade: {string} Grade for this metric (A, B, C, D, or F)
+ */
 export function evaluateQRCodeQuality(canvas) {
   // Get canvas context and image data
   const ctx = canvas.getContext("2d");

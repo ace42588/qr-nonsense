@@ -11,7 +11,6 @@ const isHex = (val) =>
 
 export function parseBasic(input) {
   const { mode, text, encoding } = input;
-  console.debug("parseBasic", { mode, text, encoding });
 
   if (!text || !mode) return input;
 
@@ -19,7 +18,6 @@ export function parseBasic(input) {
   if (mode === "alphanumeric" || mode === "numeric") {
     const normalized = mode === "alphanumeric" ? text.toUpperCase() : text;
     const match = normalized.match(MODE_REGEX[mode]);
-    console.debug("parseBasic", { match });
     return {
       ...input,
       data: match ? match.join("") : "",
@@ -50,7 +48,7 @@ export function parseBasic(input) {
     }
 
     // Fallback to UTF-8 if no known encoding matched
-    console.log("Input for byte mode did not match binary or hex.");
+    // console.log("Input for byte mode did not match binary or hex.");
     return { ...input, data: text, encoding: "utf-8" };
   }
 

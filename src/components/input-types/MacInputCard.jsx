@@ -1,9 +1,8 @@
+// UI Components
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -11,13 +10,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 
+// State and Actions
 import {
   setMacKey,
   setMacAlgorithm,
   setIncludedFields,
-} from "../../state/inputs/inputActions";
-import { MAC_FUNCTIONS } from "../../domain";
+} from "@/state/inputs/inputActions";
+
+// Domain
+import { MAC_FN_NAMES } from "@/domain/input";
 
 export function MacInputCard({ input, inputs, dispatch, preview }) {
   const selectedIds = input.includedFields || [];
@@ -78,7 +81,7 @@ export function MacInputCard({ input, inputs, dispatch, preview }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {Object.keys(MAC_FUNCTIONS).map((alg) => (
+              {MAC_FN_NAMES.map((alg) => (
                 <SelectItem key={alg} value={alg}>
                   {alg}
                 </SelectItem>

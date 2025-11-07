@@ -1,4 +1,5 @@
 import { encodeSegment, validateLength, createNonByte } from "./utils.js";
+import { log } from "@/lib/logger";
 
 const mode = {
   name: "numeric",
@@ -15,7 +16,7 @@ function encoder(data) {
   validateLength(data, 1, 3, "Numeric");
   const value = parseInt(data, 10);
   const length = data.length * 3 + 1;
-  console.debug("numeric encoder", {data, value, length});
+  log.debug("numeric encoder", {data, value, length});
   return {
     value,
     length,

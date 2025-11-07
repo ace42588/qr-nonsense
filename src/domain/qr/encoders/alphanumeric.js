@@ -1,4 +1,5 @@
 import { encodeSegment, validateLength, createNonByte } from "./utils.js";
+import { log } from "@/lib/logger";
 
 const mode = {
   name: "alphanumeric",
@@ -20,6 +21,7 @@ function encoder(data) {
     value = charMap.indexOf(data[0]) * 45 + charMap.indexOf(data[1]);
     length = 11;
   }
+  log.debug("alphanumeric:encoder", { data, value, length });
   return { value, length };
 }
 

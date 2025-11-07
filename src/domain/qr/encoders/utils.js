@@ -12,7 +12,7 @@ export function validateLength(data, min, max, type) {
   }
 }
 
-function createPart(type, value, text, length) {
+function createSymbol(type, value, text, length) {
   return {
     type: type,
     value: value,
@@ -22,13 +22,13 @@ function createPart(type, value, text, length) {
   };
 }
 
-export function createCodon(value, text, inputMode, length) {
-  const codon = createPart("codon", value, text, length);
-  return { ...codon, inputMode };
+export function createDataSymbol(value, text, inputMode, length) {
+  const symbol = createSymbol("data", value, text, length);
+  return { ...symbol, inputMode };
 }
 
 function createModeIndicator(mode) {
-  return createPart("modeIndicator", mode.bits, mode.name, 4);
+  return createSymbol("modeIndicator", mode.bits, mode.bits, 4);
 }
 
 function createCharacterCountIndicator(data, codons, mode) {
@@ -41,7 +41,7 @@ function createCharacterCountIndicator(data, codons, mode) {
     return thresholds[thresholds.length - 1].length;
   }
 
-  return createPart(
+  return createSymbol(
     "characterCountIndicator",
     charCount,
     charCount,
@@ -49,11 +49,11 @@ function createCharacterCountIndicator(data, codons, mode) {
   );
 }
 
-export function encodeSegment(data, inputMode, codonItrFn) {
-  const codons = [...codonItrFn(data)];
+export function encodeSegment(data, inputMode, symbolItrFn) {
+  const symbols = [...symbolItrFn(data)];
   const mode = createModeIndicator(inputMode);
-  const characterCount = createCharacterCountIndicator(data, codons, inputMode);
-  const segment = [mode, characterCount, ...codons];
+  const characterCount = createCharacterCountIndicator(data, symbols, inputMode);
+  const segment = [mode, characterCount, ...symbols];
 
   return segment;
 }
@@ -65,7 +65,7 @@ export function* createNonByte(input, mode, encoderFn) {
   }
   for (let i = 0; i < groups.length; i++) {
     const { value, length } = encoderFn(groups[i]);
-    yield createCodon(value, groups[i], mode.name, length);
+    yield createDataSymbol(value, groups[i], mode.name, length);
   }
 }
 
@@ -83,7 +83,7 @@ export function addTerminator(segments, numDataCodewords) {
 
   if (numTermBits > 0)
     return segments.concat(
-      createPart("terminator", 0, numTermBits, numTermBits)
+      createSymbol("terminator", 0, numTermBits, numTermBits)
     );
   return segments;
 }
@@ -93,7 +93,7 @@ export function addFill(segments, numDataCodewords) {
   const remainder = getNumBits(segments) % CODEWORD_LENGTH;
   const numFillBits = remainder > 0 ? CODEWORD_LENGTH - remainder : 0;
   if (numFillBits > 0)
-    return segments.concat(createPart("fill", 0, numFillBits, numFillBits));
+    return segments.concat(createSymbol("fill", 0, numFillBits, numFillBits));
   return segments;
 }
 
@@ -103,7 +103,7 @@ export function addPadding(segments, numDataCodewords) {
   const numPadBytes =
     numDataCodewords - Math.ceil(getNumBits(segments) / CODEWORD_LENGTH);
   const padding = Array.from({ length: numPadBytes }, (_, i) =>
-    createPart("padding", PAD_BYTES[i % 2], PAD_BYTES[i % 2], 8)
+    createSymbol("padding", PAD_BYTES[i % 2], PAD_BYTES[i % 2], 8)
   );
   return [...segments, ...padding];
 }

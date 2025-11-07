@@ -2,6 +2,7 @@ import { parseBasic } from "./parsers/parseBasic";
 import { parseJson } from "./parsers/parseJson";
 import { parseBitField } from "./parsers/parseBitField";
 import { generateMAC } from "./parsers/generateMAC";
+import { MAC_FUNCTIONS } from "./parsers/utils/macFunctions";
 import {
   alphaNumericSchema,
   bitSchema,
@@ -19,8 +20,9 @@ const INPUT_PARSERS = {
 };
 
 function handleInput(inputData) {
-  const encodeFn = INPUT_PARSERS[inputData.type];
-  if (!encodeFn) throw new Error(`Unknown input type: ${inputData.type}`);
+  const parserOpt = inputData.type || inputData.mode
+  const encodeFn = INPUT_PARSERS[parserOpt];
+  if (!encodeFn) throw new Error(`Unknown input type or mode: ${parserOpt}`);
   return encodeFn(inputData);
 }
 
@@ -53,3 +55,5 @@ export const predefinedSchemas = {
   jsonSchema,
   alphaNumericSchema,
 };
+
+export const MAC_FN_NAMES = Object.keys(MAC_FUNCTIONS);

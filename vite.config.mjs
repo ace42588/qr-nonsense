@@ -1,24 +1,35 @@
-import tsconfigPaths from "vite-tsconfig-paths";
-import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
-
-  build: {
-    outDir: "build",
-  },
-  react: {
-    fastRefresh: false,
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    }
   },
   server: {
-    host: "0.0.0.0",
-    allowedHosts: ["verbena-dear-paradox.glitch.me"],
-    port: 3000,
-    strictPort: true,
-    hmr: {
-      clientPort: 443, // Run the websocket server on the SSL port
-    },
+    host: '0.0.0.0',
+    port: 3000
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
+    css: true,
+    coverage: {
+      provider: '@vitest/coverage-v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/test/',
+        '**/*.d.ts',
+        '**/*.config.*',
+        '**/mockData/**'
+      ]
+    }
+  }
 });

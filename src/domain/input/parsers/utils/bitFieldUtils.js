@@ -1,6 +1,10 @@
 // /encoders/bitFieldUtils.js
 
-function bitsNeeded(max) {
+export function maxFromBits(bits) {
+  return Math.pow(2, bits) - 1;
+}
+
+export function bitsNeeded(max) {
   return max <= 0 ? 1 : Math.ceil(Math.log2(Number(max) + 1));
 }
 
@@ -29,7 +33,6 @@ function mapLayoutBits(fields) {
 }
 
 export function generateBitLayout(fields = []) {
-  //console.debug("generateBitLayout", { fields });
   const withBits = fields.map((field) => ({
     ...field,
     bits: bitsNeeded(field.max),
@@ -67,13 +70,11 @@ export function generateBitLayoutFromSchema(schema, prefix = "") {
 }
 
 export function encodeFieldsToBytes(fieldsLayout, values) {
-  console.debug("encodeFieldsToBytes", { fieldsLayout, values });
   let result = 0;
 
   try {
     fieldsLayout.forEach((field) => {
       const value = getValueFromPath(values, field.label);
-      console.debug("encodeFieldsToBytes", { field });
       if (value === undefined) {
         throw new Error(`Missing value for field: ${field.label}`);
       }
@@ -84,7 +85,6 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
       }
 
       result |= (value & ((1 << field.width) - 1)) << field.endBit;
-      console.debug("encodeFieldsToBytes", { result });
     });
 
     const totalBits = fieldsLayout[0].startBit + 1;
@@ -94,9 +94,14 @@ export function encodeFieldsToBytes(fieldsLayout, values) {
     for (let i = 0; i < totalBytes; i++) {
       bytes[i] = (result >> (8 * (totalBytes - i - 1))) & 0xff;
     }
-    console.debug("encodeFieldsToBytes", { bytes });
     return bytes;
-  } catch {
+  } catch (error) {
+    // Log error for debugging
+    if (error instanceof Error) {
+      console.error("encodeFieldsToBytes error:", error.message);
+    } else {
+      console.error("encodeFieldsToBytes error: Unknown error occurred");
+    }
     return null;
   }
 }
