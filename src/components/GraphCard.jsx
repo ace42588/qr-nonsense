@@ -3,6 +3,7 @@ import { useQRData, useQRDataDispatch } from "@/state/qr/QRDataContext";
 import { useInputs } from "@/state/inputs/InputContext";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { gerVersionInfo } from "@/domain/qr/versionUtils";
 
 // Node types for color coding
 const NODE_TYPES = {
@@ -19,8 +20,9 @@ const NODE_TYPES = {
 
 export function GraphCard() {
   const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
-  const { highlightedIds, segments, codewords } = useQRData();
+  const { highlightedIds, segments, codewords, version } = useQRData();
   const { inputs } = useInputs();
+  const { formatInfo: { errorCorrectionLevel } } = useInputs();
   const [clickedNodeIds, setClickedNodeIds] = useState(new Set());
   const [hoveredNodeId, setHoveredNodeId] = useState(null);
   const [tooltipNode, setTooltipNode] = useState(null);
@@ -28,7 +30,7 @@ export function GraphCard() {
   const svgRef = useRef(null);
 
   // Build graph nodes and edges
-  const { nodes, edges, maxY } = useMemo(() => {
+  const { nodes, edges, maxY, blockGroups } = useMemo(() => {
     const nodes = [];
     const edges = [];
     const nodeMap = new Map();
@@ -169,7 +171,52 @@ export function GraphCard() {
       );
     });
 
-    // Add codeword nodes and connect to segments
+    // Separate data and EC codewords (they're interleaved in the array)
+    const dataCodewords = codewords.filter(cw => cw.type === "data");
+    const ecCodewords = codewords.filter(cw => cw.type === "errorCorrection");
+    
+    // Reconstruct blocks to understand EC codeword relationships
+    // We need to de-interleave the codewords to reconstruct blocks
+    const deinterleave = (arr, numBlocks) => {
+      const result = Array.from({ length: numBlocks }, () => []);
+      arr.forEach((item, index) => {
+        result[index % numBlocks].push(item);
+      });
+      return result;
+    };
+    
+    // Get version info to reconstruct blocks
+    let blockGroups = [];
+    if (version > 0 && errorCorrectionLevel !== undefined) {
+      try {
+        const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
+        
+        // De-interleave data codewords
+        const totalBlocks = ecBlocks.reduce((sum, block) => sum + block.numBlocks, 0);
+        const deinterleavedData = deinterleave(dataCodewords, totalBlocks);
+        const deinterleavedEC = deinterleave(ecCodewords, totalBlocks);
+        
+        // Reconstruct blocks
+        let blockIndex = 0;
+        ecBlocks.forEach(({ numBlocks }) => {
+          for (let i = 0; i < numBlocks; i++) {
+            const blockData = deinterleavedData[blockIndex] || [];
+            const blockEC = deinterleavedEC[blockIndex] || [];
+            blockGroups.push({
+              blockIndex,
+              dataCodewords: blockData,
+              ecCodewords: blockEC
+            });
+            blockIndex++;
+          }
+        });
+      } catch (e) {
+        // If we can't reconstruct blocks, fall back to connecting all EC to all data
+        console.warn("Could not reconstruct blocks:", e);
+      }
+    }
+
+    // Create codeword nodes and connect to segments
     codewords.forEach((codeword) => {
       const codewordLabel = codeword.type === "data" 
         ? `Data ${codeword.id.slice(0, 6)}`
@@ -178,20 +225,60 @@ export function GraphCard() {
         `codeword-${codeword.id}`,
         codeword.type === "data" ? "dataCodeword" : "errorCorrectionCodeword",
         codewordLabel,
-        { codewordId: codeword.id, bitIds: codeword.bits.map((b) => b.id) }
+        { codewordId: codeword.id, bitIds: codeword.bits.map((b) => b.id), blockIndex: null }
       );
 
-      // Connect codeword to segments that contributed to it
-      const codewordBitIds = new Set(codeword.bits.map((b) => b.id));
-      segments.forEach((segment) => {
-        if (segment.bitIds && segment.bitIds.some((id) => codewordBitIds.has(id))) {
-          const segmentNode = nodeMap.get(`segment-${segment.id}`);
-          if (segmentNode && !edges.some(e => e.from === segmentNode.id && e.to === codewordNode.id)) {
-            edges.push({ from: segmentNode.id, to: codewordNode.id });
+      // Connect data codeword to segments that contributed to it
+      if (codeword.type === "data") {
+        const codewordBitIds = new Set(codeword.bits.map((b) => b.id));
+        segments.forEach((segment) => {
+          if (segment.bitIds && segment.bitIds.some((id) => codewordBitIds.has(id))) {
+            const segmentNode = nodeMap.get(`segment-${segment.id}`);
+            if (segmentNode && !edges.some(e => e.from === segmentNode.id && e.to === codewordNode.id)) {
+              edges.push({ from: segmentNode.id, to: codewordNode.id });
+            }
           }
-        }
+        });
+      }
+    });
+
+    // Connect EC codewords to their source data codewords via blocks
+    blockGroups.forEach((block) => {
+      block.ecCodewords.forEach((ecCodeword) => {
+        const ecNode = nodeMap.get(`codeword-${ecCodeword.id}`);
+        if (!ecNode) return;
+        
+        // Store block index for visual grouping
+        ecNode.data.blockIndex = block.blockIndex;
+        
+        // Connect EC codeword to all data codewords in its block
+        block.dataCodewords.forEach((dataCodeword) => {
+          const dataNode = nodeMap.get(`codeword-${dataCodeword.id}`);
+          if (dataNode && !edges.some(e => e.from === dataNode.id && e.to === ecNode.id)) {
+            edges.push({ from: dataNode.id, to: ecNode.id });
+          }
+          // Also store block index for data codewords
+          if (dataNode) {
+            dataNode.data.blockIndex = block.blockIndex;
+          }
+        });
       });
     });
+    
+    // If we couldn't reconstruct blocks, connect all EC codewords to all data codewords
+    if (blockGroups.length === 0) {
+      ecCodewords.forEach((ecCodeword) => {
+        const ecNode = nodeMap.get(`codeword-${ecCodeword.id}`);
+        if (!ecNode) return;
+        
+        dataCodewords.forEach((dataCodeword) => {
+          const dataNode = nodeMap.get(`codeword-${dataCodeword.id}`);
+          if (dataNode && !edges.some(e => e.from === dataNode.id && e.to === ecNode.id)) {
+            edges.push({ from: dataNode.id, to: ecNode.id });
+          }
+        });
+      });
+    }
 
     // Calculate max Y for proper viewBox
     let maxY = 500;
@@ -199,8 +286,8 @@ export function GraphCard() {
       maxY = Math.max(...nodes.map(n => n.y)) + 100;
     }
 
-    return { nodes, edges, maxY };
-  }, [inputs, segments, codewords]);
+    return { nodes, edges, maxY, blockGroups };
+  }, [inputs, segments, codewords, version, errorCorrectionLevel]);
 
   // Layout nodes using a hierarchical layout
   const [viewBox, setViewBox] = useState({ x: 0, y: 0, width: 800, height: 500 });
@@ -466,6 +553,39 @@ export function GraphCard() {
               onDoubleClick={handleDoubleClick}
               style={{ cursor: isDragging ? 'grabbing' : 'default' }}
             >
+            {/* Draw boundary boxes for block groups */}
+            {blockGroups && blockGroups.length > 0 && blockGroups.map((block) => {
+              const blockNodes = nodes.filter(n => 
+                (n.type === "dataCodeword" || n.type === "errorCorrectionCodeword") && 
+                n.data?.blockIndex === block.blockIndex &&
+                n.x > 0 && n.y > 0 // Only draw if nodes have been laid out
+              );
+              
+              if (blockNodes.length === 0) return null;
+              
+              const minX = Math.min(...blockNodes.map(n => n.x)) - 10;
+              const maxX = Math.max(...blockNodes.map(n => n.x + 110)) + 10;
+              const minY = Math.min(...blockNodes.map(n => n.y)) - 10;
+              const maxY = Math.max(...blockNodes.map(n => n.y + 35)) + 10;
+              
+              return (
+                <rect
+                  key={`block-${block.blockIndex}`}
+                  x={minX}
+                  y={minY}
+                  width={maxX - minX}
+                  height={maxY - minY}
+                  fill="none"
+                  stroke="#fbbf24"
+                  strokeWidth="2"
+                  strokeDasharray="8,4"
+                  opacity="0.6"
+                  rx="4"
+                  className="pointer-events-none"
+                />
+              );
+            })}
+
             {/* Draw edges */}
             {edges.map((edge, i) => {
               const fromNode = nodes.find((n) => n.id === edge.from);

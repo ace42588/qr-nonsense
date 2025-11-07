@@ -4,8 +4,8 @@ import { generatePatterns, choosePattern } from "@/domain/halftone/patterns";
 import { loadImage, drawImage, getImageData, computeImportanceMap, getBrightness } from "@/domain/halftone/image";
 import { useQRDataDispatch } from "@/state/qr/QRDataContext";
 
-// Default placeholder image - a simple data URL for a 1x1 transparent pixel
-const DEFAULT_IMAGE_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+// Default image - DEF CON logo
+const DEFAULT_IMAGE_URL = "/defcon_k_skull-reg_cropped.jpg";
 
 export function QRImageHalftone({
   imageUrl: initialImageUrl,
