@@ -1,0 +1,30 @@
+# QR-Nonsense Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-11-24
+
+## Active Technologies
+
+- TypeScript 5.8.3 (mixed JS/TS codebase, ES2020 target) + React 18.2.0, Vite 4.0.0+, Tailwind CSS 3.4.17, Radix UI components (003-qart-generation)
+
+## Project Structure
+
+```text
+backend/
+frontend/
+tests/
+```
+
+## Commands
+
+npm test && npm run lint
+
+## Code Style
+
+TypeScript 5.8.3 (mixed JS/TS codebase, ES2020 target): Follow standard conventions
+
+## Recent Changes
+
+- 003-qart-generation: Added TypeScript 5.8.3 (mixed JS/TS codebase, ES2020 target) + React 18.2.0, Vite 4.0.0+, Tailwind CSS 3.4.17, Radix UI components
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->

@@ -27,6 +27,7 @@ export interface Field {
 
 export interface Input {
     id: string;
+    label?: string;
     type: string;
     schemaName?: string;
     schema?: any;
@@ -122,7 +123,15 @@ export interface QRModule {
     source?: Source;
 }
 
-export type QRMatrix = QRModule[][];
+export interface QRMatrix extends Array<QRModule[]> {
+  /**
+   * Gets a module by its bit ID.
+   * 
+   * @param bitId - The bit ID to look up
+   * @returns The module if found, undefined otherwise
+   */
+  getModuleByBitId?(bitId: string): QRModule | undefined;
+}
 
 export interface Segment {
     value: number;

@@ -1,4 +1,4 @@
-import GenericGFPoly from './GenericGFPoly.ts';
+import GenericGFPoly from './GenericGFPoly';
 
 export function addOrSubtractGF(a: number, b: number): number {
   return a ^ b; // Bitwise XOR

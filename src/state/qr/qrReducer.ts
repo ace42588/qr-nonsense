@@ -17,6 +17,7 @@ export const initialQRState: QRState = {
   source: "inputs",
   error: "",
   highlightedIds: [],
+  segments: [],
 };
 
 type QRAction =

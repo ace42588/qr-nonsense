@@ -9,10 +9,12 @@ export function QRBase({
   renderModule,
   children,
   responsive = true,
+  customMatrix = null,
 }) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
-  const { matrix, highlightedIds } = useQRData();
+  const { matrix: contextMatrix, highlightedIds } = useQRData();
+  const matrix = customMatrix || contextMatrix;
   const [size, setSize] = useState(initialSize);
 
   // Responsive resizing

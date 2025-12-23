@@ -12,6 +12,8 @@ import { InputCard } from "@/components/InputCard";
 import { InputSidebar } from "@/components/InputSidebar";
 import { QRCodeCanvas } from "@/components/QRCanvas";
 import { QRImageHalftone } from "@/components/QRImageHalftone";
+import { QRQArt } from "@/components/QRQArt";
+import { QRCombined } from "@/components/QRCombined";
 import { SymbolCard } from "@/components/SymbolCard";
 import { CodewordCard } from "@/components/CodewordCard";
 import { GraphCard } from "@/components/GraphCard";
@@ -21,13 +23,15 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 // State/Context
 import { InputProvider } from "@/state/inputs/InputContext";
 import { QRDataProvider } from "@/state/qr/QRDataContext";
+import { ImageTransformProvider } from "@/state/image/ImageTransformContext";
+import { QArtProvider } from "@/state/qr/QArtContext";
 
 
 type LeftCard = "manual" | "scanner" | "symbols" | "codewords" | "graph";
 
 export default function App(): JSX.Element {
   const [leftCard, setLeftCard] = useState<LeftCard>("manual");
-  const [qrType, setQrType] = useState<"qr" | "hqr">("qr");
+  const [qrType, setQrType] = useState<"qr" | "hqr" | "qart" | "combined">("qr");
 
   return (
     <ErrorBoundary>
@@ -67,7 +71,7 @@ export default function App(): JSX.Element {
               <ToggleGroup
                 type="single"
                 value={qrType}
-                onValueChange={(value: "qr" | "hqr") => setQrType(value)}
+                onValueChange={(value: "qr" | "hqr" | "qart" | "combined") => setQrType(value)}
                 size="sm"
               >
                 <ToggleGroupItem value="qr" aria-label="QR">
@@ -76,24 +80,37 @@ export default function App(): JSX.Element {
                 <ToggleGroupItem value="hqr" aria-label="HQR">
                   <Image className="h-4 w-4" />
                 </ToggleGroupItem>
+                <ToggleGroupItem value="qart" aria-label="QArt">
+                  <SquarePen className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="combined" aria-label="Combined">
+                  <Component className="h-4 w-4" />
+                </ToggleGroupItem>
               </ToggleGroup>
             </div>
           </header>
           <QRDataProvider>
-            <div className="flex flex-1 flex-col gap-4 p-4 min-h-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0">
-                <div className="min-w-0 flex-1 flex flex-col min-h-0">
-                  {leftCard === "manual" && <InputCard />}
-                  {leftCard === "scanner" && <ScannerCard />}
-                  {leftCard === "symbols" && <SymbolCard />}
-                  {leftCard === "codewords" && <CodewordCard />}
-                  {leftCard === "graph" && <GraphCard />}
+            <ImageTransformProvider>
+              <QArtProvider>
+                <div className="flex flex-1 flex-col gap-4 p-4 min-h-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0">
+                    <div className="min-w-0 flex-1 flex flex-col min-h-0">
+                      {leftCard === "manual" && <InputCard />}
+                      {leftCard === "scanner" && <ScannerCard />}
+                      {leftCard === "symbols" && <SymbolCard />}
+                      {leftCard === "codewords" && <CodewordCard />}
+                      {leftCard === "graph" && <GraphCard />}
+                    </div>
+                    <div className="min-w-0 flex-1 flex flex-col min-h-0">
+                      {qrType === "qr" && <QRCodeCanvas />}
+                      {qrType === "hqr" && <QRImageHalftone />}
+                      {qrType === "qart" && <QRQArt />}
+                      {qrType === "combined" && <QRCombined />}
+                    </div>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1 flex flex-col min-h-0">
-                  {qrType === "qr" ? <QRCodeCanvas /> : <QRImageHalftone />}
-                </div>
-              </div>
-            </div>
+              </QArtProvider>
+            </ImageTransformProvider>
           </QRDataProvider>
           </SidebarInset>
         </SidebarProvider>

@@ -1,8 +1,6 @@
-const CODEWORD_LENGTH = 8;
+import { generateId } from "../utils/id";
 
-function getId() {
-  return `${crypto.randomUUID()}`;
-}
+const CODEWORD_LENGTH = 8;
 
 export function validateLength(data, min, max, type) {
   if (data.length < min || data.length > max) {
@@ -18,7 +16,7 @@ function createSymbol(type, value, text, length) {
     value: value,
     text: text,
     length: length,
-    id: getId(),
+    id: generateId(),
   };
 }
 
@@ -50,7 +48,15 @@ function createCharacterCountIndicator(data, codons, mode) {
 }
 
 export function encodeSegment(data, inputMode, symbolItrFn) {
+  // Handle empty data gracefully - return empty segment
+  if (!data || data.length === 0) {
+    return [];
+  }
   const symbols = [...symbolItrFn(data)];
+  // If no symbols were generated (invalid input), return empty segment
+  if (symbols.length === 0) {
+    return [];
+  }
   const mode = createModeIndicator(inputMode);
   const characterCount = createCharacterCountIndicator(data, symbols, inputMode);
   const segment = [mode, characterCount, ...symbols];
@@ -59,9 +65,13 @@ export function encodeSegment(data, inputMode, symbolItrFn) {
 }
 
 export function* createNonByte(input, mode, encoderFn) {
+  // Handle empty or invalid input gracefully
+  if (!input || input.length === 0) {
+    return; // Return empty generator for empty input
+  }
   const groups = input.match(mode.groupingRegex);
-  if (!groups) {
-    throw new Error(`Invalid input for ${mode.name} encoder: ${input}`);
+  if (!groups || groups.length === 0) {
+    return; // Return empty generator for invalid input instead of throwing
   }
   for (let i = 0; i < groups.length; i++) {
     const { value, length } = encoderFn(groups[i]);

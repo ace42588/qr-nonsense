@@ -1,4 +1,4 @@
-import { encodeSegment, validateLength, createNonByte } from "./utils.js";
+import { encodeSegment, validateLength, createNonByte } from "./utils";
 
 const mode = {
   name: "eci",

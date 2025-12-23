@@ -1,4 +1,4 @@
-import { encodeSegment, validateLength, createNonByte } from "./utils.js";
+import { encodeSegment, validateLength, createNonByte } from "./utils";
 import { log } from "@/lib/logger";
 
 const mode = {
@@ -27,4 +27,4 @@ function encoder(data) {
 
 const itrFn = (data) => createNonByte(data, mode, encoder);
 export const encodeAlphanumeric = (input) =>
-  encodeSegment(input.toUpperCase(), mode, itrFn);
+  encodeSegment(input ? input.toUpperCase() : "", mode, itrFn);

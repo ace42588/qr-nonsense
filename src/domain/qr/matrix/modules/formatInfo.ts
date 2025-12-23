@@ -1,5 +1,5 @@
 import { QRMatrix, Source } from "@/types";
-import { FORMAT_INFO_TABLE } from "@/domain/qr/constants/formatInfo.ts";
+import { FORMAT_INFO_TABLE } from "@/domain/qr/constants/formatInfo";
 import { makeNonDataModule } from "./utils";
 
 interface FormatInfoSource extends Source {
@@ -32,10 +32,11 @@ const source: FormatInfoSource = {
  * @param mask - Data mask index (0-7), or -1 for auto selection
  * @returns Format information bits (15 bits) or placeholder value (0x4000) if mask is -1
  */
-function getBitsFromFormatInfo(ecLevel: number, mask: number = -1): number {
+function getBitsFromFormatInfo(ecLevel: number, mask: number | null = -1): number {
   // During auto mask selection, return placeholder that will be replaced
   // after the optimal mask is determined in getMatrix()
-  if (mask === -1 || Number.isNaN(mask)) {
+  // Also handle null (mask "none") - use placeholder
+  if (mask === -1 || mask === null || Number.isNaN(mask)) {
     return 0x4000; // Placeholder value - will be replaced with actual format info
   }
   
@@ -115,7 +116,7 @@ export function addFormatInfoPlaceholders(matrix: QRMatrix): QRMatrix {
   return placeModules(matrix, dummyBits);
 }
 
-export function updateFormatInfoModules(matrix: QRMatrix, errorCorrectionLevel: number, dataMask: number): QRMatrix {
+export function updateFormatInfoModules(matrix: QRMatrix, errorCorrectionLevel: number, dataMask: number | null): QRMatrix {
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
   return placeModules(matrix, formatInfo.toString(2).padStart(15, "0"));
 } 

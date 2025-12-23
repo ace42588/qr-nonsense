@@ -1,22 +1,15 @@
 import React from "react";
 import { useQRDataDispatch } from "@/state/qr/QRDataContext";
 import { QRBase } from "./QRBase";
+import { useModuleHover } from "@/hooks/useModuleHover";
 
 export function QRCodeCanvas() {
-  const { highlightSegment, highlightModules, clearHighlightedModules } = useQRDataDispatch();
+  const { highlightSegment } = useQRDataDispatch();
+  const handleModuleHover = useModuleHover();
 
   const handleModuleClick = (module) => {
     if (module?.bit?.sourceId) {
       highlightSegment(module.bit.sourceId);
-    }
-  };
-
-  const handleModuleHover = (module) => {
-    if (module?.bit?.id) {
-      highlightModules([module.bit.id]);
-    } else if (module === null) {
-      // Mouse left the canvas
-      clearHighlightedModules([]);
     }
   };
 

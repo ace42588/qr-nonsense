@@ -1,14 +1,14 @@
-import { ReedSolomonEncoder } from "../reedsolomon/index.ts";
-import { getECCodeword } from "./utils.ts";
-import { bitsToByte } from "./bits.ts";
-import { Codeword, ECBlock } from "@/types/index.ts";
+import { ReedSolomonEncoder } from "../reedsolomon";
+import { getECCodeword } from "./utils";
+import { bitsToByte } from "./bits";
+import { Codeword, ECBlock, Source } from "@/types";
 
-interface QRBlock {
+export interface QRBlock {
   data: Codeword[];
   errorCorrection: Codeword[];
 }
 
-interface CodewordSource {
+interface CodewordSource extends Source {
   block: number;
   index: number;
 }
@@ -24,6 +24,7 @@ function generateEcCodewords(
 
   return Array.from(ecBytes, ((byte: number, idx: number) => {
     const source: CodewordSource = {
+      id: crypto.randomUUID(),
       block: blockIndex,
       index: idx, // index within the EC section of the block
     };
@@ -31,7 +32,7 @@ function generateEcCodewords(
   }));
 }
 
-export function getBlocks(
+export function generateBlocks(
   dataCodewords: Codeword[],
   ecCodewordsPerBlock: number,
   ecBlocks: ECBlock[]

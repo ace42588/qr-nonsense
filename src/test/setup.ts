@@ -31,3 +31,18 @@ afterAll(() => {
   console.debug = originalDebug;
 });
 
+// Polyfill ImageData for Node.js test environment
+if (typeof ImageData === 'undefined') {
+  class ImageDataPolyfill {
+    data: Uint8ClampedArray;
+    width: number;
+    height: number;
+    constructor(width: number, height: number) {
+      this.width = width;
+      this.height = height;
+      this.data = new Uint8ClampedArray(width * height * 4);
+    }
+  }
+  (global as any).ImageData = ImageDataPolyfill;
+}
+

@@ -1,4 +1,4 @@
-import { encodeSegment, validateLength, createNonByte } from "./utils.js";
+import { encodeSegment, validateLength, createNonByte } from "./utils";
 import { log } from "@/lib/logger";
 
 const mode = {
@@ -24,4 +24,4 @@ function encoder(data) {
 }
 
 const itrFn = (data) => createNonByte(data, mode, encoder);
-export const encodeNumeric = (input) => encodeSegment(input, mode, itrFn);
+export const encodeNumeric = (input) => encodeSegment(input || "", mode, itrFn);

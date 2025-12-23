@@ -1,7 +1,7 @@
-import { EC_INFO, REMAINDER_BITS } from "./constants/errorCorrectionInfo.ts";
-import { ECBlock } from "@/types/index.ts";
+import { EC_INFO, REMAINDER_BITS } from "./constants/errorCorrectionInfo";
+import { ECBlock } from "@/types";
 
-interface VersionInfo {
+export interface VersionInfo {
   version: number;
   capacity: number;
   ecCodewordsPerBlock: number;
@@ -24,7 +24,7 @@ export function getMinimumQRCodeVersion(
 ): VersionInfo {
   // Try each version until one is found that fits the data.
   for (let version = 1; version <= 40; version++) {
-    const versionInfo = gerVersionInfo(
+    const versionInfo = getVersionInfo(
       errorCorrectionLevel,
       version
     );
@@ -37,7 +37,7 @@ export function getMinimumQRCodeVersion(
   throw new Error("Data too large to fit in a QR code version 40.");
 }
 
-export function gerVersionInfo(
+export function getVersionInfo(
   errorCorrectionLevel: number,
   version: number
 ): VersionInfo {

@@ -1,8 +1,9 @@
 // React
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 
 // State/Context
 import { useQRData, useQRDataDispatch } from "@/state/qr/QRDataContext";
+import { useQArtResult } from "@/state/qr/QArtContext";
 
 // shadcn/ui
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,13 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 
 export function SymbolCard() {
   const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
-  const { highlightedIds, segments } = useQRData();
+  const { highlightedIds, segments: contextSegments } = useQRData();
+  const { qartResult } = useQArtResult();
+  
+  // Use QArt-optimized segments if available, otherwise use context segments
+  const segments = useMemo(() => {
+    return qartResult?.segments || contextSegments;
+  }, [qartResult?.segments, contextSegments]);
   const [clicked, setClicked] = useState(false);
 
   const isHighlighted = (id) => {

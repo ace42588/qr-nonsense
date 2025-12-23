@@ -1,9 +1,11 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useQRData, useQRDataDispatch } from "@/state/qr/QRDataContext";
 import { useInputs } from "@/state/inputs/InputContext";
+import { useQArtResult } from "@/state/qr/QArtContext";
+import { getCodewords } from "@/domain/qr";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { gerVersionInfo } from "@/domain/qr/versionUtils";
+import { getVersionInfo } from "@/domain/qr/versionUtils";
 
 // Node types for color coding
 const NODE_TYPES = {
@@ -20,9 +22,33 @@ const NODE_TYPES = {
 
 export function GraphCard() {
   const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
-  const { highlightedIds, segments, codewords, version } = useQRData();
+  const { highlightedIds, segments: contextSegments, codewords: contextCodewords, version, versionInfo } = useQRData();
   const { inputs } = useInputs();
   const { formatInfo: { errorCorrectionLevel } } = useInputs();
+  const { qartResult } = useQArtResult();
+  
+  // Use QArt-optimized segments if available, otherwise use context segments
+  const segments = useMemo(() => {
+    return qartResult?.segments || contextSegments;
+  }, [qartResult?.segments, contextSegments]);
+  
+  // Regenerate codewords from QArt segments if available
+  const codewords = useMemo(() => {
+    if (qartResult?.segments && qartResult.segments.length > 0) {
+      try {
+        const { codewords: regeneratedCodewords } = getCodewords(
+          qartResult.segments,
+          versionInfo.version,
+          errorCorrectionLevel
+        );
+        return regeneratedCodewords;
+      } catch (err) {
+        console.warn("Failed to regenerate codewords from QArt segments:", err);
+        return contextCodewords;
+      }
+    }
+    return contextCodewords;
+  }, [qartResult?.segments, contextCodewords, versionInfo.version, errorCorrectionLevel]);
   const [clickedNodeIds, setClickedNodeIds] = useState(new Set());
   const [hoveredNodeId, setHoveredNodeId] = useState(null);
   const [tooltipNode, setTooltipNode] = useState(null);
@@ -189,7 +215,7 @@ export function GraphCard() {
     let blockGroups = [];
     if (version > 0 && errorCorrectionLevel !== undefined) {
       try {
-        const { ecBlocks } = gerVersionInfo(errorCorrectionLevel, version);
+        const { ecBlocks } = getVersionInfo(errorCorrectionLevel, version);
         
         // De-interleave data codewords
         const totalBlocks = ecBlocks.reduce((sum, block) => sum + block.numBlocks, 0);

@@ -1,26 +1,34 @@
-import { getBlocks } from "./blocks.ts";
-import { gerVersionInfo } from "../versionUtils.ts";
-import { getCodewordsFromSegments, interleave } from "./utils.ts";
-import { Codeword, Segment } from "@/types/index.ts";
+import { generateBlocks, QRBlock } from "./blocks";
+import { getVersionInfo } from "../versionUtils";
+import { getCodewordsFromSegments, interleave } from "./utils";
+import { Codeword, Segment } from "@/types";
+
+export interface CodewordsResult {
+  codewords: Codeword[];
+  blocks: QRBlock[];
+}
 
 export function generateCodewords(
   segments: Segment[],
   version: number,
   errorCorrectionLevel: number
-): Codeword[] {
+): CodewordsResult {
   const dataCodewords = getCodewordsFromSegments(segments);
 
-  const { ecCodewordsPerBlock, ecBlocks } = gerVersionInfo(
+  const { ecCodewordsPerBlock, ecBlocks } = getVersionInfo(
     errorCorrectionLevel,
     version
   );
 
-  const qrBlocks = getBlocks(dataCodewords, ecCodewordsPerBlock, ecBlocks);
+  const qrBlocks = generateBlocks(dataCodewords, ecCodewordsPerBlock, ecBlocks);
   
-  return [
+  const codewords = [
     ...interleave(qrBlocks.map((b) => b.data)),
     ...interleave(qrBlocks.map((b) => b.errorCorrection))
   ];
-}
 
-export const getCodewords = generateCodewords; 
+  return {
+    codewords,
+    blocks: qrBlocks,
+  };
+} 

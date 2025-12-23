@@ -1,24 +1,21 @@
-import { getBits } from "./bits.ts";
-import { Bit, Codeword, Segment, Source } from "@/types/index.ts";
+import { getBits } from "./bits";
+import { Bit, Codeword, Segment, Source } from "@/types";
+import { generateId } from "../utils/id";
 
 const CODEWORD_LENGTH = 8;
-
-function getId(): string {
-  return `${crypto.randomUUID()}`;
-}
 
 export function getCodeword(bits: Bit[], type: "data" | "errorCorrection"): Codeword {
   if (!bits || bits.length !== CODEWORD_LENGTH)
     throw new Error(`Invalid bits for getCodeword(): ${bits}`);
   return {
     type: type,
-    id: getId(),
+    id: generateId(),
     bits,
   };
 }
 
 export function getECCodeword(byte: number, source: Source): Codeword {
-  const id = getId();
+  const id = generateId();
   return {
     type: "errorCorrection",
     source,

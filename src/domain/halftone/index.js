@@ -1,69 +1,61 @@
-const domTarget = document.currentScript.parentElement;
-const attach = (node) => {
-  document.currentScript.parentElement.appendChild(node);
-};
-const resize = (canvas, width, height) => {
-  canvas.width = width;
-  canvas.height = height;
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
-};
+/**
+ * Pure utility functions for halftone processing.
+ * These functions operate on canvas contexts and image data without DOM manipulation.
+ */
 
-const createCanvas = (width, height) => {
-  const canvas = document.createElement("canvas");
-  resize(canvas, width, height);
-  return canvas;
-};
-
-const WIDTH = 200,
-  HEIGHT = 200;
-
-const sourceCanvas = createCanvas(WIDTH, HEIGHT);
-attach(sourceCanvas);
-const sourceCtx = sourceCanvas.getContext("2d");
-
-const gradient = sourceCtx.createLinearGradient(
-  0,
-  HEIGHT / 2,
-  WIDTH,
-  HEIGHT / 2
-);
-gradient.addColorStop(0, "black");
-gradient.addColorStop(1, "white");
-
-sourceCtx.fillStyle = gradient;
-sourceCtx.fillRect(0, 0, WIDTH, HEIGHT);
-
-const targetCanvas = createCanvas(WIDTH, HEIGHT);
-attach(targetCanvas);
-const targetCtx = targetCanvas.getContext("2d");
-
-let PIXELS_PER_DOT = 10;
-const sourceImageData = sourceCtx.getImageData(0, 0, WIDTH, HEIGHT);
-
-const positionToDataIndex = (x, y, width) => {
-  width = width || WIDTH;
+/**
+ * Convert 2D position to ImageData array index
+ * @param {number} x - X coordinate
+ * @param {number} y - Y coordinate  
+ * @param {number} width - Image width
+ * @returns {number} Index in ImageData.data array
+ */
+export function positionToDataIndex(x, y, width) {
   // data is arranged as [R, G, B, A, R, G, B, A, ...]
   return (y * width + x) * 4;
-};
+}
 
-// re-maps a value from its original range [minA, maxA] to the range [minB, maxB]
-const map = (value, minA, maxA, minB, maxB) => {
+/**
+ * Re-map a value from its original range [minA, maxA] to the range [minB, maxB]
+ * @param {number} value - Value to remap
+ * @param {number} minA - Source minimum
+ * @param {number} maxA - Source maximum
+ * @param {number} minB - Target minimum
+ * @param {number} maxB - Target maximum
+ * @returns {number} Remapped value
+ */
+export function map(value, minA, maxA, minB, maxB) {
   return ((value - minA) / (maxA - minA)) * (maxB - minB) + minB;
-};
+}
 
-const rotationCanvas = createCanvas(WIDTH, HEIGHT);
-attach(rotationCanvas);
-const rotationCtx = rotationCanvas.getContext("2d");
-
-const rotatePointAboutPosition = ([x, y], [rotX, rotY], angle) => {
+/**
+ * Rotate a point about a given position
+ * @param {number[]} point - [x, y] coordinates
+ * @param {number[]} center - [x, y] rotation center
+ * @param {number} angle - Rotation angle in radians
+ * @returns {number[]} Rotated [x, y] coordinates
+ */
+export function rotatePointAboutPosition([x, y], [rotX, rotY], angle) {
   return [
     (x - rotX) * Math.cos(angle) - (y - rotY) * Math.sin(angle) + rotX,
     (x - rotX) * Math.sin(angle) + (y - rotY) * Math.cos(angle) + rotY,
   ];
-};
+}
 
-const halftone = ({
+/**
+ * Apply halftone effect to image data
+ * @param {Object} options - Halftone options
+ * @param {number} options.angle - Halftone angle in degrees
+ * @param {number} options.dotSize - Maximum dot size
+ * @param {number} options.dotResolution - Spacing between dots
+ * @param {CanvasRenderingContext2D} options.targetCtx - Target canvas context
+ * @param {CanvasRenderingContext2D} options.sourceCtx - Source canvas context
+ * @param {number} options.width - Image width
+ * @param {number} options.height - Image height
+ * @param {string} options.color - Dot color (default: "black")
+ * @param {boolean} options.layer - Whether to clear background
+ */
+export function halftone({
   angle,
   dotSize,
   dotResolution,
@@ -73,11 +65,13 @@ const halftone = ({
   height,
   color,
   layer,
-}) => {
+}) {
   const sourceImageData = sourceCtx.getImageData(0, 0, width, height);
   angle = (angle * Math.PI) / 180;
   targetCtx.fillStyle = "white";
-  layer || targetCtx.fillRect(0, 0, width, height);
+  if (!layer) {
+    targetCtx.fillRect(0, 0, width, height);
+  }
   targetCtx.fillStyle = color || "black";
   // get the four corners of the screen
   const tl = [0, 0];
@@ -127,4 +121,4 @@ const halftone = ({
       }
     }
   }
-};
+}

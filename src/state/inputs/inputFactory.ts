@@ -1,16 +1,8 @@
-import { jsonSchema } from "@/domain/input/serializationSchemas.ts";
-import { Input } from "@/types/index.ts";
-
-export interface Field {
-  label: string;
-  min: number;
-  max: number;
-  bitWidth: number;
-  type: string;
-  mode: string;
-}
+import { jsonSchema } from "@/domain/input/serializationSchemas";
+import { Input, Field } from "@/types";
 
 export const DEFAULT_FIELD: Field = {
+  id: crypto.randomUUID(),
   label: "Field",
   min: 0,
   max: 255,
@@ -109,10 +101,22 @@ export function createInput({
   label = "New Input",
   ...overrides
 }: InputOptions = {}): Input {
+  const defaults = getInputTypeDefaults(type);
+  // Map 'text' property to 'data' for string inputs to satisfy Input interface
+  // Priority: overrides.data > overrides.text > defaults.text > defaults.data > ""
+  const defaultsWithText = defaults as unknown as Record<string, unknown>;
+  const overridesWithText = overrides as Record<string, unknown>;
+  const data = (overridesWithText.data as string) 
+    ?? (overridesWithText.text as string) 
+    ?? (defaultsWithText.text as string) 
+    ?? (defaultsWithText.data as string) 
+    ?? "";
+  
   return {
     id: id || crypto.randomUUID(),
     label,
-    ...getInputTypeDefaults(type),
+    ...defaults,
+    data,
     ...overrides,
-  };
+  } as Input;
 } 

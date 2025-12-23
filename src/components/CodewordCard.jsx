@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQRData, useQRDataDispatch } from "@/state/qr/QRDataContext";
+import { useQArtResult } from "@/state/qr/QArtContext";
+import { getCodewords } from "@/domain/qr";
+import { useInputs } from "@/state/inputs/InputContext";
 
 // shadcn/ui
 import { Button } from "@/components/ui/button";
@@ -9,7 +12,29 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 
 export function CodewordCard() {
   const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
-  const { highlightedIds, codewords } = useQRData();
+  const { highlightedIds, codewords: contextCodewords, versionInfo } = useQRData();
+  const { qartResult } = useQArtResult();
+  const { formatInfo } = useInputs();
+  
+  // Regenerate codewords from QArt segments if available, otherwise use context codewords
+  const codewords = useMemo(() => {
+    if (qartResult?.segments && qartResult.segments.length > 0) {
+      try {
+        // Regenerate codewords from QArt-optimized segments
+        // Note: This creates new codeword objects, but segments already have correct bitIds
+        const { codewords: regeneratedCodewords } = getCodewords(
+          qartResult.segments,
+          versionInfo.version,
+          formatInfo.errorCorrectionLevel
+        );
+        return regeneratedCodewords;
+      } catch (err) {
+        console.warn("Failed to regenerate codewords from QArt segments:", err);
+        return contextCodewords;
+      }
+    }
+    return contextCodewords;
+  }, [qartResult?.segments, contextCodewords, versionInfo.version, formatInfo.errorCorrectionLevel]);
   const [clicked, setClicked] = useState(false);
 
   const isHighlighted = (codeword) => {

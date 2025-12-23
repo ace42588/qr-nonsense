@@ -1,4 +1,4 @@
-import { encodeSegment, createDataSymbol } from "./utils.js";
+import { encodeSegment, createDataSymbol } from "./utils";
 
 const mode = {
   name: "byte",
@@ -39,4 +39,4 @@ export function* iteratorFunc(data, options) {
 }
 
 export const encodeByte = (input, options) =>
-  encodeSegment(input, mode, (data) => iteratorFunc(data, options));
+  encodeSegment(input || "", mode, (data) => iteratorFunc(data, options));

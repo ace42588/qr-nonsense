@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer, ReactNode, JSX } from "react";
-import { Actions, qrReducer, initialQRState } from "./qrReducer.ts";
-import { useDerivedQRData } from "../../hooks/useDerivedQRData.ts";
-import { QRState, Segment } from "@/types/index.ts";
+import { Actions, qrReducer, initialQRState } from "./qrReducer";
+import { useDerivedQRData } from "../../hooks/useDerivedQRData";
+import { QRState, Segment } from "@/types";
 
 interface QRDataDispatchContextValue {
   setErrorCorrection: (payload: number) => void;

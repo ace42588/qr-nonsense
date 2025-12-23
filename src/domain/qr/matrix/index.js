@@ -1,4 +1,4 @@
-import { createMatrix, addCodewords, applyMask } from "./utils";
+import { createMatrix, addCodewords, applyMask, attachModuleIndex } from "./utils";
 import { calculatePenalty } from "./calculatePenalty";
 import { addPatterns, updateFormatInfoModules } from "./modules";
 
@@ -35,6 +35,8 @@ export function getMatrix(codewords, dataMask, version, errorCorrectionLevel) {
       errorCorrectionLevel,
       dataMask
     );
+    // Attach getModuleByBitId method to the matrix
+    attachModuleIndex(final);
     return { matrix: final, dataMask };
   }
 
@@ -64,6 +66,9 @@ export function getMatrix(codewords, dataMask, version, errorCorrectionLevel) {
     errorCorrectionLevel,
     bestMask
   );
+
+  // Attach getModuleByBitId method to the matrix
+  attachModuleIndex(final);
 
   return { matrix: final, dataMask: bestMask };
 }

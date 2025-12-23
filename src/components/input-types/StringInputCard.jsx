@@ -5,9 +5,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -28,7 +26,18 @@ export function StringInputCard({ input, dispatch }) {
       <CardContent className="grid gap-4">
         <Select
           value={input.mode || "byte"}
-          onValueChange={(mode) => dispatch(updateInput(input.id, { mode }))}
+          onValueChange={(mode) => {
+            // Filter text to match the new mode when switching
+            let filteredText = input.text || "";
+            if (mode === "numeric" && filteredText) {
+              // Only keep digits
+              filteredText = filteredText.replace(/\D/g, "");
+            } else if (mode === "alphanumeric" && filteredText) {
+              // Only keep alphanumeric characters and allowed symbols
+              filteredText = filteredText.replace(/[^0-9A-Z $%*+\-./:]/gi, "").toUpperCase();
+            }
+            dispatch(updateInput(input.id, { mode, text: filteredText }));
+          }}
         >
           <SelectTrigger>
             <SelectValue />
@@ -50,6 +59,9 @@ export function StringInputCard({ input, dispatch }) {
             onChange={(e) =>
               dispatch(updateInput(input.id, { text: e.target.value }))
             }
+            disabled={input.qartVariation === true}
+            className={input.qartVariation === true ? "bg-muted cursor-not-allowed" : ""}
+            title={input.qartVariation === true ? "QArt variation input - value is controlled by Variation Template" : ""}
           />
         </div>
 

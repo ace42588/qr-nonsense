@@ -16,9 +16,8 @@ import {
 import { ChevronDown } from "lucide-react";
 
 // State and Actions
-import { useInputs } from "@/state/inputs/InputContext";
+import { useInputs, useInputDispatch } from "@/state/inputs/InputContext";
 import { useDerivedQRData } from "@/hooks/useDerivedQRData";
-import { useInputDispatch } from "@/state/inputs/InputContext";
 import {
   setErrorCorrectionLevel,
   setVersion,
@@ -55,7 +54,8 @@ const masks = [
 
 export function FormatInput() {
   const { errorCorrectionLevel, version, dataMask } = useInputs();
-  const { version: cVersion, dataMask: cDataMask } = useDerivedQRData();
+  const { versionInfo, dataMask: cDataMask } = useDerivedQRData();
+  const cVersion = versionInfo.version;
   const dispatch = useInputDispatch();
   return (
     <Collapsible

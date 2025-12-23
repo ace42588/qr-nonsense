@@ -1,28 +1,26 @@
 import { Bit, Source } from "@/types";
 import { log } from "@/lib/logger";
-
-function getId(): string {
-  return `${crypto.randomUUID()}`;
-}
+import { generateId } from "../utils/id";
 
 function getBit(value: number, sourceId: string, sourceType?: string): Bit {
   if (!sourceId) throw new Error("Missing source ID");
   return {
     type: sourceType,
     value,
-    id: getId(),
+    id: generateId(),
     sourceId,
   };
 }
 
 export function getBits(value: string | number, length: number, source: Source): Bit[] {
-  log.debug("getBits", { value, length, source });
+  //log.debug("getBits", { value, length, source });
   if (!source) throw new Error("Missing source");
+  /*
   let binaryString = value;
   if (typeof value === 'number' && length) {
     binaryString = value.toString(2).padStart(length, "0");
   }
-  
+  */
   switch (typeof value) {
     case "string": {
       const re = /[01]{2,}/gm;

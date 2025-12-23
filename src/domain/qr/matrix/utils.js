@@ -54,7 +54,7 @@ export function mapQRMatrix(matrix, callbackFn) {
  */
 export function applyMask(matrix, maskIndex) {
   const maskFunc = DATA_MASKS[maskIndex] || (() => false); // No mask
-  const masked = mapQRMatrix(matrix, ({ x, y, idx }, current) => {
+  const masked = mapQRMatrix(matrix, ({ x, y }, current) => {
     const isMasked = maskFunc({ x, y });
     // makeModule preserves the bit reference, ensuring bit.id remains unchanged
     return makeModule({ ...current, isMasked });
@@ -80,4 +80,42 @@ export function addCodewords(matrix, codewords) {
     const bit = bits[idx];
     return makeModule({ bit, x, y });
   });
+}
+
+/**
+ * Attaches getModuleByBitId method to a matrix and builds an index.
+ * 
+ * This function scans the matrix once to build an index of bit IDs to modules,
+ * then attaches a getModuleByBitId method directly to the matrix array.
+ * 
+ * @param {Array} matrix - The QR matrix to index
+ * @param {boolean} includeNonData - Whether to include non-data modules (default: false)
+ * @returns {Array} The same matrix with getModuleByBitId method attached
+ */
+export function attachModuleIndex(matrix, includeNonData = false) {
+  // Build index: bitId -> module
+  const bitIdToModule = new Map();
+  const dimension = matrix.length;
+  
+  for (let y = 0; y < dimension; y++) {
+    const row = matrix[y];
+    if (!row) continue;
+    
+    for (let x = 0; x < row.length; x++) {
+      const module = row[x];
+      if (module && module.bitId) {
+        // Include all modules with bitId, or only data modules if specified
+        if (includeNonData || !module.nonData) {
+          bitIdToModule.set(module.bitId, module);
+        }
+      }
+    }
+  }
+  
+  // Attach getModuleByBitId method to the matrix
+  matrix.getModuleByBitId = function(bitId) {
+    return bitIdToModule.get(bitId);
+  };
+  
+  return matrix;
 }
