@@ -49,6 +49,7 @@ import {
 
 // Feature Components
 import { FormatInput } from "./FormatInput";
+import { ImageTransformInput } from "./ImageTransformInput";
 
 // State and Actions
 import { useInputs, useInputDispatch } from "@/state/inputs/InputContext";
@@ -180,6 +181,8 @@ export function InputSidebar({ ...props }) {
       <SidebarSeparator />
 
       <FormatInput />
+
+      <ImageTransformInput />
 
       <SidebarSeparator />
       <SidebarGroup>

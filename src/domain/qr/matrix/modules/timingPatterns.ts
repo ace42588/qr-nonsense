@@ -1,4 +1,4 @@
-import { QRMatrix, Source } from "@/types";
+import { QRMatrix, Source } from "../../../shared/types";
 import { makeNonDataModule } from "./utils";
 
 const source: Source = { id: crypto.randomUUID(), name: "TimingPattern" };

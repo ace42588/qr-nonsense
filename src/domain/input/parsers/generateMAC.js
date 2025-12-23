@@ -1,7 +1,7 @@
 import {
   MAC_FUNCTIONS
 } from "./utils/macFunctions";
-import { log } from "@/lib/logger";
+import { logger as log } from "@/adapters/logger";
 
 export function generateMAC(input) {
   const { algo, key, includedFields, inputs } = input;

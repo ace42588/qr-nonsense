@@ -11,7 +11,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 export function CodewordCard() {
-  const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
+  const { highlightModules, clearAllHighlights } = useQRDataDispatch();
   const { highlightedIds, codewords: contextCodewords, versionInfo } = useQRData();
   const { qartResult } = useQArtResult();
   const { formatInfo } = useInputs();
@@ -87,7 +87,7 @@ export function CodewordCard() {
                         if (!clicked) highlightModules(codeword.bits.map((b) => b.id));
                       }}
                       onMouseLeave={() => {
-                        if (!clicked) clearHighlightedModules(codeword.bits.map((b) => b.id));
+                        if (!clicked) clearAllHighlights();
                       }}
                       title={undefined}
                     >

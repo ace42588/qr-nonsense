@@ -1,4 +1,4 @@
-import { Codeword, QRMatrix } from "@/types";
+import { Codeword, QRMatrix } from "../../shared/types";
 
 interface MatrixResult {
   matrix: QRMatrix;

@@ -5,7 +5,7 @@
  * either by extending an existing segment or creating a new segment.
  */
 
-import { Segment, VersionInfo } from "@/types";
+import { Segment, VersionInfo } from "../shared/types";
 import { encodeNumeric } from "../qr/encoders/numeric";
 import { encodeAlphanumeric } from "../qr/encoders/alphanumeric";
 import { encodeByte } from "../qr/encoders/byte";
@@ -332,52 +332,81 @@ export function appendDataToSegments(
     // Generate placeholder data for QArt to optimize
     const placeholderData = generatePlaceholderData(lastGroup.mode, optimalLength);
     
-    // Combine original data + separator + placeholder data
     const separator = appendConfig.separator || "";
-    const combinedData = originalText + separator + placeholderData;
-
-    // Encode only the appended portion (separator + placeholder) as data segments
-    // Do NOT create a new mode indicator or character count - we'll update the existing one
-    const appendedData = separator + placeholderData;
-    let appendDataSegments: Segment[];
     
-    // Use the encoder functions but extract only the data segments (skip mode indicator and char count)
+    // Encode separator and placeholder separately
+    // Separator should remain fixed (not optimized), placeholder will be optimized
+    let separatorSegments: Segment[] = [];
+    let placeholderSegments: Segment[] = [];
+    
+    // Get encoding for byte mode if needed
+    let byteEncoding = "utf-8";
+    if (lastGroup.mode === "byte") {
+      const firstDataSeg = newSegments.slice(lastGroup.start, lastGroup.end).find(s => s.type === "data");
+      byteEncoding = (firstDataSeg as any)?.inputEncoding || "utf-8";
+    }
+    
+    // Encode separator separately (if it exists) - keep as regular data segments
+    if (separator) {
+      switch (lastGroup.mode) {
+        case "numeric": {
+          const fullGroup = encodeNumeric(separator);
+          separatorSegments = fullGroup.filter(s => s.type === "data");
+          break;
+        }
+        case "alphanumeric": {
+          const fullGroup = encodeAlphanumeric(separator);
+          separatorSegments = fullGroup.filter(s => s.type === "data");
+          break;
+        }
+        case "byte": {
+          const fullGroup = encodeByte(separator, byteEncoding);
+          separatorSegments = fullGroup.filter(s => s.type === "data");
+          break;
+        }
+        default:
+          throw new Error(`Unsupported encoding mode: ${lastGroup.mode}`);
+      }
+    }
+    
+    // Encode placeholder separately - will be marked as qartAppend
     switch (lastGroup.mode) {
       case "numeric": {
-        const fullGroup = encodeNumeric(appendedData);
-        appendDataSegments = fullGroup.filter(s => s.type === "data");
+        const fullGroup = encodeNumeric(placeholderData);
+        placeholderSegments = fullGroup.filter(s => s.type === "data");
         break;
       }
       case "alphanumeric": {
-        const fullGroup = encodeAlphanumeric(appendedData);
-        appendDataSegments = fullGroup.filter(s => s.type === "data");
+        const fullGroup = encodeAlphanumeric(placeholderData);
+        placeholderSegments = fullGroup.filter(s => s.type === "data");
         break;
       }
       case "byte": {
-        // For byte mode, try to preserve encoding if possible
-        const firstDataSeg = newSegments.slice(lastGroup.start, lastGroup.end).find(s => s.type === "data");
-        const encoding = (firstDataSeg as any)?.inputEncoding || "utf-8";
-        const fullGroup = encodeByte(appendedData, encoding);
-        appendDataSegments = fullGroup.filter(s => s.type === "data");
+        const fullGroup = encodeByte(placeholderData, byteEncoding);
+        placeholderSegments = fullGroup.filter(s => s.type === "data");
         break;
       }
       default:
         throw new Error(`Unsupported encoding mode: ${lastGroup.mode}`);
     }
 
-    if (appendDataSegments.length === 0) {
-      throw new Error("Failed to encode appended data");
+    if (placeholderSegments.length === 0) {
+      throw new Error("Failed to encode placeholder data");
     }
 
-    // Mark ALL appended data segments as QArt-optimizable
-    const markedAppendSegments = appendDataSegments.map(seg => ({
+    // Mark ONLY placeholder segments as QArt-optimizable (separator remains fixed)
+    const markedPlaceholderSegments = placeholderSegments.map(seg => ({
       ...seg,
       type: QART_APPEND_TYPE
     }));
+    
+    // Combine separator (fixed) + placeholder (optimizable) segments
+    const allAppendSegments = [...separatorSegments, ...markedPlaceholderSegments];
 
-    // Calculate new total character count (original + separator + appended)
+    // Calculate new total character count (original + separator + placeholder)
     const originalCharCount = newSegments[lastGroup.start + 1].value; // characterCountIndicator value
-    const newCharCount = originalCharCount + appendedData.length;
+    const appendedDataLength = separator.length + placeholderData.length;
+    const newCharCount = originalCharCount + appendedDataLength;
     
     // Update character count indicator
     // Character count indicator length depends on version and mode thresholds
@@ -412,7 +441,7 @@ export function appendDataToSegments(
     // - Keep original mode indicator (unchanged)
     // - Update character count indicator
     // - Keep original data segments (unchanged)
-    // - Append separator + optimized data segments (marked as qartAppend)
+    // - Append separator segments (fixed, regular data) + placeholder segments (marked as qartAppend)
     const modeIndicator = newSegments[lastGroup.start];
     const originalDataSegments = newSegments.slice(lastGroup.start + 2, lastGroup.end); // Skip mode indicator and char count
     const afterGroup = newSegments.slice(lastGroup.end);
@@ -423,7 +452,7 @@ export function appendDataToSegments(
       modeIndicator,
       updatedCharCountIndicator,
       ...originalDataSegments,
-      ...markedAppendSegments,
+      ...allAppendSegments,
       ...afterGroup
     ];
   } else {

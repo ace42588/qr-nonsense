@@ -1,7 +1,8 @@
 import { createContext, useContext, useReducer, ReactNode, JSX } from "react";
 import { Actions, qrReducer, initialQRState } from "./qrReducer";
 import { useDerivedQRData } from "../../hooks/useDerivedQRData";
-import { QRState, Segment } from "@/types";
+import { QRState } from "@/app/types";
+import { Segment } from "@/domain/shared/types";
 
 interface QRDataDispatchContextValue {
   setErrorCorrection: (payload: number) => void;
@@ -11,6 +12,7 @@ interface QRDataDispatchContextValue {
   setInputs: (payload: Partial<QRState>) => void;
   highlightModules: (ids: string[]) => void;
   clearHighlightedModules: (ids: string[]) => void;
+  clearAllHighlights: () => void;
   highlightSegment: (id: string) => void;
 }
 
@@ -47,6 +49,9 @@ export function QRDataProvider({ children }: QRDataProviderProps): JSX.Element {
     },
     clearHighlightedModules: (ids) => {
       dispatch({ type: Actions.RemoveHighlightIds, ids });
+    },
+    clearAllHighlights: () => {
+      dispatch({ type: Actions.ClearHighlights });
     },
     highlightSegment: (id) => dispatch({ type: Actions.HighlightIds, ids: id }),
   };

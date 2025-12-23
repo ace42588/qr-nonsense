@@ -3,7 +3,7 @@
  */
 
 import { QRBlock } from "../qr/codewords/blocks";
-import { QRMatrix } from "@/types";
+import { QRMatrix } from "../shared/types";
 
 export interface BitPosition {
   bi: number; // Bit index within block (0 to nd*8-1 for data, nd*8 to (nd+nc)*8-1 for EC)
@@ -59,12 +59,13 @@ export type PriorityFunctionType = "contrast" | "random";
 /**
  * Build priority-ordered list of bits for a block
  * 
- * @param priorityType - Priority function type: "contrast" (prioritizes low-contrast regions) or "random" (uniform distribution)
+ * @param priorityType - Priority function type: "contrast" (prioritizes high-contrast regions to match image details) or "random" (uniform distribution)
  */
 export function buildBitOrder(
   block: QRBlock,
   matrix: QRMatrix,
-  targetGrid: Float32Array,
+  _targetGrid: Float32Array, // Kept for API compatibility, but contrastGrid is used for priority
+  contrastGrid: Float32Array, // Pre-computed local variance (contrast) for each module
   dimension: number,
   editableSegmentIds: Set<string>, // Padding segments + QArt-append segments
   priorityType: PriorityFunctionType = "contrast"
@@ -74,30 +75,26 @@ export function buildBitOrder(
   const order: BitPosition[] = [];
 
   // Collect all controllable bits (data + EC) together for unified prioritization
-  // CRITICAL: Only modify codewords that are ENTIRELY editable (all 8 bits from padding or QArt-append segments)
-  // Modifying codewords that contain user data bits will corrupt the user data
+  // CRITICAL: Include ALL data bits from editable segments (padding or QArt-append)
+  // The basis matrix algorithm (setBlockBit) will check if a basis vector affects user data bytes
+  // and reject it if necessary. We should include all editable bits and let setBlockBit decide.
+  // This allows controlling individual bits even when they're in codewords that also contain user data.
   for (let cwIdx = 0; cwIdx < block.data.length; cwIdx++) {
     const codeword = block.data[cwIdx];
     if (!codeword?.bits) continue;
     
-    // Check if ALL bits in this codeword are from editable segments (padding or QArt-append)
-    const allBitsAreEditable = codeword.bits.every(bit => 
-      bit?.sourceId && editableSegmentIds.has(bit.sourceId)
-    );
-    
-    if (!allBitsAreEditable) {
-      // Skip this entire codeword - it contains user data bits
-      continue;
-    }
-    
-    // All bits are editable - add all 8 bits to the order
+    // Add individual bits that come from editable segments
+    // Don't require the entire codeword to be editable - individual bits can be controlled
     for (let bitInCw = 0; bitInCw < 8; bitInCw++) {
       const bit = codeword.bits[bitInCw];
       if (!bit?.id) continue;
       
-      const bitIndex = cwIdx * 8 + bitInCw;
-      const pos = getBitPosition(block, bitIndex, true, matrix, nd);
-      if (pos) order.push(pos);
+      // Only include bits from editable segments (padding or QArt-append)
+      if (bit.sourceId && editableSegmentIds.has(bit.sourceId)) {
+        const bitIndex = cwIdx * 8 + bitInCw;
+        const pos = getBitPosition(block, bitIndex, true, matrix, nd);
+        if (pos) order.push(pos);
+      }
     }
   }
 
@@ -116,23 +113,47 @@ export function buildBitOrder(
       po.priority = Math.floor(Math.random() * 0xFFFFFFFF);
     }
   } else {
-    // Contrast-based priority: prioritizes low-contrast regions (contrast-based)
+    // Contrast-based priority: prioritizes HIGH-contrast regions (matches Go implementation)
+    // Go implementation uses contrast (variance) value directly as priority
+    // Higher contrast (edges, boundaries) = higher priority = controlled first
+    // This preserves image details by controlling high-contrast areas to match the image
+    // Variance is calculated on 0-255 scale, so values can be large (up to ~16000 for high contrast)
+    // Match Go: use contrast value directly as priority, no random tie-breaking
+    
     // EC bits are given equal priority consideration to ensure they can be optimized
     for (const po of order) {
-      const targetBrightness = targetGrid[po.y * dimension + po.x];
-      // Contrast: distance from 0.5 (midpoint), normalized to 0-1
-      // Lower contrast = higher priority (we want to prioritize low-contrast regions)
-      const contrast = Math.abs(targetBrightness - 0.5) * 2; // 0-1 scale
-      const contrastValue = Math.floor((1 - contrast) * 255); // Invert: low contrast = high priority
-      const randomValue = Math.floor(Math.random() * 256); // Add randomness for tie-breaking
-      // EC bits get same priority calculation - they'll be processed in second pass
-      // but priority ensures they're ordered correctly within their pass
-      po.priority = (contrastValue << 8) | randomValue;
+      const contrast = contrastGrid[po.y * dimension + po.x];
+      // Use contrast value directly as priority (matches Go implementation exactly)
+      // Go code: po.Priority = pinfo.Contrast (no encoding, no random)
+      // Handle invalid values: ensure contrast is a valid finite number
+      // Invalid/NaN values get priority 0 (lowest priority)
+      const validContrast = (typeof contrast === 'number' && isFinite(contrast) && contrast >= 0) 
+        ? contrast 
+        : 0;
+      // Clamp to ensure it fits in 32-bit integer (though contrast values should be much smaller)
+      po.priority = Math.min(Math.floor(validContrast), 0x7FFFFFFF);
     }
   }
 
   // Sort by priority (higher first)
   order.sort((a, b) => b.priority - a.priority);
+  
+  // Debug: Log priority distribution to verify we have a range
+  if (order.length > 0) {
+    const priorities = order.map(po => po.priority);
+    const minP = Math.min(...priorities);
+    const maxP = Math.max(...priorities);
+    const avgP = priorities.reduce((a, b) => a + b, 0) / priorities.length;
+    const midIdx = Math.floor(priorities.length / 2);
+    const medianP = priorities[midIdx];
+    console.log(`[QArt BitOrder] Priority stats: min=${minP}, max=${maxP}, avg=${avgP.toFixed(2)}, median=${medianP}, count=${order.length}`);
+    
+    // Log contrast values for first and last few positions
+    const firstFew = order.slice(0, Math.min(5, order.length));
+    const lastFew = order.slice(Math.max(0, order.length - 5));
+    console.log(`[QArt BitOrder] First 5 contrast values: ${firstFew.map(po => contrastGrid[po.y * dimension + po.x].toFixed(2)).join(', ')}`);
+    console.log(`[QArt BitOrder] Last 5 contrast values: ${lastFew.map(po => contrastGrid[po.y * dimension + po.x].toFixed(2)).join(', ')}`);
+  }
   
   return order;
 }

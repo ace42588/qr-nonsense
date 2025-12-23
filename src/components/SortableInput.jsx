@@ -1,11 +1,13 @@
 // SortableInput.jsx
 import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-import { useInputDispatch } from "../state";
-import { BasicInput } from "./BasicInput";
-import { JsonInput } from "./JsonInput";
-import { BitFieldInput } from "./BitFieldInput";
-import { MACGenerator } from "./MACGenerator";
+import { useInputDispatch, useInputs } from "@/state/inputs/InputContext";
+import { useParsedInputs } from "@/hooks/useParsedInputs";
+import { StringInputCard } from "./input-types/StringInputCard";
+import { JsonInputCard } from "./input-types/JsonInputCard";
+import { BitFieldInputCard } from "./input-types/BitFieldInputCard";
+import { MacInputCard } from "./input-types/MacInputCard";
 
 import {
   AccordionContent,
@@ -21,13 +23,22 @@ import {
 } from "../components/ui/tabs";
 
 export function SortableInput({ input }) {
-  const { id, label, type } = input;
-  const { updateInput, removeInput, setType } = useInputDispatch();
+  const { id, label } = input;
+  const dispatch = useInputDispatch();
+  const inputs = useInputs().inputs;
+  const parsedInputs = useParsedInputs();
+  const preview = parsedInputs[id];
+  
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
+  
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   return (
-    <div ref={setNodeRef} {...attributes}>
+    <div ref={setNodeRef} style={style} {...attributes}>
       <AccordionItem value={id}>
         <AccordionTrigger>
           <span {...listeners} style={{ cursor: "grab", marginRight: 8 }}>
@@ -41,25 +52,22 @@ export function SortableInput({ input }) {
               <TabsTrigger value="json">JSON</TabsTrigger>
               <TabsTrigger value="bitfield">BitField</TabsTrigger>
               <TabsTrigger value="mac">MAC</TabsTrigger>
-              <TabsTrigger value="remove" onClick={() => removeInput(id)}>
-                ✖
-              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="basic">
-              <BasicInput id={id} input={input} />
+              <StringInputCard input={input} dispatch={dispatch} />
             </TabsContent>
             
             <TabsContent value="json">
-              <JsonInput id={id} input={input} />
+              <JsonInputCard input={input} preview={preview} dispatch={dispatch} />
             </TabsContent>
             
             <TabsContent value="bitfield">
-              <BitFieldInput id={id} input={input} />
+              <BitFieldInputCard input={input} preview={preview} dispatch={dispatch} />
             </TabsContent>
             
             <TabsContent value="mac">
-              <MACGenerator id={id} input={input} />
+              <MacInputCard input={input} inputs={inputs} dispatch={dispatch} preview={preview} />
             </TabsContent>
             
           </Tabs>

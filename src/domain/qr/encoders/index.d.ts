@@ -1,4 +1,5 @@
-import { Segment, Input } from "@/types/index";
+import { Segment } from "../../shared/types";
+import { Input } from "@/app/types";
 
 interface EncodingOptions {
   [key: string]: any;

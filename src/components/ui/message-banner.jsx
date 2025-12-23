@@ -17,22 +17,6 @@ export function ErrorBanner({ message, title = "Error" }) {
   );
 }
 
-export function LoadingBanner({ message, progress }) {
-  return (
-    <div style={{
-      marginBottom: 16,
-      padding: 12,
-      backgroundColor: '#dbeafe',
-      border: '1px solid #3b82f6',
-      borderRadius: 8,
-      color: '#1e40af',
-      textAlign: 'center'
-    }}>
-      {progress ? `${message} (${progress.current}/${progress.total})` : message}
-    </div>
-  );
-}
-
 export function SuccessBanner({ message, title = "Success" }) {
   return (
     <div style={{

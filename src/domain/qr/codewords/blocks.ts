@@ -1,7 +1,7 @@
 import { ReedSolomonEncoder } from "../reedsolomon";
 import { getECCodeword } from "./utils";
 import { bitsToByte } from "./bits";
-import { Codeword, ECBlock, Source } from "@/types";
+import { Codeword, ECBlock, Source } from "../../shared/types";
 
 export interface QRBlock {
   data: Codeword[];

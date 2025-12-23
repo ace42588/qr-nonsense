@@ -1,4 +1,4 @@
-import { ECBlock } from "@/types";
+import { ECBlock } from "../../shared/types";
 
 interface VersionECInfo {
   ecCodewordsPerBlock: number;

@@ -1,7 +1,7 @@
 import { arrayMove } from "@dnd-kit/sortable";
 import { createInput, getInputTypeDefaults, DEFAULT_FIELD, InputTypeDefaults } from "./inputFactory";
 import { Actions } from "./inputActions";
-import { Input, InputAction, InputState } from "@/types";
+import { Input, InputAction, InputState } from "@/app/types";
 
 const firstInput = createInput({ label: "Input 0" });
 

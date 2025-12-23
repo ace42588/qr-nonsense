@@ -1,5 +1,5 @@
 import { getBits } from "./bits";
-import { Bit, Codeword, Segment, Source } from "@/types";
+import { Bit, Codeword, Segment, Source } from "../../shared/types";
 import { generateId } from "../utils/id";
 
 const CODEWORD_LENGTH = 8;

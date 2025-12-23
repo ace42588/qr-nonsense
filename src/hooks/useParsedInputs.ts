@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { parseAll } from "@/domain/input";
 import { useInputs } from "@/state/inputs/InputContext";
-import { Input } from "@/types";
+import { Input } from "@/app/types";
 
 /**
  * CRITICAL: This hook MUST be memoized to prevent segments from being recreated.

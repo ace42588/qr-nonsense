@@ -12,7 +12,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 export function SymbolCard() {
-  const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
+  const { highlightModules, clearAllHighlights } = useQRDataDispatch();
   const { highlightedIds, segments: contextSegments } = useQRData();
   const { qartResult } = useQArtResult();
   
@@ -22,8 +22,13 @@ export function SymbolCard() {
   }, [qartResult?.segments, contextSegments]);
   const [clicked, setClicked] = useState(false);
 
-  const isHighlighted = (id) => {
-    return highlightedIds.includes(id);
+  const isHighlighted = (segment) => {
+    // Check if any of the segment's bitIds are highlighted
+    // highlightedIds contains bit IDs, not segment IDs
+    if (segment.bitIds && segment.bitIds.length > 0) {
+      return segment.bitIds.some(bitId => highlightedIds.includes(bitId));
+    }
+    return false;
   };
 
   // Color coding for non-data types
@@ -38,7 +43,7 @@ export function SymbolCard() {
   };
 
   const getVariant = (segment) => {
-    if (isHighlighted(segment.id)) {
+    if (isHighlighted(segment)) {
       return "default";
     }
     return "outline";
@@ -75,8 +80,8 @@ export function SymbolCard() {
                           }
                         }}
                         onMouseLeave={() => {
-                          if (!clicked && segment.bitIds && segment.bitIds.length > 0) {
-                            clearHighlightedModules(segment.bitIds);
+                          if (!clicked) {
+                            clearAllHighlights();
                           }
                         }}
                         title={undefined}

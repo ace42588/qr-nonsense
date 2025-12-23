@@ -1,5 +1,5 @@
 import { jsonSchema } from "@/domain/input/serializationSchemas";
-import { Input, Field } from "@/types";
+import { Input, Field } from "@/app/types";
 
 export const DEFAULT_FIELD: Field = {
   id: crypto.randomUUID(),

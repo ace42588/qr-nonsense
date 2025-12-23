@@ -1,3 +1,3 @@
-import { Input } from "@/types/index";
+import { Input } from "@/app/types";
 
 export function parseAll(inputs: Input[]): Input[]; 

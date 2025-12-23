@@ -1,5 +1,4 @@
-import { Source } from "@/types";
-import { QRMatrix } from "@/types";
+import { Source, QRMatrix } from "../../../shared/types";
 import { makeNonDataModule } from "./utils";
 
 const source: Source = { id: crypto.randomUUID(), name: "Separator" };

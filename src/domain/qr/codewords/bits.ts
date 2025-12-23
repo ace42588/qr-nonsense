@@ -1,5 +1,5 @@
-import { Bit, Source } from "@/types";
-import { log } from "@/lib/logger";
+import { Bit, Source } from "../../shared/types";
+import { logger as log } from "@/adapters/logger";
 import { generateId } from "../utils/id";
 
 function getBit(value: number, sourceId: string, sourceType?: string): Bit {

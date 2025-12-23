@@ -4,7 +4,7 @@ import {
   generateBitLayoutFromSchema,
 } from "./utils/bitFieldUtils";
 import { ModHex, NTRU } from "../../encoders";
-import { log } from "@/lib/logger";
+import { logger as log } from "@/adapters/logger";
 
 const specialTypes = ["encapsulator", "separator", "terminator"];
 

@@ -3,7 +3,7 @@
  * Shows which modules were successfully controlled during optimization
  */
 
-import { QRMatrix, QRModule } from "@/types";
+import { QRMatrix, QRModule } from "../shared/types";
 
 /**
  * Create control visualization matrix
@@ -47,7 +47,14 @@ export function createControlMatrix(
         (controlMatrix[y][x] as QRModule & { _controlGray?: number })._controlGray = grayValue;
       } else {
         // Controlled module - show actual value (no gray)
-        controlMatrix[y][x] = module;
+        // CRITICAL: Always create a copy to avoid mutating the original matrix
+        // Even though we're showing the same visual value, we must not share references
+        // Note: We still reference the same bit object, but that's okay since bit objects
+        // are not mutated after QArt optimization completes. The control matrix is only
+        // used for visualization, not for data regeneration.
+        controlMatrix[y][x] = {
+          ...module,
+        };
       }
     }
   }

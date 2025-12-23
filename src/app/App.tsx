@@ -36,61 +36,61 @@ export default function App(): JSX.Element {
   return (
     <ErrorBoundary>
       <InputProvider>
-        <SidebarProvider>
-          <InputSidebar />
-          <SidebarInset>
-          <header className="sticky top-0 z-[200] flex shrink-0 items-center gap-2 border-b bg-background p-4">
-            <div className="flex flex-1 items-center gap-2 px-3">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <ToggleGroup
-                type="single"
-                value={leftCard}
-                onValueChange={(value: LeftCard) => value && setLeftCard(value)}
-                size="sm"
-              >
-                <ToggleGroupItem value="manual" aria-label="Manual input">
-                  <SquarePen className="h-4 w-4" />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="scanner" aria-label="Scanner input">
-                  <ScanLine className="h-4 w-4" />
-                </ToggleGroupItem>
+        <ImageTransformProvider>
+          <SidebarProvider>
+            <InputSidebar />
+            <SidebarInset>
+            <header className="sticky top-0 z-[200] flex shrink-0 items-center gap-2 border-b bg-background p-4">
+              <div className="flex flex-1 items-center gap-2 px-3">
+                <SidebarTrigger className="-ml-1" />
                 <Separator orientation="vertical" className="mr-2 h-4" />
-                <ToggleGroupItem value="symbols" aria-label="Symbols">
-                  <Component className="h-4 w-4" />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="codewords" aria-label="Codewords">
-                  <Section className="h-4 w-4" />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="graph" aria-label="Graph">
-                  <Network className="h-4 w-4" />
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
-            <div className="flex flex-1 items-center gap-2 px-3">
-              <ToggleGroup
-                type="single"
-                value={qrType}
-                onValueChange={(value: "qr" | "hqr" | "qart" | "combined") => setQrType(value)}
-                size="sm"
-              >
-                <ToggleGroupItem value="qr" aria-label="QR">
-                  <QrCode className="h-4 w-4" />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="hqr" aria-label="HQR">
-                  <Image className="h-4 w-4" />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="qart" aria-label="QArt">
-                  <SquarePen className="h-4 w-4" />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="combined" aria-label="Combined">
-                  <Component className="h-4 w-4" />
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
-          </header>
-          <QRDataProvider>
-            <ImageTransformProvider>
+                <ToggleGroup
+                  type="single"
+                  value={leftCard}
+                  onValueChange={(value: LeftCard) => value && setLeftCard(value)}
+                  size="sm"
+                >
+                  <ToggleGroupItem value="manual" aria-label="Manual input">
+                    <SquarePen className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="scanner" aria-label="Scanner input">
+                    <ScanLine className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <Separator orientation="vertical" className="mr-2 h-4" />
+                  <ToggleGroupItem value="symbols" aria-label="Symbols">
+                    <Component className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="codewords" aria-label="Codewords">
+                    <Section className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="graph" aria-label="Graph">
+                    <Network className="h-4 w-4" />
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              <div className="flex flex-1 items-center gap-2 px-3">
+                <ToggleGroup
+                  type="single"
+                  value={qrType}
+                  onValueChange={(value: "qr" | "hqr" | "qart" | "combined") => setQrType(value)}
+                  size="sm"
+                >
+                  <ToggleGroupItem value="qr" aria-label="QR">
+                    <QrCode className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="hqr" aria-label="HQR">
+                    <Image className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="qart" aria-label="QArt">
+                    <SquarePen className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="combined" aria-label="Combined">
+                    <Component className="h-4 w-4" />
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            </header>
+            <QRDataProvider>
               <QArtProvider>
                 <div className="flex flex-1 flex-col gap-4 p-4 min-h-0">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0">
@@ -110,10 +110,10 @@ export default function App(): JSX.Element {
                   </div>
                 </div>
               </QArtProvider>
-            </ImageTransformProvider>
-          </QRDataProvider>
-          </SidebarInset>
-        </SidebarProvider>
+            </QRDataProvider>
+            </SidebarInset>
+          </SidebarProvider>
+        </ImageTransformProvider>
       </InputProvider>
     </ErrorBoundary>
   );

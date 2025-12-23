@@ -1,4 +1,4 @@
-import { QRState } from "@/types";
+import { QRState } from "@/app/types";
 
 export enum Actions {
   ChangeInputs = "UPDATE_INPUTS",

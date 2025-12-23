@@ -1,4 +1,4 @@
-import { Source, QRMatrix } from "@/types";
+import { Source, QRMatrix } from "../../../shared/types";
 import { makeNonDataModule } from "./utils";
 import { FINDER_PATTERN } from "../constants";
 

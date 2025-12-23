@@ -1,5 +1,5 @@
 import { EC_INFO, REMAINDER_BITS } from "./constants/errorCorrectionInfo";
-import { ECBlock } from "@/types";
+import { ECBlock } from "../shared/types";
 
 export interface VersionInfo {
   version: number;

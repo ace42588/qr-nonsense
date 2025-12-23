@@ -1,4 +1,4 @@
-import { QRMatrix, Source } from "@/types";
+import { QRMatrix, Source } from "../../../shared/types";
 import { ALIGNMENT_PATTERN } from "../constants";
 import { makeNonDataModule } from "./utils";
 

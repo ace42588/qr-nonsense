@@ -21,7 +21,7 @@ const NODE_TYPES = {
 };
 
 export function GraphCard() {
-  const { highlightModules, clearHighlightedModules } = useQRDataDispatch();
+  const { highlightModules, clearAllHighlights } = useQRDataDispatch();
   const { highlightedIds, segments: contextSegments, codewords: contextCodewords, version, versionInfo } = useQRData();
   const { inputs } = useInputs();
   const { formatInfo: { errorCorrectionLevel } } = useInputs();
@@ -497,9 +497,7 @@ export function GraphCard() {
         next.delete(node.id);
         return next;
       });
-      if (node.data?.bitIds) {
-        clearHighlightedModules(node.data.bitIds);
-      }
+      clearAllHighlights();
     } else {
       setClickedNodeIds((prev) => new Set(prev).add(node.id));
       if (node.data?.bitIds && node.data.bitIds.length > 0) {
@@ -530,8 +528,8 @@ export function GraphCard() {
 
   const handleNodeMouseLeave = (node) => {
     setHoveredNodeId(null);
-    if (!clickedNodeIds.has(node.id) && node.data?.bitIds && node.data.bitIds.length > 0) {
-      clearHighlightedModules(node.data.bitIds);
+    if (!clickedNodeIds.has(node.id)) {
+      clearAllHighlights();
     }
     if (tooltipNode?.id === node.id) {
       setTooltipNode(null);

@@ -5,7 +5,7 @@
  * This module provides functions to decode segment values back to text based on encoding mode.
  */
 
-import { Segment } from "@/types";
+import { Segment } from "../shared/types";
 import { bitsToByte } from "../qr/codewords/bits";
 
 // Alphanumeric character map (same as encoder)

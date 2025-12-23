@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useRef, useEffect, useMemo, useCallback, ReactNode, JSX } from "react";
-import { calculateAppropriateCanvasScale, loadImage, convertTransparencyToWhite } from "@/domain/image";
-import { transformImageToCanvas } from "@/domain/image/transform";
+import { calculateAppropriateCanvasScale, convertTransparencyToWhite } from "@/domain/image";
+import { loadImage, transformImageToCanvas } from "@/adapters/browser/image";
 
 const DEFAULT_IMAGE_URL = "/defcon_k_skull-reg_cropped.jpg";
 

@@ -69,13 +69,10 @@ export function setBlockBit(
   const bitPos = 7 - (bitIndex % 8);
   const bitMask = 1 << bitPos;
 
-  // Check if bit is already set to desired value
-  const currentBit = (B[bitByte] >> bitPos) & 1;
-  if (currentBit === bitValue) {
-    return true; // Already has desired value
-  }
-
   // Find a basis vector in the active basis that can control this bit
+  // CRITICAL: We must always consume a basis vector (remove row from M) even if the bit already matches,
+  // to match Go implementation behavior. This ensures priority ordering matters - high-priority modules
+  // consume basis vectors first, leaving fewer for low-priority modules.
   // The basis matrix M contains vectors showing the effect of flipping each data bit
   // Each vector affects both data and EC bits, allowing indirect EC control
   // CRITICAL: Prefer basis vectors that correspond directly to padding data bits
@@ -176,13 +173,21 @@ export function setBlockBit(
     }
   }
   
-  // Safe to apply - XOR the basis vector
-  for (let j = 0; j < B.length; j++) {
-    B[j] ^= targ[j];
+  // Apply to current data only if bit doesn't already match (matches Go implementation)
+  // CRITICAL: We still consume the basis vector (remove row from M) even if bit already matches,
+  // to ensure priority ordering matters - high-priority modules consume basis vectors first
+  const currentBit = (B[bitByte] >> bitPos) & 1;
+  if (currentBit !== bitValue) {
+    // Bit doesn't match - XOR the basis vector to flip it
+    for (let j = 0; j < B.length; j++) {
+      B[j] ^= targ[j];
+    }
   }
+  // else: bit already matches, but we still consume the basis vector (matches Go canSet behavior)
 
   // Move used row to saved rows (like Go's m[len(m):cap(m)])
   // Saved rows are kept for reference but not reused (they maintain basis property)
+  // CRITICAL: Always remove row from M, even if bit already matched, to match Go implementation
   const usedRow = M.shift()!;
   state.savedM.push(usedRow);
 

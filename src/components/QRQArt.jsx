@@ -1,20 +1,22 @@
-import React, { useState, useCallback, useRef, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { QRBase } from "./QRBase";
 import { useQRData } from "@/state/qr/QRDataContext";
 import { useInputs } from "@/state/inputs/InputContext";
-import { generateQArt } from "@/domain/qart";
 import { useQArtResult } from "@/state/qr/QArtContext";
 import { Switch } from "@/components/ui/switch";
 import { useModuleHover } from "@/hooks/useModuleHover";
 import { useImageTransform } from "@/state/image/ImageTransformContext";
 import { rasterizeImageToQRGrid } from "@/domain/image";
-import { ErrorBanner, LoadingBanner, WarningBanner } from "@/components/ui/message-banner";
-import { ImageTransformControls } from "@/components/ui/image-transform-controls";
+import { ErrorBanner, WarningBanner } from "@/components/ui/message-banner";
 import { checkVersionCapacityForQArt } from "@/domain/qart/capacity";
 import { getNumBits } from "@/domain/qr/encoders/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useQArtGeneration } from "@/hooks/useQArtGeneration";
+import { useCanvasSizeSync } from "@/hooks/useCanvasSizeSync";
+import { useQRMatrix } from "@/hooks/useQRMatrix";
+import { createContrastMatrix } from "@/domain/qart/contrastMatrix";
 
 export function QRQArt({
   size: initialSize = 480,
@@ -47,15 +49,12 @@ export function QRQArt({
     setCanvasSize,
   } = useImageTransform();
   
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationError, setGenerationError] = useState(null);
-  const searchControllerRef = useRef(null);
-  
   const handleModuleHover = useModuleHover();
 
   // QArt-specific options
   const [showRasterizedPreview, setShowRasterizedPreview] = useState(false);
   const [showControlView, setShowControlView] = useState(false);
+  const [showContrastView, setShowContrastView] = useState(false);
   const [priorityFunction, setPriorityFunction] = useState("contrast"); // Priority function type (FR-007)
   const [capacityWarning, setCapacityWarning] = useState(null); // Version capacity warning (FR-015)
   
@@ -65,6 +64,24 @@ export function QRQArt({
     method: "existing",
     separator: "",
     encodingMode: "alphanumeric"
+  });
+
+  // Use QArt generation hook
+  const { isGenerating, generationError } = useQArtGeneration({
+    segments,
+    codewords,
+    blocks,
+    contextMatrix,
+    versionInfo,
+    errorCorrectionLevel,
+    transformedImageData,
+    isLoadingTransform,
+    qartResult,
+    setQartResult,
+    options: {
+      priorityFunction,
+      appendData: appendData.enabled ? appendData : undefined,
+    },
   });
 
   // Calculate user input bits (excluding padding segments) (FR-014)
@@ -92,107 +109,26 @@ export function QRQArt({
     }
   }, [capacityCheck, setCapacityWarning]);
 
-  // Generate QArt QR code - automatically triggered by state changes
-  const generateQArtCode = useCallback(async () => {
-    // Image requirement validation (FR-002)
-    if (!transformedImageData) {
-      setGenerationError("No image loaded. Please upload an image to generate QArt QR codes.");
-      setQartResult(null);
-      return;
-    }
-
-    if (!segments || segments.length === 0) {
-      setGenerationError("No segments available. Please add an input in the left panel.");
-      setQartResult(null);
-      return;
-    }
-
-    // Check version capacity before generation (FR-014)
-    // Note: Warning is displayed separately, but we can still attempt generation
-    // The generation may fail if capacity is truly insufficient
-
-    // Cancel any ongoing generation (FR-018, FR-019, FR-020)
-    if (searchControllerRef.current) {
-      searchControllerRef.current.abort();
-    }
-
-    // Create new AbortController for this generation (FR-021)
-    const abortController = new AbortController();
-    searchControllerRef.current = abortController;
-
-    setIsGenerating(true);
-    setGenerationError(null);
-    setQartResult(null);
-
-    try {
-      const result = await generateQArt({
-        segments,
-        codewords,
-        blocks,
-        initialMatrix: contextMatrix,
-        versionInfo,
-        errorCorrectionLevel,
-        targetImage: transformedImageData,
-        signal: abortController.signal, // Pass signal for cancellation (FR-021)
-        priorityFunction, // Pass priority function type (FR-007)
-        appendData: appendData.enabled ? appendData : undefined,
-      });
-
-      // Only update state if not cancelled
-      if (!abortController.signal.aborted && result) {
-        setQartResult(result);
-        setGenerationError(null);
-        // Don't update context segments here - it causes infinite loop
-        // Cards will use QArt result segments when available (see SymbolCard, etc.)
-      }
-    } catch (err) {
-      // Don't set error if cancellation was intentional
-      if (err instanceof Error && err.message.includes("cancelled")) {
-        // Cancellation is expected, don't show error
-        return;
-      }
-      console.error("Error generating QArt:", err);
-      setGenerationError(err instanceof Error ? err.message : "Failed to generate QArt QR code");
-    } finally {
-      // Only clear generating state if this is still the current generation
-      if (searchControllerRef.current === abortController) {
-        setIsGenerating(false);
-      }
-    }
-  }, [transformedImageData, segments, codewords, blocks, contextMatrix, errorCorrectionLevel, versionInfo, priorityFunction, appendData, setQartResult]);
-
-  // Automatically generate QArt when dependencies change
-  // Debounce rapid changes (like slider movements) to avoid excessive regeneration
-  useEffect(() => {
-    // Don't generate if image is still loading or if we don't have required data
-    if (isLoadingTransform || !transformedImageData || !segments || segments.length === 0) {
-      return;
-    }
-
-    // Debounce rapid changes (especially for sliders)
-    const timeoutId = setTimeout(() => {
-      generateQArtCode();
-    }, 300); // 300ms debounce
-
-    return () => {
-      clearTimeout(timeoutId);
-      // Note: Abort is handled in generateQArtCode when it's called again
-    };
-  }, [transformedImageData, segments, codewords, blocks, contextMatrix, versionInfo, errorCorrectionLevel, priorityFunction, appendData, isLoadingTransform, generateQArtCode]);
-
   // Get matrix from QArt result or fallback to regular QR
-  // Use control matrix if control view is enabled
-  const matrix = useMemo(() => {
-    if (showControlView && qartResult?.controlMatrix) {
-      return qartResult.controlMatrix;
-    }
-    if (qartResult?.matrix) {
-      return qartResult.matrix;
-    }
-    // For preview, we can show overlay even on regular QR
-    // Use the context matrix if available
-    return contextMatrix || null;
-  }, [qartResult, contextMatrix, showControlView]);
+  // CRITICAL: Always use the actual QR matrix, never the control matrix
+  // The control matrix is only for visualization and should not replace the underlying data
+  // CRITICAL: When qartResult exists, ONLY use qartResult.matrix to avoid mutations
+  // Never mix qartResult.matrix with contextMatrix as they may share references
+  const matrix = useQRMatrix({
+    qartResult,
+    contextMatrix,
+  });
+  
+  // Get control matrix separately for visualization only
+  const controlMatrix = useMemo(() => {
+    return qartResult?.controlMatrix || null;
+  }, [qartResult?.controlMatrix]);
+
+  // Get contrast matrix for visualization
+  const contrastMatrix = useMemo(() => {
+    if (!qartResult?.contrastGrid || !matrix) return null;
+    return createContrastMatrix(matrix, qartResult.contrastGrid);
+  }, [qartResult?.contrastGrid, matrix]);
 
   // Compute rasterized target grid for preview
   // Use qartResult matrix dimension, not display matrix (which changes with showControlView)
@@ -217,37 +153,75 @@ export function QRQArt({
   }, [transformedImageData, qartResult?.matrix, contextMatrix]);
 
   // Force canvas redraw when preview toggle changes
+  // CRITICAL: Use a stable key based on qartResult, not on visualization toggles
+  // This prevents unnecessary remounts that could trigger mutations
+  // Visualization changes are handled in renderModule, not by remounting
   const canvasKey = useMemo(() => {
-    return `qart-canvas-${showRasterizedPreview ? 'preview' : 'normal'}-${showControlView ? 'control' : 'normal'}-${matrix ? matrix.length : 0}`;
-  }, [showRasterizedPreview, showControlView, matrix]);
+    // Use qartResult matrix length for stability, or a fixed key if no result
+    const matrixLength = qartResult?.matrix?.length || matrix?.length || 0;
+    return `qart-canvas-${matrixLength}`;
+  }, [qartResult?.matrix?.length, matrix?.length]);
 
   // Render module - QArt uses the generated matrix directly
   const renderModule = useCallback((ctx, module, moduleX, moduleY, moduleSize, renderCtx) => {
     if (!module) return;
     
-    // If control view and module has gray value, render as gray
-    if (showControlView && module._controlGray !== undefined) {
-      const gray = module._controlGray;
-      const r = (gray >> 16) & 0xff;
-      const g = (gray >> 8) & 0xff;
-      const b = gray & 0xff;
-      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-      ctx.fillRect(moduleX, moduleY, moduleSize, moduleSize);
-      return;
+    // Disable image smoothing for pixel-perfect rendering
+    ctx.imageSmoothingEnabled = false;
+    
+    // Use exact coordinates passed from QRBase (already calculated for edge-to-edge alignment)
+    // If renderCtx has exact dimensions, use those; otherwise use moduleSize for square modules
+    const x = moduleX;
+    const y = moduleY;
+    const width = renderCtx?.moduleWidth ?? moduleSize;
+    const height = renderCtx?.moduleHeight ?? moduleSize;
+    // Use exact dimensions to ensure edge-to-edge alignment without gaps or overlaps
+    const size = width === height ? width : Math.max(width, height);
+    
+    // If contrast view is enabled, show contrast heatmap
+    if (showContrastView && contrastMatrix && renderCtx) {
+      const { x: qrX, y: qrY } = renderCtx;
+      const contrastModule = contrastMatrix[qrY]?.[qrX];
+      if (contrastModule && contrastModule._contrastColor !== undefined) {
+        // Render contrast heatmap
+        const rgb = contrastModule._contrastColor;
+        const r = (rgb >> 16) & 0xff;
+        const g = (rgb >> 8) & 0xff;
+        const b = rgb & 0xff;
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fillRect(x, y, size, size);
+        return;
+      }
+    }
+
+    // If control view is enabled, check the control matrix for visualization data
+    if (showControlView && controlMatrix && renderCtx) {
+      const { x: qrX, y: qrY } = renderCtx;
+      const controlModule = controlMatrix[qrY]?.[qrX];
+      if (controlModule && controlModule._controlGray !== undefined) {
+        // Render as gray from control matrix visualization
+        const gray = controlModule._controlGray;
+        const r = (gray >> 16) & 0xff;
+        const g = (gray >> 8) & 0xff;
+        const b = gray & 0xff;
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fillRect(x, y, size, size);
+        return;
+      }
     }
     
-    // Default rendering
+    // Default rendering - always use the actual module's isDark value
     ctx.fillStyle = module.isDark ? "black" : "white";
-    ctx.fillRect(moduleX, moduleY, moduleSize, moduleSize);
+    ctx.fillRect(x, y, size, size);
     
     // Overlay rasterized preview if enabled
     if (showRasterizedPreview && rasterizedGrid && renderCtx) {
       // renderCtx has x, y properties from QRBase
-      const { x, y } = renderCtx;
+      const { x: qrX, y: qrY } = renderCtx;
       // Get dimension from renderCtx or matrix
       const dimension = renderCtx.dimension || (matrix ? matrix.length : 0);
-      if (dimension > 0 && x >= 0 && y >= 0 && x < dimension && y < dimension) {
-        const gridIndex = y * dimension + x;
+      if (dimension > 0 && qrX >= 0 && qrY >= 0 && qrX < dimension && qrY < dimension) {
+        const gridIndex = qrY * dimension + qrX;
         if (gridIndex >= 0 && gridIndex < rasterizedGrid.length) {
           const brightness = rasterizedGrid[gridIndex];
           // Draw colored overlay to make it very visible
@@ -261,29 +235,34 @@ export function QRQArt({
             // Light area - draw blue tint
             ctx.fillStyle = "rgba(0, 0, 255, 0.6)";
           }
-          ctx.fillRect(moduleX, moduleY, moduleSize, moduleSize);
+          ctx.fillRect(x, y, size, size);
           ctx.restore();
         }
       }
     }
-  }, [showRasterizedPreview, showControlView, rasterizedGrid, matrix]);
+  }, [showRasterizedPreview, showControlView, showContrastView, rasterizedGrid, matrix, controlMatrix, contrastMatrix]);
 
 
   // Listen for canvas size changes from QRBase
-  const handleBaseRender = useCallback((ctx, m, moduleX, moduleY, moduleSize, renderCtx) => {
-    if (canvasSize !== renderCtx.size) setCanvasSize(renderCtx.size);
+  // Wrap renderModule with canvas size sync and dimension enhancement
+  const baseRenderModule = useCallback((ctx, m, moduleX, moduleY, moduleSize, renderCtx) => {
     // Add dimension to renderCtx for preview overlay
     const enhancedRenderCtx = {
       ...renderCtx,
       dimension: matrix ? matrix.length : renderCtx.dimension,
     };
     renderModule(ctx, m, moduleX, moduleY, moduleSize, enhancedRenderCtx);
-  }, [canvasSize, setCanvasSize, renderModule, matrix]);
+  }, [renderModule, matrix]);
+
+  const handleBaseRender = useCanvasSizeSync({
+    canvasSize,
+    setCanvasSize,
+    renderModule: baseRenderModule,
+  });
 
   return (
     <>
       {transformError && <ErrorBanner message={transformError} title="Image Error" />}
-      {isLoadingTransform && <LoadingBanner message="Loading image..." />}
       {capacityWarning && <WarningBanner message={capacityWarning} title="Capacity Warning" />}
       {generationError && <ErrorBanner message={generationError} />}
       <QRBase
@@ -303,7 +282,6 @@ export function QRQArt({
       }}>
         <h3 style={{ margin: '0 0 16px 0', color: '#333' }}>QArt Settings</h3>
         <div style={{ display: 'grid', gap: 12 }}>
-          <ImageTransformControls />
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <label htmlFor="preview-rasterized" style={{ minWidth: 120, color: '#666' }}>
               Preview Rasterized:
@@ -330,6 +308,20 @@ export function QRQArt({
             />
             <span style={{ fontSize: '12px', color: '#666' }}>
               Highlight controllable modules
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <label htmlFor="show-contrast" style={{ minWidth: 120, color: '#666' }}>
+              Show Contrast Map:
+            </label>
+            <Switch
+              id="show-contrast"
+              checked={showContrastView}
+              onCheckedChange={setShowContrastView}
+              title="Show contrast (variance) heatmap (bright = high contrast, dark = low contrast)"
+            />
+            <span style={{ fontSize: '12px', color: '#666' }}>
+              Show contrast heatmap
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

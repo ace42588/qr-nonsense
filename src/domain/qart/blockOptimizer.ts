@@ -54,6 +54,22 @@ export function optimizeBlock(
   let ecBitsModified = 0;
   const modifiedBitIds = new Set<string>();
   
+  // Debug: Log first few priorities to verify ordering
+  if (bitOrder.length > 0) {
+    const priorities = bitOrder.slice(0, Math.min(10, bitOrder.length)).map(po => po.priority);
+    console.log(`[QArt Block] First 10 priorities: ${priorities.join(', ')}`);
+  }
+  
+  // Track which priority ranges get controlled vs skipped
+  const priorityRanges = {
+    high: { controlled: 0, skipped: 0 }, // Top 25%
+    mid: { controlled: 0, skipped: 0 },  // Middle 50%
+    low: { controlled: 0, skipped: 0 },  // Bottom 25%
+  };
+  const totalBits = bitOrder.length;
+  const highThreshold = totalBits > 0 ? bitOrder[Math.floor(totalBits * 0.25)].priority : 0;
+  const lowThreshold = totalBits > 0 ? bitOrder[Math.floor(totalBits * 0.75)].priority : 0;
+  
   for (const po of bitOrder) {
     const targetBrightness = targetGrid[po.y * dimension + po.x];
     const desiredIsDark = targetBrightness < 0.5;
@@ -63,7 +79,21 @@ export function optimizeBlock(
     const desiredBit = maskValue ? (desiredIsDark ? 0 : 1) : (desiredIsDark ? 1 : 0);
     
     const isDataBit = po.bi < nd * 8;
-    if (setBlockBit(basisState, po.bi, desiredBit)) {
+    const wasControlled = setBlockBit(basisState, po.bi, desiredBit);
+    
+    // Track priority ranges
+    if (po.priority >= highThreshold) {
+      if (wasControlled) priorityRanges.high.controlled++;
+      else priorityRanges.high.skipped++;
+    } else if (po.priority >= lowThreshold) {
+      if (wasControlled) priorityRanges.mid.controlled++;
+      else priorityRanges.mid.skipped++;
+    } else {
+      if (wasControlled) priorityRanges.low.controlled++;
+      else priorityRanges.low.skipped++;
+    }
+    
+    if (wasControlled) {
       stats.optimized++;
       if (isDataBit) {
         stats.dataOptimized++;
@@ -79,6 +109,9 @@ export function optimizeBlock(
       stats.controlledBits.set(po.bitId, false);
     }
   }
+  
+  // Debug: Log priority range statistics
+  console.log(`[QArt Block] Priority ranges - High: ${priorityRanges.high.controlled} controlled, ${priorityRanges.high.skipped} skipped; Mid: ${priorityRanges.mid.controlled} controlled, ${priorityRanges.mid.skipped} skipped; Low: ${priorityRanges.low.controlled} controlled, ${priorityRanges.low.skipped} skipped`);
 
   // Apply basis matrix changes back to block codewords
   applyBlockBasis(block, basisState);

@@ -9,11 +9,12 @@
  * while maintaining valid QR code structure.
  */
 
-import { Segment, QRMatrix, Codeword, VersionInfo, Bit } from "@/types";
-import { validateDecode, getCodewords } from "../qr";
+import { Segment, QRMatrix, Codeword, VersionInfo, Bit } from "../shared/types";
+import { getCodewords } from "../qr";
+import { validateDecode } from "@/adapters/browser/validation";
 import { getMatrix } from "../qr/matrix";
 import { interleave } from "../qr/codewords/utils";
-import { computeVisualError, rasterizeImageToQRGrid } from "../image";
+import { computeVisualError, rasterizeImageToQRGrid, calculateLocalVariance } from "../image";
 import { QRBlock } from "../qr/codewords/blocks";
 import { buildBitOrder, PriorityFunctionType } from "./bitPriority";
 import { optimizeBlock } from "./blockOptimizer";
@@ -21,7 +22,6 @@ import { createControlMatrix } from "./controlMatrix";
 import { ReedSolomonEncoder } from "../qr/reedsolomon";
 import { codewordsToBytes } from "./codewordConversion";
 import { appendDataToSegments } from "./appendData";
-// @ts-expect-error - utils.js doesn't have type definitions
 import { addFill, addPadding, addTerminator, getNumBits } from "../qr/encoders/utils";
 import { updateSegmentTextFromCodewords, decodeSegmentValue } from "./decodeSegments";
 
@@ -59,6 +59,7 @@ export interface QArtResult {
   decodeSuccessRate: number;
   iterations: number;
   controlMatrix?: QRMatrix;
+  contrastGrid?: Float32Array; // Pre-computed contrast (variance) map for visualization
   optimizedAppendData?: QArtOptimizedAppendData; // Optimized append data (if append was enabled)
 }
 
@@ -201,6 +202,33 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
   // Rasterize target image to QR grid
   const targetGrid = rasterizeImageToQRGrid(targetImage, dimension);
   
+  // Compute contrast grid (local variance) for each module position
+  // Matches Go implementation: calculates variance in 11x11 neighborhood (radius=5)
+  const contrastGrid = new Float32Array(dimension * dimension);
+  let minContrast = Infinity;
+  let maxContrast = -Infinity;
+  let contrastSum = 0;
+  let contrastCount = 0;
+  for (let y = 0; y < dimension; y++) {
+    for (let x = 0; x < dimension; x++) {
+      const contrast = calculateLocalVariance(targetGrid, dimension, x, y, 5);
+      contrastGrid[y * dimension + x] = contrast;
+      if (isFinite(contrast) && contrast >= 0) {
+        if (contrast < minContrast) minContrast = contrast;
+        if (contrast > maxContrast) maxContrast = contrast;
+        contrastSum += contrast;
+        contrastCount++;
+      }
+    }
+  }
+  
+  // Debug: Log contrast statistics to verify values are meaningful
+  if (contrastCount > 0) {
+    const avgContrast = contrastSum / contrastCount;
+    const contrastRange = maxContrast - minContrast;
+    console.log(`[QArt] Contrast stats: min=${minContrast.toFixed(2)}, max=${maxContrast.toFixed(2)}, avg=${avgContrast.toFixed(2)}, range=${contrastRange.toFixed(2)}`);
+  }
+  
   // Track which modules were successfully controlled
   const controlledBits = new Map<string, boolean>();
   
@@ -234,6 +262,7 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
       block,
       matrixForBitLookup, // Use regenerated matrix if append was enabled
       targetGrid,
+      contrastGrid, // Pass contrast grid for priority calculation
       dimension,
       editableSegmentIds, // Pass editable segment IDs (padding + append)
       priorityFunction // Pass priority function type (FR-007)
@@ -445,6 +474,7 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
     decodeSuccessRate,
     iterations: 1,
     controlMatrix, // Always include control matrix (FR-012)
+    contrastGrid, // Include contrast grid for visualization
     optimizedAppendData,
   };
 }

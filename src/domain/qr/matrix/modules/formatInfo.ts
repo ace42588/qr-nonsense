@@ -1,4 +1,4 @@
-import { QRMatrix, Source } from "@/types";
+import { QRMatrix, Source } from "../../../shared/types";
 import { FORMAT_INFO_TABLE } from "@/domain/qr/constants/formatInfo";
 import { makeNonDataModule } from "./utils";
 

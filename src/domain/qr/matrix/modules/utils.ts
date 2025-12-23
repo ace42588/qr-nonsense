@@ -1,4 +1,4 @@
-import { Bit, QRModule, Source } from "@/types";
+import { Bit, QRModule, Source } from "../../../shared/types";
 
 interface ModuleParams {
   bit: Bit;

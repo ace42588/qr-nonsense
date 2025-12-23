@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, ReactNode, JSX } from "react";
 import { inputReducer, initialState } from "./inputReducer";
-import { InputAction, InputState } from "@/types";
+import { InputAction, InputState } from "@/app/types";
 
 const InputsStateContext = createContext<InputState | null>(null);
 const InputsDispatchContext = createContext<React.Dispatch<InputAction> | null>(null);

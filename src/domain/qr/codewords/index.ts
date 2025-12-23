@@ -1,7 +1,7 @@
 import { generateBlocks, QRBlock } from "./blocks";
 import { getVersionInfo } from "../versionUtils";
 import { getCodewordsFromSegments, interleave } from "./utils";
-import { Codeword, Segment } from "@/types";
+import { Codeword, Segment } from "../../shared/types";
 
 export interface CodewordsResult {
   codewords: Codeword[];

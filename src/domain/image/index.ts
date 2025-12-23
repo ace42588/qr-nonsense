@@ -1,4 +1,4 @@
-import { QRMatrix } from "@/types";
+import { QRMatrix } from "../shared/types";
 
 /**
  * Calculate an appropriate scale factor to fit an image within a QR code grid
@@ -233,6 +233,51 @@ export function getBrightness(r: number, g: number, b: number): number {
   return 0.299 * r + 0.587 * g + 0.114 * b;
 }
 
+/**
+ * Calculate local variance (contrast) for a pixel position
+ * Matches Go implementation: calculates variance in an 11x11 neighborhood (radius=5)
+ * 
+ * IMPORTANT: Uses 0-255 scale values (not normalized 0-1) to match Go implementation's integer arithmetic
+ * 
+ * @param targetGrid - Rasterized brightness grid (0-1 normalized, will be scaled to 0-255)
+ * @param dimension - QR code dimension
+ * @param x - Module x position
+ * @param y - Module y position
+ * @param radius - Neighborhood radius (default 5 for 11x11 window)
+ * @returns Variance value on 0-255 scale (higher = more contrast, matches Go integer values)
+ */
+export function calculateLocalVariance(
+  targetGrid: Float32Array,
+  dimension: number,
+  x: number,
+  y: number,
+  radius: number = 5
+): number {
+  let sum = 0;
+  let sumSq = 0;
+  let n = 0;
+  
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx >= 0 && nx < dimension && ny >= 0 && ny < dimension) {
+        // Scale from 0-1 to 0-255 to match Go implementation's integer arithmetic
+        const val = targetGrid[ny * dimension + nx] * 255;
+        sum += val;
+        sumSq += val * val;
+        n++;
+      }
+    }
+  }
+  
+  if (n === 0) return 0;
+  const avg = sum / n;
+  // Variance formula: E[X^2] - (E[X])^2
+  // Returns variance on 0-255 scale (matches Go implementation)
+  return (sumSq / n) - (avg * avg);
+}
+
 // Compute importance map using edge detection (Sobel)
 export function computeImportanceMap(imgData: ImageData, size: number, alpha: number = 0.5): Float32Array {
   const data = imgData.data;
@@ -416,15 +461,4 @@ export function detectExtremeScaling(scaleFactor: number): {
     isExtreme: false,
     warning: null,
   };
-}
-
-// Load and process an image
-export async function loadImage(imageUrl: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new window.Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = imageUrl;
-  });
 }

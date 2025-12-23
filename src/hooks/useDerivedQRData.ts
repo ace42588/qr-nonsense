@@ -3,7 +3,7 @@ import { useInputs } from "@/state/inputs/InputContext";
 import { useParsedInputs } from "@/hooks/useParsedInputs";
 import { getEncodedMessage, getCodewords } from "@/domain/qr";
 import { getMatrix } from "@/domain/qr/matrix";
-import { Codeword, QRMatrix, Segment } from "@/types";
+import { Codeword, QRMatrix, Segment } from "@/domain/shared/types";
 import { QRBlock } from "@/domain/qr/codewords/blocks";
 import { VersionInfo, getVersionInfo } from "@/domain/qr/versionUtils";
 
