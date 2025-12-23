@@ -301,7 +301,14 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
   
   // Update segment text properties from optimized codewords
   // This ensures segments reflect the optimized values, not the original placeholder values
+  // Update both padding segments (always optimized) and qartAppend segments (if append enabled)
   let updatedSegments = segments;
+  
+  // Always update padding segments (they're always optimized by QArt)
+  // Padding segments are byte segments (values 236 and 17)
+  updatedSegments = updateSegmentTextFromCodewords(updatedSegments, finalCodewords, "byte");
+  
+  // Update append segments if append is enabled
   if (appendData?.enabled) {
     // Find all append segments and their encoding modes
     const appendSegs = segments.filter(s => s.type === "qartAppend");
@@ -335,7 +342,7 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
       if (appendMode) {
         // Update segments with decoded text from optimized codewords
         // Only update append segments and data segments in the same group
-        updatedSegments = updateSegmentTextFromCodewords(segments, finalCodewords, appendMode);
+        updatedSegments = updateSegmentTextFromCodewords(updatedSegments, finalCodewords, appendMode);
       }
     }
   }

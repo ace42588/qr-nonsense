@@ -127,8 +127,8 @@ export function updateSegmentTextFromCodewords(
   
   // Update segments with decoded text
   return segments.map(segment => {
-    // Only update qartAppend segments (these are the ones that were optimized)
-    if (segment.type !== "qartAppend") {
+    // Update both qartAppend segments and padding segments (both are optimized by QArt)
+    if (segment.type !== "qartAppend" && segment.type !== "padding") {
       return segment;
     }
     
