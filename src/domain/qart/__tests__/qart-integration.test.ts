@@ -331,6 +331,7 @@ describe("QArt Integration Tests", () => {
       
       // Filter to only data segments (simulate no padding scenario)
       // But we need at least some segments, so keep one data segment
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const segmentsWithoutPadding = segmentsWithPadding.filter(s => s.type === "data").slice(0, 1);
       
       // Use version 1 which has capacity for the segment

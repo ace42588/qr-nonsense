@@ -3,9 +3,13 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { buildBitOrder, PriorityFunctionType } from "../bitPriority";
-import { QRBlock } from "../../qr/codewords/blocks";
-import { QRMatrix } from "../../shared/types";
+import { buildBitOrder } from "../bitPriority";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { PriorityFunctionType } from "../bitPriority";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { QRBlock } from "../../qr/codewords/blocks";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { QRMatrix } from "../../shared/types";
 import {
   createMockBlock,
   createMockQRMatrix,

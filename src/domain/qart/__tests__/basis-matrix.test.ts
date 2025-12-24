@@ -4,12 +4,14 @@
 
 import { describe, it, expect } from "vitest";
 import { initBlockBasis, setBlockBit, applyBlockBasis } from "../basisMatrix";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { QRBlock } from "../../qr/codewords/blocks";
 import {
   createMockBlock,
   createSimpleTestBlock,
   validateBasisMatrix,
   extractBytesFromBlock,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   compareBlocks,
 } from "./utils";
 import { ReedSolomonEncoder } from "../../qr/reedsolomon";

@@ -129,6 +129,7 @@ describe("Codeword Conversion", () => {
 
       bytesToCodewords(block, dataBytes, ecBytes);
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { dataBytes: resultData } = extractBytesFromBlock(block);
       expect(resultData[0]).toBe(0xFF);
     });

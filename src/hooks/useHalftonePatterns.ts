@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { generatePatterns } from "@/domain/halftone/patterns";
 import { computeImportanceMap } from "@/domain/image";
-import { ImageData } from "@/domain/image";
+import type { ImageData } from "@/domain/image";
 
 interface UseHalftonePatternsParams {
   transformedImageData: ImageData | null;
@@ -12,7 +12,7 @@ interface UseHalftonePatternsParams {
 interface UseHalftonePatternsReturn {
   patternsDark: number[][][];
   patternsLight: number[][][];
-  importanceMap: number[] | null;
+  importanceMap: Float32Array | null;
 }
 
 /**

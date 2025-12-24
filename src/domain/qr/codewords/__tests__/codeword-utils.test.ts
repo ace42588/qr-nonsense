@@ -10,8 +10,11 @@ import {
   getCodewordsFromSegments,
   interleave,
 } from '@/domain/qr/codewords/utils';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { getBits } from '@/domain/qr/codewords/bits';
-import type { Codeword, Source, Segment, Bit } from '@/domain/shared/types';
+import type { Source, Segment, Bit } from '@/domain/shared/types';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { Codeword } from '@/domain/shared/types';
 
 describe('Codeword Utils Tests', () => {
   describe('getCodeword', () => {

@@ -9,6 +9,7 @@ interface RenderContext {
   moduleY: number;
   x: number;
   y: number;
+  dimension?: number;
 }
 
 interface HalftoneRenderOptions {

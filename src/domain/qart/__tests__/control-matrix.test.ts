@@ -4,7 +4,8 @@
 
 import { describe, it, expect } from "vitest";
 import { createControlMatrix } from "../controlMatrix";
-import { QRMatrix } from "../../shared/types";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { QRMatrix } from "../../shared/types";
 import {
   createMockQRMatrix,
 } from "./utils";

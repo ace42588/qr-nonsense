@@ -1,5 +1,9 @@
 import { QRMatrix } from "../shared/types";
 
+// Re-export ImageData type for use across the codebase
+// ImageData is a global DOM type, so we create a type alias
+export type ImageData = globalThis.ImageData;
+
 /**
  * Calculate an appropriate scale factor to fit an image within a QR code grid
  * The scale ensures the larger dimension of the image fits nicely within the QR dimension

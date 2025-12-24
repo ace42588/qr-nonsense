@@ -6,7 +6,8 @@ import { Segment } from "@/domain/shared/types";
 import { Codeword } from "@/domain/shared/types";
 import { QRBlock } from "@/domain/qr/codewords/blocks";
 import { VersionInfo } from "@/domain/qr/versionUtils";
-import { ImageData } from "@/domain/image";
+import type { ImageData } from "@/domain/image";
+import type { QArtAppendData } from "@/domain/qart";
 
 interface QArtGenerationOptions {
   priorityFunction?: "contrast" | "random";
@@ -14,10 +15,8 @@ interface QArtGenerationOptions {
     enabled: boolean;
     method: "existing" | "new";
     separator?: string;
-    encodingMode?: string;
+    encodingMode?: "numeric" | "alphanumeric" | "byte";
   };
-  minDecodeRedundancy?: number;
-  decodeTrials?: number;
 }
 
 interface UseQArtGenerationParams {
@@ -55,7 +54,7 @@ export function useQArtGeneration({
   errorCorrectionLevel,
   transformedImageData,
   isLoadingTransform,
-  qartResult,
+  qartResult: _qartResult,
   setQartResult,
   options = {},
   debounceMs = 300,
@@ -68,8 +67,6 @@ export function useQArtGeneration({
   const {
     priorityFunction = "contrast",
     appendData,
-    minDecodeRedundancy,
-    decodeTrials,
   } = options;
 
   // Generate QArt QR code - automatically triggered by state changes
@@ -117,13 +114,7 @@ export function useQArtGeneration({
         generateOptions.priorityFunction = priorityFunction;
       }
       if (appendData?.enabled) {
-        generateOptions.appendData = appendData;
-      }
-      if (minDecodeRedundancy !== undefined) {
-        generateOptions.minDecodeRedundancy = minDecodeRedundancy;
-      }
-      if (decodeTrials !== undefined) {
-        generateOptions.decodeTrials = decodeTrials;
+        generateOptions.appendData = appendData as QArtAppendData;
       }
 
       const result = await generateQArt(generateOptions);
@@ -193,8 +184,6 @@ export function useQArtGeneration({
     errorCorrectionLevel,
     priorityFunction,
     appendData,
-    minDecodeRedundancy,
-    decodeTrials,
     isLoadingTransform,
     generateQArtCode,
     autoGenerate,

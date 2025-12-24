@@ -96,34 +96,42 @@ describe('Input Factory Tests', () => {
       const defaults = getInputTypeDefaults('string');
 
       expect(defaults.type).toBe('string');
-      expect(defaults.mode).toBe('byte');
-      expect(typeof defaults.text).toBe('string');
+      if (defaults.type === 'string') {
+        expect(defaults.mode).toBe('byte');
+        expect(typeof defaults.text).toBe('string');
+      }
     });
 
     it('should return json defaults', () => {
       const defaults = getInputTypeDefaults('json');
 
       expect(defaults.type).toBe('json');
-      expect(defaults).toHaveProperty('obj');
-      expect(defaults).toHaveProperty('schema');
-      expect(defaults.schemaName).toBe('jsonSchema');
+      if (defaults.type === 'json') {
+        expect(defaults).toHaveProperty('obj');
+        expect(defaults).toHaveProperty('schema');
+        expect(defaults.schemaName).toBe('jsonSchema');
+      }
     });
 
     it('should return bitfield defaults', () => {
       const defaults = getInputTypeDefaults('bitfield');
 
       expect(defaults.type).toBe('bitfield');
-      expect(Array.isArray(defaults.layout)).toBe(true);
-      expect(typeof defaults.values).toBe('object');
+      if (defaults.type === 'bitfield') {
+        expect(Array.isArray(defaults.layout)).toBe(true);
+        expect(typeof defaults.values).toBe('object');
+      }
     });
 
     it('should return mac defaults', () => {
       const defaults = getInputTypeDefaults('mac');
 
       expect(defaults.type).toBe('mac');
-      expect(defaults.algo).toBe('Poly1305');
-      expect(typeof defaults.key).toBe('string');
-      expect(Array.isArray(defaults.includedFields)).toBe(true);
+      if (defaults.type === 'mac') {
+        expect(defaults.algo).toBe('Poly1305');
+        expect(typeof defaults.key).toBe('string');
+        expect(Array.isArray(defaults.includedFields)).toBe(true);
+      }
     });
   });
 

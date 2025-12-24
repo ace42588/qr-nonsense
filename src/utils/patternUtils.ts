@@ -27,7 +27,7 @@ export function isPatternModule(module: QRModule | null | undefined): boolean {
  */
 export function getPatternName(module: QRModule | null | undefined): string | null {
   if (!isPatternModule(module)) return null;
-  const sourceName = module.source?.name;
+  const sourceName = module?.source?.name;
   if (!sourceName) return null;
   return PATTERN_NAMES[sourceName as PatternName] || sourceName;
 }

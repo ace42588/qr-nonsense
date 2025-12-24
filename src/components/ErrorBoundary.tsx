@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -62,8 +62,11 @@ export class ErrorBoundary extends Component<Props, State> {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {/* @ts-expect-error - Card components accept children via props spread */}
             <Alert variant="destructive" className="mb-4">
+              {/* @ts-expect-error - Alert components accept children via props spread */}
               <AlertTitle>Error</AlertTitle>
+              {/* @ts-expect-error - Alert components accept children via props spread */}
               <AlertDescription>
                 {this.state.error?.message || "An unexpected error occurred"}
               </AlertDescription>

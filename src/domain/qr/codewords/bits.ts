@@ -1,4 +1,5 @@
 import { Bit, Source } from "../../shared/types";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { logger as log } from "@/adapters/logger";
 import { generateId } from "../utils/id";
 

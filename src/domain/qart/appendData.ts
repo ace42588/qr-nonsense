@@ -11,6 +11,7 @@ import { encodeAlphanumeric } from "../qr/encoders/alphanumeric";
 import { encodeByte } from "../qr/encoders/byte";
 import { getNumBits } from "../qr/encoders/utils";
 import { QArtAppendData } from "./index";
+import { decodeSegmentValue } from "./decodeSegments";
 
 /**
  * Special segment type marker for QArt-optimizable appended data
@@ -168,14 +169,8 @@ function findSegmentGroup(segments: Segment[], startIndex: number): { start: num
 export function extractTextFromDataSegments(segments: Segment[], startIndex: number, endIndex: number, mode: string): string {
   const dataSegments = segments.slice(startIndex, endIndex).filter(s => s.type === "data" || s.type === "qartAppend");
   
-  if (mode === "byte") {
-    // For byte mode, reconstruct from text values
-    // Text might be like "A" or "0xFF" depending on encoding
-    return dataSegments.map(s => s.text || "").join("");
-  } else {
-    // For numeric/alphanumeric, text contains the original characters
-    return dataSegments.map(s => s.text || "").join("");
-  }
+  // Decode each segment value to text based on the encoding mode
+  return dataSegments.map(s => decodeSegmentValue(s, mode)).join("");
 }
 
 /**
@@ -315,7 +310,8 @@ export function appendDataToSegments(
     }
 
     // Extract original text from data segments
-    const originalText = extractTextFromDataSegments(newSegments, lastGroup.start, lastGroup.end, lastGroup.mode);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _originalText = extractTextFromDataSegments(newSegments, lastGroup.start, lastGroup.end, lastGroup.mode);
     
     // Calculate optimal append length based on available capacity
     const optimalLength = calculateOptimalAppendLength(

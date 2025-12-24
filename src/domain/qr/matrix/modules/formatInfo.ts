@@ -32,7 +32,7 @@ const source: FormatInfoSource = {
  * @param mask - Data mask index (0-7), or -1 for auto selection
  * @returns Format information bits (15 bits) or placeholder value (0x4000) if mask is -1
  */
-function getBitsFromFormatInfo(ecLevel: number, mask: number | null = -1): number {
+export function getBitsFromFormatInfo(ecLevel: number, mask: number | null = -1): number {
   // During auto mask selection, return placeholder that will be replaced
   // after the optimal mask is determined in getMatrix()
   // Also handle null (mask "none") - use placeholder
