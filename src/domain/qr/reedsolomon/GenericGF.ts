@@ -7,7 +7,7 @@ export function addOrSubtractGF(a: number, b: number): number {
 class GenericGF {
   private primitive: number;
   private size: number;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // @ts-expect-error - Property is declared but not currently used
   private generatorBase: number;
   private expTable: number[];
   private logTable: number[];

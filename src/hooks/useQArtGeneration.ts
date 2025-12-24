@@ -150,8 +150,6 @@ export function useQArtGeneration({
     versionInfo,
     priorityFunction,
     appendData,
-    minDecodeRedundancy,
-    decodeTrials,
     setQartResult,
   ]);
 

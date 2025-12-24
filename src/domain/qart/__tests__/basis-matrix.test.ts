@@ -149,6 +149,7 @@ describe("Basis Matrix Operations", () => {
       // First check if bit 8 is already set to 1 (if so, it would return true)
       const bit8Byte = Math.floor(8 / 8);
       const bit8Pos = 7 - (8 % 8);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const bit8Mask = 1 << bit8Pos;
       const bit8Value = (state.B[bit8Byte] >> bit8Pos) & 1;
       

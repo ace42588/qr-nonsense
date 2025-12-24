@@ -234,8 +234,8 @@ describe("Block Optimizer", () => {
       const stats = optimizeBlock(block, bitOrder, targetGrid, dimension, ecCodewordsPerBlock);
 
       // Verify bits were set to match target
-      const { dataBytes } = extractBytesFromBlock(block);
       // Note: Actual bit values depend on mask pattern, but optimization should have occurred
+      extractBytesFromBlock(block); // Extract but don't use - just verify it doesn't throw
       expect(stats.optimized).toBeGreaterThan(0);
     });
   });

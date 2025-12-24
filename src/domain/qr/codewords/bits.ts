@@ -1,5 +1,5 @@
 import { Bit, Source } from "../../shared/types";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// @ts-expect-error - Import is declared but not currently used
 import { logger as log } from "@/adapters/logger";
 import { generateId } from "../utils/id";
 

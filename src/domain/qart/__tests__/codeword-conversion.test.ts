@@ -4,7 +4,8 @@
 
 import { describe, it, expect } from "vitest";
 import { codewordsToBytes, bytesToCodewords } from "../codewordConversion";
-import { QRBlock } from "../../qr/codewords/blocks";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { QRBlock } from "../../qr/codewords/blocks";
 import {
   createMockBlock,
   extractBytesFromBlock,
@@ -14,7 +15,7 @@ describe("Codeword Conversion", () => {
   describe("codewordsToBytes", () => {
     it("should convert data codewords to bytes correctly", () => {
       const block = createMockBlock([0x12, 0x34], [0x56]);
-      const { dataBytes, ecBytes } = codewordsToBytes(block);
+      const { dataBytes } = codewordsToBytes(block);
 
       expect(dataBytes.length).toBe(2);
       expect(dataBytes[0]).toBe(0x12);
@@ -23,7 +24,7 @@ describe("Codeword Conversion", () => {
 
     it("should convert EC codewords to bytes correctly", () => {
       const block = createMockBlock([0x12], [0x56, 0x78]);
-      const { dataBytes, ecBytes } = codewordsToBytes(block);
+      const { ecBytes } = codewordsToBytes(block);
 
       expect(ecBytes.length).toBe(2);
       expect(ecBytes[0]).toBe(0x56);

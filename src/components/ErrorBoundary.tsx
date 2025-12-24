@@ -53,24 +53,30 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
+      // Card/Alert components are JSX files without proper TypeScript types, so we cast to any
+      const CardAny = Card as any;
+      const CardHeaderAny = CardHeader as any;
+      const CardTitleAny = CardTitle as any;
+      const CardContentAny = CardContent as any;
+      const AlertAny = Alert as any;
+      const AlertTitleAny = AlertTitle as any;
+      const AlertDescriptionAny = AlertDescription as any;
+
       return (
-        <Card className="w-full max-w-2xl mx-auto mt-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <CardAny className="w-full max-w-2xl mx-auto mt-8">
+          <CardHeaderAny>
+            <CardTitleAny className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-destructive" />
               Something went wrong
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* @ts-expect-error - Card components accept children via props spread */}
-            <Alert variant="destructive" className="mb-4">
-              {/* @ts-expect-error - Alert components accept children via props spread */}
-              <AlertTitle>Error</AlertTitle>
-              {/* @ts-expect-error - Alert components accept children via props spread */}
-              <AlertDescription>
+            </CardTitleAny>
+          </CardHeaderAny>
+          <CardContentAny>
+            <AlertAny variant="destructive" className="mb-4">
+              <AlertTitleAny>Error</AlertTitleAny>
+              <AlertDescriptionAny>
                 {this.state.error?.message || "An unexpected error occurred"}
-              </AlertDescription>
-            </Alert>
+              </AlertDescriptionAny>
+            </AlertAny>
             {process.env.NODE_ENV === "development" && this.state.errorInfo && (
               <details className="mt-4">
                 <summary className="cursor-pointer text-sm font-medium mb-2">
@@ -89,8 +95,8 @@ export class ErrorBoundary extends Component<Props, State> {
             >
               Try Again
             </button>
-          </CardContent>
-        </Card>
+          </CardContentAny>
+        </CardAny>
       );
     }
 

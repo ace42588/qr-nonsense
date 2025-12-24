@@ -61,7 +61,9 @@ export function validateDataForMode(data: string, mode: string): boolean {
 /**
  * Gets the encoding mode of a data segment
  * Returns the mode based on the segment's inputMode property or type
+ * @internal - Currently unused but kept for potential future use
  */
+// @ts-expect-error - Function is declared but not currently used
 function getSegmentMode(segment: Segment): string | null {
   // Check if segment has inputMode property (from createDataSymbol)
   if ((segment as any).inputMode) {
@@ -309,9 +311,8 @@ export function appendDataToSegments(
       throw new Error(`Separator "${appendConfig.separator}" does not conform to ${lastGroup.mode} encoding mode`);
     }
 
-    // Extract original text from data segments
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _originalText = extractTextFromDataSegments(newSegments, lastGroup.start, lastGroup.end, lastGroup.mode);
+    // Extract original text from data segments (stored for potential future use)
+    extractTextFromDataSegments(newSegments, lastGroup.start, lastGroup.end, lastGroup.mode);
     
     // Calculate optimal append length based on available capacity
     const optimalLength = calculateOptimalAppendLength(

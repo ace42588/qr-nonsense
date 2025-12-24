@@ -6,7 +6,7 @@
  */
 
 import { Segment } from "../shared/types";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// @ts-expect-error - Import is declared but not currently used
 import { bitsToByte } from "../qr/codewords/bits";
 
 // Alphanumeric character map (same as encoder)

@@ -106,6 +106,7 @@ describe('Codeword Utils Tests', () => {
 
   describe('getCodewordsFromSegments', () => {
     it('should convert segments to codewords', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const source: Source = { id: 'test-source' };
       const segments: Segment[] = [
         {
@@ -132,6 +133,7 @@ describe('Codeword Utils Tests', () => {
     });
 
     it('should throw error if segments cannot be divided into codewords', () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const source: Source = { id: 'test-source' };
       const segments: Segment[] = [
         {
