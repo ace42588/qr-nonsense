@@ -102,14 +102,6 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
               canvasSize
             );
 
-            console.log("ImageTransform: Auto-calculating scale", {
-              imageUrl,
-              imageWidth: img.width,
-              imageHeight: img.height,
-              canvasSize,
-              calculatedScale,
-            });
-
             setScale(calculatedScale);
             setOffsetX(0);
             setOffsetY(0);

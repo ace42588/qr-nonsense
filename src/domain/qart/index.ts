@@ -205,29 +205,13 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
   // Compute contrast grid (local variance) for each module position
   // Matches Go implementation: calculates variance in 11x11 neighborhood (radius=5)
   const contrastGrid = new Float32Array(dimension * dimension);
-  let minContrast = Infinity;
-  let maxContrast = -Infinity;
-  let contrastSum = 0;
-  let contrastCount = 0;
   for (let y = 0; y < dimension; y++) {
     for (let x = 0; x < dimension; x++) {
       const contrast = calculateLocalVariance(targetGrid, dimension, x, y, 5);
       contrastGrid[y * dimension + x] = contrast;
-      if (isFinite(contrast) && contrast >= 0) {
-        if (contrast < minContrast) minContrast = contrast;
-        if (contrast > maxContrast) maxContrast = contrast;
-        contrastSum += contrast;
-        contrastCount++;
-      }
     }
   }
   
-  // Debug: Log contrast statistics to verify values are meaningful
-  if (contrastCount > 0) {
-    const avgContrast = contrastSum / contrastCount;
-    const contrastRange = maxContrast - minContrast;
-    console.log(`[QArt] Contrast stats: min=${minContrast.toFixed(2)}, max=${maxContrast.toFixed(2)}, avg=${avgContrast.toFixed(2)}, range=${contrastRange.toFixed(2)}`);
-  }
   
   // Track which modules were successfully controlled
   const controlledBits = new Map<string, boolean>();

@@ -2,6 +2,7 @@ import { Component, ErrorInfo, ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { log } from "@/lib/logger";
 
 interface Props {
   children: ReactNode;
@@ -32,7 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    log.error("ErrorBoundary caught an error", error, errorInfo);
     this.setState({
       error,
       errorInfo,
@@ -77,7 +78,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 {this.state.error?.message || "An unexpected error occurred"}
               </AlertDescriptionAny>
             </AlertAny>
-            {process.env.NODE_ENV === "development" && this.state.errorInfo && (
+            {import.meta.env.DEV && this.state.errorInfo && (
               <details className="mt-4">
                 <summary className="cursor-pointer text-sm font-medium mb-2">
                   Error Details (Development Only)

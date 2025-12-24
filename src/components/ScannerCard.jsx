@@ -61,9 +61,16 @@ export function ScannerCard() {
         }
       });
       
-      const video = videoRef.current;
+      // Wait for video element to be available (it may not be rendered yet)
+      let video = videoRef.current;
       if (!video) {
-        throw new Error("Video element not found");
+        // Wait a bit for React to render the element
+        await new Promise(resolve => setTimeout(resolve, 100));
+        video = videoRef.current;
+      }
+      
+      if (!video) {
+        throw new Error("Video element not found. Please refresh the page.");
       }
 
       video.srcObject = stream;
@@ -141,7 +148,15 @@ export function ScannerCard() {
   function scanQR() {
     const video = videoRef.current;
     const canvasElement = canvasRef.current;
+    
+    if (!video || !canvasElement) {
+      return;
+    }
+    
     const canvas = canvasElement.getContext("2d");
+    if (!canvas) {
+      return;
+    }
 
     if (video.readyState === video.HAVE_ENOUGH_DATA && scanning) {
       canvasElement.height = video.videoHeight;
@@ -236,21 +251,22 @@ export function ScannerCard() {
               {retryCount >= 3 ? "Max Retries Reached" : "Retry"}
             </Button>
           </div>
-        ) : isLoading ? (
-          <div className="flex flex-col items-center justify-center gap-4 p-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <p className="text-sm text-muted-foreground">Initializing camera...</p>
-          </div>
         ) : (
           <div className="relative aspect-square w-full max-w-md mx-auto">
             <video
               ref={videoRef}
-              className="absolute inset-0 w-full h-full object-cover rounded-lg"
+              className={`absolute inset-0 w-full h-full object-cover rounded-lg ${isLoading ? 'opacity-0' : 'opacity-100'}`}
               playsInline
             />
             <canvas ref={canvasRef} className="hidden" />
-            {scanning && (
-              <div className="absolute inset-0 flex items-center justify-center">
+            {isLoading && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p className="text-sm text-muted-foreground">Initializing camera...</p>
+              </div>
+            )}
+            {scanning && !isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-48 h-48 border-2 border-primary rounded-lg animate-pulse" />
               </div>
             )}

@@ -54,12 +54,6 @@ export function optimizeBlock(
   let ecBitsModified = 0;
   const modifiedBitIds = new Set<string>();
   
-  // Debug: Log first few priorities to verify ordering
-  if (bitOrder.length > 0) {
-    const priorities = bitOrder.slice(0, Math.min(10, bitOrder.length)).map(po => po.priority);
-    console.log(`[QArt Block] First 10 priorities: ${priorities.join(', ')}`);
-  }
-  
   // Track which priority ranges get controlled vs skipped
   const priorityRanges = {
     high: { controlled: 0, skipped: 0 }, // Top 25%
@@ -109,9 +103,6 @@ export function optimizeBlock(
       stats.controlledBits.set(po.bitId, false);
     }
   }
-  
-  // Debug: Log priority range statistics
-  console.log(`[QArt Block] Priority ranges - High: ${priorityRanges.high.controlled} controlled, ${priorityRanges.high.skipped} skipped; Mid: ${priorityRanges.mid.controlled} controlled, ${priorityRanges.mid.skipped} skipped; Low: ${priorityRanges.low.controlled} controlled, ${priorityRanges.low.skipped} skipped`);
 
   // Apply basis matrix changes back to block codewords
   applyBlockBasis(block, basisState);

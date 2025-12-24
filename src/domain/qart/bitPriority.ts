@@ -138,23 +138,6 @@ export function buildBitOrder(
   // Sort by priority (higher first)
   order.sort((a, b) => b.priority - a.priority);
   
-  // Debug: Log priority distribution to verify we have a range
-  if (order.length > 0) {
-    const priorities = order.map(po => po.priority);
-    const minP = Math.min(...priorities);
-    const maxP = Math.max(...priorities);
-    const avgP = priorities.reduce((a, b) => a + b, 0) / priorities.length;
-    const midIdx = Math.floor(priorities.length / 2);
-    const medianP = priorities[midIdx];
-    console.log(`[QArt BitOrder] Priority stats: min=${minP}, max=${maxP}, avg=${avgP.toFixed(2)}, median=${medianP}, count=${order.length}`);
-    
-    // Log contrast values for first and last few positions
-    const firstFew = order.slice(0, Math.min(5, order.length));
-    const lastFew = order.slice(Math.max(0, order.length - 5));
-    console.log(`[QArt BitOrder] First 5 contrast values: ${firstFew.map(po => contrastGrid[po.y * dimension + po.x].toFixed(2)).join(', ')}`);
-    console.log(`[QArt BitOrder] Last 5 contrast values: ${lastFew.map(po => contrastGrid[po.y * dimension + po.x].toFixed(2)).join(', ')}`);
-  }
-  
   return order;
 }
 

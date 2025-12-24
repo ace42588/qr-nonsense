@@ -137,40 +137,17 @@ export async function validateDecode(
     // Get image data
     const imageData = trialCtx.getImageData(0, 0, size, size);
     
-    // Debug: Log trial canvas preview
-    if (debug) {
-      if (usePerturbations && scale !== undefined && rotation !== undefined && blur !== undefined) {
-        console.log(`[validateDecode] Trial ${trial} perturbations: scale=${scale.toFixed(3)}, rotation=${rotation.toFixed(4)}rad, blur=${blur}`);
-      } else {
-        console.log(`[validateDecode] Trial ${trial}: No perturbations applied`);
-      }
-    }
-    
     // Attempt decode with jsQR
     try {
       const code = jsQR(imageData.data, imageData.width, imageData.height);
-      
-      if (debug) {
-        console.log(`[validateDecode] Trial ${trial} decode result:`, code ? "SUCCESS" : "FAILED");
-        if (code) {
-          console.log(`[validateDecode] Decoded data length: ${code.data?.length || 0}`);
-        }
-      }
       
       if (code && code.data) {
         successCount++;
       }
     } catch (error) {
-      // Decode failed
-      if (debug) {
-        console.log(`[validateDecode] Trial ${trial} decode error:`, error);
-      }
+      // Decode failed - silently continue
       continue;
     }
-  }
-  
-  if (debug) {
-    console.log(`[validateDecode] Final success rate: ${successCount}/${trials} = ${(successCount / trials).toFixed(2)}`);
   }
   
   return successCount / trials;

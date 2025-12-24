@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import sodium from 'libsodium-wrappers-sumo';
 import App from './app/App';
+import { log } from './lib/logger';
 import './index.css';
 
 async function main(): Promise<void> {
@@ -18,4 +19,6 @@ async function main(): Promise<void> {
   );
 }
 
-main().catch(console.error); 
+main().catch((error) => {
+  log.error('Failed to initialize application', error);
+}); 
