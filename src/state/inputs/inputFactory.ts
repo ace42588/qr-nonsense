@@ -1,8 +1,9 @@
 import { jsonSchema } from "@/domain/input/serializationSchemas";
 import { Input, Field } from "@/app/types";
+import { generateId } from "@/domain/qr/utils/id";
 
 export const DEFAULT_FIELD: Field = {
-  id: crypto.randomUUID(),
+  id: generateId(),
   label: "Field",
   min: 0,
   max: 255,
@@ -113,7 +114,7 @@ export function createInput({
     ?? "";
   
   return {
-    id: id || crypto.randomUUID(),
+    id: id || generateId(),
     label,
     ...defaults,
     data,

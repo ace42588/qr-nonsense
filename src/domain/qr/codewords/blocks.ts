@@ -2,6 +2,7 @@ import { ReedSolomonEncoder } from "../reedsolomon";
 import { getECCodeword } from "./utils";
 import { bitsToByte } from "./bits";
 import { Codeword, ECBlock, Source } from "../../shared/types";
+import { generateId } from "../utils/id";
 
 export interface QRBlock {
   data: Codeword[];
@@ -24,7 +25,7 @@ function generateEcCodewords(
 
   return Array.from(ecBytes, ((byte: number, idx: number) => {
     const source: CodewordSource = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       block: blockIndex,
       index: idx, // index within the EC section of the block
     };

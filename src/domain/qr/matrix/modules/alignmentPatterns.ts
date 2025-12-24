@@ -1,8 +1,9 @@
 import { QRMatrix, Source } from "../../../shared/types";
 import { ALIGNMENT_PATTERN } from "../constants";
 import { makeNonDataModule } from "./utils";
+import { generateId } from "../../utils/id";
 
-const source: Source = { id: crypto.randomUUID(), name: "AlignmentPattern" };
+const source: Source = { id: generateId(), name: "AlignmentPattern" };
 
 function getAlignmentPatternPositions(version: number): number[] {
   if (version === 1) return [];

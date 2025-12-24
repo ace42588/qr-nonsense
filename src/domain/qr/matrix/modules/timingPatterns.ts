@@ -1,7 +1,8 @@
 import { QRMatrix, Source } from "../../../shared/types";
 import { makeNonDataModule } from "./utils";
+import { generateId } from "../../utils/id";
 
-const source: Source = { id: crypto.randomUUID(), name: "TimingPattern" };
+const source: Source = { id: generateId(), name: "TimingPattern" };
 
 export function addTimingPatterns(matrix: QRMatrix): QRMatrix {
   for (let i = 8; i < matrix.length - 8; i++) {

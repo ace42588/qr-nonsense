@@ -1,7 +1,8 @@
 import { Source, QRMatrix } from "../../../shared/types";
 import { makeNonDataModule } from "./utils";
+import { generateId } from "../../utils/id";
 
-const source: Source = { id: crypto.randomUUID(), name: "Separator" };
+const source: Source = { id: generateId(), name: "Separator" };
 
 export function addSeparators(matrix: QRMatrix): QRMatrix {
   const size = matrix.length;

@@ -1,6 +1,7 @@
 import { QRMatrix, Source } from "../../../shared/types";
 import { FORMAT_INFO_TABLE } from "@/domain/qr/constants/formatInfo";
 import { makeNonDataModule } from "./utils";
+import { generateId } from "../../utils/id";
 
 interface FormatInfoSource extends Source {
   type: "formatInfo";
@@ -17,7 +18,7 @@ interface FormatInfoTableEntry {
 }
 
 const source: FormatInfoSource = {
-  id: crypto.randomUUID(),
+  id: generateId(),
   name: "FormatInfo",
   type: "formatInfo",
 };

@@ -2,6 +2,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import { createInput, getInputTypeDefaults, DEFAULT_FIELD, InputTypeDefaults } from "./inputFactory";
 import { Actions } from "./inputActions";
 import { Input, InputAction, InputState } from "@/app/types";
+import { generateId } from "@/domain/qr/utils/id";
 
 const firstInput = createInput({ label: "Input 0" });
 
@@ -98,7 +99,7 @@ function updateInputs(inputs: Input[], action: InputAction): Input[] {
                 {
                   ...DEFAULT_FIELD,
                   label,
-                  id: crypto.randomUUID(),
+                  id: generateId(),
                 },
               ],
             }

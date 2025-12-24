@@ -1,4 +1,5 @@
 import { Bit, QRModule, Source } from "../../../shared/types";
+import { generateId } from "../../utils/id";
 
 interface ModuleParams {
   bit: Bit;
@@ -26,7 +27,7 @@ export function makeNonDataModule(value: number | string, source: Source, x: num
   const numValue = parseInt(value.toString());
   const bit: Bit = {
     value: numValue,
-    id: source.name ?? crypto.randomUUID(),
+    id: source.name ?? generateId(),
     sourceId: source.id,
   };
   const module = makeModule({ bit, x, y, isMasked: false });

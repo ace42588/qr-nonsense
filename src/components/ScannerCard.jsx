@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState } from "react";
 // State/Context
 import { useInputDispatch } from "@/state/inputs/InputContext";
 import { setInputs } from "@/state/inputs/inputActions";
+import { generateId } from "@/domain/qr/utils/id";
 
 // External Libraries
 import jsQR from "jsqr";
@@ -169,7 +170,7 @@ export function ScannerCard() {
         
         // Create inputs from chunks
         const inputs = chunks.map(chunk => ({
-          id: crypto.randomUUID(),
+          id: generateId(),
           data: chunk.text,
           mode: chunk.type,
         }));

@@ -1,9 +1,10 @@
 import { Source, QRMatrix } from "../../../shared/types";
 import { makeNonDataModule } from "./utils";
 import { FINDER_PATTERN } from "../constants";
+import { generateId } from "../../utils/id";
 
 
-const source: Source = { id: crypto.randomUUID(), name: "FinderPattern" };
+const source: Source = { id: generateId(), name: "FinderPattern" };
 
 export function addFinderPatterns(matrix: QRMatrix): QRMatrix {
   const size = matrix.length;
