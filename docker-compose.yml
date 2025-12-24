@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  qr-nonsense:
+    build: .
+    container_name: qr-nonsense
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    networks:
+      - qr-network
+
+networks:
+  qr-network:
+    driver: bridge
+
