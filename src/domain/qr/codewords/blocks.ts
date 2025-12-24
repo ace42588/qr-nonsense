@@ -15,11 +15,11 @@ interface CodewordSource extends Source {
 }
 
 function generateEcCodewords(
-  ecCodewordsPerBlock: number,
+  encoder: ReedSolomonEncoder,
   dataCodewords: Codeword[],
   blockIndex: number
 ): Codeword[] {
-  const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
+  // Reuse provided encoder instead of creating new one
   const dataBytes = dataCodewords.map(({ bits }) => bitsToByte(bits));
   const ecBytes = encoder.encode(new Uint8ClampedArray(dataBytes));
 
@@ -43,6 +43,10 @@ export function generateBlocks(
   // ecBlocks is an { numBlocks, dataCodewordsPerBlock }[] used to map
   // the specifics of how to split up codewords for error correction.
   // The capacity of a block can vary within a QR code version.
+  
+  // Optimize: Create encoder once and reuse for all blocks
+  // All blocks in a QR code have the same ecCodewordsPerBlock
+  const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
 
   return ecBlocks.flatMap(({ numBlocks, dataCodewordsPerBlock }) =>
     Array.from({ length: numBlocks }, (_, idx) => {
@@ -57,8 +61,9 @@ export function generateBlocks(
       }
       offset += dataCodewordsPerBlock;
 
+      // Reuse encoder for all blocks
       const ecCodewords = generateEcCodewords(
-        ecCodewordsPerBlock,
+        encoder,
         blockData,
         idx
       );

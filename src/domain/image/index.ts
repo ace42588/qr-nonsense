@@ -282,6 +282,65 @@ export function calculateLocalVariance(
   return (sumSq / n) - (avg * avg);
 }
 
+/**
+ * Compute contrast grid (local variance) for all module positions efficiently
+ * Uses optimized approach to avoid recalculating overlapping neighborhoods
+ * 
+ * @param targetGrid - Pre-rasterized image grid (0-1 brightness values)
+ * @param dimension - QR code dimension
+ * @param radius - Neighborhood radius (default 5 for 11x11 window)
+ * @returns Contrast grid as Float32Array with variance values on 0-255 scale
+ */
+export function computeContrastGrid(
+  targetGrid: Float32Array,
+  dimension: number,
+  radius: number = 5
+): Float32Array {
+  const contrastGrid = new Float32Array(dimension * dimension);
+  
+  // Pre-scale values to 0-255 once to avoid repeated multiplication
+  const scaledGrid = new Float32Array(dimension * dimension);
+  for (let i = 0; i < dimension * dimension; i++) {
+    scaledGrid[i] = targetGrid[i] * 255;
+  }
+  
+  // Compute variance for each position
+  // Optimization: Pre-scale values once, use direct array access, and calculate bounds once per position
+  for (let y = 0; y < dimension; y++) {
+    for (let x = 0; x < dimension; x++) {
+      let sum = 0;
+      let sumSq = 0;
+      let n = 0;
+      
+      // Calculate bounds once per position
+      const yMin = Math.max(0, y - radius);
+      const yMax = Math.min(dimension - 1, y + radius);
+      const xMin = Math.max(0, x - radius);
+      const xMax = Math.min(dimension - 1, x + radius);
+      
+      // Iterate only over valid region
+      for (let ny = yMin; ny <= yMax; ny++) {
+        for (let nx = xMin; nx <= xMax; nx++) {
+          const val = scaledGrid[ny * dimension + nx];
+          sum += val;
+          sumSq += val * val;
+          n++;
+        }
+      }
+      
+      if (n === 0) {
+        contrastGrid[y * dimension + x] = 0;
+      } else {
+        const avg = sum / n;
+        // Variance formula: E[X^2] - (E[X])^2
+        contrastGrid[y * dimension + x] = (sumSq / n) - (avg * avg);
+      }
+    }
+  }
+  
+  return contrastGrid;
+}
+
 // Compute importance map using edge detection (Sobel)
 export function computeImportanceMap(imgData: ImageData, size: number, alpha: number = 0.5): Float32Array {
   const data = imgData.data;

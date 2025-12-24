@@ -75,4 +75,15 @@ class GenericGF {
   }
 }
 
+// Singleton instance for QR code standard field (0x11d, 256, 0)
+// This is the only field used in QR codes, so we can cache it globally
+let qrCodeFieldInstance: GenericGF | null = null;
+
+export function getQRCodeField(): GenericGF {
+  if (!qrCodeFieldInstance) {
+    qrCodeFieldInstance = new GenericGF(0x11d, 256, 0);
+  }
+  return qrCodeFieldInstance;
+}
+
 export default GenericGF; 

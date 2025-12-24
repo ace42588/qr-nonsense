@@ -14,7 +14,7 @@ import { getCodewords } from "../qr";
 import { validateDecode } from "@/adapters/browser/validation";
 import { getMatrix } from "../qr/matrix";
 import { interleave } from "../qr/codewords/utils";
-import { computeVisualError, rasterizeImageToQRGrid, calculateLocalVariance } from "../image";
+import { computeVisualError, rasterizeImageToQRGrid, computeContrastGrid } from "../image";
 import { QRBlock } from "../qr/codewords/blocks";
 import { buildBitOrder, PriorityFunctionType } from "./bitPriority";
 import { optimizeBlock } from "./blockOptimizer";
@@ -115,6 +115,10 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
   const dimension = finalVersion * 4 + 17;
   const maskIndex = 0; // QArt uses mask 0 (FR-008)
   
+  // Cache Reed-Solomon encoder for reuse across all blocks
+  // This avoids recreating the encoder (and its GenericGF field) for each block
+  const cachedEncoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
+  
   // Apply data append if enabled
   let segments = originalSegments;
   let workingBlocks = qrBlocks;
@@ -202,15 +206,9 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
   // Rasterize target image to QR grid
   const targetGrid = rasterizeImageToQRGrid(targetImage, dimension);
   
-  // Compute contrast grid (local variance) for each module position
-  // Matches Go implementation: calculates variance in 11x11 neighborhood (radius=5)
-  const contrastGrid = new Float32Array(dimension * dimension);
-  for (let y = 0; y < dimension; y++) {
-    for (let x = 0; x < dimension; x++) {
-      const contrast = calculateLocalVariance(targetGrid, dimension, x, y, 5);
-      contrastGrid[y * dimension + x] = contrast;
-    }
-  }
+  // Compute contrast grid (local variance) for each module position efficiently
+  // Uses optimized function that pre-scales values and avoids redundant calculations
+  const contrastGrid = computeContrastGrid(targetGrid, dimension, 5);
   
   
   // Track which modules were successfully controlled
@@ -258,13 +256,15 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
     
     // Optimize block to match target image
     // Pass editable codeword indices to prevent modifying user data bytes
+    // Pass cached encoder to avoid recreating it for each block
     const stats = optimizeBlock(
       block,
       bitOrder,
       targetGrid,
       dimension,
       ecCodewordsPerBlock,
-      editableCodewordIndices // Pass editable codeword indices for safety checks
+      editableCodewordIndices, // Pass editable codeword indices for safety checks
+      cachedEncoder // Reuse cached encoder for performance
     );
     
     totalBitsOptimized += stats.optimized;
@@ -281,12 +281,12 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
   
   // Verify Reed-Solomon correctness for each block before rebuilding
   // This helps catch issues early
+  // Use cached encoder instead of creating new one for each block
   let allECCorrect = true;
   for (let i = 0; i < workingBlocks.length; i++) {
     const block = workingBlocks[i];
-    const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
     const { dataBytes, ecBytes: actualEC } = codewordsToBytes(block);
-    const expectedEC = encoder.encode(dataBytes);
+    const expectedEC = cachedEncoder.encode(dataBytes);
     
     // Check if EC bytes match (they should if Reed-Solomon is correct)
     let ecMatches = true;
@@ -379,7 +379,7 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
   }
   
   // Validate decode (FR-009) - single trial for basic scannability check
-  const decodeSuccessRate = await validateDecode(matrix, 1, false);
+  const decodeSuccessRate = await validateDecode(matrix, 1);
   
   // Check for cancellation after validation (FR-021)
   if (signal?.aborted) {

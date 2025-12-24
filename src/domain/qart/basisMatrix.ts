@@ -13,14 +13,18 @@ import { BlockBasisState } from "./types";
 /**
  * Initialize basis matrix for a block
  * Builds the basis matrix showing which bits can be controlled
+ * 
+ * @param encoder - Pre-created Reed-Solomon encoder to reuse (avoids recreating GenericGF)
  */
 export function initBlockBasis(
   block: QRBlock,
-  ecCodewordsPerBlock: number
+  ecCodewordsPerBlock: number,
+  encoder?: ReedSolomonEncoder
 ): BlockBasisState {
   const nd = block.data.length;
   const nc = block.errorCorrection.length;
-  const encoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
+  // Use provided encoder or create new one (for backward compatibility)
+  const rsEncoder = encoder || new ReedSolomonEncoder(ecCodewordsPerBlock);
 
   // Convert codewords to bytes
   const { dataBytes, ecBytes } = codewordsToBytes(block);
@@ -37,12 +41,12 @@ export function initBlockBasis(
     // Set bit i to 1
     row[Math.floor(i / 8)] = 1 << (7 - (i % 8));
     // Compute EC for this unit vector
-    const rowEC = encoder.encode(row.subarray(0, nd));
+    const rowEC = rsEncoder.encode(row.subarray(0, nd));
     row.set(rowEC, nd);
     M.push(row);
   }
 
-  return { B, M, savedM: [], encoder, dataBytes, ecBytes };
+  return { B, M, savedM: [], encoder: rsEncoder, dataBytes, ecBytes };
 }
 
 /**

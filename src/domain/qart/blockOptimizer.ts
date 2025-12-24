@@ -5,6 +5,7 @@
 import { QRBlock } from "../qr/codewords/blocks";
 import { BitPosition } from "./bitPriority";
 import { initBlockBasis, setBlockBit, applyBlockBasis } from "./basisMatrix";
+import { ReedSolomonEncoder } from "../qr/reedsolomon";
 
 export interface OptimizationStats {
   optimized: number;
@@ -17,6 +18,8 @@ export interface OptimizationStats {
 /**
  * Optimize a single block to match target image
  * Uses multiple passes: first optimize data bits, then EC bits
+ * 
+ * @param encoder - Optional pre-created Reed-Solomon encoder to reuse (for performance)
  */
 export function optimizeBlock(
   block: QRBlock,
@@ -24,9 +27,10 @@ export function optimizeBlock(
   targetGrid: Float32Array,
   dimension: number,
   ecCodewordsPerBlock: number,
-  editableCodewordIndices?: Set<number> // Padding + QArt-append codewords that can be modified
+  editableCodewordIndices?: Set<number>, // Padding + QArt-append codewords that can be modified
+  encoder?: ReedSolomonEncoder // Optional cached encoder
 ): OptimizationStats {
-  const basisState = initBlockBasis(block, ecCodewordsPerBlock);
+  const basisState = initBlockBasis(block, ecCodewordsPerBlock, encoder);
   
   // Set editable byte indices for safety checks in setBlockBit
   if (editableCodewordIndices) {

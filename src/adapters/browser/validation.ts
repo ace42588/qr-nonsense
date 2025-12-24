@@ -29,13 +29,11 @@ function deterministicRandom(seed: number): () => number {
  * 
  * @param matrix - The QR code matrix to validate
  * @param trials - Number of decode attempts. If 1, no perturbations are applied.
- * @param debug - If true, logs canvas previews and diagnostic information
  * @returns Success rate (0.0 to 1.0) of successful decodes
  */
 export async function validateDecode(
   matrix: QRMatrix,
   trials: number,
-  debug: boolean = false
 ): Promise<number> {
   if (!matrix || matrix.length === 0 || !matrix[0] || matrix[0].length === 0) {
     return 0;
@@ -145,7 +143,7 @@ export async function validateDecode(
         successCount++;
       }
     } catch (error) {
-      // Decode failed - silently continue
+      console.error(error);
       continue;
     }
   }

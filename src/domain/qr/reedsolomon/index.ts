@@ -1,5 +1,6 @@
 import GenericGF from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
+import { getQRCodeField } from "./GenericGF";
 
 export class ReedSolomonEncoder {
   private numEcCodewords: number;
@@ -12,7 +13,8 @@ export class ReedSolomonEncoder {
       throw new Error("No error correction bytes");
     }
     this.numEcCodewords = numEcCodewords;
-    this.field = new GenericGF(0x11d, 256, 0);
+    // Use singleton field instance instead of creating new one
+    this.field = getQRCodeField();
     this.cachedGenerators = [
       new GenericGFPoly(this.field, new Uint8ClampedArray([1])),
     ];

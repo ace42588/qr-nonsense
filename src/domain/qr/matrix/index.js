@@ -21,11 +21,16 @@ import { addPatterns, updateFormatInfoModules } from "./modules";
  *   - dataMask: {number} The mask index used (0-7)
  */
 export function getMatrix(codewords, dataMask, version, errorCorrectionLevel) {
+  // Pre-compute base matrix with patterns once (doesn't depend on mask)
   const matrix = createMatrix(version);
   const base = addPatterns(matrix);
+  
+  // Pre-compute populated matrix with codewords once (doesn't depend on mask)
+  // This avoids recomputing addCodewords for each mask evaluation
   const populated = addCodewords(base, codewords);
 
   if (parseInt(dataMask) !== -1) {
+    // Specific mask requested - apply it directly
     const masked = applyMask(populated, dataMask);
     // CRITICAL: Must use masked matrix, not the original empty matrix!
     // updateFormatInfoModules only updates format info positions, but using the wrong
@@ -41,10 +46,13 @@ export function getMatrix(codewords, dataMask, version, errorCorrectionLevel) {
   }
 
   // Automatic mask scoring
+  // Optimized: Only create masked matrices and format info updates during evaluation
+  // The populated matrix is already computed above and reused for all masks
   let bestScore = Infinity;
   let bestMask = 0;
   let bestMatrix;
   for (let maskIdx = 0; maskIdx < 8; maskIdx++) {
+    // Apply mask to pre-computed populated matrix
     const masked = applyMask(populated, maskIdx);
     // CRITICAL: Must use masked matrix, not the original empty matrix!
     const testMatrix = updateFormatInfoModules(
