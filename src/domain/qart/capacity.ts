@@ -4,7 +4,7 @@
  * Functions for calculating QArt capacity requirements and checking version capacity.
  */
 
-import { VersionInfo } from "@/domain/qr/versionUtils";
+import { VersionInfo, getVersionInfo } from "@/domain/qr/versionUtils";
 import { calculateImageComplexity } from "@/domain/image";
 
 /**
@@ -76,6 +76,63 @@ export function calculateQArtCapacityRequirement(
   const requirement = baseCapacity + (baseCapacity * complexityFactor * sizeFactor);
   
   return Math.ceil(requirement);
+}
+
+/**
+ * Find the minimum QR version with sufficient capacity for QArt generation
+ * 
+ * @param userInputBits - Total bits from user inputs
+ * @param targetImage - Target image for complexity calculation
+ * @param errorCorrectionLevel - Error correction level (0-3)
+ * @returns VersionInfo for the minimum version with sufficient capacity, or null if none found
+ */
+export function findMinimumQArtVersion(
+  userInputBits: number,
+  targetImage: ImageData,
+  errorCorrectionLevel: number
+): VersionInfo | null {
+  // Validate inputs
+  if (!isFinite(userInputBits) || userInputBits < 0) {
+    return null;
+  }
+  
+  if (!targetImage || !targetImage.width || !targetImage.height) {
+    return null;
+  }
+  
+  if (!isFinite(errorCorrectionLevel) || errorCorrectionLevel < 0 || errorCorrectionLevel > 3) {
+    return null;
+  }
+  
+  // Try each version until one is found that has sufficient capacity
+  for (let version = 1; version <= 40; version++) {
+    const versionInfo = getVersionInfo(errorCorrectionLevel, version);
+    
+    // Calculate available capacity
+    const availableCapacity = versionInfo.capacity - userInputBits;
+    
+    // If no available capacity, skip this version
+    if (availableCapacity <= 0) {
+      continue;
+    }
+    
+    // Calculate QArt requirement for this version
+    const qrDimension = version * 4 + 17;
+    const imageComplexity = calculateImageComplexity(targetImage, qrDimension);
+    const qartRequirement = calculateQArtCapacityRequirement(
+      imageComplexity,
+      version,
+      userInputBits
+    );
+    
+    // Check if capacity is sufficient
+    if (availableCapacity >= qartRequirement) {
+      return versionInfo;
+    }
+  }
+  
+  // No version found with sufficient capacity
+  return null;
 }
 
 /**

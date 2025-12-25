@@ -1,6 +1,15 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useQRData } from "@/state/qr/QRDataContext";
-import { isPatternModule, getPatternName } from "@/utils/patternUtils";
+import { getPatternName } from "@/utils/patternUtils";
+import { Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { downloadCanvasAsPNG, downloadQRAsSVG } from "@/utils/downloadUtils";
 
 export function QRBase({ 
   size: initialSize = 420,
@@ -169,6 +178,22 @@ export function QRBase({
 
   const patternName = hoveredModule ? getPatternName(hoveredModule) : null;
 
+  const handleDownload = (format) => {
+    if (!matrix) return;
+
+    try {
+      if (format === "png") {
+        if (canvasRef.current) {
+          downloadCanvasAsPNG(canvasRef.current);
+        }
+      } else {
+        downloadQRAsSVG(matrix, size, quietZone);
+      }
+    } catch (error) {
+      console.error("Error downloading QR code:", error);
+    }
+  };
+
   return (
     <div ref={containerRef} className="qr-base-container" style={{width: "100%", height: "auto", position: "relative"}}>
       <canvas
@@ -204,6 +229,27 @@ export function QRBase({
           }}
         >
           {patternName}
+        </div>
+      )}
+      {/* Download button */}
+      {matrix && (
+        <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" disabled={!matrix}>
+                <Download className="h-4 w-4" />
+                Download
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleDownload("png")}>
+                Download as PNG
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDownload("svg")}>
+                Download as SVG
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
       {children}

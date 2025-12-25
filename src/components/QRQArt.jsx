@@ -1,14 +1,15 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { QRBase } from "./QRBase";
 import { useQRData } from "@/state/qr/QRDataContext";
-import { useInputs } from "@/state/inputs/InputContext";
+import { useInputs, useInputDispatch } from "@/state/inputs/InputContext";
+import { setVersion } from "@/state/inputs/inputActions";
 import { useQArtResult } from "@/state/qr/QArtContext";
 import { Switch } from "@/components/ui/switch";
 import { useModuleHover } from "@/hooks/useModuleHover";
 import { useImageTransform } from "@/state/image/ImageTransformContext";
 import { rasterizeImageToQRGrid } from "@/domain/image";
 import { ErrorBanner, WarningBanner } from "@/components/ui/message-banner";
-import { checkVersionCapacityForQArt } from "@/domain/qart/capacity";
+import { checkVersionCapacityForQArt, findMinimumQArtVersion } from "@/domain/qart/capacity";
 import { getNumBits } from "@/domain/qr/encoders/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,8 +31,10 @@ export function QRQArt({
   } = useQRData();
   const { formatInfo } = useInputs();
   const { qartResult, setQartResult } = useQArtResult();
+  const dispatch = useInputDispatch();
   
   const errorCorrectionLevel = formatInfo.errorCorrectionLevel;
+  const selectedVersion = formatInfo.version; // -1 for Auto, 1-40 for manual selection
   
   // Clear QArt result when component unmounts (user switches away from QArt view)
   useEffect(() => {
@@ -100,14 +103,96 @@ export function QRQArt({
     return checkVersionCapacityForQArt(versionInfo, userInputBits, transformedImageData);
   }, [transformedImageData, versionInfo, userInputBits, segments]);
 
-  // Update capacity warning when check changes (FR-015)
+  // Track if we've auto-upgraded to prevent infinite loops
+  const autoUpgradedVersionRef = useRef(null);
+  const previousSelectedVersionRef = useRef(selectedVersion);
+  const previousInputsRef = useRef({ userInputBits, imageHash: transformedImageData ? `${transformedImageData.width}x${transformedImageData.height}` : null });
+
+  // Reset auto-upgrade tracking when user manually changes version or when inputs/image change significantly
   useEffect(() => {
-    if (capacityCheck && !capacityCheck.hasCapacity) {
-      setCapacityWarning(capacityCheck.warning || "Insufficient capacity for QArt generation");
-    } else {
-      setCapacityWarning(null);
+    const currentImageHash = transformedImageData ? `${transformedImageData.width}x${transformedImageData.height}` : null;
+    const inputsChanged = 
+      previousInputsRef.current.userInputBits !== userInputBits ||
+      previousInputsRef.current.imageHash !== currentImageHash;
+
+    if (previousSelectedVersionRef.current !== selectedVersion) {
+      // User changed version manually
+      if (selectedVersion === -1) {
+        // User switched back to Auto mode - reset tracking
+        autoUpgradedVersionRef.current = null;
+      } else {
+        // User manually selected a version - clear auto-upgrade tracking
+        autoUpgradedVersionRef.current = null;
+      }
+      previousSelectedVersionRef.current = selectedVersion;
+    } else if (inputsChanged && selectedVersion === -1) {
+      // Inputs or image changed while in Auto mode - reset tracking to allow recalculation
+      autoUpgradedVersionRef.current = null;
     }
-  }, [capacityCheck, setCapacityWarning]);
+
+    // Update refs
+    previousInputsRef.current = { userInputBits, imageHash: currentImageHash };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedVersion, userInputBits, transformedImageData]);
+
+  // Automatically select appropriate version when capacity is insufficient and Auto mode is selected
+  useEffect(() => {
+    // Skip if we don't have all required data
+    if (!capacityCheck || !transformedImageData || !segments || segments.length === 0) {
+      setCapacityWarning(null);
+      return;
+    }
+
+    // If capacity is sufficient, clear warning and reset auto-upgrade tracking if in Auto mode
+    if (capacityCheck.hasCapacity) {
+      if (selectedVersion === -1) {
+        // In Auto mode with sufficient capacity - reset tracking so we can downgrade if inputs change
+        autoUpgradedVersionRef.current = null;
+      }
+      setCapacityWarning(null);
+      return;
+    }
+
+    // Capacity is insufficient
+    if (selectedVersion === -1) {
+      // Auto mode: find and set appropriate version
+      const appropriateVersion = findMinimumQArtVersion(
+        userInputBits,
+        transformedImageData,
+        errorCorrectionLevel
+      );
+
+      if (appropriateVersion) {
+        // Only upgrade if we haven't already upgraded to this version, or if inputs/image changed
+        const currentVersion = versionInfo?.version;
+        const needsUpgrade = 
+          appropriateVersion.version !== autoUpgradedVersionRef.current ||
+          (currentVersion && currentVersion < appropriateVersion.version);
+
+        if (needsUpgrade) {
+          autoUpgradedVersionRef.current = appropriateVersion.version;
+          dispatch(setVersion(appropriateVersion.version));
+          setCapacityWarning(null); // Clear warning since we're auto-upgrading
+        }
+      } else {
+        // No version found with sufficient capacity
+        setCapacityWarning("No QR version has sufficient capacity for QArt generation with this image and data.");
+      }
+    } else {
+      // User manually selected a version with insufficient capacity - show warning
+      setCapacityWarning(capacityCheck.warning || "Insufficient capacity for QArt generation");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    capacityCheck,
+    selectedVersion,
+    transformedImageData,
+    segments,
+    userInputBits,
+    errorCorrectionLevel,
+    versionInfo,
+    dispatch,
+  ]);
 
   // Get matrix from QArt result or fallback to regular QR
   // CRITICAL: Always use the actual QR matrix, never the control matrix
