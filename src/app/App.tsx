@@ -1,6 +1,6 @@
 // External Libraries
 import { JSX, useState } from "react";
-import { Component, QrCode, Section, SquarePen, Image, ScanLine, Network } from "lucide-react";
+import { Component, QrCode, Section, SquarePen, Image, ScanLine, Network, Layers } from "lucide-react";
 
 // UI Components
 import { Separator } from "@/components/ui/separator";
@@ -28,10 +28,11 @@ import { QArtProvider } from "@/state/qr/QArtContext";
 
 
 type LeftCard = "manual" | "scanner" | "symbols" | "codewords" | "graph";
+type QrType = "qr" | "hqr" | "qart" | "combined";
 
 export default function App(): JSX.Element {
   const [leftCard, setLeftCard] = useState<LeftCard>("manual");
-  const [qrType, setQrType] = useState<"qr" | "hqr" | "qart" | "combined">("qr");
+  const [qrType, setQrType] = useState<QrType>("qr");
 
   return (
     <ErrorBoundary>
@@ -72,7 +73,7 @@ export default function App(): JSX.Element {
                 <ToggleGroup
                   type="single"
                   value={qrType}
-                  onValueChange={(value: "qr" | "hqr" | "qart" | "combined") => setQrType(value)}
+                  onValueChange={(value: QrType) => value && setQrType(value)}
                   size="sm"
                 >
                   <ToggleGroupItem value="qr" aria-label="QR">
@@ -85,7 +86,7 @@ export default function App(): JSX.Element {
                     <SquarePen className="h-4 w-4" />
                   </ToggleGroupItem>
                   <ToggleGroupItem value="combined" aria-label="Combined">
-                    <Component className="h-4 w-4" />
+                    <Layers className="h-4 w-4" />
                   </ToggleGroupItem>
                 </ToggleGroup>
               </div>

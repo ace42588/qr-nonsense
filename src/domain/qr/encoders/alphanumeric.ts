@@ -11,7 +11,15 @@ const mode = {
   ],
   groupingRegex: /[0-9A-Z $%*+\-./:]{1,2}/g,
 };
-const charMap = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+export const ALPHANUMERIC_CHARSET =
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
+const ALPHANUMERIC_CHAR_SET = new Set(ALPHANUMERIC_CHARSET);
+
+export function isAlphanumericChar(char: string): boolean {
+  return ALPHANUMERIC_CHAR_SET.has(char);
+}
+
+const charMap = ALPHANUMERIC_CHARSET;
 
 function encoder(data: string): { value: number; length: number } {
   validateLength(data, 1, 2, "Alphanumeric");

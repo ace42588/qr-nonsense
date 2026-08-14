@@ -300,7 +300,7 @@ describe("QArt Integration Tests", () => {
       }
     });
 
-    it("should return segments unchanged", async () => {
+    it("should optimize padding without changing user data segments", async () => {
       const options: QArtOptions = {
         segments: testSegments,
         codewords: testCodewords,
@@ -313,7 +313,21 @@ describe("QArt Integration Tests", () => {
 
       const result = await generateQArt(options);
 
-      expect(result.segments).toBe(testSegments);
+      const userTypes = new Set(["modeIndicator", "characterCountIndicator", "data"]);
+      const snapshot = (segments: Segment[]) =>
+        segments
+          .filter((s) => s.type && userTypes.has(s.type))
+          .map((s) => ({ type: s.type, value: s.value, length: s.length }));
+
+      expect(snapshot(result.segments)).toEqual(snapshot(testSegments));
+
+      const originalPadding = testSegments.filter((s) => s.type === "padding");
+      const resultPadding = result.segments.filter((s) => s.type === "padding");
+      expect(resultPadding.length).toBe(originalPadding.length);
+      expect(originalPadding.length).toBeGreaterThan(0);
+      expect(
+        resultPadding.some((s, i) => s.value !== originalPadding[i].value)
+      ).toBe(true);
     });
 
     it("should handle empty padding segments", async () => {

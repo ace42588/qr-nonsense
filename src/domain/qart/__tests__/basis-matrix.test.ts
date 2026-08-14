@@ -111,6 +111,26 @@ describe("Basis Matrix Operations", () => {
       expect((state.B[0] >> 7) & 1).toBe(1);
     });
 
+    it("should return true when the bit already matches even with no remaining basis vector", () => {
+      const block = createMockBlock([0x00], [0x00]);
+      const ecCodewordsPerBlock = 1;
+      const state = initBlockBasis(block, ecCodewordsPerBlock);
+
+      for (let i = 0; i < 8; i++) {
+        setBlockBit(state, i, 1);
+      }
+      expect(state.M.length).toBe(0);
+
+      const ecBitIndex = 8;
+      const bitByte = Math.floor(ecBitIndex / 8);
+      const bitPos = 7 - (ecBitIndex % 8);
+      const currentBit = (state.B[bitByte] >> bitPos) & 1;
+
+      expect(setBlockBit(state, ecBitIndex, currentBit)).toBe(true);
+      expect(setBlockBit(state, ecBitIndex, currentBit ^ 1)).toBe(false);
+      expect((state.B[bitByte] >> bitPos) & 1).toBe(currentBit);
+    });
+
     it("should flip bit when setting opposite value", () => {
       const block = createMockBlock([0x80], [0x00]); // First bit is 1
       const ecCodewordsPerBlock = 1;

@@ -124,8 +124,12 @@ export function setBlockBit(
     }
   }
 
+  const currentBit = (B[bitByte] >> bitPos) & 1;
+
   if (foundIdx === -1) {
-    return false; // Cannot control this bit - no active basis vector available
+    // No remaining basis vector can flip this bit. Go still reports success
+    // when the bit already has the desired value (nothing to change).
+    return currentBit === bitValue;
   }
 
   // Swap found row to front
@@ -180,7 +184,6 @@ export function setBlockBit(
   // Apply to current data only if bit doesn't already match (matches Go implementation)
   // CRITICAL: We still consume the basis vector (remove row from M) even if bit already matches,
   // to ensure priority ordering matters - high-priority modules consume basis vectors first
-  const currentBit = (B[bitByte] >> bitPos) & 1;
   if (currentBit !== bitValue) {
     // Bit doesn't match - XOR the basis vector to flip it
     for (let j = 0; j < B.length; j++) {

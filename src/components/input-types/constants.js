@@ -1,4 +1,23 @@
-export const QR_MODES = ["numeric", "alphanumeric", "byte", "kanji", "eci"];
+export const QR_MODES = [
+  "mixed",
+  "optimized",
+  "numeric",
+  "alphanumeric",
+  "byte",
+  "kanji",
+  "eci",
+];
+
+export const QR_MODE_LABELS = {
+  mixed: "mixed",
+  optimized: "optimized",
+  auto: "mixed",
+  numeric: "numeric",
+  alphanumeric: "alphanumeric",
+  byte: "byte",
+  kanji: "kanji",
+  eci: "eci",
+};
 
 export const ENCODING_STRATEGIES = [
   "none",

@@ -52,6 +52,24 @@ export function parseBasic(input) {
     return { ...input, data: text, encoding: "utf-8" };
   }
 
+  if (mode === "kanji" || mode === "kanjiMode") {
+    return { ...input, data: text };
+  }
+
+  // Mixed / optimized: keep the original text; the encoder chooses modes
+  // and (for optimized) may rewrite case-insensitive payload parts.
+  if (mode === "mixed" || mode === "auto" || mode === "optimized") {
+    return { ...input, data: text };
+  }
+
+  if (mode === "eci") {
+    const eciEncoding =
+      encoding === undefined || encoding === null || encoding === ""
+        ? "26"
+        : encoding;
+    return { ...input, data: text, encoding: eciEncoding };
+  }
+
   // Unknown mode fallback
   return input;
 }

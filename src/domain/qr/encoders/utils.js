@@ -10,7 +10,7 @@ export function validateLength(data, min, max, type) {
   }
 }
 
-function createSymbol(type, value, text, length) {
+export function createSymbol(type, value, text, length) {
   return {
     type: type,
     value: value,
@@ -25,12 +25,15 @@ export function createDataSymbol(value, text, inputMode, length) {
   return { ...symbol, inputMode };
 }
 
-function createModeIndicator(mode) {
+export function createModeIndicator(mode) {
   return createSymbol("modeIndicator", mode.bits, mode.bits, 4);
 }
 
 function createCharacterCountIndicator(data, codons, mode) {
-  const charCount = mode.name === "byte" ? codons.length : data.length;
+  const charCount =
+    mode.name === "byte" || mode.name === "kanji"
+      ? codons.length
+      : data.length;
   function computeIndicatorLength() {
     const { thresholds } = mode;
     for (const { max, length } of thresholds) {
@@ -112,6 +115,10 @@ export function addPadding(segments, numDataCodewords) {
   const PAD_BYTES = [236, 17];
   const numPadBytes =
     numDataCodewords - Math.ceil(getNumBits(segments) / CODEWORD_LENGTH);
+  // Over-capacity on a fixed version is allowed (T16): skip padding and
+  // leave the oversized bitstream in place so a (possibly unscannable) QR
+  // can still be generated.
+  if (numPadBytes <= 0) return segments;
   const padding = Array.from({ length: numPadBytes }, (_, i) =>
     createSymbol("padding", PAD_BYTES[i % 2], PAD_BYTES[i % 2], 8)
   );

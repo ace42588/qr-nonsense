@@ -18,9 +18,13 @@ import { useQArtGeneration } from "@/hooks/useQArtGeneration";
 import { useCanvasSizeSync } from "@/hooks/useCanvasSizeSync";
 import { useQRMatrix } from "@/hooks/useQRMatrix";
 import { createContrastMatrix } from "@/domain/qart/contrastMatrix";
+import { useHalftonePatterns } from "@/hooks/useHalftonePatterns";
+import { renderHalftoneModuleWithAreaSampling } from "@/domain/halftone/rendering";
 
 export function QRQArt({
   size: initialSize = 480,
+  modulePixel = 3, // grid is 3x3 per module for halftone
+  combined = false, // Combined mode: QArt first, then always-on halftone
 }) {
   const { 
     matrix: contextMatrix,
@@ -50,6 +54,10 @@ export function QRQArt({
     isLoading: isLoadingTransform,
     error: transformError,
     setCanvasSize,
+    sourceImage,
+    scale,
+    offsetX,
+    offsetY,
   } = useImageTransform();
   
   const handleModuleHover = useModuleHover();
@@ -58,6 +66,10 @@ export function QRQArt({
   const [showRasterizedPreview, setShowRasterizedPreview] = useState(false);
   const [showControlView, setShowControlView] = useState(false);
   const [showContrastView, setShowContrastView] = useState(false);
+  const [enableHalftone, setEnableHalftone] = useState(combined); // Halftone effect toggle
+  const applyHalftone = combined || enableHalftone;
+  const [limitHalftoneToImportant, setLimitHalftoneToImportant] = useState(false); // Limit halftone to important areas
+  const [importanceThreshold, setImportanceThreshold] = useState(0.3); // Threshold for importance (0-1)
   const [priorityFunction, setPriorityFunction] = useState("contrast"); // Priority function type (FR-007)
   const [capacityWarning, setCapacityWarning] = useState(null); // Version capacity warning (FR-015)
   
@@ -68,6 +80,18 @@ export function QRQArt({
     separator: "",
     encodingMode: "alphanumeric"
   });
+
+  // Memoize transformParams to prevent constant regeneration
+  // Only recreate when scale, offsetX, or offsetY actually change
+  const transformParams = useMemo(() => {
+    if (!sourceImage) return null;
+    return { scale, offsetX, offsetY };
+  }, [sourceImage, scale, offsetX, offsetY]);
+
+  // Memoize appendData options to prevent constant regeneration
+  const appendDataOptions = useMemo(() => {
+    return appendData.enabled ? appendData : undefined;
+  }, [appendData]);
 
   // Use QArt generation hook
   const { isGenerating, generationError } = useQArtGeneration({
@@ -83,8 +107,10 @@ export function QRQArt({
     setQartResult,
     options: {
       priorityFunction,
-      appendData: appendData.enabled ? appendData : undefined,
+      appendData: appendDataOptions,
     },
+    sourceImage,
+    transformParams,
   });
 
   // Calculate user input bits (excluding padding segments) (FR-014)
@@ -215,27 +241,47 @@ export function QRQArt({
     return createContrastMatrix(matrix, qartResult.contrastGrid);
   }, [qartResult?.contrastGrid, matrix]);
 
+  // Use halftone patterns hook (only when halftone is enabled)
+  // CRITICAL: Use offscreen canvas from qartResult (QR dimension-based) for consistency
+  // This ensures halftone matches what QArt actually optimized
+  const halftoneImageData = qartResult?.offscreenCanvasImage || transformedImageData;
+  const { patternsDark, patternsLight, importanceMap } = useHalftonePatterns({
+    transformedImageData: halftoneImageData,
+    canvasSize: halftoneImageData?.width || canvasSize, // Pass image width, not canvasSize
+    importanceWeight: 0.5,
+  });
+
   // Compute rasterized target grid for preview
-  // Use qartResult matrix dimension, not display matrix (which changes with showControlView)
+  // CRITICAL: Use offscreen canvas from qartResult (QR dimension-based) for consistency
+  // This ensures the preview matches what QArt actually optimized
+  // NOTE: When offscreenCanvasImage is available, it's stable and doesn't change on window resize
+  // When it's not available, we fall back to transformedImageData
   const rasterizedGrid = useMemo(() => {
-    if (!transformedImageData) {
+    // Prefer offscreen canvas from qartResult (QR dimension-based, stable)
+    // This is stable and doesn't change when window resizes
+    const imageData = qartResult?.offscreenCanvasImage || transformedImageData;
+    if (!imageData) {
       return null;
     }
     // Use qartResult matrix for dimension, or fallback to contextMatrix
-    // This ensures rasterization doesn't change when UI controls change
     const sourceMatrix = qartResult?.matrix || contextMatrix;
     if (!sourceMatrix) {
       return null;
     }
     const dimension = sourceMatrix.length;
     try {
-      const grid = rasterizeImageToQRGrid(transformedImageData, dimension);
+      const grid = rasterizeImageToQRGrid(imageData, dimension);
       return grid;
     } catch (err) {
       console.error("QRQArt: Error rasterizing image", err);
       return null;
     }
-  }, [transformedImageData, qartResult?.matrix, contextMatrix]);
+  }, [
+    qartResult?.offscreenCanvasImage, 
+    qartResult?.matrix, 
+    transformedImageData, // Fallback when offscreenCanvasImage is not available
+    contextMatrix
+  ]);
 
   // Force canvas redraw when preview toggle changes
   // CRITICAL: Use a stable key based on qartResult, not on visualization toggles
@@ -247,7 +293,7 @@ export function QRQArt({
     return `qart-canvas-${matrixLength}`;
   }, [qartResult?.matrix?.length, matrix?.length]);
 
-  // Render module - QArt uses the generated matrix directly
+  // Render module - QArt uses the generated matrix directly, optionally with halftone
   const renderModule = useCallback((ctx, module, moduleX, moduleY, moduleSize, renderCtx) => {
     if (!module) return;
     
@@ -263,8 +309,22 @@ export function QRQArt({
     // Use exact dimensions to ensure edge-to-edge alignment without gaps or overlaps
     const size = width === height ? width : Math.max(width, height);
     
-    // If contrast view is enabled, show contrast heatmap
-    if (showContrastView && contrastMatrix && renderCtx) {
+    // Render base layer: halftone, contrast view, control view, or default
+    // QArt generation completes first, then halftone is applied on top
+    // CRITICAL: Use halftoneImageData (offscreen canvas) to match the importanceMap
+    if (applyHalftone && qartResult && halftoneImageData && importanceMap && patternsDark && patternsLight) {
+      // Use halftone rendering with area sampling (same as Combined mode)
+      renderHalftoneModuleWithAreaSampling(ctx, module, moduleX, moduleY, moduleSize, renderCtx, {
+        transformedImageData: halftoneImageData, // Use offscreen canvas image to match importanceMap
+        importanceMap,
+        patternsDark,
+        patternsLight,
+        modulePixel,
+        reliabilityWeight: 0.0, // QArt already ensures scannability
+        importanceThreshold: limitHalftoneToImportant ? importanceThreshold : undefined,
+      });
+    } else if (showContrastView && contrastMatrix && renderCtx) {
+      // If contrast view is enabled, show contrast heatmap
       const { x: qrX, y: qrY } = renderCtx;
       const contrastModule = contrastMatrix[qrY]?.[qrX];
       if (contrastModule && contrastModule._contrastColor !== undefined) {
@@ -275,12 +335,13 @@ export function QRQArt({
         const b = rgb & 0xff;
         ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
         ctx.fillRect(x, y, size, size);
-        return;
+      } else {
+        // Fallback to default rendering if contrast data not available
+        ctx.fillStyle = module.isDark ? "black" : "white";
+        ctx.fillRect(x, y, size, size);
       }
-    }
-
-    // If control view is enabled, check the control matrix for visualization data
-    if (showControlView && controlMatrix && renderCtx) {
+    } else if (showControlView && controlMatrix && renderCtx) {
+      // If control view is enabled, check the control matrix for visualization data
       const { x: qrX, y: qrY } = renderCtx;
       const controlModule = controlMatrix[qrY]?.[qrX];
       if (controlModule && controlModule._controlGray !== undefined) {
@@ -291,15 +352,18 @@ export function QRQArt({
         const b = gray & 0xff;
         ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
         ctx.fillRect(x, y, size, size);
-        return;
+      } else {
+        // Fallback to default rendering if control data not available
+        ctx.fillStyle = module.isDark ? "black" : "white";
+        ctx.fillRect(x, y, size, size);
       }
+    } else {
+      // Default rendering - always use the actual module's isDark value
+      ctx.fillStyle = module.isDark ? "black" : "white";
+      ctx.fillRect(x, y, size, size);
     }
     
-    // Default rendering - always use the actual module's isDark value
-    ctx.fillStyle = module.isDark ? "black" : "white";
-    ctx.fillRect(x, y, size, size);
-    
-    // Overlay rasterized preview if enabled
+    // Overlay rasterized preview if enabled (works on top of any base rendering)
     if (showRasterizedPreview && rasterizedGrid && renderCtx) {
       // renderCtx has x, y properties from QRBase
       const { x: qrX, y: qrY } = renderCtx;
@@ -325,7 +389,7 @@ export function QRQArt({
         }
       }
     }
-  }, [showRasterizedPreview, showControlView, showContrastView, rasterizedGrid, matrix, controlMatrix, contrastMatrix]);
+  }, [applyHalftone, limitHalftoneToImportant, importanceThreshold, qartResult, halftoneImageData, importanceMap, patternsDark, patternsLight, modulePixel, showRasterizedPreview, showControlView, showContrastView, rasterizedGrid, matrix, controlMatrix, contrastMatrix]);
 
 
   // Listen for canvas size changes from QRBase
@@ -365,8 +429,67 @@ export function QRQArt({
         borderRadius: 8,
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }}>
-        <h3 style={{ margin: '0 0 16px 0', color: '#333' }}>QArt Settings</h3>
+        <h3 style={{ margin: '0 0 16px 0', color: '#333' }}>
+          {combined ? "Combined QArt + Halftone Settings" : "QArt Settings"}
+        </h3>
         <div style={{ display: 'grid', gap: 12 }}>
+          {!combined && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label htmlFor="enable-halftone" style={{ minWidth: 120, color: '#666' }}>
+                Enable Halftone:
+              </label>
+              <Switch
+                id="enable-halftone"
+                checked={enableHalftone}
+                onCheckedChange={setEnableHalftone}
+                title="Apply halftone effect after QArt generation completes"
+              />
+              <span style={{ fontSize: '12px', color: '#666' }}>
+                Apply halftone patterns for enhanced visual fidelity
+              </span>
+            </div>
+          )}
+          {applyHalftone && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <label htmlFor="limit-halftone-important" style={{ minWidth: 120, color: '#666' }}>
+                  Limit to Important:
+                </label>
+                <Switch
+                  id="limit-halftone-important"
+                  checked={limitHalftoneToImportant}
+                  onCheckedChange={setLimitHalftoneToImportant}
+                  title="Only apply halftone effect to important areas of the image (edges, details)"
+                />
+                <span style={{ fontSize: '12px', color: '#666' }}>
+                  Apply halftone only to important image areas
+                </span>
+              </div>
+              {limitHalftoneToImportant && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 128 }}>
+                  <label htmlFor="importance-threshold" style={{ minWidth: 100, color: '#666', fontSize: '12px' }}>
+                    Threshold:
+                  </label>
+                  <input
+                    id="importance-threshold"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={importanceThreshold}
+                    onChange={(e) => setImportanceThreshold(parseFloat(e.target.value))}
+                    style={{ flex: 1, maxWidth: 200 }}
+                  />
+                  <span style={{ fontSize: '12px', color: '#666', minWidth: 40 }}>
+                    {importanceThreshold.toFixed(2)}
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#999' }}>
+                    Lower = more areas get halftone
+                  </span>
+                </div>
+              )}
+            </>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <label htmlFor="preview-rasterized" style={{ minWidth: 120, color: '#666' }}>
               Preview Rasterized:
@@ -498,22 +621,38 @@ export function QRQArt({
                   )}
                   
                   {appendData.method === "new" && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <Label htmlFor="append-encoding-mode" style={{ color: '#666' }}>Encoding Mode:</Label>
-                      <Select
-                        value={appendData.encodingMode}
-                        onValueChange={(value) => setAppendData({ ...appendData, encodingMode: value })}
-                      >
-                        <SelectTrigger id="append-encoding-mode" style={{ maxWidth: 300 }}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="numeric">Numeric (0-9)</SelectItem>
-                          <SelectItem value="alphanumeric">Alphanumeric (0-9A-Z $%*+-./:)</SelectItem>
-                          <SelectItem value="byte">Byte (any characters)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <Label htmlFor="append-encoding-mode" style={{ color: '#666' }}>Encoding Mode:</Label>
+                        <Select
+                          value={appendData.encodingMode}
+                          onValueChange={(value) => setAppendData({ ...appendData, encodingMode: value })}
+                        >
+                          <SelectTrigger id="append-encoding-mode" style={{ maxWidth: 300 }}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="numeric">Numeric (0-9)</SelectItem>
+                            <SelectItem value="alphanumeric">Alphanumeric (0-9A-Z $%*+-./:)</SelectItem>
+                            <SelectItem value="byte">Byte (any characters)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <Label htmlFor="append-separator-new" style={{ color: '#666' }}>Separator:</Label>
+                        <Input
+                          id="append-separator-new"
+                          type="text"
+                          value={appendData.separator || ""}
+                          onChange={(e) => setAppendData({ ...appendData, separator: e.target.value })}
+                          placeholder="Separator (must match encoding mode)"
+                          style={{ maxWidth: 300 }}
+                        />
+                        <span style={{ fontSize: '11px', color: '#999' }}>
+                          Separator will be inserted before appended data
+                        </span>
+                      </div>
+                    </>
                   )}
                   
                   <div style={{ padding: '8px 12px', backgroundColor: '#e3f2fd', borderRadius: 4, fontSize: '12px', color: '#1976d2' }}>

@@ -12,6 +12,10 @@ import { encodeByte } from "../qr/encoders/byte";
 import { getNumBits } from "../qr/encoders/utils";
 import { QArtAppendData } from "./index";
 import { decodeSegmentValue } from "./decodeSegments";
+import {
+  getCharCountIndicatorLength,
+  updateCharCountIndicatorLengths,
+} from "../qr/charCount";
 
 /**
  * Special segment type marker for QArt-optimizable appended data
@@ -56,27 +60,6 @@ export function validateDataForMode(data: string, mode: string): boolean {
     default:
       return false;
   }
-}
-
-/**
- * Gets the encoding mode of a data segment
- * Returns the mode based on the segment's inputMode property or type
- * @internal - Currently unused but kept for potential future use
- */
-// @ts-expect-error - Function is declared but not currently used
-function getSegmentMode(segment: Segment): string | null {
-  // Check if segment has inputMode property (from createDataSymbol)
-  if ((segment as any).inputMode) {
-    return (segment as any).inputMode;
-  }
-  
-  // Check segment type as fallback
-  if (segment.type === "data") {
-    // Try to infer from surrounding segments or default to byte
-    return "byte";
-  }
-  
-  return null;
 }
 
 /**
@@ -142,9 +125,10 @@ function findSegmentGroup(segments: Segment[], startIndex: number): { start: num
   if (modeBits === 0x1) mode = "numeric";
   else if (modeBits === 0x2) mode = "alphanumeric";
   else if (modeBits === 0x4) mode = "byte";
+  else if (modeBits === 0x8) mode = "kanji";
   
   // Find characterCountIndicator (should be next)
-  let charCountIndex = modeIndicatorIndex + 1;
+  const charCountIndex = modeIndicatorIndex + 1;
   if (charCountIndex >= segments.length || segments[charCountIndex].type !== "characterCountIndicator") {
     return null;
   }
@@ -218,33 +202,10 @@ function calculateOptimalAppendLength(
     return 0;
   }
   
-  // Reserve space for terminator (up to 4 bits) and fill (0-7 bits)
-  // We'll calculate more precisely, but reserve ~12 bits as safety margin
-  const reservedBits = 12;
-  
   // Account for overhead: mode indicator (4 bits) + character count indicator
-  // Character count length varies by mode and version
-  let charCountBits: number;
-  const version = versionInfo.version;
-  
-  switch (mode) {
-    case "numeric":
-      if (version < 10) charCountBits = 10;
-      else if (version < 27) charCountBits = 12;
-      else charCountBits = 14;
-      break;
-    case "alphanumeric":
-      if (version < 10) charCountBits = 9;
-      else if (version < 27) charCountBits = 11;
-      else charCountBits = 13;
-      break;
-    case "byte":
-      if (version < 10) charCountBits = 8;
-      else charCountBits = 16;
-      break;
-    default:
-      charCountBits = 16; // Conservative default
-  }
+  // Character count length depends only on mode and version (ISO/IEC 18004)
+  const charCountBits = getCharCountIndicatorLength(mode, versionInfo.version);
+  const reservedBits = 12;
   
   const overheadBits = 4 + charCountBits + reservedBits; // mode + char count + safety margin
   
@@ -297,8 +258,8 @@ export function appendDataToSegments(
     // Find the last data segment group
     const lastGroup = findLastDataSegmentGroup(newSegments);
     
-    if (!lastGroup) {
-      // No data segments found, fall back to new segment method
+    if (!lastGroup || lastGroup.mode === "kanji" || !lastGroup.mode) {
+      // Cannot extend kanji/unknown groups; fall back to a new byte (or configured) segment
       return appendDataToSegments(
         segments,
         { ...appendConfig, method: "new", encodingMode: appendConfig.encodingMode || "byte" },
@@ -400,38 +361,19 @@ export function appendDataToSegments(
     // Combine separator (fixed) + placeholder (optimizable) segments
     const allAppendSegments = [...separatorSegments, ...markedPlaceholderSegments];
 
-    // Calculate new total character count (original + separator + placeholder)
-    const originalCharCount = newSegments[lastGroup.start + 1].value; // characterCountIndicator value
-    const appendedDataLength = separator.length + placeholderData.length;
-    const newCharCount = originalCharCount + appendedDataLength;
-    
-    // Update character count indicator
-    // Character count indicator length depends on version and mode thresholds
+    // Character count: numeric/alphanumeric use character length; byte uses encoded byte count
+    const originalCharCount = newSegments[lastGroup.start + 1].value;
+    const appendedCount =
+      lastGroup.mode === "byte"
+        ? separatorSegments.length + markedPlaceholderSegments.length
+        : separator.length + placeholderData.length;
+    const newCharCount = originalCharCount + appendedCount;
+
     const charCountIndicator = newSegments[lastGroup.start + 1];
-    let newCharCountLength = charCountIndicator.length;
-    
-    // Check if we need to update the length based on thresholds
-    // For numeric: thresholds are [10, 12, 14] bits for versions <10, <27, >=27
-    // For alphanumeric: thresholds are [9, 11, 13] bits for versions <10, <27, >=27
-    // For byte: thresholds are [8, 16] bits for versions <10, >=10
-    const version = versionInfo.version;
-    if (lastGroup.mode === "numeric") {
-      if (version < 10 && newCharCount >= 10) newCharCountLength = 12;
-      else if (version < 27 && newCharCount >= 1000) newCharCountLength = 14;
-      else if (version >= 27 && newCharCount < 1000) newCharCountLength = 12;
-    } else if (lastGroup.mode === "alphanumeric") {
-      if (version < 10 && newCharCount >= 45) newCharCountLength = 11;
-      else if (version < 27 && newCharCount >= 1225) newCharCountLength = 13;
-      else if (version >= 27 && newCharCount < 1225) newCharCountLength = 11;
-    } else if (lastGroup.mode === "byte") {
-      if (version < 10 && newCharCount >= 256) newCharCountLength = 16;
-      else if (version >= 10 && newCharCount < 256) newCharCountLength = 8;
-    }
-    
     const updatedCharCountIndicator = {
       ...charCountIndicator,
       value: newCharCount,
-      length: newCharCountLength
+      length: getCharCountIndicatorLength(lastGroup.mode, versionInfo.version),
     };
 
     // Build the new segment structure:
@@ -444,18 +386,26 @@ export function appendDataToSegments(
     const afterGroup = newSegments.slice(lastGroup.end);
     
     const beforeGroup = newSegments.slice(0, lastGroup.start);
-    return [
-      ...beforeGroup,
-      modeIndicator,
-      updatedCharCountIndicator,
-      ...originalDataSegments,
-      ...allAppendSegments,
-      ...afterGroup
-    ];
+    return updateCharCountIndicatorLengths(
+      [
+        ...beforeGroup,
+        modeIndicator,
+        updatedCharCountIndicator,
+        ...originalDataSegments,
+        ...allAppendSegments,
+        ...afterGroup
+      ],
+      versionInfo.version
+    );
   } else {
     // New segment method
     if (!appendConfig.encodingMode) {
       throw new Error("Encoding mode is required when using 'new' append method");
+    }
+
+    // Validate separator
+    if (appendConfig.separator && !validateSeparatorForMode(appendConfig.separator, appendConfig.encodingMode)) {
+      throw new Error(`Separator "${appendConfig.separator}" does not conform to ${appendConfig.encodingMode} encoding mode`);
     }
 
     // Calculate optimal append length based on available capacity
@@ -473,34 +423,108 @@ export function appendDataToSegments(
     // Generate placeholder data for QArt to optimize
     const placeholderData = generatePlaceholderData(appendConfig.encodingMode, optimalLength);
 
-    // Encode the placeholder data
-    let newSegmentGroup: Segment[];
+    const separator = appendConfig.separator || "";
+    
+    // Encode separator and placeholder separately
+    // Separator should remain fixed (not optimized), placeholder will be optimized
+    let separatorSegments: Segment[] = [];
+    let placeholderSegments: Segment[] = [];
+    let modeIndicator: Segment | null = null;
+    
+    // Encode separator + placeholder together so the CCI *value* is the total count.
+    // CCI *width* is version-only (ISO/IEC 18004), not encoder character-count thresholds.
+    const fullData = separator + placeholderData;
+    let fullDataGroup: Segment[];
     switch (appendConfig.encodingMode) {
       case "numeric":
-        newSegmentGroup = encodeNumeric(placeholderData);
+        fullDataGroup = encodeNumeric(fullData);
         break;
       case "alphanumeric":
-        newSegmentGroup = encodeAlphanumeric(placeholderData);
+        fullDataGroup = encodeAlphanumeric(fullData);
         break;
       case "byte":
-        newSegmentGroup = encodeByte(placeholderData, "utf-8");
+        fullDataGroup = encodeByte(fullData, "utf-8");
         break;
       default:
         throw new Error(`Unsupported encoding mode: ${appendConfig.encodingMode}`);
     }
 
-    if (newSegmentGroup.length === 0) {
-      throw new Error("Failed to encode appended data");
+    if (fullDataGroup.length === 0) {
+      throw new Error("Failed to encode full data");
     }
 
-    // Mark data segments as QArt-optimizable
-    // Only mark the data symbols, not mode indicator or character count
-    const markedGroup = newSegmentGroup.map(seg => {
-      if (seg.type === "data") {
-        return { ...seg, type: QART_APPEND_TYPE };
+    // Extract mode indicator and character count indicator from full data encoding
+    modeIndicator = fullDataGroup[0]; // Mode indicator
+    const characterCountIndicator = {
+      ...fullDataGroup[1],
+      length: getCharCountIndicatorLength(
+        appendConfig.encodingMode,
+        versionInfo.version
+      ),
+    };
+    
+
+    // CCI value comes from the encoder (total character/byte count).
+    // Length was overwritten above with the version-only width.
+
+    // Encode separator separately (if it exists) - keep as regular data segments
+    if (separator) {
+      switch (appendConfig.encodingMode) {
+        case "numeric": {
+          const fullGroup = encodeNumeric(separator);
+          separatorSegments = fullGroup.filter(s => s.type === "data");
+          break;
+        }
+        case "alphanumeric": {
+          const fullGroup = encodeAlphanumeric(separator);
+          separatorSegments = fullGroup.filter(s => s.type === "data");
+          break;
+        }
+        case "byte": {
+          const fullGroup = encodeByte(separator, "utf-8");
+          separatorSegments = fullGroup.filter(s => s.type === "data");
+          break;
+        }
+        default:
+          throw new Error(`Unsupported encoding mode: ${appendConfig.encodingMode}`);
       }
-      return seg;
-    });
+    }
+
+    // Encode placeholder separately to get placeholder data segments
+    let placeholderGroup: Segment[];
+    switch (appendConfig.encodingMode) {
+      case "numeric":
+        placeholderGroup = encodeNumeric(placeholderData);
+        break;
+      case "alphanumeric":
+        placeholderGroup = encodeAlphanumeric(placeholderData);
+        break;
+      case "byte":
+        placeholderGroup = encodeByte(placeholderData, "utf-8");
+        break;
+      default:
+        throw new Error(`Unsupported encoding mode: ${appendConfig.encodingMode}`);
+    }
+
+    if (placeholderGroup.length === 0) {
+      throw new Error("Failed to encode placeholder data");
+    }
+
+    // Extract placeholder data segments (skip mode indicator and character count)
+    placeholderSegments = placeholderGroup.slice(2);
+
+    // Mark ONLY placeholder segments as QArt-optimizable (separator remains fixed)
+    const markedPlaceholderSegments = placeholderSegments.map(seg => ({
+      ...seg,
+      type: QART_APPEND_TYPE
+    }));
+
+    // Build the new segment group:
+    // - Mode indicator (from full data encoding)
+    // - Character count indicator (from full data encoding - already correct)
+    // - Separator data segments (fixed, regular data)
+    // - Placeholder data segments (marked as qartAppend)
+    const allAppendSegments = [modeIndicator, characterCountIndicator, ...separatorSegments, ...markedPlaceholderSegments];
 
     // Find insertion point (before padding/terminator/fill)
     const insertIndex = findInsertionPoint(newSegments);
@@ -508,7 +532,9 @@ export function appendDataToSegments(
     // Insert new segment group
     const beforeInsert = newSegments.slice(0, insertIndex);
     const afterInsert = newSegments.slice(insertIndex);
-    return [...beforeInsert, ...markedGroup, ...afterInsert];
+    return updateCharCountIndicatorLengths(
+      [...beforeInsert, ...allAppendSegments, ...afterInsert],
+      versionInfo.version
+    );
   }
 }
-

@@ -7,9 +7,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { downloadCanvasAsPNG, downloadQRAsSVG } from "@/utils/downloadUtils";
+import { downloadCanvasAsPNG, downloadCanvasAsSVG, downloadQRAsSTL } from "@/utils/downloadUtils";
+import { InvalidQRBanner } from "@/components/ui/message-banner";
 
 export function QRBase({ 
   size: initialSize = 420,
@@ -23,11 +26,12 @@ export function QRBase({
 }) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
-  const { matrix: contextMatrix, highlightedIds } = useQRData();
+  const { matrix: contextMatrix, highlightedIds, invalidQR, invalidQRReason } = useQRData();
   const matrix = customMatrix || contextMatrix;
   const [size, setSize] = useState(initialSize);
   const [hoveredModule, setHoveredModule] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [includeQuietZoneSTL, setIncludeQuietZoneSTL] = useState(false);
 
   // Responsive resizing
   useEffect(() => {
@@ -179,15 +183,20 @@ export function QRBase({
   const patternName = hoveredModule ? getPatternName(hoveredModule) : null;
 
   const handleDownload = (format) => {
-    if (!matrix) return;
+    if (!matrix || !canvasRef.current) return;
 
     try {
       if (format === "png") {
-        if (canvasRef.current) {
-          downloadCanvasAsPNG(canvasRef.current);
-        }
-      } else {
-        downloadQRAsSVG(matrix, size, quietZone);
+        downloadCanvasAsPNG(canvasRef.current);
+      } else if (format === "svg") {
+        // Use canvas-based SVG to preserve rendered appearance (QArt, halftone, etc.)
+        downloadCanvasAsSVG(canvasRef.current);
+      } else if (format === "stl-single") {
+        // Single-color STL: light modules taller than dark modules
+        downloadQRAsSTL(matrix, size, quietZone, 'single', 1.0, 2.0, 1.5, 0.1, includeQuietZoneSTL);
+      } else if (format === "stl-multicolor") {
+        // Multicolor STL: separate files for light and dark modules
+        downloadQRAsSTL(matrix, size, quietZone, 'multicolor', 1.0, 2.0, 1.5, 0.1, includeQuietZoneSTL);
       }
     } catch (error) {
       console.error("Error downloading QR code:", error);
@@ -196,6 +205,7 @@ export function QRBase({
 
   return (
     <div ref={containerRef} className="qr-base-container" style={{width: "100%", height: "auto", position: "relative"}}>
+      {invalidQR && <InvalidQRBanner message={invalidQRReason} />}
       <canvas
         ref={canvasRef}
         width={size}
@@ -248,6 +258,20 @@ export function QRBase({
               <DropdownMenuItem onClick={() => handleDownload("svg")}>
                 Download as SVG
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleDownload("stl-single")}>
+                Download as STL (Single Color)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDownload("stl-multicolor")}>
+                Download as STL (Multicolor)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuCheckboxItem
+                checked={includeQuietZoneSTL}
+                onCheckedChange={(checked) => setIncludeQuietZoneSTL(checked === true)}
+              >
+                Include quiet zone base (STL)
+              </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

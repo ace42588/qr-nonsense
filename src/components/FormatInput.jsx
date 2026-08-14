@@ -23,6 +23,7 @@ import {
   setVersion,
   setDataMask,
 } from "@/state/inputs/inputActions";
+import { InvalidQRBadge } from "@/components/ui/message-banner";
 
 // Constants
 const levels = [
@@ -54,7 +55,7 @@ const masks = [
 
 export function FormatInput() {
   const { errorCorrectionLevel, version, dataMask } = useInputs();
-  const { versionInfo, dataMask: cDataMask } = useDerivedQRData();
+  const { versionInfo, dataMask: cDataMask, invalidQR } = useDerivedQRData();
   const cVersion = versionInfo.version;
   const dispatch = useInputDispatch();
   return (
@@ -67,6 +68,7 @@ export function FormatInput() {
         <SidebarGroupLabel asChild>
           <CollapsibleTrigger>
             Format
+            {invalidQR && <InvalidQRBadge />}
             <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
           </CollapsibleTrigger>
         </SidebarGroupLabel>
