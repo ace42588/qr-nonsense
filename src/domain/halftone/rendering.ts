@@ -1,6 +1,5 @@
-import { getBrightness } from "@/domain/image";
+import { getBrightness, ImageData } from "@/domain/image";
 import { choosePattern } from "./patterns";
-import { ImageData } from "@/domain/image";
 
 interface RenderContext {
   size: number;
@@ -19,6 +18,7 @@ interface HalftoneRenderOptions {
   patternsLight: number[][][];
   modulePixel: number;
   reliabilityWeight?: number;
+  importanceThreshold?: number; // If provided, only apply halftone when importance >= threshold
 }
 
 /**
@@ -49,7 +49,8 @@ export function sampleImageAtPoint(
   const g = transformedImageData.data[idx + 1];
   const b = transformedImageData.data[idx + 2];
   const brightness = getBrightness(r, g, b) / 255;
-  const importance = importanceMap[safeY * imgWidth + safeX] || 0;
+  const importanceIdx = safeY * imgWidth + safeX;
+  const importance = importanceMap[importanceIdx] || 0;
   
   return { brightness, importance };
 }
@@ -323,6 +324,13 @@ export function renderHalftoneModuleWithAreaSampling(
     modulePixel
   );
 
+  // If importance threshold is set and importance is below threshold, render as solid
+  const { importanceThreshold } = options;
+  if (importanceThreshold !== undefined && importance < importanceThreshold) {
+    renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
+    return;
+  }
+
   // Choose pattern based on average brightness
   const pattern = choosePattern(patterns, brightness, importance, reliabilityWeight);
 
@@ -336,4 +344,3 @@ export function renderHalftoneModuleWithAreaSampling(
   // Render the selected halftone pattern
   renderHalftonePattern(ctx, pattern, moduleX, moduleY, moduleSize, modulePixel);
 }
-

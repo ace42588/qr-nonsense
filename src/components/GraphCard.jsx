@@ -3,9 +3,9 @@ import { useQRData, useQRDataDispatch } from "@/state/qr/QRDataContext";
 import { useInputs } from "@/state/inputs/InputContext";
 import { useQArtResult } from "@/state/qr/QArtContext";
 import { getCodewords } from "@/domain/qr";
+import { MODE } from "@/domain/qr/constants/modes";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getVersionInfo } from "@/domain/qr/versionUtils";
 
 // Node types for color coding
 const NODE_TYPES = {
@@ -21,9 +21,13 @@ const NODE_TYPES = {
   errorCorrectionCodeword: { color: "#ef4444", bg: "#fee2e2", hover: "#fecaca" }, // red
 };
 
+const MODE_NAME_BY_BITS = Object.fromEntries(
+  Object.values(MODE).map((m) => [m.bits, m.name])
+);
+
 export function GraphCard() {
   const { highlightModules, clearAllHighlights } = useQRDataDispatch();
-  const { highlightedIds, segments: contextSegments, codewords: contextCodewords, blocks: contextBlocks, version, versionInfo } = useQRData();
+  const { highlightedIds, segments: contextSegments, codewords: contextCodewords, blocks: contextBlocks, versionInfo } = useQRData();
   const { inputs } = useInputs();
   const { formatInfo: { errorCorrectionLevel } } = useInputs();
   const { qartResult } = useQArtResult();
@@ -72,67 +76,92 @@ export function GraphCard() {
       return nodeMap.get(id);
     };
 
-    // Map segments to inputs based on order
-    // Segments are created in order: for each input: modeIndicator, characterCountIndicator, then data segments
-    // Terminator and padding appear after all inputs
-    const inputToSegments = new Map();
+    // Map segments to inputs. Mixed (auto) mode emits multiple mode groups per input,
+    // so groups are keyed by segment.inputId when present.
+    const groupsByInputId = new Map();
+    inputs.forEach((input) => {
+      groupsByInputId.set(input.id, []);
+    });
     const terminatorSegments = [];
     const paddingSegments = [];
-    let segmentIndex = 0;
-    
-    inputs.forEach((input) => {
-      const inputSegments = {
-        modeIndicator: null,
-        characterCountIndicator: null,
-        data: []
-      };
-      
-      // Find segments for this input by looking for modeIndicator and characterCountIndicator
-      // These appear before the data segments for each input
-      while (segmentIndex < segments.length) {
-        const seg = segments[segmentIndex];
-        if (seg.type === "modeIndicator" && !inputSegments.modeIndicator) {
-          inputSegments.modeIndicator = seg;
-          segmentIndex++;
-        } else if (seg.type === "characterCountIndicator" && !inputSegments.characterCountIndicator) {
-          inputSegments.characterCountIndicator = seg;
-          segmentIndex++;
-        } else if (seg.type === "modeIndicator" || seg.type === "characterCountIndicator") {
-          // This belongs to the next input
-          break;
-        } else if (seg.type === "terminator") {
-          // Terminator segment - collect separately and stop processing this input
+    const hasInputIds = segments.some((seg) => seg.inputId);
+
+    if (hasInputIds) {
+      let currentGroup = null;
+      for (const seg of segments) {
+        if (seg.type === "terminator") {
           terminatorSegments.push(seg);
-          segmentIndex++;
-          break; // Terminator marks the end of data for this input
-        } else if (seg.type === "padding") {
-          // Padding segment - collect separately but continue (padding can appear between inputs)
+          currentGroup = null;
+          continue;
+        }
+        if (seg.type === "padding" || seg.type === "fill") {
           paddingSegments.push(seg);
-          segmentIndex++;
+          continue;
+        }
+        if (seg.type === "modeIndicator") {
+          currentGroup = {
+            modeIndicator: seg,
+            characterCountIndicator: null,
+            data: [],
+          };
+          const bucket = groupsByInputId.get(seg.inputId);
+          if (bucket) bucket.push(currentGroup);
+          continue;
+        }
+        if (!currentGroup) continue;
+        if (seg.type === "characterCountIndicator") {
+          currentGroup.characterCountIndicator = seg;
         } else {
-          // Data segment
-          inputSegments.data.push(seg);
-          segmentIndex++;
+          currentGroup.data.push(seg);
         }
       }
-      
-      inputToSegments.set(input.id, inputSegments);
-    });
-    
-    // Collect any remaining terminator and padding segments after all inputs
-    while (segmentIndex < segments.length) {
-      const seg = segments[segmentIndex];
-      if (seg.type === "terminator") {
-        terminatorSegments.push(seg);
-      } else if (seg.type === "padding") {
-        paddingSegments.push(seg);
+    } else {
+      let segmentIndex = 0;
+      inputs.forEach((input) => {
+        const group = {
+          modeIndicator: null,
+          characterCountIndicator: null,
+          data: [],
+        };
+        while (segmentIndex < segments.length) {
+          const seg = segments[segmentIndex];
+          if (seg.type === "modeIndicator" && !group.modeIndicator) {
+            group.modeIndicator = seg;
+            segmentIndex++;
+          } else if (seg.type === "characterCountIndicator" && !group.characterCountIndicator) {
+            group.characterCountIndicator = seg;
+            segmentIndex++;
+          } else if (seg.type === "modeIndicator" || seg.type === "characterCountIndicator") {
+            break;
+          } else if (seg.type === "terminator") {
+            terminatorSegments.push(seg);
+            segmentIndex++;
+            break;
+          } else if (seg.type === "padding" || seg.type === "fill") {
+            paddingSegments.push(seg);
+            segmentIndex++;
+          } else {
+            group.data.push(seg);
+            segmentIndex++;
+          }
+        }
+        groupsByInputId.get(input.id)?.push(group);
+      });
+
+      while (segmentIndex < segments.length) {
+        const seg = segments[segmentIndex];
+        if (seg.type === "terminator") {
+          terminatorSegments.push(seg);
+        } else if (seg.type === "padding" || seg.type === "fill") {
+          paddingSegments.push(seg);
+        }
+        segmentIndex++;
       }
-      segmentIndex++;
     }
 
     // Process each input and connect directly to segments
     inputs.forEach((input, inputIdx) => {
-      const inputSegments = inputToSegments.get(input.id) || { modeIndicator: null, characterCountIndicator: null, data: [] };
+      const groups = groupsByInputId.get(input.id) || [];
       
       // Input node
       const inputNode = getOrCreateNode(
@@ -142,39 +171,39 @@ export function GraphCard() {
         { inputId: input.id, bitIds: [] }
       );
 
-      // Connect input directly to modeIndicator segment (Mode)
-      if (inputSegments.modeIndicator) {
-        const modeSegmentNode = getOrCreateNode(
-          `segment-${inputSegments.modeIndicator.id}`,
-          "segment",
-          `Mode: ${input.mode}`,
-          { segmentId: inputSegments.modeIndicator.id, bitIds: inputSegments.modeIndicator.bitIds || [] }
-        );
-        edges.push({ from: inputNode.id, to: modeSegmentNode.id });
-      }
+      groups.forEach((group) => {
+        if (group.modeIndicator) {
+          const modeName =
+            MODE_NAME_BY_BITS[group.modeIndicator.value] || input.mode;
+          const modeSegmentNode = getOrCreateNode(
+            `segment-${group.modeIndicator.id}`,
+            "segment",
+            `Mode: ${modeName}`,
+            { segmentId: group.modeIndicator.id, bitIds: group.modeIndicator.bitIds || [] }
+          );
+          edges.push({ from: inputNode.id, to: modeSegmentNode.id });
+        }
 
-      // Connect input directly to characterCountIndicator segment (Length)
-      // Use the segment.value which contains the actual character count
-      if (inputSegments.characterCountIndicator) {
-        const lengthValue = inputSegments.characterCountIndicator.value ?? 0;
-        const lengthSegmentNode = getOrCreateNode(
-          `segment-${inputSegments.characterCountIndicator.id}`,
-          "segment",
-          `Length: ${lengthValue}`,
-          { segmentId: inputSegments.characterCountIndicator.id, bitIds: inputSegments.characterCountIndicator.bitIds || [] }
-        );
-        edges.push({ from: inputNode.id, to: lengthSegmentNode.id });
-      }
+        if (group.characterCountIndicator) {
+          const lengthValue = group.characterCountIndicator.value ?? 0;
+          const lengthSegmentNode = getOrCreateNode(
+            `segment-${group.characterCountIndicator.id}`,
+            "segment",
+            `Length: ${lengthValue}`,
+            { segmentId: group.characterCountIndicator.id, bitIds: group.characterCountIndicator.bitIds || [] }
+          );
+          edges.push({ from: inputNode.id, to: lengthSegmentNode.id });
+        }
 
-      // Connect input directly to data segments (Value) - all data segments are direct descendants
-      inputSegments.data.forEach((dataSegment) => {
-        const dataSegmentNode = getOrCreateNode(
-          `segment-${dataSegment.id}`,
-          "segment",
-          dataSegment.text || `Data ${dataSegment.id.slice(0, 6)}`,
-          { segmentId: dataSegment.id, bitIds: dataSegment.bitIds || [] }
-        );
-        edges.push({ from: inputNode.id, to: dataSegmentNode.id });
+        group.data.forEach((dataSegment) => {
+          const dataSegmentNode = getOrCreateNode(
+            `segment-${dataSegment.id}`,
+            "segment",
+            dataSegment.text || `Data ${dataSegment.id.slice(0, 6)}`,
+            { segmentId: dataSegment.id, bitIds: dataSegment.bitIds || [] }
+          );
+          edges.push({ from: inputNode.id, to: dataSegmentNode.id });
+        });
       });
     });
 
@@ -199,12 +228,9 @@ export function GraphCard() {
     });
 
     // Separate data and EC codewords (they're interleaved in the array)
-    const dataCodewords = codewords.filter(cw => cw.type === "data");
-    const ecCodewords = codewords.filter(cw => cw.type === "errorCorrection");
-
     // Create block nodes first
     blocks.forEach((block, blockIndex) => {
-      const blockNode = getOrCreateNode(
+      getOrCreateNode(
         `block-${blockIndex}`,
         "block",
         `Block ${blockIndex + 1}`,
@@ -287,7 +313,7 @@ export function GraphCard() {
     }
 
     return { nodes, edges, maxY, blocks };
-  }, [inputs, segments, codewords, blocks, version, errorCorrectionLevel]);
+  }, [inputs, segments, codewords, blocks]);
 
   // Layout nodes using a hierarchical layout
   const [viewBox, setViewBox] = useState({ x: 0, y: 0, width: 800, height: 500 });
@@ -726,4 +752,3 @@ export function GraphCard() {
     </Card>
   );
 }
-

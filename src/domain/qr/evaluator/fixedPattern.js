@@ -12,7 +12,7 @@ import {
  * @param {number} height - Canvas height
  * @return {number} Damage estimate (0-1 scale, lower is better)
  */
-function estimateFixedPatternDamage(data, width, height) {
+export function estimateFixedPatternDamage(data, width, height) {
   // Step 1: Detect the QR code boundaries and size
   const boundaries = detectQRBoundaries(data, width, height);
   if (!boundaries) return 1.0; // Could not detect QR code

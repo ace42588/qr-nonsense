@@ -5,7 +5,7 @@
  * These contracts serve as the API specification for QArt functionality.
  */
 
-import { Segment, QRMatrix, Codeword, VersionInfo } from "../../../src/types/index";
+import { Segment, QRMatrix, Codeword, VersionInfo } from "../../../src/domain/shared/types";
 import { QRBlock } from "../../../src/domain/qr/codewords/blocks";
 
 /**
@@ -155,4 +155,3 @@ export type CalculateQArtCapacityRequirementFunction = (
   qrSize: number,
   userInputBits: number
 ) => number;
-

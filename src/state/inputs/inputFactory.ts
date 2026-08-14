@@ -1,5 +1,5 @@
 import { jsonSchema } from "@/domain/input/serializationSchemas";
-import { Input, Field } from "@/app/types";
+import { Input, Field } from "./types";
 import { generateId } from "@/domain/qr/utils/id";
 
 export const DEFAULT_FIELD: Field = {

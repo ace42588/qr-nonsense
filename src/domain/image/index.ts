@@ -177,11 +177,13 @@ export function rasterizeImageToQRGrid(
 
   // Sample image at each module center
   // Map QR code modules directly to canvas pixel coordinates
+  // Use module center positions (x + 0.5, y + 0.5) to match halftone sampling alignment
   for (let y = 0; y < qrDimension; y++) {
     for (let x = 0; x < qrDimension; x++) {
-      // Map QR module position (0 to qrDimension-1) to canvas pixel position (0 to imgWidth-1)
-      const imgX = Math.floor((x / qrDimension) * imgWidth);
-      const imgY = Math.floor((y / qrDimension) * imgHeight);
+      // Map QR module center position to canvas pixel position (0 to imgWidth-1)
+      // Use (x + 0.5) to sample at module center, matching halftone's sub-pixel sampling
+      const imgX = Math.floor(((x + 0.5) / qrDimension) * imgWidth);
+      const imgY = Math.floor(((y + 0.5) / qrDimension) * imgHeight);
 
       // Clamp to valid image bounds
       const clampedX = Math.max(0, Math.min(imgWidth - 1, imgX));
@@ -342,8 +344,68 @@ export function computeContrastGrid(
 }
 
 // Compute importance map using edge detection (Sobel)
+// CRITICAL: size parameter must match imgData.width and imgData.height (image must be square)
 export function computeImportanceMap(imgData: ImageData, size: number, alpha: number = 0.5): Float32Array {
   const data = imgData.data;
+  const imgWidth = imgData.width;
+  const imgHeight = imgData.height;
+  
+  // Validate that size matches image dimensions
+  if (imgWidth !== size || imgHeight !== size) {
+    console.warn(`computeImportanceMap: size parameter (${size}) does not match image dimensions (${imgWidth}x${imgHeight}). Using image dimensions.`);
+    // Use actual image dimensions
+    const actualSize = imgWidth;
+    const importance = new Float32Array(actualSize * actualSize);
+    const brightnessArr = new Float32Array(actualSize * actualSize);
+
+    // Compute brightness for each pixel using actual image width
+    for (let y = 0; y < actualSize; ++y) {
+      for (let x = 0; x < actualSize; ++x) {
+        const i = (y * imgWidth + x) * 4;
+        brightnessArr[y * actualSize + x] = getBrightness(data[i], data[i + 1], data[i + 2]) / 255;
+      }
+    }
+
+    // Compute edge strength (Sobel) using actual image width
+    for (let y = 1; y < actualSize - 1; ++y) {
+      for (let x = 1; x < actualSize - 1; ++x) {
+        const i = (y * imgWidth + x) * 4;
+        const gx =
+          getBrightness(data[i + 4], data[i + 5], data[i + 6]) -
+          getBrightness(data[i - 4], data[i - 3], data[i - 2]);
+        const gy =
+          getBrightness(
+            data[i + imgWidth * 4],
+            data[i + imgWidth * 4 + 1],
+            data[i + imgWidth * 4 + 2]
+          ) -
+          getBrightness(
+            data[i - imgWidth * 4],
+            data[i - imgWidth * 4 + 1],
+            data[i - imgWidth * 4 + 2]
+          );
+        const edge = Math.sqrt(gx * gx + gy * gy) / 255;
+        const brightness = brightnessArr[y * actualSize + x];
+        // Combine edge and brightness (midtones are more important)
+        importance[y * actualSize + x] = alpha * edge + (1 - alpha) * (1 - Math.abs(brightness - 0.5) * 2);
+      }
+    }
+    
+    // Normalize importance map to 0-1
+    let maxImp = 0;
+    for (let i = 0; i < importance.length; ++i) {
+      if (importance[i] > maxImp) {
+        maxImp = importance[i];
+      }
+    }
+    if (maxImp > 0) {
+      for (let i = 0; i < importance.length; ++i) importance[i] /= maxImp;
+    }
+    
+    return importance;
+  }
+  
+  // Original code path when size matches image dimensions
   const importance = new Float32Array(size * size);
   const brightnessArr = new Float32Array(size * size);
 

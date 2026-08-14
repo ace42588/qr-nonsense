@@ -13,7 +13,7 @@
 **Findings**:
 - `ImageTransformContext` provides state management for image transformation
 - `useImageUpload` hook handles file upload via FileReader API
-- `useImageLoader` hook handles image loading from URLs
+- Image loading is handled in image transform state and browser adapters
 - `loadImage` function in `domain/image/index.ts` loads images with CORS support
 - Canvas-based transformation in `domain/image/transform.ts` handles scale, translation, and transparency
 
@@ -144,4 +144,3 @@ All research tasks complete. Main implementation gaps identified:
 5. CORS error handling improvements
 
 Existing infrastructure is solid and can be enhanced with these additions.
-

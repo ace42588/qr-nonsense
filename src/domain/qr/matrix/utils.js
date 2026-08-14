@@ -33,7 +33,6 @@ export function mapQRMatrix(matrix, callbackFn) {
       for (let offset = 0; offset < 2; offset++) {
         const x = col - offset;
         const module = matrix[y][x];
-        // check if matrix position is used for pattern
         if (!module || (module && !module.nonData)) {
           matrix[y][x] = callbackFn({ x, y, idx }, module);
           idx++;
@@ -76,10 +75,11 @@ export function addCodewords(matrix, codewords) {
   );
   const codewordBits = codewords.flatMap((cw) => cw.bits);
   const bits = [...codewordBits, ...remainder];
-  return mapQRMatrix(matrix, ({ x, y, idx }) => {
+  const result = mapQRMatrix(matrix, ({ x, y, idx }) => {
     const bit = bits[idx];
     return makeModule({ bit, x, y });
   });
+  return result;
 }
 
 /**

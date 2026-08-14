@@ -24,6 +24,8 @@ interface ImageTransformContextValue extends ImageTransformState {
   // Image upload handling
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  // Source image for offscreen canvas transformation
+  sourceImage: HTMLImageElement | null;
 }
 
 const ImageTransformContext = createContext<ImageTransformContextValue | null>(null);
@@ -47,7 +49,9 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
   const sourceImageRef = useRef<HTMLImageElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Track the canvas size when scale was last calculated, to maintain scale relative to QR code
-  const referenceCanvasSizeRef = useRef<number>(480);
+  // Initialize to 0 - will be set when image is first loaded
+  // This ensures we use a stable reference size that doesn't change when switching components
+  const referenceCanvasSizeRef = useRef<number>(0);
   // Track if we're currently adjusting scale due to canvasSize change (to avoid loops)
   const isAdjustingScaleRef = useRef<boolean>(false);
 
@@ -86,27 +90,14 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
     }
   }, [canvasSize]);
 
-  // Adjust scale proportionally when canvasSize changes (to maintain relative size to QR code)
-  useEffect(() => {
-    // Only adjust if canvasSize changed and we have a reference size, and we're not loading a new image
-    if (
-      referenceCanvasSizeRef.current !== canvasSize && 
-      referenceCanvasSizeRef.current > 0 &&
-      sourceImageRef.current !== null // Only adjust if we have an image loaded
-    ) {
-      isAdjustingScaleRef.current = true;
-      const scaleRatio = canvasSize / referenceCanvasSizeRef.current;
-      setScale((prevScale) => prevScale * scaleRatio);
-      // Update reference to new size
-      referenceCanvasSizeRef.current = canvasSize;
-      // Reset flag after state update
-      setTimeout(() => {
-        isAdjustingScaleRef.current = false;
-      }, 0);
-    }
-  }, [canvasSize]);
+  // NOTE: Auto-scaling on window resize has been removed per user request.
+  // The image should only scale/resize when first loaded, not when the window resizes.
+  // The reference canvas size is still tracked for initial image loading.
 
-  // Transform image whenever imageUrl, scale, offset, or canvasSize changes
+  // Transform image whenever imageUrl, scale, or offset changes
+  // NOTE: canvasSize is NOT in dependencies - we use a fixed reference size to prevent
+  // image scale from changing when switching between components (which have different canvas sizes)
+  // The visible canvas size is handled by CSS scaling, not by retransforming the image
   useEffect(() => {
     let isMounted = true;
     
@@ -127,19 +118,25 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
           if (!isMounted) return;
           sourceImageRef.current = img;
           
-          // Auto-calculate scale for new images
+          // Auto-calculate scale for new images using reference canvas size
           if (lastProcessedImageUrlRef.current !== imageUrl) {
+            // Set reference canvas size on first image load
+            // Use a fixed standard size (480) to ensure consistency across all modes
+            // This prevents scale inconsistency when switching between components with different canvas sizes
+            if (referenceCanvasSizeRef.current === 0) {
+              referenceCanvasSizeRef.current = 480; // Fixed standard size
+            }
+            
             const calculatedScale = calculateAppropriateCanvasScale(
               img.width,
               img.height,
-              canvasSize
+              referenceCanvasSizeRef.current
             );
 
             isAdjustingScaleRef.current = true;
             setScale(calculatedScale);
             setOffsetX(0);
             setOffsetY(0);
-            referenceCanvasSizeRef.current = canvasSize;
             lastProcessedImageUrlRef.current = imageUrl;
             setTimeout(() => {
               isAdjustingScaleRef.current = false;
@@ -156,11 +153,16 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
           return;
         }
         
-        // Transform image to canvas size
-        // Scale is already adjusted proportionally when canvasSize changes
+        // Use reference canvas size for transformation to keep image scale consistent
+        // This prevents the image from changing scale when switching between components
+        // Always use the fixed reference size (480) to ensure consistency
+        const transformSize = referenceCanvasSizeRef.current || 480;
+        
+        // Transform image to reference canvas size (not current canvasSize)
+        // This ensures the image scale remains consistent when switching components
         const transformed = await transformImageToCanvas(
           img,
-          canvasSize,
+          transformSize,
           scale,
           offsetX,
           offsetY
@@ -188,7 +190,7 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
     return () => {
       isMounted = false;
     };
-  }, [imageUrl, scale, offsetX, offsetY, canvasSize]);
+  }, [imageUrl, scale, offsetX, offsetY]); // Removed canvasSize from dependencies
 
   // Reset tracking when image URL changes
   useEffect(() => {
@@ -215,6 +217,7 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
     setCanvasSize,
     fileInputRef,
     handleImageUpload,
+    sourceImage: sourceImageRef.current,
   }), [scale, offsetX, offsetY, imageUrl, transformedImageData, canvasSize, isLoading, error, handleImageUpload, setScaleWithReference]);
 
   return (

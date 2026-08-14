@@ -204,7 +204,7 @@ export function InputSidebar({ ...props }) {
               strategy={verticalListSortingStrategy}
             >
               <SidebarMenu>
-                {inputs.map((input, idx) => (
+                {inputs.map((input) => (
                   <DraggableInput
                     key={input.id}
                     input={input}

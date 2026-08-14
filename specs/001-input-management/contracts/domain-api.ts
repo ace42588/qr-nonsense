@@ -78,7 +78,7 @@ export interface ParseContext {
  * Result of parsing an input.
  */
 export interface ParsedInput {
-  mode: "numeric" | "alphanumeric" | "byte" | "kanji";
+  mode: "numeric" | "alphanumeric" | "byte" | "kanji" | "mixed" | "optimized";
   data: number[];
   length: number; // Length in bits
   error?: string; // Error message if parsing failed

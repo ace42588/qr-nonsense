@@ -94,7 +94,7 @@ This document consolidates research findings and technical decisions for impleme
 **Rationale**:
 - Ensures users always see results for their latest inputs (FR-018, FR-019, FR-020)
 - Prevents race conditions and stale results
-- AbortController pattern already implemented in `QRCombined.jsx`
+- AbortController pattern already implemented in the QArt generation flow
 - Cancellation completes within 100ms (SC-010)
 
 **Implementation approach**:
@@ -243,4 +243,3 @@ This document consolidates research findings and technical decisions for impleme
 - QR Code Standard: ISO/IEC 18004
 - Existing Implementation: `src/domain/qart/`
 - Image Processing: `src/domain/image/`
-

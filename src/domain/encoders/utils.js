@@ -7,6 +7,7 @@ export function prepareHexString(input) {
 export function stringToBytes(input) {
   const encoder = new TextEncoder("utf-8");
   const byte = encoder.encode(input);
+  return byte;
 }
 
 export function bytesToHex(bytes) {

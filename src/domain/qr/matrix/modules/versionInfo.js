@@ -3,31 +3,37 @@ import { makeNonDataModule } from "./utils";
 
 const source = { name: "VersionInfo" };
 
-function computeBCH(bits, length) {
-  const generator = 0b1111100100101; // Generator polynomial for BCH(18, 6)
-  const maxIter = 9;
-  let iters = 0;
-  let bitsInt = parseInt(bits, 2);
-  bits = bitsInt.toString(2);
-
-  while (bits.length > length && iters < maxIter) {
-    const padLength = bits.length - (length + 1);
-    const genStep = generator << padLength;
-    bitsInt ^= genStep;
-    bits = bitsInt.toString(2);
-    iters++;
-  }
-
-  return bits.padStart(length, "0");
+function getVersionString(version) {
+  const infoBits = VERSION_INFO[version].infoBits;
+  return infoBits.toString(2).padStart(18, "0");
 }
 
-function getVersionString(version) {
-    const versionBits = VERSION_INFO[version].toString(2).padStart(6, "0");
-    const paddedVersionBits = versionBits.padEnd(18, "0");
+// Add version info placeholders (reserve positions, values set later)
+export function addVersionInfoPlaceholders(matrix) {
+  const size = matrix.length;
+  const version = (size - 17) / 4;
 
-    const errorCorrectionBits = computeBCH(paddedVersionBits, 12);
-    return (versionBits + errorCorrectionBits).padStart(18, "0");
+  if (version < 7) return;
+
+  // Reserve positions with placeholder modules (non-data, value doesn't matter yet)
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 3; j++) {
+      // Bottom-left version information (columns 0-5, rows size-11+j)
+      const bottomLeftX = i;
+      const bottomLeftY = size - 11 + j;
+      if (!matrix[bottomLeftY][bottomLeftX]) {
+        matrix[bottomLeftY][bottomLeftX] = makeNonDataModule(0, source, bottomLeftX, bottomLeftY);
+      }
+      // Top-right version information (columns size-11+j, rows 0-5)
+      const topRightX = size - 11 + j;
+      const topRightY = i;
+      if (!matrix[topRightY][topRightX]) {
+        matrix[topRightY][topRightX] = makeNonDataModule(0, source, topRightX, topRightY);
+      }
+    }
   }
+  return matrix;
+}
 
 export function addVersionInfo(matrix) {
   const size = matrix.length;
@@ -41,20 +47,18 @@ export function addVersionInfo(matrix) {
   for (let i = 0; i < 6; i++) {
     for (let j = 0; j < 3; j++) {
       const value = versionString[i * 3 + j];
-      // Bottom-left version information
-      matrix[size - 11 + j][i] = makeNonDataModule(
-        value,
-        source,
-        size - 11 + j,
-        i
-      );
-      // Top-right version information
-      matrix[i][size - 11 + j] = makeNonDataModule(
-        value,
-        source,
-        i,
-        size - 11 + j
-      );
+      // Bottom-left version information (rows size-11+j to size-9+j, columns 0-5)
+      // QR spec: bottom-left is in the bottom-left corner area
+      const bottomLeftX = i;
+      const bottomLeftY = size - 11 + j;
+      const bottomLeftModule = makeNonDataModule(value, source, bottomLeftX, bottomLeftY);
+      matrix[bottomLeftY][bottomLeftX] = bottomLeftModule;
+      // Top-right version information (rows 0-5, columns size-11+j to size-9+j)
+      // QR spec: top-right is in the top-right corner area
+      const topRightX = size - 11 + j;
+      const topRightY = i;
+      const topRightModule = makeNonDataModule(value, source, topRightX, topRightY);
+      matrix[topRightY][topRightX] = topRightModule;
     }
   }
   return matrix;

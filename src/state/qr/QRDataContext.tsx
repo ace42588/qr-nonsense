@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer, ReactNode, JSX } from "react";
 import { Actions, qrReducer, initialQRState } from "./qrReducer";
 import { useDerivedQRData } from "../../hooks/useDerivedQRData";
-import { QRState } from "@/app/types";
+import { QRState } from "./types";
 import { Segment } from "@/domain/shared/types";
 
 interface QRDataDispatchContextValue {

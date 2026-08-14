@@ -15,7 +15,6 @@ export function QRImageHalftone({
   const {
     transformedImageData,
     canvasSize,
-    isLoading: isLoadingTransform,
     error: transformError,
     setCanvasSize,
   } = useImageTransform();

@@ -53,9 +53,6 @@ export function optimizeBlock(
   // EC bits are controlled indirectly through data bit flips
   // Processing in priority order ensures the most important bits (by image matching) are controlled first
   
-  // Track which bits are being modified for debugging
-  let dataBitsModified = 0;
-  let ecBitsModified = 0;
   const modifiedBitIds = new Set<string>();
   
   // Track which priority ranges get controlled vs skipped
@@ -69,6 +66,8 @@ export function optimizeBlock(
   const lowThreshold = totalBits > 0 ? bitOrder[Math.floor(totalBits * 0.75)].priority : 0;
   
   for (const po of bitOrder) {
+    // Use target image brightness for all bits (no special handling for append bits)
+    // The target image should be stable relative to QR dimension, not canvas size
     const targetBrightness = targetGrid[po.y * dimension + po.x];
     const desiredIsDark = targetBrightness < 0.5;
     
@@ -95,11 +94,9 @@ export function optimizeBlock(
       stats.optimized++;
       if (isDataBit) {
         stats.dataOptimized++;
-        dataBitsModified++;
         modifiedBitIds.add(po.bitId);
       } else {
         stats.ecOptimized++;
-        ecBitsModified++;
       }
       stats.controlledBits.set(po.bitId, true);
     } else {
@@ -113,4 +110,3 @@ export function optimizeBlock(
   
   return stats;
 }
-

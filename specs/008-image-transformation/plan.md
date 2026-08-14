@@ -105,7 +105,6 @@ src/
 │   └── image/             # Image transform state (EXISTS - needs validation integration)
 │       └── ImageTransformContext.tsx
 └── hooks/
-    ├── useImageLoader.js  # Image loading hook (EXISTS - needs CORS/error handling)
     └── useImageUpload.js  # Image upload hook (EXISTS - needs file size validation)
 ```
 
@@ -148,4 +147,3 @@ src/
 
 **Status**: Ready for `/speckit.tasks`  
 **Next Steps**: Break plan into implementation tasks
-

@@ -1,9 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { generateQArt } from "@/domain/qart";
-import { QArtResult } from "@/domain/qart";
-import { QRMatrix } from "@/domain/shared/types";
-import { Segment } from "@/domain/shared/types";
-import { Codeword } from "@/domain/shared/types";
+import { generateQArt, QArtResult } from "@/domain/qart";
+import { QRMatrix, Segment, Codeword } from "@/domain/shared/types";
 import { QRBlock } from "@/domain/qr/codewords/blocks";
 import { VersionInfo } from "@/domain/qr/versionUtils";
 import type { ImageData } from "@/domain/image";
@@ -33,6 +30,13 @@ interface UseQArtGenerationParams {
   options?: QArtGenerationOptions;
   debounceMs?: number;
   autoGenerate?: boolean;
+  // Source image and transform params for offscreen canvas
+  sourceImage?: HTMLImageElement | null;
+  transformParams?: {
+    scale: number;
+    offsetX: number;
+    offsetY: number;
+  } | null;
 }
 
 interface UseQArtGenerationReturn {
@@ -59,6 +63,8 @@ export function useQArtGeneration({
   options = {},
   debounceMs = 300,
   autoGenerate = true,
+  sourceImage,
+  transformParams,
 }: UseQArtGenerationParams): UseQArtGenerationReturn {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
@@ -72,7 +78,9 @@ export function useQArtGeneration({
   // Generate QArt QR code - automatically triggered by state changes
   const generateQArtCode = useCallback(async () => {
     // Image requirement validation
-    if (!transformedImageData) {
+    // CRITICAL: Check sourceImage for offscreen canvas, not transformedImageData
+    // transformedImageData changes with window resize, but sourceImage is stable
+    if (!sourceImage) {
       setGenerationError("No image loaded. Please upload an image to generate QArt QR codes.");
       setQartResult(null);
       return;
@@ -80,6 +88,12 @@ export function useQArtGeneration({
 
     if (!segments || segments.length === 0) {
       setGenerationError("No segments available. Please add an input in the left panel.");
+      setQartResult(null);
+      return;
+    }
+
+    if (!transformedImageData) {
+      setGenerationError("No transformed image available. Please wait for the image to finish loading.");
       setQartResult(null);
       return;
     }
@@ -116,6 +130,11 @@ export function useQArtGeneration({
       if (appendData?.enabled) {
         generateOptions.appendData = appendData as QArtAppendData;
       }
+      // Add source image and transform params for offscreen canvas
+      if (sourceImage && transformParams) {
+        generateOptions.sourceImage = sourceImage;
+        generateOptions.transformParams = transformParams;
+      }
 
       const result = await generateQArt(generateOptions);
 
@@ -141,7 +160,10 @@ export function useQArtGeneration({
       }
     }
   }, [
-    transformedImageData,
+    // CRITICAL: Do NOT include transformedImageData in dependencies
+    // transformedImageData changes when canvasSize changes (visible canvas),
+    // but QArt uses offscreen canvas (sourceImage + transformParams) which is stable
+    // Including transformedImageData would cause QArt regeneration on window resize
     segments,
     codewords,
     blocks,
@@ -150,6 +172,9 @@ export function useQArtGeneration({
     versionInfo,
     priorityFunction,
     appendData,
+    sourceImage,
+    transformParams,
+    transformedImageData,
     setQartResult,
   ]);
 
@@ -159,7 +184,8 @@ export function useQArtGeneration({
     if (!autoGenerate) return;
 
     // Don't generate if image is still loading or if we don't have required data
-    if (isLoadingTransform || !transformedImageData || !segments || segments.length === 0) {
+    // CRITICAL: Check sourceImage instead of transformedImageData for offscreen canvas
+    if (isLoadingTransform || !sourceImage || !segments || segments.length === 0) {
       return;
     }
 
@@ -173,7 +199,11 @@ export function useQArtGeneration({
       // Note: Abort is handled in generateQArtCode when it's called again
     };
   }, [
-    transformedImageData,
+    // CRITICAL: Do NOT include transformedImageData in dependencies
+    // Use sourceImage instead - it's stable and doesn't change with window resize
+    sourceImage,
+    // transformParams is memoized in the component, so it only changes when scale/offset change
+    transformParams,
     segments,
     codewords,
     blocks,
@@ -181,7 +211,11 @@ export function useQArtGeneration({
     versionInfo,
     errorCorrectionLevel,
     priorityFunction,
-    appendData,
+    // appendData object reference might change - use deep comparison or extract values
+    appendData?.enabled,
+    appendData?.method,
+    appendData?.separator,
+    appendData?.encodingMode,
     isLoadingTransform,
     generateQArtCode,
     autoGenerate,
@@ -194,4 +228,3 @@ export function useQArtGeneration({
     generateQArtCode,
   };
 }
-

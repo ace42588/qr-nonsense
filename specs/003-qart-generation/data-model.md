@@ -167,7 +167,7 @@ This document defines the data entities, relationships, validation rules, and st
 
 **Purpose**: Data segment in QR code (reused from QR generation)
 
-**Fields** (from `src/types/index.ts`):
+**Fields** (from `src/domain/shared/types.ts`):
 - `value: number` - Segment value
 - `length: number` - Segment length in bits
 - `id: string` - Unique identifier
@@ -196,7 +196,7 @@ This document defines the data entities, relationships, validation rules, and st
 
 **Type**: `QRModule[][]` (2D array)
 
-**Fields** (from `src/types/index.ts`):
+**Fields** (from `src/domain/shared/types.ts`):
 - Each module: `QRModule` with `id`, `bitId`, `bit`, `x`, `y`, `isDark`, `isMasked`, `type`, `nonData`, `source`
 
 **QArt Extensions**:
@@ -310,4 +310,3 @@ VersionCapacityCheck
   ├── uses → VersionInfo
   └── calculates → qartRequirement
 ```
-

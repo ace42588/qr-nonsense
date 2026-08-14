@@ -148,9 +148,8 @@ Result of parsing an input, containing encoded data ready for QR code generation
 
 ## Type Definitions
 
-See `src/types/index.ts` for complete TypeScript type definitions:
+See `src/app/types.ts` for complete TypeScript type definitions:
 - `Input` interface
 - `InputState` interface  
 - `InputAction` interface
 - `Field` interface
-

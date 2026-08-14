@@ -1,6 +1,4 @@
 import { Bit, Source } from "../../shared/types";
-// @ts-expect-error - Import is declared but not currently used
-import { logger as log } from "@/adapters/logger";
 import { generateId } from "../utils/id";
 
 function getBit(value: number, sourceId: string, sourceType?: string): Bit {
@@ -14,7 +12,6 @@ function getBit(value: number, sourceId: string, sourceType?: string): Bit {
 }
 
 export function getBits(value: string | number, length: number, source: Source): Bit[] {
-  //log.debug("getBits", { value, length, source });
   if (!source) throw new Error("Missing source");
   /*
   let binaryString = value;

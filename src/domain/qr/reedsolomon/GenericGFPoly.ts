@@ -157,7 +157,7 @@ class GenericGFPoly {
     }
 
     let quotient = this.field.zero as this;
-    let remainder = this;
+    let remainder = new GenericGFPoly(this.field, this.coefficients) as this;
 
     const denominatorLeadingTerm = other.getCoefficient(other.degree());
     const inverseDenominatorLeadingTerm = this.field.inverse(

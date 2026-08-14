@@ -93,7 +93,6 @@ src/
 │   └── App.tsx            # Root component (already includes QRQArt)
 ├── components/
 │   ├── QRQArt.jsx         # QArt QR code component (EXISTS - needs enhancement)
-│   ├── QRCombined.jsx     # Combined mode component (EXISTS - uses QArt)
 │   └── ui/
 │       ├── image-transform-controls.jsx  # Image transform UI (EXISTS)
 │       ├── image-upload-controls.jsx     # Image upload UI (EXISTS)
@@ -120,7 +119,6 @@ src/
 │   ├── inputs/            # Input management state (EXISTS - reused)
 │   └── qr/                # QR code state (EXISTS - reused)
 └── hooks/
-    ├── useImageLoader.js  # Image loading hook (EXISTS)
     ├── useImageUpload.js  # Image upload hook (EXISTS)
     └── useModuleHover.js  # Module hover visualization (EXISTS)
 ```
@@ -163,4 +161,3 @@ src/
 
 **Status**: Ready for `/speckit.tasks`  
 **Next Steps**: Break plan into implementation tasks
-

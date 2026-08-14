@@ -1,6 +1,5 @@
-import GenericGF from "./GenericGF";
+import GenericGF, { getQRCodeField } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
-import { getQRCodeField } from "./GenericGF";
 
 export class ReedSolomonEncoder {
   private numEcCodewords: number;

@@ -23,12 +23,13 @@ import { ReedSolomonEncoder } from "../qr/reedsolomon";
 import { codewordsToBytes } from "./codewordConversion";
 import { appendDataToSegments } from "./appendData";
 import { addFill, addPadding, addTerminator, getNumBits } from "../qr/encoders/utils";
+import { updateCharCountIndicatorLengths } from "../qr/charCount";
 import { updateSegmentTextFromCodewords, decodeSegmentValue } from "./decodeSegments";
 
 export interface QArtAppendData {
   enabled: boolean;
   method: "existing" | "new"; // default: "existing"
-  separator?: string; // Optional separator when method === "existing"
+  separator?: string; // Optional separator for both "existing" and "new" methods
   encodingMode?: "numeric" | "alphanumeric" | "byte"; // Required when method === "new"
 }
 
@@ -45,10 +46,17 @@ export interface QArtOptions {
   initialMatrix: QRMatrix;
   versionInfo: VersionInfo;
   errorCorrectionLevel: number;
-  targetImage: ImageData;
+  targetImage: ImageData; // Deprecated: use sourceImage + transformParams instead
   signal?: AbortSignal; // For cancellation support (FR-021)
   priorityFunction?: PriorityFunctionType; // Priority function type (FR-007)
   appendData?: QArtAppendData; // Optional data to append before QArt optimization
+  // Source image and transform parameters for offscreen canvas (QR dimension-based)
+  sourceImage?: HTMLImageElement; // Source image (not transformed)
+  transformParams?: {
+    scale: number;
+    offsetX: number;
+    offsetY: number;
+  };
 }
 
 export interface QArtResult {
@@ -61,6 +69,7 @@ export interface QArtResult {
   controlMatrix?: QRMatrix;
   contrastGrid?: Float32Array; // Pre-computed contrast (variance) map for visualization
   optimizedAppendData?: QArtOptimizedAppendData; // Optimized append data (if append was enabled)
+  offscreenCanvasImage?: ImageData; // Offscreen canvas image (QR dimension-based) for rasterized preview and halftone
 }
 
 /**
@@ -104,6 +113,8 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
     signal,
     priorityFunction = "contrast", // Default to contrast-based priority (FR-007)
     appendData,
+    sourceImage,
+    transformParams,
   } = options;
   
   // Check for cancellation before starting (FR-021)
@@ -138,10 +149,13 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
       }
       
       // Append data to segments
-      const segmentsWithAppended = appendDataToSegments(
-        dataSegmentsOnly,
-        appendData,
-        versionInfo
+      const segmentsWithAppended = updateCharCountIndicatorLengths(
+        appendDataToSegments(
+          dataSegmentsOnly,
+          appendData,
+          versionInfo
+        ),
+        versionInfo.version
       );
       
       // Edge case: Check if appended segments exceed capacity
@@ -193,22 +207,120 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
     ...paddingSegments.map(s => s.id),
     ...appendSegments.map(s => s.id)
   ]);
+  // Create set of append segment IDs for deterministic priority assignment
+  const appendSegmentIds = new Set(appendSegments.map(s => s.id));
   
   if (editableSegmentIds.size === 0) {
     throw new Error("No editable segments found. QArt requires padding segments or appended data to optimize. Try adding more data, using a larger QR version, or enabling append data.");
   }
+  
+  // Note: We no longer exclude last segments. Instead, we allow QArt to optimize all segments
+  // and clamp invalid values after optimization, then recalculate EC codewords.
+  // This restores the QArt effect while ensuring valid QR codes.
+  const excludeLastSegmentBits = new Set<string>();
   
   // Ensure matrixForBitLookup has getModuleByBitId method for bit lookups
   if (!matrixForBitLookup.getModuleByBitId) {
     throw new Error("Initial matrix does not have getModuleByBitId method. This is required for QArt optimization.");
   }
   
-  // Rasterize target image to QR grid
-  const targetGrid = rasterizeImageToQRGrid(targetImage, dimension);
+  // CRITICAL: Create offscreen canvas based on QR dimension (not window size)
+  // All domain calculations (targetGrid, contrastGrid) must be based on this
+  // invariant canvas size, completely decoupled from the visible canvas size.
+  // The visible canvas is just a view that scales/translates from this offscreen canvas.
+  const SCALE_FACTOR = 27; // Constant factor to ensure sufficient resolution
+  const offscreenCanvasSize = dimension * SCALE_FACTOR;
+  
+  let normalizedTargetImage: ImageData;
+  
+  // If source image and transform params are provided, use them to create offscreen canvas
+  // Otherwise, fall back to targetImage (for backward compatibility)
+  if (sourceImage && transformParams) {
+    // Transform source image to offscreen canvas (QR dimension-based)
+    // CRITICAL: The scale parameter was calculated for a reference canvas size (480px)
+    // We need to adjust the scale proportionally to maintain the same relative image size
+    // on the offscreen canvas (dimension * SCALE_FACTOR)
+    const { transformImageToCanvas } = await import("@/adapters/browser/image");
+    const { convertTransparencyToWhite } = await import("@/domain/image");
+    
+    // Reference canvas size that the scale was calculated for
+    const REFERENCE_CANVAS_SIZE = 480;
+    
+    // Adjust scale proportionally: if scale was calculated for 480px canvas,
+    // and we're using a 999px canvas, multiply by (999/480) to maintain same relative size
+    const scaleRatio = offscreenCanvasSize / REFERENCE_CANVAS_SIZE;
+    const adjustedScale = transformParams.scale * scaleRatio;
+    
+    // Adjust offsets proportionally as well
+    const adjustedOffsetX = transformParams.offsetX * scaleRatio;
+    const adjustedOffsetY = transformParams.offsetY * scaleRatio;
+    
+    const transformed = await transformImageToCanvas(
+      sourceImage,
+      offscreenCanvasSize,
+      adjustedScale,
+      adjustedOffsetX,
+      adjustedOffsetY
+    );
+    
+    // Convert transparency to white background
+    normalizedTargetImage = convertTransparencyToWhite(transformed);
+    
+  } else {
+    // Fallback: normalize targetImage to offscreen canvas size
+    // This is less ideal but maintains backward compatibility
+    normalizedTargetImage = targetImage;
+    
+    if (targetImage.width !== offscreenCanvasSize || targetImage.height !== offscreenCanvasSize) {
+      const canvas = document.createElement("canvas");
+      canvas.width = offscreenCanvasSize;
+      canvas.height = offscreenCanvasSize;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.imageSmoothingEnabled = false;
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, offscreenCanvasSize, offscreenCanvasSize);
+        
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = targetImage.width;
+        tempCanvas.height = targetImage.height;
+        const tempCtx = tempCanvas.getContext("2d");
+        if (tempCtx) {
+          tempCtx.putImageData(targetImage, 0, 0);
+          
+          const sourceAspect = targetImage.width / targetImage.height;
+          let drawWidth = offscreenCanvasSize;
+          let drawHeight = offscreenCanvasSize;
+          let drawX = 0;
+          let drawY = 0;
+          
+          if (sourceAspect > 1) {
+            drawHeight = offscreenCanvasSize / sourceAspect;
+            drawY = (offscreenCanvasSize - drawHeight) / 2;
+          } else {
+            drawWidth = offscreenCanvasSize * sourceAspect;
+            drawX = (offscreenCanvasSize - drawWidth) / 2;
+          }
+          
+          ctx.drawImage(
+            tempCanvas,
+            0, 0, targetImage.width, targetImage.height,
+            drawX, drawY, drawWidth, drawHeight
+          );
+          normalizedTargetImage = ctx.getImageData(0, 0, offscreenCanvasSize, offscreenCanvasSize);
+        }
+      }
+    }
+    
+  }
+  
+  
+  const targetGrid = rasterizeImageToQRGrid(normalizedTargetImage, dimension);
   
   // Compute contrast grid (local variance) for each module position efficiently
   // Uses optimized function that pre-scales values and avoids redundant calculations
   const contrastGrid = computeContrastGrid(targetGrid, dimension, 5);
+  
   
   
   // Track which modules were successfully controlled
@@ -247,8 +359,11 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
       contrastGrid, // Pass contrast grid for priority calculation
       dimension,
       editableSegmentIds, // Pass editable segment IDs (padding + append)
-      priorityFunction // Pass priority function type (FR-007)
+      priorityFunction, // Pass priority function type (FR-007)
+      excludeLastSegmentBits, // Exclude bits from last segments to prevent invalid values
+      appendSegmentIds // Pass append segment IDs for deterministic priority
     );
+    
     
     if (bitOrder.length === 0) {
       continue;
@@ -257,6 +372,7 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
     // Optimize block to match target image
     // Pass editable codeword indices to prevent modifying user data bytes
     // Pass cached encoder to avoid recreating it for each block
+    // Pass append segment IDs to ensure deterministic optimization for appended data
     const stats = optimizeBlock(
       block,
       bitOrder,
@@ -307,10 +423,18 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
     throw new Error("Reed-Solomon encoding verification failed. QArt optimization may have corrupted the QR code.");
   }
   
+  
   // Rebuild codewords from modified blocks
+  // CRITICAL: Always rebuild from workingBlocks after QArt optimization
+  // When append mode is disabled, workingBlocks are deep copies, so we MUST rebuild
+  // When append mode is enabled, workingBlocks share objects with codewords, but we still rebuild
+  // to ensure the exact order matches what getCodewords would return
+  // Use the same interleaving order as generateCodewords
+  // generateCodewords does: [...interleave(blocks.map(b => b.data)), ...interleave(blocks.map(b => b.errorCorrection))]
   const modifiedDataCodewords = interleave(workingBlocks.map(b => b.data));
   const modifiedECCodewords = interleave(workingBlocks.map(b => b.errorCorrection));
   const finalCodewords = [...modifiedDataCodewords, ...modifiedECCodewords];
+  
   
   // Update segment text properties from optimized codewords
   // This ensures segments reflect the optimized values, not the original placeholder values
@@ -319,7 +443,9 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
   
   // Always update padding segments (they're always optimized by QArt)
   // Padding segments are byte segments (values 236 and 17)
-  updatedSegments = updateSegmentTextFromCodewords(updatedSegments, finalCodewords, "byte");
+  // Pass all segments - updateSegmentTextFromCodewords will only process padding segments when mode="byte"
+  const paddingUpdate = updateSegmentTextFromCodewords(updatedSegments, finalCodewords, "byte");
+  updatedSegments = paddingUpdate.segments;
   
   // Update append segments if append is enabled
   if (appendData?.enabled) {
@@ -355,7 +481,171 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
       if (appendMode) {
         // Update segments with decoded text from optimized codewords
         // Only update append segments and data segments in the same group
-        updatedSegments = updateSegmentTextFromCodewords(updatedSegments, finalCodewords, appendMode);
+        
+        // Only process qartAppend segments here (not padding, which was already processed)
+        // updateSegmentTextFromCodewords will filter internally, but we want to ensure
+        // qartAppend segments are only processed once with their correct mode
+        const appendUpdate = updateSegmentTextFromCodewords(updatedSegments, finalCodewords, appendMode);
+        updatedSegments = appendUpdate.segments;
+        
+        // Always verify and update the character count indicator to match actual decoded character count
+        // This is necessary because QArt optimization can change segment values, which changes character counts
+        if (appendMode === "numeric" || appendMode === "alphanumeric") {
+          // Find the character count indicator for this append group
+          let charCountIndicator: any = null;
+          let charCountIndicatorIndex = -1;
+          for (let i = 0; i < updatedSegments.length; i++) {
+            if (updatedSegments[i].type === "modeIndicator" && 
+                ((appendMode === "numeric" && updatedSegments[i].value === 0x1) ||
+                 (appendMode === "alphanumeric" && updatedSegments[i].value === 0x2))) {
+              if (i + 1 < updatedSegments.length && updatedSegments[i + 1].type === "characterCountIndicator") {
+                charCountIndicator = updatedSegments[i + 1];
+                charCountIndicatorIndex = i + 1;
+                break;
+              }
+            }
+          }
+          if (charCountIndicator && charCountIndicator.bitIds && charCountIndicator.bitIds.length > 0) {
+            // Calculate total decoded character count
+            let appendGroupStart = -1;
+            let appendGroupEnd = -1;
+            for (let i = 0; i < updatedSegments.length; i++) {
+              if (updatedSegments[i].type === "modeIndicator" && 
+                  ((appendMode === "numeric" && updatedSegments[i].value === 0x1) ||
+                   (appendMode === "alphanumeric" && updatedSegments[i].value === 0x2))) {
+                appendGroupStart = i;
+                for (let j = i + 2; j < updatedSegments.length; j++) {
+                  if (updatedSegments[j].type === "modeIndicator" || 
+                      updatedSegments[j].type === "terminator" || 
+                      updatedSegments[j].type === "fill" || 
+                      updatedSegments[j].type === "padding") {
+                    appendGroupEnd = j;
+                    break;
+                  }
+                }
+                if (appendGroupEnd === -1) appendGroupEnd = updatedSegments.length;
+                break;
+              }
+            }
+            const appendGroupDataSegments = updatedSegments.slice(appendGroupStart + 2, appendGroupEnd).filter(s => s.type === "data" || s.type === "qartAppend");
+            const totalDecodedChars = appendGroupDataSegments.reduce((sum, s) => {
+              const text = (s as any).text;
+              if (text) return sum + text.length;
+              if (s.type === "data") {
+                const decoded = decodeSegmentValue(s, appendMode);
+                return sum + decoded.length;
+              }
+              return sum;
+            }, 0);
+            // Verify character count indicator bits in codewords match the segment value
+            // Build bitToCodewordMap to read actual bits from codewords
+            const bitToCodewordMap = new Map<string, { codewordIndex: number; bitIndex: number }>();
+            finalCodewords.forEach((codeword, cwIdx) => {
+              if (codeword.bits) {
+                codeword.bits.forEach((bit: any, bitIdx: number) => {
+                  if (bit && bit.id) {
+                    bitToCodewordMap.set(bit.id, { codewordIndex: cwIdx, bitIndex: bitIdx });
+                  }
+                });
+              }
+            });
+            // Read actual bits from codewords for character count indicator
+            let actualCharCountFromBits = 0;
+            if (charCountIndicator.bitIds && charCountIndicator.bitIds.length > 0) {
+              const bitValues: number[] = [];
+              for (const bitId of charCountIndicator.bitIds) {
+                const mapping = bitToCodewordMap.get(bitId);
+                if (mapping) {
+                  const codeword = finalCodewords[mapping.codewordIndex];
+                  if (codeword && codeword.bits && codeword.bits[mapping.bitIndex]) {
+                    bitValues.push(codeword.bits[mapping.bitIndex].value);
+                  }
+                }
+              }
+              if (bitValues.length === charCountIndicator.length) {
+                for (let i = 0; i < bitValues.length; i++) {
+                  actualCharCountFromBits = (actualCharCountFromBits << 1) | bitValues[i];
+                }
+              }
+            }
+            // Update character count indicator if segment value changed OR if bits don't match
+            if (charCountIndicator.value !== totalDecodedChars || actualCharCountFromBits !== totalDecodedChars) {
+              // Update character count indicator segment value
+              updatedSegments[charCountIndicatorIndex] = {
+                ...charCountIndicator,
+                value: totalDecodedChars
+              };
+              // Update character count indicator bits in codewords
+              const newCharCountBits: number[] = [];
+              let val = totalDecodedChars;
+              for (let i = charCountIndicator.length - 1; i >= 0; i--) {
+                newCharCountBits[i] = val & 1;
+                val >>= 1;
+              }
+              for (let i = 0; i < charCountIndicator.bitIds.length; i++) {
+                const bitId = charCountIndicator.bitIds[i];
+                const mapping = bitToCodewordMap.get(bitId);
+                if (mapping) {
+                  const codeword = finalCodewords[mapping.codewordIndex];
+                  if (codeword && codeword.bits && codeword.bits[mapping.bitIndex]) {
+                    codeword.bits[mapping.bitIndex].value = newCharCountBits[i];
+                  }
+                }
+              }
+              // Mark that we need to recalculate EC codewords since we updated the character count indicator
+              appendUpdate.bitsWereClamped = true;
+            }
+          }
+        }
+        
+        // CRITICAL: Only recalculate EC codewords if bits were actually changed
+        // (clamping or character count indicator update)
+        // QArt optimization already produced correct EC codewords, so we should only recalculate
+        // when updateSegmentTextFromCodewords modifies bits
+        // Since codeword objects are shared between finalCodewords and blocks, bits are already updated in blocks
+        // We just need to recalculate EC codewords based on the modified data bytes
+        if (appendUpdate.bitsWereClamped) {
+          for (let blockIdx = 0; blockIdx < workingBlocks.length; blockIdx++) {
+            const block = workingBlocks[blockIdx];
+            // Recalculate EC codewords from modified data bytes
+            const { dataBytes } = codewordsToBytes(block);
+            const newECBytes = cachedEncoder.encode(dataBytes);
+            
+            // Verify that new EC bytes match existing EC bytes (they should if no bits changed)
+            const { ecBytes: existingECBytes } = codewordsToBytes(block);
+            let ecBytesMatch = true;
+            for (let i = 0; i < newECBytes.length; i++) {
+              if (newECBytes[i] !== existingECBytes[i]) {
+                ecBytesMatch = false;
+                break;
+              }
+            }
+            
+            
+            // Only update EC codeword bits if they actually changed
+            // This avoids unnecessary bit updates when EC bytes match (no bits changed)
+            if (!ecBytesMatch) {
+              // Update EC codeword bits from new EC bytes
+              for (let i = 0; i < newECBytes.length; i++) {
+                const byte = newECBytes[i];
+                for (let bit = 0; bit < 8; bit++) {
+                  block.errorCorrection[i].bits[bit].value = (byte >> (7 - bit)) & 1;
+                }
+              }
+            }
+          }
+          
+          // After EC recalculation, codeword objects in workingBlocks have been updated
+          // Rebuild finalCodewords from workingBlocks to ensure we have the updated codewords
+          // This preserves the exact order returned by getCodewords
+          const updatedDataCodewords = interleave(workingBlocks.map(b => b.data));
+          const updatedECCodewords = interleave(workingBlocks.map(b => b.errorCorrection));
+          // Update finalCodewords array contents (preserve reference for logging)
+          finalCodewords.length = 0;
+          finalCodewords.push(...updatedDataCodewords, ...updatedECCodewords);
+        }
+        
+        
       }
     }
   }
@@ -377,6 +667,7 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
   if (signal?.aborted) {
     throw new Error("QArt generation was cancelled");
   }
+  
   
   // Validate decode (FR-009) - single trial for basic scannability check
   const decodeSuccessRate = await validateDecode(matrix, 1);
@@ -441,6 +732,8 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
         // The append segments come after the original user data segments
         const appendTextSegments = updatedSegments.filter(s => s.type === "qartAppend");
         const appendText = extractTextFromAppendSegments(updatedSegments, appendGroupStart, appendGroupEnd, appendMode);
+        
+        
         optimizedAppendData = {
           segments: appendTextSegments,
           originalText: appendText,
@@ -460,6 +753,7 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
     controlMatrix, // Always include control matrix (FR-012)
     contrastGrid, // Include contrast grid for visualization
     optimizedAppendData,
+    offscreenCanvasImage: normalizedTargetImage, // Include offscreen canvas for rasterized preview and halftone
   };
 }
 
@@ -468,9 +762,11 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
  */
 function extractTextFromAppendSegments(segments: Segment[], startIndex: number, endIndex: number, mode: string): string {
   // Only get segments marked as qartAppend (these are the appended portions, not original user data)
-  const appendSegments = segments.slice(startIndex, endIndex).filter(s => s.type === "qartAppend");
+  console.debug(segments, startIndex, endIndex, mode);
+  const appendSegments = segments.filter(s => s.type === "qartAppend");
   
   if (appendSegments.length === 0) {
+    console.debug('extractTextFromAppendSegments', 'No append segments found');
     return "";
   }
   

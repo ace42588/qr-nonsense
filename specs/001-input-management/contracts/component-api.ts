@@ -143,7 +143,7 @@ export interface InputSidebarProps {
  */
 export interface StringInputCardProps extends InputCardProps {
   input: Input & { type: "string" };
-  onModeChange: (mode: "numeric" | "alphanumeric" | "byte" | "eci") => void;
+  onModeChange: (mode: "mixed" | "optimized" | "numeric" | "alphanumeric" | "byte" | "kanji" | "eci") => void;
   onTextChange: (text: string) => void;
 }
 
@@ -226,12 +226,11 @@ export interface InputError {
  */
 export interface ParsedInput {
   inputId: string;
-  mode: "numeric" | "alphanumeric" | "byte" | "kanji";
+  mode: "numeric" | "alphanumeric" | "byte" | "kanji" | "mixed" | "optimized";
   data: number[];
   length: number; // Length in bits
   error?: string; // Error message if parsing failed
 }
 
-// Re-export types from domain
-import type { Input, InputState, InputAction, Field } from "../../../src/types/index";
-
+// Re-export types from the application state layer
+import type { Input, InputState, InputAction, Field } from "../../../src/app/types";

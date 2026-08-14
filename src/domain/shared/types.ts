@@ -65,6 +65,9 @@ export interface Segment {
   length: number;
   id: string;
   type?: string;
+  text?: string;
   bitIds?: string[];
+  inputId?: string;
+  inputMode?: string;
 }
 

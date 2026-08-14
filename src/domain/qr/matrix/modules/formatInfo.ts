@@ -119,5 +119,6 @@ export function addFormatInfoPlaceholders(matrix: QRMatrix): QRMatrix {
 
 export function updateFormatInfoModules(matrix: QRMatrix, errorCorrectionLevel: number, dataMask: number | null): QRMatrix {
   const formatInfo = getBitsFromFormatInfo(errorCorrectionLevel, dataMask);
-  return placeModules(matrix, formatInfo.toString(2).padStart(15, "0"));
+  const formatBits = formatInfo.toString(2).padStart(15, "0");
+  return placeModules(matrix, formatBits);
 } 

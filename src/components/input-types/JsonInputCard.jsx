@@ -50,7 +50,9 @@ export function JsonInputCard({ input, preview, dispatch }) {
                 onChange={(text) => {
                   try {
                     dispatch(updateJsonObject(input.id, JSON.parse(text)));
-                  } catch {}
+                  } catch {
+                    return undefined;
+                  }
                 }}
                 options={MONACO_EDITOR_OPTIONS}
               />
@@ -87,7 +89,9 @@ export function JsonInputCard({ input, preview, dispatch }) {
                 onChange={(text) => {
                   try {
                     dispatch(updateSchema(input.id, JSON.parse(text)));
-                  } catch {}
+                  } catch {
+                    return undefined;
+                  }
                 }}
                 options={MONACO_EDITOR_OPTIONS}
                 className="overflow-hidden rounded-md"

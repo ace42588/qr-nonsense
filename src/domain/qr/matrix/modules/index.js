@@ -3,7 +3,7 @@ import { addSeparators } from "./separators";
 import { addAlignmentPatterns } from "./alignmentPatterns";
 import { addTimingPatterns } from "./timingPatterns";
 import { addFormatInfoPlaceholders } from "./formatInfo";
-import { addVersionInfo } from "./versionInfo";
+import { addVersionInfoPlaceholders } from "./versionInfo";
 
 export { makeModule } from "./utils";
 export { updateFormatInfoModules } from "./formatInfo";
@@ -16,6 +16,6 @@ export function addPatterns(matrix) {
   addAlignmentPatterns(matrix);
   addTimingPatterns(matrix);
   addFormatInfoPlaceholders(matrix); // add placeholder
-  addVersionInfo(matrix);
+  addVersionInfoPlaceholders(matrix); // add version info placeholders (values set after masking)
   return matrix;
 }

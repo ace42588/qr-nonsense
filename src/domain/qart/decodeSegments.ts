@@ -6,8 +6,6 @@
  */
 
 import { Segment } from "../shared/types";
-// @ts-expect-error - Import is declared but not currently used
-import { bitsToByte } from "../qr/codewords/bits";
 
 // Alphanumeric character map (same as encoder)
 const ALPHANUMERIC_CHAR_MAP = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
@@ -100,6 +98,7 @@ export function decodeSegmentValue(segment: Segment, mode: string): string {
       return decodeByteSegment(segment);
     default:
       // Fallback: try to get text property or return empty
+      console.debug('decodeSegmentValue', 'Fallback: try to get text property or return empty', segmentMode); 
       return (segment as any).text || "";
   }
 }
@@ -112,7 +111,7 @@ export function updateSegmentTextFromCodewords(
   segments: Segment[],
   codewords: any[],
   mode: string
-): Segment[] {
+): { segments: Segment[]; bitsWereClamped: boolean } {
   // Create a map of bit ID to codeword/bit index for quick lookup
   const bitToCodewordMap = new Map<string, { codewordIndex: number; bitIndex: number }>();
   
@@ -126,10 +125,28 @@ export function updateSegmentTextFromCodewords(
     }
   });
   
+  // Track if any bits were clamped
+  let bitsWereClamped = false;
+  
+  // Track segments that fail to decode (for debugging)
+  const failedSegments: Array<{segmentId: string, reason: string}> = [];
+  
   // Update segments with decoded text
-  return segments.map(segment => {
-    // Update both qartAppend segments and padding segments (both are optimized by QArt)
-    if (segment.type !== "qartAppend" && segment.type !== "padding") {
+  const updatedSegments = segments.map(segment => {
+    // Determine which mode to use for this segment
+    let segmentMode: string;
+    if (segment.type === "qartAppend") {
+      // For qartAppend segments, use their inputMode property instead of the passed mode
+      // This ensures numeric/alphanumeric segments aren't incorrectly clamped as byte segments
+      // BUT: if mode="byte", skip qartAppend segments (they'll be processed separately)
+      if (mode === "byte") {
+        return segment; // Skip qartAppend segments when processing padding
+      }
+      segmentMode = (segment as any).inputMode || mode;
+    } else if (segment.type === "padding" && mode === "byte") {
+      // For padding segments, use the passed mode (should be "byte")
+      segmentMode = mode;
+    } else {
       return segment;
     }
     
@@ -148,16 +165,19 @@ export function updateSegmentTextFromCodewords(
           bitValues.push(codeword.bits[mapping.bitIndex].value);
         } else {
           // Bit not found, can't decode - return original segment
+          failedSegments.push({segmentId: segment.id, reason: `Bit not found in codeword ${mapping.codewordIndex} bit ${mapping.bitIndex}`});
           return segment;
         }
       } else {
         // Bit ID not in map, can't decode - return original segment
+        failedSegments.push({segmentId: segment.id, reason: `Bit ID ${bitId} not in bitToCodewordMap`});
         return segment;
       }
     }
     
     if (bitValues.length !== segment.length) {
       // Can't decode properly - bit count mismatch
+      failedSegments.push({segmentId: segment.id, reason: `Bit count mismatch: expected ${segment.length}, got ${bitValues.length}`});
       return segment;
     }
     
@@ -167,14 +187,59 @@ export function updateSegmentTextFromCodewords(
       reconstructedValue = (reconstructedValue << 1) | bitValues[i];
     }
     
+    // Calculate max valid value for this segment using segmentMode
+    let maxValue: number;
+    if (segmentMode === "numeric") {
+      maxValue = segment.length === 10 ? 999 : segment.length === 7 ? 99 : 9;
+    } else if (segmentMode === "alphanumeric") {
+      maxValue = segment.length === 11 ? 2024 : 44; // 45*45-1 for 2 chars, 44 for 1 char
+    } else {
+      maxValue = 255; // byte mode
+    }
+    
+    // Clamp invalid values to valid range to prevent decoding failures
+    // QArt optimization can create invalid values, but we should decode them as the closest valid value
+    const wasClamped = reconstructedValue > maxValue;
+    if (wasClamped) {
+      bitsWereClamped = true;
+      reconstructedValue = maxValue;
+      // Update the actual bits in codewords to match the clamped value
+      // Convert clamped value to binary bits (MSB first)
+      const clampedBits: number[] = [];
+      let val = reconstructedValue;
+      for (let i = segment.length - 1; i >= 0; i--) {
+        clampedBits[i] = val & 1;
+        val >>= 1;
+      }
+      // Update bits in codewords (bits are stored MSB first in segments)
+      // CRITICAL: segment.bitIds[0] is MSB, segment.bitIds[length-1] is LSB
+      // clampedBits[0] is MSB, clampedBits[length-1] is LSB
+      // So clampedBits[i] corresponds to segment.bitIds[i] (both MSB-first)
+      let firstCodewordIndex: number | null = null;
+      const codewordIndices = new Set<number>();
+      for (let i = 0; i < segment.bitIds.length; i++) {
+        const bitId = segment.bitIds[i];
+        const mapping = bitToCodewordMap.get(bitId);
+        if (mapping) {
+          if (firstCodewordIndex === null) firstCodewordIndex = mapping.codewordIndex;
+          codewordIndices.add(mapping.codewordIndex);
+          const codeword = codewords[mapping.codewordIndex];
+          if (codeword && codeword.bits && codeword.bits[mapping.bitIndex]) {
+            codeword.bits[mapping.bitIndex].value = clampedBits[i];
+          }
+        }
+      }
+    }
+    
+    
     // Create updated segment with new value
     const updatedSegment = {
       ...segment,
       value: reconstructedValue
     };
     
-    // Decode the value to text
-    const decodedText = decodeSegmentValue(updatedSegment, mode);
+    // Decode the value to text using segmentMode
+    const decodedText = decodeSegmentValue(updatedSegment, segmentMode);
     
     // Update segment with decoded text
     type SegmentWithText = Segment & { text?: string };
@@ -183,5 +248,8 @@ export function updateSegmentTextFromCodewords(
       text: decodedText
     } as SegmentWithText;
   });
+  
+  
+  return { segments: updatedSegments, bitsWereClamped };
 }
 

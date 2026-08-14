@@ -7,7 +7,7 @@ import { calculateOtsuThreshold, detectQRBoundaries } from "./utils";
  * @param {number} height - Canvas height
  * @return {number} Damage estimate (0-1 scale, lower is better)
  */
-function estimateFormatInformationDamage(data, width, height) {
+export function estimateFormatInformationDamage(data, width, height) {
   // Step 1: Detect QR code boundaries and size
   const boundaries = detectQRBoundaries(data, width, height);
   if (!boundaries) return 1.0; // Could not detect QR code

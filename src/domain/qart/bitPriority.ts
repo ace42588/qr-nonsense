@@ -68,7 +68,9 @@ export function buildBitOrder(
   contrastGrid: Float32Array, // Pre-computed local variance (contrast) for each module
   dimension: number,
   editableSegmentIds: Set<string>, // Padding segments + QArt-append segments
-  priorityType: PriorityFunctionType = "contrast"
+  priorityType: PriorityFunctionType = "contrast",
+  excludeLastSegmentBits?: Set<string>, // Bit IDs from last segments to exclude (prevents invalid values)
+  appendSegmentIds?: Set<string> // QArt-append segment IDs for deterministic priority
 ): BitPosition[] {
   const nd = block.data.length;
   const nc = block.errorCorrection.length;
@@ -90,10 +92,20 @@ export function buildBitOrder(
       if (!bit?.id) continue;
       
       // Only include bits from editable segments (padding or QArt-append)
+      // Exclude bits from last segments if specified (prevents invalid segment values)
       if (bit.sourceId && editableSegmentIds.has(bit.sourceId)) {
+        if (excludeLastSegmentBits && excludeLastSegmentBits.has(bit.id)) {
+          continue; // Skip bits from last segments to prevent invalid values
+        }
         const bitIndex = cwIdx * 8 + bitInCw;
         const pos = getBitPosition(block, bitIndex, true, matrix, nd);
-        if (pos) order.push(pos);
+        if (pos) {
+          // Mark if this bit is from an append segment for deterministic priority
+          if (appendSegmentIds && bit.sourceId && appendSegmentIds.has(bit.sourceId)) {
+            (pos as any).isAppendBit = true;
+          }
+          order.push(pos);
+        }
       }
     }
   }
@@ -121,6 +133,8 @@ export function buildBitOrder(
     // Match Go: use contrast value directly as priority, no random tie-breaking
     
     // EC bits are given equal priority consideration to ensure they can be optimized
+    // All bits (padding, append, EC) use contrast-based priority for QArt effect
+    const QUANTIZATION_STEP = 50; // Round contrast values to nearest 50 for stability
     for (const po of order) {
       const contrast = contrastGrid[po.y * dimension + po.x];
       // Use contrast value directly as priority (matches Go implementation exactly)
@@ -130,13 +144,22 @@ export function buildBitOrder(
       const validContrast = (typeof contrast === 'number' && isFinite(contrast) && contrast >= 0) 
         ? contrast 
         : 0;
+      // Quantize aggressively to reduce sensitivity to small differences
+      const quantizedContrast = Math.round(validContrast / QUANTIZATION_STEP) * QUANTIZATION_STEP;
       // Clamp to ensure it fits in 32-bit integer (though contrast values should be much smaller)
-      po.priority = Math.min(Math.floor(validContrast), 0x7FFFFFFF);
+      po.priority = Math.min(Math.floor(quantizedContrast), 0x7FFFFFFF);
     }
   }
 
   // Sort by priority (higher first)
-  order.sort((a, b) => b.priority - a.priority);
+  // CRITICAL: When priorities are equal, use bit index as tie-breaker for deterministic ordering
+  // This ensures consistent bit ordering even when multiple bits have the same contrast value
+  order.sort((a, b) => {
+    const priorityDiff = b.priority - a.priority;
+    if (priorityDiff !== 0) return priorityDiff;
+    // Tie-breaker: use bit index for deterministic ordering
+    return a.bi - b.bi;
+  });
   
   return order;
 }

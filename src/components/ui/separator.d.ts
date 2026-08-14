@@ -1,10 +1,8 @@
-import { JSX } from "react";
+import * as React from "react";
 
-interface SeparatorProps {
+export interface SeparatorProps extends React.HTMLAttributes<HTMLDivElement> {
   orientation?: "horizontal" | "vertical";
-  className?: string;
   decorative?: boolean;
 }
 
-export declare function Separator(props: SeparatorProps): JSX.Element;
-
+export const Separator: React.ForwardRefExoticComponent<SeparatorProps & React.RefAttributes<HTMLDivElement>>;

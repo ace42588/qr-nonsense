@@ -2,7 +2,6 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { createEditor, Editor, Text } from "slate";
 import { Slate, Editable, withReact, useSlate } from "slate-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Bold, Italic } from "lucide-react";
 import { renderTextToCanvas, extractTextFromSlate } from "@/adapters/browser/text-to-image";
@@ -121,7 +120,7 @@ export function TextToImageEditor() {
         if (node.bold) foundBold = true;
         if (node.italic) foundItalic = true;
       }
-      if (node.children) {
+      if ("children" in node && node.children) {
         node.children.forEach(checkNode);
       }
     }
@@ -216,4 +215,3 @@ export function TextToImageEditor() {
     </div>
   );
 }
-

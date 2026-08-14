@@ -1,6 +1,6 @@
 import { createMatrix, addCodewords, applyMask, attachModuleIndex } from "./utils";
 import { calculatePenalty } from "./calculatePenalty";
-import { addPatterns, updateFormatInfoModules } from "./modules";
+import { addPatterns, updateFormatInfoModules, addVersionInfo } from "./modules";
 
 /**
  * Generates a complete QR code matrix with all patterns, codewords, and format information.
@@ -40,6 +40,8 @@ export function getMatrix(codewords, dataMask, version, errorCorrectionLevel) {
       errorCorrectionLevel,
       dataMask
     );
+    // Add version info AFTER masking (QR spec requirement for versions >= 7)
+    addVersionInfo(final);
     // Attach getModuleByBitId method to the matrix
     attachModuleIndex(final);
     return { matrix: final, dataMask };
@@ -61,6 +63,7 @@ export function getMatrix(codewords, dataMask, version, errorCorrectionLevel) {
       maskIdx
     );
     const score = calculatePenalty(testMatrix);
+    // Select mask based on score
     if (score < bestScore) {
       bestScore = score;
       bestMask = maskIdx;
@@ -69,11 +72,14 @@ export function getMatrix(codewords, dataMask, version, errorCorrectionLevel) {
   }
   // Use the bestMatrix we already computed instead of recomputing
   // This ensures we use the exact same matrix that was scored
-  const final = bestMatrix || updateFormatInfoModules(
+  let final = bestMatrix || updateFormatInfoModules(
     applyMask(populated, bestMask),
     errorCorrectionLevel,
     bestMask
   );
+
+  // Add version info AFTER masking (QR spec requirement for versions >= 7)
+  addVersionInfo(final);
 
   // Attach getModuleByBitId method to the matrix
   attachModuleIndex(final);
