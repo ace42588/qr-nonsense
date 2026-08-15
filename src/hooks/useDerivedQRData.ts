@@ -35,7 +35,7 @@ export function useDerivedQRData(): DerivedQRData {
       errorCorrectionLevel,
     },
   } = useInputs();
-  const parsedInputs = useParsedInputs();
+  const { parsed: parsedInputs } = useParsedInputs();
 
   const {
     segments: initialSegments,

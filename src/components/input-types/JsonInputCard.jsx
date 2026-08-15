@@ -1,4 +1,5 @@
 // External Libraries
+import { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
 
 // UI Components
@@ -14,6 +15,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { ErrorBanner } from "@/components/ui/message-banner";
 
 // State and Actions
 import {
@@ -21,20 +23,41 @@ import {
   updateSchema,
   updateEncoding,
   setSchemaName,
+  updateInput,
 } from "@/state/inputs/inputActions";
 
 // Domain
 import { predefinedSchemas } from "@/domain/input/index";
-import { ENCODING_STRATEGIES } from "@/domain/encoders";
+import { ENCODING_STRATEGIES, resolveEncodingStrategy } from "@/domain/encoders";
 import { MONACO_EDITOR_OPTIONS } from "./constants";
 
-export function JsonInputCard({ input, preview, dispatch }) {
+export function JsonInputCard({ input, preview, dispatch, parseError }) {
+  const [jsonText, setJsonText] = useState(() =>
+    JSON.stringify(input.obj ?? {}, null, 2)
+  );
+  const [schemaText, setSchemaText] = useState(() =>
+    JSON.stringify(input.schema ?? {}, null, 2)
+  );
+  const [jsonError, setJsonError] = useState(null);
+  const [schemaError, setSchemaError] = useState(null);
+
+  useEffect(() => {
+    setJsonText(JSON.stringify(input.obj ?? {}, null, 2));
+    setJsonError(null);
+    setSchemaText(JSON.stringify(input.schema ?? {}, null, 2));
+    setSchemaError(null);
+  }, [input.id]);
+
+  const encodingValue = resolveEncodingStrategy(input.encoding || "None");
+  const displayError = jsonError || schemaError || parseError || input.error;
+
   return (
     <Card className="h-full w-full">
       <CardHeader className="pb-3">
         <CardTitle>{input.label}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
+        {displayError && <ErrorBanner message={displayError} title="Parse error" />}
         <Tabs defaultValue="json" className="flex-1">
           <TabsList className="w-full">
             <TabsTrigger value="json" className="flex-1">Values</TabsTrigger>
@@ -46,12 +69,20 @@ export function JsonInputCard({ input, preview, dispatch }) {
               <Editor
                 height="200px"
                 defaultLanguage="json"
-                value={JSON.stringify(input.obj, null, 2)}
+                value={jsonText}
                 onChange={(text) => {
+                  const next = text ?? "";
+                  setJsonText(next);
                   try {
-                    dispatch(updateJsonObject(input.id, JSON.parse(text)));
-                  } catch {
-                    return undefined;
+                    dispatch(updateJsonObject(input.id, JSON.parse(next)));
+                    setJsonError(null);
+                    if (input.error) {
+                      dispatch(updateInput(input.id, { error: undefined }));
+                    }
+                  } catch (err) {
+                    const message = `Invalid JSON: ${err instanceof Error ? err.message : String(err)}`;
+                    setJsonError(message);
+                    dispatch(updateInput(input.id, { error: message }));
                   }
                 }}
                 options={MONACO_EDITOR_OPTIONS}
@@ -65,8 +96,11 @@ export function JsonInputCard({ input, preview, dispatch }) {
               <Select
                 value={input.schemaName}
                 onValueChange={(name) => {
-                  dispatch(updateSchema(input.id, predefinedSchemas[name]));
+                  const schema = predefinedSchemas[name];
+                  dispatch(updateSchema(input.id, schema));
                   dispatch(setSchemaName(input.id, name));
+                  setSchemaText(JSON.stringify(schema ?? {}, null, 2));
+                  setSchemaError(null);
                 }}
               >
                 <SelectTrigger id="schema-select" className="w-full max-w-xs">
@@ -85,12 +119,17 @@ export function JsonInputCard({ input, preview, dispatch }) {
               <Editor
                 height="200px"
                 defaultLanguage="json"
-                value={JSON.stringify(input.schema, null, 2)}
+                value={schemaText}
                 onChange={(text) => {
+                  const next = text ?? "";
+                  setSchemaText(next);
                   try {
-                    dispatch(updateSchema(input.id, JSON.parse(text)));
-                  } catch {
-                    return undefined;
+                    dispatch(updateSchema(input.id, JSON.parse(next)));
+                    setSchemaError(null);
+                  } catch (err) {
+                    setSchemaError(
+                      `Invalid schema JSON: ${err instanceof Error ? err.message : String(err)}`
+                    );
                   }
                 }}
                 options={MONACO_EDITOR_OPTIONS}
@@ -105,7 +144,7 @@ export function JsonInputCard({ input, preview, dispatch }) {
         <div className="space-y-2">
           <Label>Encoding</Label>
           <Select
-            value={input.encoding || "None"}
+            value={encodingValue}
             onValueChange={(val) => dispatch(updateEncoding(input.id, val))}
           >
             <SelectTrigger className="w-full max-w-xs">

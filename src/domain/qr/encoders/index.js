@@ -56,7 +56,10 @@ export function encodeAll(parsedInputs, version = 1) {
   const parsedValues = Object.values(parsedInputs);
   const errors = [];
   const encodedInputs = parsedValues.flatMap((parsed) => {
-    const { data, mode, encoding, error, id } = parsed || {};
+    const { data, mode, encoding, error, id, qartVariation } = parsed || {};
+    if (qartVariation) {
+      return [];
+    }
     if (error) {
       errors.push(error);
       return [];

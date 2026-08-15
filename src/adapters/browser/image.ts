@@ -106,3 +106,35 @@ export async function transformImageToCanvas(
   return ctx.getImageData(0, 0, canvasSize, canvasSize);
 }
 
+/**
+ * Downscale a data-URL image when either dimension exceeds maxDimension (FR-025).
+ * Returns the original URL when already within bounds.
+ */
+export async function downscaleImageDataUrl(
+  dataUrl: string,
+  maxDimension: number = 4096
+): Promise<string> {
+  const img = await loadImage(dataUrl);
+  const maxDim = Math.max(img.width, img.height);
+  if (!isFinite(maxDim) || maxDim <= 0) {
+    throw new Error("Image has invalid dimensions");
+  }
+  if (maxDim <= maxDimension) {
+    return dataUrl;
+  }
+
+  const scale = maxDimension / maxDim;
+  const width = Math.max(1, Math.round(img.width * scale));
+  const height = Math.max(1, Math.round(img.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Failed to scale image: canvas context unavailable");
+  }
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(img, 0, 0, width, height);
+  return canvas.toDataURL("image/png");
+}
+

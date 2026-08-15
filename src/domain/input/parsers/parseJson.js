@@ -3,7 +3,7 @@ import {
   encodeFieldsToBytes,
   generateBitLayoutFromSchema,
 } from "./utils/bitFieldUtils";
-import { ModHex, NTRU } from "../../encoders";
+import { ModHex, NTRU, resolveEncodingStrategy } from "../../encoders";
 import { logger as log } from "@/adapters/logger";
 
 const specialTypes = ["encapsulator", "separator", "terminator"];
@@ -110,7 +110,7 @@ const JSON_PARSERS = {
     encoding: "modhex",
   }),
   "PER-NTRU": (obj, schema) => ({
-    data: NTRU.encode(encodeToBytes(obj, schema)),
+    data: NTRU.encode(bytesToHex(encodeToBytes(obj, schema))),
     mode: "numeric",
     encoding: "ntru",
   }),
@@ -183,9 +183,11 @@ export function parseJson(input) {
     };
   }
 
-  // First try to use the selected encoding if it exists
-  if (encoding && encoding !== "None" && JSON_PARSERS[encoding]) {
-    return JSON_PARSERS[encoding](obj, schema);
+  // First try to use the selected encoding if it exists.
+  // UI historically stored "ModHex"/"NTRU"; resolve those to parser keys.
+  const resolvedEncoding = resolveEncodingStrategy(encoding);
+  if (resolvedEncoding && resolvedEncoding !== "None" && JSON_PARSERS[resolvedEncoding]) {
+    return JSON_PARSERS[resolvedEncoding](obj, schema);
   }
 
   // Fallback to schema-based serialization if no encoding selected

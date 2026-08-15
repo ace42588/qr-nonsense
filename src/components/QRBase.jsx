@@ -20,6 +20,7 @@ export function QRBase({
   onModuleClick,
   onModuleHover,
   renderModule,
+  renderPasses = 1,
   children,
   responsive = true,
   customMatrix = null,
@@ -72,52 +73,56 @@ export function QRBase({
       yBoundaries[i] = Math.round((i + quietZone) * moduleSize);
     }
     
-    for (let y = 0; y < dimension; y++) {
-      const moduleY = yBoundaries[y];
-      const nextModuleY = yBoundaries[y + 1];
-      const moduleHeight = nextModuleY - moduleY;
-      
-      for (let x = 0; x < dimension; x++) {
-        const m = matrix[y][x];
-        if (!m) continue;
-
-        const moduleX = xBoundaries[x];
-        const nextModuleX = xBoundaries[x + 1];
-        const moduleWidth = nextModuleX - moduleX;
+    const passes = Math.max(1, renderPasses | 0);
+    for (let pass = 0; pass < passes; pass++) {
+      for (let y = 0; y < dimension; y++) {
+        const moduleY = yBoundaries[y];
+        const nextModuleY = yBoundaries[y + 1];
+        const moduleHeight = nextModuleY - moduleY;
         
-        // Ensure minimum size of 1 pixel
-        const finalWidth = Math.max(1, moduleWidth);
-        const finalHeight = Math.max(1, moduleHeight);
-        const moduleSizeSquare = Math.max(finalWidth, finalHeight);
+        for (let x = 0; x < dimension; x++) {
+          const m = matrix[y][x];
+          if (!m) continue;
 
-        // Check if module should be highlighted
-        // CRITICAL: Modules have both bitId and bit.id - we check both for compatibility.
-        // The bit.id comes from the codewords, and segment.bitIds contain these same IDs.
-        // When a symbol is clicked, we highlight modules whose bit.id matches the segment's bitIds.
-        const moduleBitId = m.bit?.id || m.bitId;
-        const isHighlighted = moduleBitId && highlightedIds && Array.isArray(highlightedIds) && highlightedIds.includes(moduleBitId);
+          const moduleX = xBoundaries[x];
+          const nextModuleX = xBoundaries[x + 1];
+          const moduleWidth = nextModuleX - moduleX;
+          
+          // Ensure minimum size of 1 pixel
+          const finalWidth = Math.max(1, moduleWidth);
+          const finalHeight = Math.max(1, moduleHeight);
+          const moduleSizeSquare = Math.max(finalWidth, finalHeight);
 
-        if (renderModule) {
-          // Pass exact dimensions in renderCtx for renderModule callbacks that need them
-          renderModule(ctx, m, moduleX, moduleY, moduleSizeSquare, {
-            size, quietZone, moduleX, moduleY, x, y, dimension,
-            moduleWidth: finalWidth, moduleHeight: finalHeight
-          });
-        } else {
-          // Default rendering - use exact calculated dimensions for edge-to-edge coverage
-          ctx.fillStyle = m.isDark ? "black" : "white";
-          ctx.fillRect(moduleX, moduleY, finalWidth, finalHeight);
-        }
+          // Check if module should be highlighted
+          // CRITICAL: Modules have both bitId and bit.id - we check both for compatibility.
+          // The bit.id comes from the codewords, and segment.bitIds contain these same IDs.
+          // When a symbol is clicked, we highlight modules whose bit.id matches the segment's bitIds.
+          const moduleBitId = m.bit?.id || m.bitId;
+          const isHighlighted = moduleBitId && highlightedIds && Array.isArray(highlightedIds) && highlightedIds.includes(moduleBitId);
 
-        // Draw highlight border if module is highlighted
-        if (isHighlighted) {
-          ctx.strokeStyle = "red";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(moduleX, moduleY, moduleWidth, moduleHeight);
+          if (renderModule) {
+            // Pass exact dimensions in renderCtx for renderModule callbacks that need them
+            renderModule(ctx, m, moduleX, moduleY, moduleSizeSquare, {
+              size, quietZone, moduleX, moduleY, x, y, dimension,
+              moduleWidth: finalWidth, moduleHeight: finalHeight,
+              pass, passes,
+            });
+          } else if (pass === 0) {
+            // Default rendering - use exact calculated dimensions for edge-to-edge coverage
+            ctx.fillStyle = m.isDark ? "black" : "white";
+            ctx.fillRect(moduleX, moduleY, finalWidth, finalHeight);
+          }
+
+          // Draw highlight border once on the final pass so it sits above all layers
+          if (isHighlighted && pass === passes - 1) {
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(moduleX, moduleY, moduleWidth, moduleHeight);
+          }
         }
       }
     }
-  }, [matrix, size, quietZone, renderModule, highlightedIds]);
+  }, [matrix, size, quietZone, renderModule, renderPasses, highlightedIds]);
 
   const getModuleFromEvent = (event) => {
     if (!matrix) return null;

@@ -20,6 +20,7 @@ import { ChevronDown, Upload, Type, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, R
 // State
 import { useImageTransform } from "@/state/image/ImageTransformContext";
 import { TextToImageEditor } from "@/components/TextToImageEditor";
+import { ErrorBanner } from "@/components/ui/message-banner";
 
 export function ImageTransformInput() {
   const {
@@ -34,6 +35,7 @@ export function ImageTransformInput() {
     setImageUrl,
     fileInputRef,
     handleImageUpload,
+    error,
   } = useImageTransform();
 
   return (
@@ -50,6 +52,11 @@ export function ImageTransformInput() {
           </CollapsibleTrigger>
         </SidebarGroupLabel>
         <CollapsibleContent>
+          {error && (
+            <div className="px-2 pb-2">
+              <ErrorBanner message={error} title="Image Error" />
+            </div>
+          )}
           <SidebarMenu>
             <SidebarMenuItem key="Image URL">
               <SidebarMenuButton asChild isActive={true}>

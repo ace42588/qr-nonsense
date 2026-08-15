@@ -232,6 +232,32 @@ function bitLengthAtVersion(segments: Segment[], version: number): number {
 }
 
 /**
+ * Choose the mixed-mode parts for `text`, falling back to a single byte part
+ * when that bitstream is not shorter than byte mode alone.
+ */
+export function resolveMixedParts(
+  text: string,
+  options: { version?: number; encoding?: unknown } = {}
+): MixedSegment[] {
+  const data = text ?? "";
+  if (!data) return [];
+
+  const version = options.version ?? 1;
+  const encoding = resolveMixedByteEncoding(options.encoding);
+  const parts = chooseMixedSegments(data, version);
+  const mixed = encodeSegments(parts, encoding);
+  const byteOnly = encodeByte(data, encoding);
+
+  if (
+    mixed.length === 0 ||
+    bitLengthAtVersion(mixed, version) >= bitLengthAtVersion(byteOnly, version)
+  ) {
+    return [{ mode: "byte", data }];
+  }
+  return parts;
+}
+
+/**
  * Encode `text` as the shortest mix of numeric, alphanumeric, byte, and kanji.
  * Falls back to a single byte segment when mixed mode is not shorter.
  */
@@ -242,18 +268,6 @@ export function encodeMixed(
   const data = text ?? "";
   if (!data) return [];
 
-  const version = options.version ?? 1;
   const encoding = resolveMixedByteEncoding(options.encoding);
-
-  const byteOnly = encodeByte(data, encoding);
-  const parts = chooseMixedSegments(data, version);
-  const mixed = encodeSegments(parts, encoding);
-
-  if (
-    mixed.length === 0 ||
-    bitLengthAtVersion(mixed, version) >= bitLengthAtVersion(byteOnly, version)
-  ) {
-    return byteOnly;
-  }
-  return mixed;
+  return encodeSegments(resolveMixedParts(data, options), encoding);
 }

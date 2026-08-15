@@ -1,6 +1,4 @@
 export const QR_MODES = [
-  "mixed",
-  "optimized",
   "numeric",
   "alphanumeric",
   "byte",
@@ -9,20 +7,23 @@ export const QR_MODES = [
 ];
 
 export const QR_MODE_LABELS = {
-  mixed: "mixed",
-  optimized: "optimized",
-  auto: "mixed",
   numeric: "numeric",
   alphanumeric: "alphanumeric",
   byte: "byte",
   kanji: "kanji",
   eci: "eci",
+  // Legacy modes kept for saved inputs until they are re-saved
+  mixed: "byte",
+  optimized: "byte",
+  auto: "byte",
 };
 
 export const ENCODING_STRATEGIES = [
-  "none",
-  "alphanumeric",
-  "modhex",
+  "None",
+  "Alphanumeric",
+  "PER",
+  "PER-ModHex",
+  "PER-NTRU",
 ];
 
 export const COLORS = [

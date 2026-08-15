@@ -32,6 +32,7 @@ export interface Input {
   mode: string;
   text?: string;
   error?: string;
+  qartVariation?: boolean;
 }
 
 export interface InputState {

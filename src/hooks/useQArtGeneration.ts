@@ -14,6 +14,8 @@ interface QArtGenerationOptions {
     separator?: string;
     encodingMode?: "numeric" | "alphanumeric" | "byte";
   };
+  minDecodeRedundancy?: number;
+  decodeTrials?: number;
 }
 
 interface UseQArtGenerationParams {
@@ -73,6 +75,8 @@ export function useQArtGeneration({
   const {
     priorityFunction = "contrast",
     appendData,
+    minDecodeRedundancy,
+    decodeTrials,
   } = options;
 
   // Generate QArt QR code - automatically triggered by state changes
@@ -130,6 +134,12 @@ export function useQArtGeneration({
       if (appendData?.enabled) {
         generateOptions.appendData = appendData as QArtAppendData;
       }
+      if (minDecodeRedundancy != null) {
+        generateOptions.minDecodeRedundancy = minDecodeRedundancy;
+      }
+      if (decodeTrials != null) {
+        generateOptions.decodeTrials = decodeTrials;
+      }
       // Add source image and transform params for offscreen canvas
       if (sourceImage && transformParams) {
         generateOptions.sourceImage = sourceImage;
@@ -172,6 +182,8 @@ export function useQArtGeneration({
     versionInfo,
     priorityFunction,
     appendData,
+    minDecodeRedundancy,
+    decodeTrials,
     sourceImage,
     transformParams,
     transformedImageData,

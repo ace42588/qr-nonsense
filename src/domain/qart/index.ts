@@ -57,6 +57,10 @@ export interface QArtOptions {
     offsetX: number;
     offsetY: number;
   };
+  /** Minimum decode success rate before a scannability warning (default: 0.8) */
+  minDecodeRedundancy?: number;
+  /** Number of decode trials for verification (default: 1) */
+  decodeTrials?: number;
 }
 
 export interface QArtResult {
@@ -70,6 +74,7 @@ export interface QArtResult {
   contrastGrid?: Float32Array; // Pre-computed contrast (variance) map for visualization
   optimizedAppendData?: QArtOptimizedAppendData; // Optimized append data (if append was enabled)
   offscreenCanvasImage?: ImageData; // Offscreen canvas image (QR dimension-based) for rasterized preview and halftone
+  scannabilityWarning?: string | null;
 }
 
 /**
@@ -115,6 +120,8 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
     appendData,
     sourceImage,
     transformParams,
+    minDecodeRedundancy = 0.8,
+    decodeTrials = 1,
   } = options;
   
   // Check for cancellation before starting (FR-021)
@@ -669,22 +676,23 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
   }
   
   
-  // Validate decode (FR-009) - single trial for basic scannability check
-  const decodeSuccessRate = await validateDecode(matrix, 1);
-  
+  // Validate decode (FR-009). Prefer a warning over throwing so generation still shows (T10).
+  const trials = Number.isFinite(decodeTrials) && decodeTrials > 0 ? decodeTrials : 1;
+  const threshold =
+    Number.isFinite(minDecodeRedundancy) && minDecodeRedundancy >= 0 && minDecodeRedundancy <= 1
+      ? minDecodeRedundancy
+      : 0.8;
+  const decodeSuccessRate = await validateDecode(matrix, trials);
+
   // Check for cancellation after validation (FR-021)
   if (signal?.aborted) {
     throw new Error("QArt generation was cancelled");
   }
-  
-  // Throw error with clear message if scannability verification fails (FR-010)
-  // Note: Format info is correct (verified above), so if validation fails,
-  // it might be due to jsQR being strict or a rendering issue
-  // For QArt, we'll use a lower threshold since the QR code is technically correct
-  if (decodeSuccessRate < 0.5) {
-    // Don't throw - allow QArt to proceed since format info and Reed-Solomon are correct
-    // The QR code should still be scannable by other readers
-  }
+
+  const scannabilityWarning =
+    decodeSuccessRate < threshold
+      ? `Decode success rate ${(decodeSuccessRate * 100).toFixed(0)}% is below the ${(threshold * 100).toFixed(0)}% threshold. The QR code may not scan reliably.`
+      : null;
   
   // Compute visual error
   const error = computeVisualError(matrix, targetGrid, dimension);
@@ -754,6 +762,7 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
     contrastGrid, // Include contrast grid for visualization
     optimizedAppendData,
     offscreenCanvasImage: normalizedTargetImage, // Include offscreen canvas for rasterized preview and halftone
+    scannabilityWarning,
   };
 }
 

@@ -20,15 +20,39 @@ const INPUT_PARSERS = {
 };
 
 function handleInput(inputData) {
+  if (inputData?.qartVariation) {
+    return { ...inputData };
+  }
+  if (inputData?.error) {
+    return { ...inputData };
+  }
   const parserOpt = inputData.type || inputData.mode
-  const encodeFn = INPUT_PARSERS[parserOpt];
-  if (!encodeFn) throw new Error(`Unknown input type or mode: ${parserOpt}`);
-  return encodeFn(inputData);
+  try {
+    const encodeFn = INPUT_PARSERS[parserOpt];
+    if (!encodeFn) throw new Error(`Unknown input type or mode: ${parserOpt}`);
+    return encodeFn(inputData);
+  } catch (err) {
+    return {
+      ...inputData,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
+export function collectParseErrors(parsed) {
+  const errors = {};
+  for (const [id, value] of Object.entries(parsed || {})) {
+    if (value?.error) {
+      errors[id] = value.error;
+    }
+  }
+  return errors;
 }
 
 export function parseAll(inputs) {
-  const nonMacInputs = inputs.filter((input) => input.type !== "mac");
+  const nonMacInputs = inputs.filter((input) => input.type !== "mac" && !input.qartVariation);
   const macInputs = inputs.filter((input) => input.type === "mac");
+  const variationInputs = inputs.filter((input) => input.qartVariation);
 
   // First pass: parse non-MAC inputs
   const first = Object.fromEntries(
@@ -43,8 +67,12 @@ export function parseAll(inputs) {
     ])
   );
 
+  const variations = Object.fromEntries(
+    variationInputs.map((input) => [input.id, { ...input }])
+  );
+
   const obj = Object.fromEntries(
-    inputs.map(({ id }) => [id, { ...first, ...second }[id]])
+    inputs.map(({ id }) => [id, { ...first, ...second, ...variations }[id]])
   );
 
   return obj;

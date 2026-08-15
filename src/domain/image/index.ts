@@ -1,8 +1,19 @@
 import { QRMatrix } from "../shared/types";
+import {
+  getBrightness,
+  mapQrCoordToImagePixel,
+  rasterizeImageToQRGrid,
+} from "./sampling";
+import type { ImageData } from "./sampling";
 
-// Re-export ImageData type for use across the codebase
-// ImageData is a global DOM type, so we create a type alias
-export type ImageData = globalThis.ImageData;
+export type { ImageData, SampleMode, ModuleSample, SampleQrModuleOptions } from "./sampling";
+export {
+  getBrightness,
+  mapQrCoordToImagePixel,
+  readImagePixel,
+  sampleQrModule,
+  rasterizeImageToQRGrid,
+} from "./sampling";
 
 /**
  * Calculate an appropriate scale factor to fit an image within a QR code grid
@@ -149,60 +160,6 @@ export function calculateAppropriateCanvasScale(
   return Math.max(0.1, Math.min(3.0, scale));
 }
 
-/**
- * Rasterize pre-transformed image to QR grid coordinates
- * The image should already be transformed (scaled, translated) to canvas size
- * This function simply samples the ImageData at each QR module position
- * 
- * @param transformedImageData - Pre-transformed ImageData (canvas-sized, already scaled/translated)
- * @param qrDimension - The dimension of the QR code grid
- */
-export function rasterizeImageToQRGrid(
-  transformedImageData: ImageData,
-  qrDimension: number
-): Float32Array {
-  // Validate inputs
-  if (!qrDimension || qrDimension <= 0 || !isFinite(qrDimension)) {
-    throw new Error("Invalid qrDimension");
-  }
-
-  if (!transformedImageData || !transformedImageData.width || !transformedImageData.height) {
-    throw new Error("Invalid ImageData");
-  }
-
-  const imgWidth = transformedImageData.width;
-  const imgHeight = transformedImageData.height;
-  const data = transformedImageData.data;
-  const grid = new Float32Array(qrDimension * qrDimension);
-
-  // Sample image at each module center
-  // Map QR code modules directly to canvas pixel coordinates
-  // Use module center positions (x + 0.5, y + 0.5) to match halftone sampling alignment
-  for (let y = 0; y < qrDimension; y++) {
-    for (let x = 0; x < qrDimension; x++) {
-      // Map QR module center position to canvas pixel position (0 to imgWidth-1)
-      // Use (x + 0.5) to sample at module center, matching halftone's sub-pixel sampling
-      const imgX = Math.floor(((x + 0.5) / qrDimension) * imgWidth);
-      const imgY = Math.floor(((y + 0.5) / qrDimension) * imgHeight);
-
-      // Clamp to valid image bounds
-      const clampedX = Math.max(0, Math.min(imgWidth - 1, imgX));
-      const clampedY = Math.max(0, Math.min(imgHeight - 1, imgY));
-
-      const idx = (clampedY * imgWidth + clampedX) * 4;
-      const r = data[idx] || 0;
-      const g = data[idx + 1] || 0;
-      const b = data[idx + 2] || 0;
-
-      // Convert to brightness (0 = black/dark, 1 = white/light)
-      // For QArt, we want dark image areas to become dark QR modules
-      const brightness = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-      grid[y * qrDimension + x] = brightness;
-    }
-  }
-
-  return grid;
-}
 
 /**
  * Compute visual error between QR matrix and target image
@@ -233,11 +190,6 @@ export function computeVisualError(
   return count > 0 ? totalError / count : Infinity;
 }
 
-// Calculate perceived brightness from RGB values
-export function getBrightness(r: number, g: number, b: number): number {
-  // Perceived brightness, 0=black, 255=white
-  return 0.299 * r + 0.587 * g + 0.114 * b;
-}
 
 /**
  * Calculate local variance (contrast) for a pixel position
@@ -458,8 +410,46 @@ export function computeImportanceMap(imgData: ImageData, size: number, alpha: nu
 }
 
 /**
- * Calculate image complexity score from ImageData using computeImportanceMap variance
- * 
+ * Nearest-neighbor resize to a square. Preserves high-frequency structure
+ * (e.g. checkerboards) that box-filter downsampling would average away.
+ */
+export function resizeImageDataNearest(imageData: ImageData, size: number): ImageData {
+  const srcW = imageData.width;
+  const srcH = imageData.height;
+  const src = imageData.data;
+  const result = new ImageData(size, size);
+  const dst = result.data;
+
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const { x: srcX, y: srcY } = mapQrCoordToImagePixel(
+        x + 0.5,
+        y + 0.5,
+        size,
+        srcW,
+        srcH
+      );
+      const si = (srcY * srcW + srcX) * 4;
+      const di = (y * size + x) * 4;
+      dst[di] = src[si];
+      dst[di + 1] = src[si + 1];
+      dst[di + 2] = src[si + 2];
+      dst[di + 3] = src[si + 3] ?? 255;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Calculate image complexity score from ImageData using brightness variance
+ * at QR module resolution.
+ *
+ * Importance-map variance is inverted for this purpose: computeImportanceMap
+ * boosts midtones, so a flat gray field scores high, while a 1px checkerboard
+ * has canceling Sobel neighbors and scores low. Rasterize to qrDimension first
+ * so the metric matches what QArt actually sees.
+ *
  * @param imageData - Target image data
  * @param qrDimension - QR code dimension
  * @returns Complexity score (0-1, higher = more complex)
@@ -476,36 +466,32 @@ export function calculateImageComplexity(
   if (!qrDimension || qrDimension <= 0 || !isFinite(qrDimension)) {
     return 0;
   }
-  
-  // Compute importance map
-  const importanceMap = computeImportanceMap(imageData, qrDimension, 0.5);
-  
-  // Calculate variance of importance map values
-  const n = importanceMap.length;
+
+  let grid: Float32Array;
+  try {
+    grid = rasterizeImageToQRGrid(imageData, qrDimension);
+  } catch {
+    return 0;
+  }
+  const n = grid.length;
   if (n === 0) return 0;
-  
-  // Calculate mean
+
   let sum = 0;
   for (let i = 0; i < n; i++) {
-    sum += importanceMap[i];
+    sum += grid[i];
   }
   const mean = sum / n;
-  
-  // Calculate variance
+
   let variance = 0;
   for (let i = 0; i < n; i++) {
-    const diff = importanceMap[i] - mean;
+    const diff = grid[i] - mean;
     variance += diff * diff;
   }
   variance = variance / n;
-  
-  // Normalize variance to 0-1 range (variance of values in [0,1] range is at most 0.25)
-  // Use sqrt to get standard deviation and normalize
+
+  // Stddev of values in [0,1] is at most 0.5
   const stdDev = Math.sqrt(variance);
-  // Normalize: stdDev of [0,1] values is at most 0.5, so divide by 0.5 to get 0-1
-  const complexity = Math.min(1.0, stdDev / 0.5);
-  
-  return complexity;
+  return Math.min(1.0, stdDev / 0.5);
 }
 
 /**
@@ -586,4 +572,54 @@ export function detectExtremeScaling(scaleFactor: number): {
     isExtreme: false,
     warning: null,
   };
+}
+
+export const MAX_IMAGE_FILE_SIZE = 10 * 1024 * 1024; // 10MB (FR-024)
+export const MAX_IMAGE_DIMENSION = 4096; // FR-025
+export const ALLOWED_IMAGE_MIME_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
+const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+
+export interface ImageFileLike {
+  size: number;
+  type: string;
+  name?: string;
+}
+
+/**
+ * Validate an uploaded image file (size, MIME type / extension).
+ * Returns an error message, or null if the file is acceptable.
+ */
+export function validateImageFile(file: ImageFileLike): string | null {
+  if (!file) {
+    return "No image file selected.";
+  }
+  if (!Number.isFinite(file.size) || file.size <= 0) {
+    return "Image file is empty.";
+  }
+  if (file.size > MAX_IMAGE_FILE_SIZE) {
+    return "Image file exceeds the 10MB limit.";
+  }
+
+  const mime = (file.type || "").toLowerCase();
+  const name = (file.name || "").toLowerCase();
+  const extOk = ALLOWED_IMAGE_EXTENSIONS.some((ext) => name.endsWith(ext));
+  const mimeOk = mime !== "" && ALLOWED_IMAGE_MIME_TYPES.includes(mime);
+
+  if (mime) {
+    if (!mimeOk) {
+      return "Unsupported image type. Use JPEG, PNG, GIF, or WebP.";
+    }
+  } else if (name && !extOk) {
+    return "Unsupported image type. Use JPEG, PNG, GIF, or WebP.";
+  } else if (!mime && !name) {
+    return "Unsupported image type. Use JPEG, PNG, GIF, or WebP.";
+  }
+
+  return null;
 }

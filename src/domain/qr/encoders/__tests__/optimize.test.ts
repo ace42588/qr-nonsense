@@ -6,6 +6,7 @@ import {
   classifyInput,
   encodeOptimized,
   optimizeInput,
+  planOptimizedParts,
   OPTIMIZED_MODE,
 } from "../optimize";
 import { getNumBits } from "../utils";
@@ -131,5 +132,17 @@ describe("optimized encoding", () => {
     );
     const parsed = parseBasic({ mode: "optimized", text: url });
     expect(parsed.data).toBe(url);
+  });
+
+  it("plans separate parts matching optimized encoding segments", () => {
+    const url = "https://www.example.com/path?q=Hello";
+    const plan = planOptimizedParts(url);
+    expect(plan.category).toBe("url");
+    expect(plan.transformed).toBe(true);
+    expect(plan.parts.length).toBeGreaterThan(1);
+    expect(plan.parts.map((part) => part.data).join("")).toBe(plan.text);
+    expect(plan.parts.every((part) =>
+      ["numeric", "alphanumeric", "byte", "kanji"].includes(part.mode)
+    )).toBe(true);
   });
 });

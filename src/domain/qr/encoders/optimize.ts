@@ -1,4 +1,4 @@
-import { encodeMixed } from "./mixed";
+import { encodeMixed, resolveMixedParts, type MixedSegment } from "./mixed";
 import type { Segment } from "@/domain/shared/types";
 
 export const MIXED_MODE = "mixed";
@@ -196,6 +196,30 @@ export function optimizeInput(text: string): OptimizedInput {
     category,
     text: optimized,
     transformed: optimized !== source,
+  };
+}
+
+export interface OptimizedPartsPlan {
+  category: InputCategory;
+  text: string;
+  transformed: boolean;
+  parts: MixedSegment[];
+}
+
+/**
+ * Apply category-aware transforms, then split into the same mixed-mode parts
+ * that optimized encoding would use (with byte fallback when mixed is not shorter).
+ */
+export function planOptimizedParts(
+  text: string,
+  options: { version?: number; encoding?: unknown } = {}
+): OptimizedPartsPlan {
+  const optimization = optimizeInput(text);
+  return {
+    category: optimization.category,
+    text: optimization.text,
+    transformed: optimization.transformed,
+    parts: resolveMixedParts(optimization.text, options),
   };
 }
 

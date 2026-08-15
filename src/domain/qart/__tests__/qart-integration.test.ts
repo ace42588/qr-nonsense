@@ -14,6 +14,7 @@ import { getVersionInfo } from "../../qr/versionUtils";
 import {
   createTestImageData,
 } from "./utils";
+import { validateDecode } from "@/adapters/browser/validation";
 
 // Mock validateDecode since jsdom doesn't support canvas
 // The qart module imports from the browser adapter
@@ -34,6 +35,8 @@ describe("QArt Integration Tests", () => {
   let testImage: ImageData;
 
   beforeEach(() => {
+    vi.mocked(validateDecode).mockResolvedValue(1.0);
+
     // Create test input and use proper encoding pipeline
     const testInput: Input = {
       id: "test-input-1",
@@ -371,6 +374,30 @@ describe("QArt Integration Tests", () => {
 
       expect(result.matrix).toBeDefined();
       expect(result.decodeSuccessRate).toBeGreaterThanOrEqual(0.8);
+    });
+
+    it("surfaces a scannability warning when decode rate is below threshold", async () => {
+      vi.mocked(validateDecode).mockResolvedValueOnce(0.25);
+
+      const options: QArtOptions = {
+        segments: testSegments,
+        codewords: testCodewords,
+        blocks: testBlocks,
+        initialMatrix: testMatrix,
+        versionInfo: testVersionInfo,
+        errorCorrectionLevel: 0,
+        targetImage: testImage,
+        minDecodeRedundancy: 0.8,
+        decodeTrials: 3,
+      };
+
+      const result = await generateQArt(options);
+
+      expect(result.matrix).toBeDefined();
+      expect(result.decodeSuccessRate).toBe(0.25);
+      expect(result.scannabilityWarning).toBeTruthy();
+      expect(result.scannabilityWarning).toContain("25%");
+      expect(validateDecode).toHaveBeenCalledWith(expect.anything(), 3);
     });
   });
 });

@@ -57,7 +57,7 @@ export const setVersion = (value: number) => ({
   type: Actions.SetVersion,
   payload: { field: "version", value },
 });
-export const setDataMask = (value: number) => ({
+export const setDataMask = (value: number | null) => ({
   type: Actions.SetDataMask,
   payload: { field: "dataMask", value },
 });

@@ -1,5 +1,5 @@
 // UI Components
-import { useMemo } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,23 +11,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { ErrorBanner } from "@/components/ui/message-banner";
 
-import { updateInput } from "../../state/inputs/inputActions";
+import { setInputs, updateInput } from "../../state/inputs/inputActions";
+import { createInput } from "../../state/inputs/inputFactory";
+import { useInputs } from "@/state/inputs/InputContext";
 import { useDerivedQRData } from "@/hooks/useDerivedQRData";
-import { chooseMixedSegments } from "@/domain/qr/encoders/mixed";
-import {
-  CATEGORY_LABELS,
-  optimizeInput,
-} from "@/domain/qr/encoders/optimize";
+import { planOptimizedParts } from "@/domain/qr/encoders/optimize";
 
 // Constants
 import { QR_MODES, QR_MODE_LABELS } from "./constants";
 
-function previewOptimized(text) {
-  if (text.length <= 96) return text;
-  return `${text.slice(0, 93)}…`;
-}
+const LEGACY_MIXED_MODES = new Set(["mixed", "optimized", "auto"]);
 
 function eciAssignmentValue(encoding) {
   if (encoding === undefined || encoding === null || encoding === "") return "26";
@@ -36,23 +32,87 @@ function eciAssignmentValue(encoding) {
   return String(encoding);
 }
 
-export function StringInputCard({ input, dispatch }) {
+function stringValue(input) {
+  return input.data ?? input.text ?? "";
+}
+
+function normalizeMode(mode) {
+  if (!mode || LEGACY_MIXED_MODES.has(mode)) return "byte";
+  return mode;
+}
+
+function labelsForParts(baseLabel, parts) {
+  if (parts.length <= 1) return [baseLabel];
+  const modeCounts = parts.reduce((acc, part) => {
+    acc[part.mode] = (acc[part.mode] || 0) + 1;
+    return acc;
+  }, {});
+  const modeSeen = {};
+  return parts.map((part) => {
+    if (modeCounts[part.mode] === 1) {
+      return `${baseLabel} · ${part.mode}`;
+    }
+    modeSeen[part.mode] = (modeSeen[part.mode] || 0) + 1;
+    return `${baseLabel} · ${part.mode} ${modeSeen[part.mode]}`;
+  });
+}
+
+export function StringInputCard({ input, dispatch, parseError }) {
+  const { inputs } = useInputs();
   const { encodeError, versionInfo } = useDerivedQRData();
-  const selectedMode = input.mode === "auto" ? "mixed" : input.mode || "byte";
-  const isMixedLike =
-    selectedMode === "mixed" || selectedMode === "optimized";
-  const optimization = useMemo(
-    () =>
-      selectedMode === "optimized" && input.text
-        ? optimizeInput(input.text)
-        : null,
-    [selectedMode, input.text]
-  );
-  const mixedParts = useMemo(() => {
-    if (!isMixedLike || !input.text) return [];
-    const source = optimization?.text ?? input.text;
-    return chooseMixedSegments(source, versionInfo?.version ?? 1);
-  }, [isMixedLike, input.text, optimization?.text, versionInfo?.version]);
+  const selectedMode = normalizeMode(input.mode);
+  const value = stringValue(input);
+  const canOptimize = Boolean(value) && input.qartVariation !== true;
+
+  useEffect(() => {
+    if (!LEGACY_MIXED_MODES.has(input.mode)) return;
+    dispatch(
+      updateInput(input.id, {
+        mode: "byte",
+        encoding: input.encoding || "utf-8",
+      })
+    );
+  }, [dispatch, input.encoding, input.id, input.mode]);
+
+  const setText = (text) =>
+    dispatch(updateInput(input.id, { text, data: text }));
+
+  const handleOptimize = () => {
+    if (!canOptimize) return;
+
+    const { parts } = planOptimizedParts(value, {
+      version: versionInfo?.version ?? 1,
+    });
+    if (parts.length === 0) return;
+
+    const baseLabel = input.label || "Input";
+    const labels = labelsForParts(baseLabel, parts);
+    const index = inputs.findIndex((item) => item.id === input.id);
+    const at = index >= 0 ? index : inputs.length;
+
+    const replacements = parts.map((part, i) =>
+      createInput({
+        id: i === 0 ? input.id : undefined,
+        label: labels[i],
+        text: part.data,
+        mode: part.mode,
+        encoding: part.mode === "byte" ? "utf-8" : "",
+      })
+    );
+
+    const nextInputs = [
+      ...inputs.slice(0, at),
+      ...replacements,
+      ...inputs.slice(at + 1),
+    ];
+
+    dispatch(
+      setInputs({
+        inputs: nextInputs,
+        activeInputID: replacements[0].id,
+      })
+    );
+  };
 
   return (
     <Card>
@@ -60,18 +120,21 @@ export function StringInputCard({ input, dispatch }) {
         <CardTitle>{input.label}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4">
+        {(parseError || input.error) && (
+          <ErrorBanner message={parseError || input.error} title="Parse error" />
+        )}
         {encodeError && <ErrorBanner message={encodeError} title="Encoding error" />}
         <Select
           value={selectedMode}
           onValueChange={(mode) => {
             // Filter text to match the new mode when switching
-            let filteredText = input.text || "";
+            let filteredText = stringValue(input);
             if (mode === "numeric" && filteredText) {
               filteredText = filteredText.replace(/\D/g, "");
             } else if (mode === "alphanumeric" && filteredText) {
               filteredText = filteredText.replace(/[^0-9A-Z $%*+\-./:]/gi, "").toUpperCase();
             }
-            const patch = { mode, text: filteredText };
+            const patch = { mode, text: filteredText, data: filteredText };
             if (mode === "eci") {
               const current = eciAssignmentValue(input.encoding);
               patch.encoding = /^\d+$/.test(current) ? current : "26";
@@ -91,56 +154,29 @@ export function StringInputCard({ input, dispatch }) {
           </SelectContent>
         </Select>
 
-        {selectedMode === "mixed" && (
-          <p className="text-xs text-muted-foreground">
-            Splits the text into numeric, alphanumeric, byte, and kanji
-            segments when that bitstream is shorter than byte mode alone.
-            {mixedParts.length > 0 && (
-              <>
-                {" "}
-                Using {mixedParts.map((part) => part.mode).join(" → ")}.
-              </>
-            )}
-          </p>
-        )}
-
-        {selectedMode === "optimized" && (
-          <p className="text-xs text-muted-foreground">
-            Detects the payload type and uppercases case-insensitive parts
-            before mixed encoding.
-            {optimization && (
-              <>
-                {" "}
-                Detected {CATEGORY_LABELS[optimization.category]}.
-                {optimization.transformed && (
-                  <> Encodes as {previewOptimized(optimization.text)}.</>
-                )}
-              </>
-            )}
-            {mixedParts.length > 0 && (
-              <>
-                {" "}
-                Using {mixedParts.map((part) => part.mode).join(" → ")}.
-              </>
-            )}
-          </p>
-        )}
-
         <div className="flex flex-col space-y-1.5">
           <Label htmlFor="text">Text</Label>
           <Input
             id="text"
-            value={input.text}
-            onChange={(e) =>
-              dispatch(updateInput(input.id, { text: e.target.value }))
-            }
+            value={value}
+            onChange={(e) => setText(e.target.value)}
             disabled={input.qartVariation === true}
             className={input.qartVariation === true ? "bg-muted cursor-not-allowed" : ""}
             title={input.qartVariation === true ? "QArt variation input - value is controlled by Variation Template" : ""}
           />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="self-start"
+            disabled={!canOptimize}
+            onClick={handleOptimize}
+          >
+            Optimize
+          </Button>
         </div>
 
-        {input.mode === "byte" && (
+        {selectedMode === "byte" && (
           <div className="flex items-center space-x-2">
             <Switch
               checked={input.encoding === "utf-8"}
@@ -154,7 +190,7 @@ export function StringInputCard({ input, dispatch }) {
           </div>
         )}
 
-        {input.mode === "eci" && (
+        {selectedMode === "eci" && (
           <div className="flex flex-col space-y-1.5">
             <Label htmlFor="eci-assignment">ECI assignment</Label>
             <Input

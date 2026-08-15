@@ -1,9 +1,14 @@
 import { useMemo } from "react";
-import { parseAll } from "@/domain/input";
+import { collectParseErrors, parseAll } from "@/domain/input";
 import { useInputs } from "@/state/inputs/InputContext";
 import { Input } from "@/state/inputs/types";
 
 type ParsedInputs = Record<string, Input>;
+
+export interface ParsedInputsResult {
+  parsed: ParsedInputs;
+  errors: Record<string, string>;
+}
 
 /**
  * CRITICAL: This hook MUST be memoized to prevent segments from being recreated.
@@ -14,7 +19,10 @@ type ParsedInputs = Record<string, Input>;
  * 
  * By memoizing, we ensure segments remain stable unless inputs actually change.
  */
-export function useParsedInputs(): ParsedInputs {
+export function useParsedInputs(): ParsedInputsResult {
   const { inputs } = useInputs();
-  return useMemo(() => parseAll(inputs), [inputs]);
+  return useMemo(() => {
+    const parsed = parseAll(inputs) as ParsedInputs;
+    return { parsed, errors: collectParseErrors(parsed) as Record<string, string> };
+  }, [inputs]);
 }

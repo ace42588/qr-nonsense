@@ -10,9 +10,11 @@ const isHex = (val) =>
   /^(?:0x)?(?:[0-9A-F]{1,}(?:\s+[0-9A-F]{1,})+|(?:[0-9A-F]{1,})+)$/i.test(val);
 
 export function parseBasic(input) {
-  const { mode, text, encoding } = input;
+  const { mode, encoding } = input;
+  // Canonical field is `data`; accept legacy `text` so UI and factory stay in sync.
+  const text = input.data ?? input.text ?? "";
 
-  if (!text || !mode) return input;
+  if (!mode) return input;
 
   // Handle alphanumeric and numeric modes
   if (mode === "alphanumeric" || mode === "numeric") {

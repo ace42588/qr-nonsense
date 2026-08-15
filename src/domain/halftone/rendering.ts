@@ -1,5 +1,14 @@
-import { getBrightness, ImageData } from "@/domain/image";
+import {
+  sampleQrModule,
+  type ImageData,
+  type SampleMode,
+} from "@/domain/image";
 import { choosePattern } from "./patterns";
+
+export type HalftoneStyle = "pattern" | "dots";
+
+/** Max diameter fraction of module side allowed by UI (covers √2 ≈ 1.41). */
+export const DOT_SIZE_MAX = 1.5;
 
 interface RenderContext {
   size: number;
@@ -9,106 +18,60 @@ interface RenderContext {
   x: number;
   y: number;
   dimension?: number;
+  pass?: number;
+  passes?: number;
 }
 
 interface HalftoneRenderOptions {
   transformedImageData: ImageData;
-  importanceMap: number[];
+  importanceMap: ArrayLike<number>;
   patternsDark: number[][][];
   patternsLight: number[][][];
   modulePixel: number;
   reliabilityWeight?: number;
   importanceThreshold?: number; // If provided, only apply halftone when importance >= threshold
+  sampleMode?: SampleMode;
+  style?: HalftoneStyle;
+  /** Dot diameter as fraction of module side (0 … DOT_SIZE_MAX). */
+  minDotSize?: number;
+  /** Dot diameter as fraction of module side (0 … DOT_SIZE_MAX). */
+  maxDotSize?: number;
 }
 
 /**
- * Sample brightness and importance at a single point (center of module)
- * Maps QR module coordinates to image pixel coordinates using the same mapping as rasterizeImageToQRGrid
+ * Sample brightness and importance at the module center.
+ * Delegates to the shared QArt/Halftone pipeline (sampleQrModule).
  */
 export function sampleImageAtPoint(
   transformedImageData: ImageData,
-  importanceMap: number[],
+  importanceMap: ArrayLike<number>,
   qrDimension: number,
   qrModuleX: number,
   qrModuleY: number
 ): { brightness: number; importance: number } {
-  const imgWidth = transformedImageData.width;
-  const imgHeight = transformedImageData.height;
-  
-  // Map QR module position (0 to qrDimension-1) to image pixel position (0 to imgWidth-1)
-  // This matches the mapping used in rasterizeImageToQRGrid for consistency
-  const imgX = Math.floor((qrModuleX / qrDimension) * imgWidth);
-  const imgY = Math.floor((qrModuleY / qrDimension) * imgHeight);
-  
-  // Clamp to image bounds
-  const safeX = Math.max(0, Math.min(imgWidth - 1, imgX));
-  const safeY = Math.max(0, Math.min(imgHeight - 1, imgY));
-  const idx = (safeY * imgWidth + safeX) * 4;
-  
-  const r = transformedImageData.data[idx];
-  const g = transformedImageData.data[idx + 1];
-  const b = transformedImageData.data[idx + 2];
-  const brightness = getBrightness(r, g, b) / 255;
-  const importanceIdx = safeY * imgWidth + safeX;
-  const importance = importanceMap[importanceIdx] || 0;
-  
-  return { brightness, importance };
+  return sampleQrModule(transformedImageData, qrDimension, qrModuleX, qrModuleY, {
+    mode: "center",
+    importanceMap,
+  });
 }
 
 /**
- * Sample brightness and importance across an entire module area
- * Returns average brightness and importance
- * Maps QR module coordinates to image pixel coordinates using the same mapping as rasterizeImageToQRGrid
+ * Sample brightness and importance across an entire module area.
+ * Delegates to the shared QArt/Halftone pipeline (sampleQrModule, area mode).
  */
 export function sampleImageAcrossModule(
   transformedImageData: ImageData,
-  importanceMap: number[],
+  importanceMap: ArrayLike<number>,
   qrDimension: number,
   qrModuleX: number,
   qrModuleY: number,
   modulePixel: number
 ): { brightness: number; importance: number } {
-  const imgWidth = transformedImageData.width;
-  const imgHeight = transformedImageData.height;
-  
-  let totalBrightness = 0;
-  let totalImportance = 0;
-  let sampleCount = 0;
-  
-  // Sample at sub-pixel positions within the QR module
-  // Map each sub-pixel position to image pixel coordinates
-  for (let sy = 0; sy < modulePixel; ++sy) {
-    for (let sx = 0; sx < modulePixel; ++sx) {
-      // Calculate sub-pixel position within the QR module (0.0 to 1.0)
-      const subPixelX = qrModuleX + (sx + 0.5) / modulePixel;
-      const subPixelY = qrModuleY + (sy + 0.5) / modulePixel;
-      
-      // Map QR module position to image pixel position (same as rasterizeImageToQRGrid)
-      const imgX = Math.floor((subPixelX / qrDimension) * imgWidth);
-      const imgY = Math.floor((subPixelY / qrDimension) * imgHeight);
-      
-      // Clamp to image bounds
-      const safeX = Math.max(0, Math.min(imgWidth - 1, imgX));
-      const safeY = Math.max(0, Math.min(imgHeight - 1, imgY));
-      const idx = (safeY * imgWidth + safeX) * 4;
-      
-      const r = transformedImageData.data[idx];
-      const g = transformedImageData.data[idx + 1];
-      const b = transformedImageData.data[idx + 2];
-      const brightness = getBrightness(r, g, b) / 255;
-      const importance = importanceMap[safeY * imgWidth + safeX] || 0;
-      
-      totalBrightness += brightness;
-      totalImportance += importance;
-      sampleCount++;
-    }
-  }
-  
-  // Use average brightness and importance across the module area
-  const avgBrightness = sampleCount > 0 ? totalBrightness / sampleCount : 0.5;
-  const avgImportance = sampleCount > 0 ? totalImportance / sampleCount : 0.5;
-  
-  return { brightness: avgBrightness, importance: avgImportance };
+  return sampleQrModule(transformedImageData, qrDimension, qrModuleX, qrModuleY, {
+    mode: "area",
+    modulePixel,
+    importanceMap,
+  });
 }
 
 /**
@@ -139,6 +102,81 @@ export function validatePattern(pattern: number[][]): boolean {
     pattern.length > 0 &&
     pattern.every((row) => row && Array.isArray(row))
   );
+}
+
+/**
+ * Ensure minDotSize ≤ maxDotSize and both sit in [0, DOT_SIZE_MAX].
+ */
+export function clampDotSizes(
+  minDotSize: number,
+  maxDotSize: number
+): { minDotSize: number; maxDotSize: number } {
+  const clamp = (v: number) => Math.min(DOT_SIZE_MAX, Math.max(0, v));
+  let min = clamp(minDotSize);
+  let max = clamp(maxDotSize);
+  if (min > max) {
+    const mid = min;
+    min = max;
+    max = mid;
+  }
+  return { minDotSize: min, maxDotSize: max };
+}
+
+/**
+ * Map sampled brightness to ink-dot diameter in canvas pixels.
+ * t = 1 - brightness for dark modules, brightness for light modules
+ * (more of the module's ink color when the image agrees).
+ */
+export function dotDiameterForModule(
+  brightness: number,
+  isDark: boolean,
+  moduleSize: number,
+  minDotSize: number,
+  maxDotSize: number
+): number {
+  const { minDotSize: min, maxDotSize: max } = clampDotSizes(minDotSize, maxDotSize);
+  const t = isDark ? 1 - brightness : brightness;
+  const fraction = min + (max - min) * Math.min(1, Math.max(0, t));
+  return fraction * moduleSize;
+}
+
+/**
+ * Pass 0: for dark modules, fill white so the black dot sits on a light field.
+ * Light modules need no background fill (canvas stays white; white dots punch
+ * through any overflowing ink from neighbors on pass 1).
+ */
+export function renderHalftoneDotBackground(
+  ctx: CanvasRenderingContext2D,
+  moduleX: number,
+  moduleY: number,
+  moduleSize: number,
+  isDark: boolean
+): void {
+  if (!isDark) return;
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = "white";
+  ctx.fillRect(moduleX, moduleY, moduleSize, moduleSize);
+}
+
+/**
+ * Pass 1: draw a centered circle that may overflow module bounds (no clip).
+ */
+export function renderHalftoneDot(
+  ctx: CanvasRenderingContext2D,
+  moduleX: number,
+  moduleY: number,
+  moduleSize: number,
+  isDark: boolean,
+  diameter: number
+): void {
+  if (diameter <= 0) return;
+  const radius = diameter / 2;
+  const cx = moduleX + moduleSize / 2;
+  const cy = moduleY + moduleSize / 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fillStyle = isDark ? "black" : "white";
+  ctx.fill();
 }
 
 /**
@@ -203,8 +241,78 @@ export function renderSolidModule(
   ctx.fillRect(roundedX, roundedY, roundedSize, roundedSize);
 }
 
+function sampleForHalftone(
+  options: HalftoneRenderOptions,
+  renderCtx: RenderContext
+): { brightness: number; importance: number } | null {
+  const {
+    transformedImageData,
+    importanceMap,
+    modulePixel,
+    sampleMode = "center",
+  } = options;
+  const { x, y, dimension } = renderCtx;
+  if (!dimension) return null;
+
+  return sampleQrModule(transformedImageData, dimension, x, y, {
+    mode: sampleMode,
+    modulePixel,
+    importanceMap,
+  });
+}
+
+function renderDotsModule(
+  ctx: CanvasRenderingContext2D,
+  module: any,
+  moduleX: number,
+  moduleY: number,
+  moduleSize: number,
+  renderCtx: RenderContext,
+  options: HalftoneRenderOptions
+): void {
+  const pass = renderCtx.pass ?? 0;
+  const sampled = sampleForHalftone(options, renderCtx);
+  if (!sampled) {
+    if (pass === 0) {
+      renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
+    }
+    return;
+  }
+
+  const { brightness, importance } = sampled;
+  const { importanceThreshold, minDotSize = 0.25, maxDotSize = 1.0 } = options;
+
+  if (importanceThreshold !== undefined && importance < importanceThreshold) {
+    if (pass === 0) {
+      renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
+    }
+    return;
+  }
+
+  if (pass === 0) {
+    renderHalftoneDotBackground(ctx, moduleX, moduleY, moduleSize, module.isDark);
+    return;
+  }
+
+  if (pass === 1) {
+    const diameter = dotDiameterForModule(
+      brightness,
+      module.isDark,
+      moduleSize,
+      minDotSize,
+      maxDotSize
+    );
+    renderHalftoneDot(ctx, moduleX, moduleY, moduleSize, module.isDark, diameter);
+  }
+}
+
 /**
- * Render a module with halftone pattern, with validation and fallback
+ * Render a module with a halftone pattern. Sampling uses the shared
+ * QArt/Halftone pipeline (`sampleQrModule`). Default is module-center
+ * (same pixel QArt rasterizes). Pass sampleMode: "area" for Combined.
+ *
+ * For style "dots", backgrounds draw on pass 0 and circles on pass 1
+ * (caller should set renderPasses={2}). Pattern style only paints on pass 0.
  */
 export function renderHalftoneModule(
   ctx: CanvasRenderingContext2D,
@@ -217,61 +325,63 @@ export function renderHalftoneModule(
 ): void {
   if (!module) return;
 
-  // For non-data modules (finders, timing, format patterns), render normally
+  const pass = renderCtx.pass ?? 0;
+  const style: HalftoneStyle = options.style ?? "pattern";
+
   if (module.nonData) {
-    renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
+    if (pass === 0) {
+      renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
+    }
     return;
   }
 
+  if (style === "dots") {
+    renderDotsModule(ctx, module, moduleX, moduleY, moduleSize, renderCtx, options);
+    return;
+  }
+
+  // Pattern style only renders on the first pass
+  if (pass !== 0) return;
+
   const {
-    transformedImageData,
-    importanceMap,
     patternsDark,
     patternsLight,
     modulePixel,
     reliabilityWeight = 0.0,
+    importanceThreshold,
   } = options;
 
-  // Validate patterns before use
   const patterns = module.isDark ? patternsDark : patternsLight;
   if (!validatePatterns(patterns)) {
-    // Fallback: render solid color if patterns are invalid
     renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
     return;
   }
 
-  // Sample image to get brightness and importance
-  // Use QR module coordinates (x, y) from renderCtx to map to image pixels consistently with QArt
-  const { x, y, dimension } = renderCtx;
-  if (!dimension) {
-    // Fallback: render solid color if dimension not available
+  const sampled = sampleForHalftone(options, renderCtx);
+  if (!sampled) {
     renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
     return;
   }
-  const { brightness, importance } = sampleImageAtPoint(
-    transformedImageData,
-    importanceMap,
-    dimension,
-    x,
-    y
-  );
 
-  // Choose pattern based on image brightness
+  const { brightness, importance } = sampled;
+
+  if (importanceThreshold !== undefined && importance < importanceThreshold) {
+    renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
+    return;
+  }
+
   const pattern = choosePattern(patterns, brightness, importance, reliabilityWeight);
 
-  // Validate pattern before use
   if (!validatePattern(pattern)) {
-    // Fallback: render solid color if pattern is invalid
     renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
     return;
   }
 
-  // Render the selected halftone pattern
   renderHalftonePattern(ctx, pattern, moduleX, moduleY, moduleSize, modulePixel);
 }
 
 /**
- * Render a module with halftone pattern using area sampling (for combined QArt+Halftone)
+ * Combined / QArt+halftone: area-sample each module, then render.
  */
 export function renderHalftoneModuleWithAreaSampling(
   ctx: CanvasRenderingContext2D,
@@ -282,65 +392,8 @@ export function renderHalftoneModuleWithAreaSampling(
   renderCtx: RenderContext,
   options: HalftoneRenderOptions
 ): void {
-  if (!module) return;
-
-  // For non-data modules (finders, timing, format patterns), render normally
-  if (module.nonData) {
-    renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
-    return;
-  }
-
-  const {
-    transformedImageData,
-    importanceMap,
-    patternsDark,
-    patternsLight,
-    modulePixel,
-    reliabilityWeight = 0.0,
-  } = options;
-
-  // Validate patterns before use
-  const patterns = module.isDark ? patternsDark : patternsLight;
-  if (!validatePatterns(patterns)) {
-    // Fallback: render solid color if patterns are invalid
-    renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
-    return;
-  }
-
-  // Sample image across the entire module area
-  // Use QR module coordinates (x, y) from renderCtx to map to image pixels consistently with QArt
-  const { x, y, dimension } = renderCtx;
-  if (!dimension) {
-    // Fallback: render solid color if dimension not available
-    renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
-    return;
-  }
-  const { brightness, importance } = sampleImageAcrossModule(
-    transformedImageData,
-    importanceMap,
-    dimension,
-    x,
-    y,
-    modulePixel
-  );
-
-  // If importance threshold is set and importance is below threshold, render as solid
-  const { importanceThreshold } = options;
-  if (importanceThreshold !== undefined && importance < importanceThreshold) {
-    renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
-    return;
-  }
-
-  // Choose pattern based on average brightness
-  const pattern = choosePattern(patterns, brightness, importance, reliabilityWeight);
-
-  // Validate pattern before use
-  if (!validatePattern(pattern)) {
-    // Fallback: render solid color if pattern is invalid
-    renderSolidModule(ctx, moduleX, moduleY, moduleSize, module.isDark);
-    return;
-  }
-
-  // Render the selected halftone pattern
-  renderHalftonePattern(ctx, pattern, moduleX, moduleY, moduleSize, modulePixel);
+  renderHalftoneModule(ctx, module, moduleX, moduleY, moduleSize, renderCtx, {
+    ...options,
+    sampleMode: "area",
+  });
 }

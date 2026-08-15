@@ -54,10 +54,12 @@ const masks = [
 ];
 
 export function FormatInput() {
-  const { errorCorrectionLevel, version, dataMask } = useInputs();
-  const { versionInfo, dataMask: cDataMask, invalidQR } = useDerivedQRData();
-  const cVersion = versionInfo.version;
+  const {
+    formatInfo: { errorCorrectionLevel, version, dataMask },
+  } = useInputs();
+  const { invalidQR } = useDerivedQRData();
   const dispatch = useInputDispatch();
+  const maskSelectValue = dataMask === null ? "none" : dataMask;
   return (
     <Collapsible
       key="formatInfo"
@@ -93,7 +95,7 @@ export function FormatInput() {
               <SidebarMenuButton asChild isActive={true}>
                 <select
                   id="qr-version"
-                  value={cVersion || version}
+                  value={version}
                   onChange={(e) => dispatch(setVersion(Number(e.target.value)))}
                 >
                   {versions.map((ver) => (
@@ -108,11 +110,17 @@ export function FormatInput() {
               <SidebarMenuButton asChild isActive={true}>
                 <select
                   id="data-mask"
-                  value={cDataMask || dataMask}
-                  onChange={(e) => dispatch(setDataMask(Number(e.target.value)))}
+                  value={maskSelectValue}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    dispatch(setDataMask(raw === "none" ? null : Number(raw)));
+                  }}
                 >
                   {masks.map((mask) => (
-                    <option key={mask.value} value={mask.value}>
+                    <option
+                      key={String(mask.value)}
+                      value={mask.value === null ? "none" : mask.value}
+                    >
                       {mask.label}
                     </option>
                   ))}

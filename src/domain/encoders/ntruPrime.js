@@ -48,7 +48,7 @@ function encodeNTRU(R, M) {
     M2.push(M[M.length - 1]);
   }
 
-  return S.concat(encode(R2, M2));
+  return S.concat(encodeNTRU(R2, M2));
 }
 
 /**
@@ -91,7 +91,7 @@ function decodeNTRU(S, M) {
     M2.push(M[M.length - 1]);
   }
 
-  let R2 = decode(S.slice(k), M2);
+  let R2 = decodeNTRU(S.slice(k), M2);
   let R = [];
 
   for (let i = 0; i < M.length - 1; i += 2) {
@@ -115,7 +115,7 @@ function decodeNTRU(S, M) {
  * @returns {number[]} - List of decimal digits (0–9).
  */
 export function encode(input) {
-  const bytes = hexToBytes(input);
+  const bytes = Array.from(hexToBytes(input));
   const moduli = bytes.map(() => 256);
   return encodeNTRU(bytes, moduli).join("");
 }

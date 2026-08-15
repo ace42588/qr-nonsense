@@ -2,12 +2,13 @@ import React, { useState, useCallback, useMemo, useEffect, useRef } from "react"
 import { QRBase } from "./QRBase";
 import { useQRData } from "@/state/qr/QRDataContext";
 import { useInputs, useInputDispatch } from "@/state/inputs/InputContext";
-import { setVersion } from "@/state/inputs/inputActions";
+import { setVersion, updateInput, removeInput, setInputs } from "@/state/inputs/inputActions";
+import { createInput } from "@/state/inputs/inputFactory";
 import { useQArtResult } from "@/state/qr/QArtContext";
 import { Switch } from "@/components/ui/switch";
 import { useModuleHover } from "@/hooks/useModuleHover";
 import { useImageTransform } from "@/state/image/ImageTransformContext";
-import { rasterizeImageToQRGrid } from "@/domain/image";
+import { rasterizeImageToQRGrid, detectExtremeScaling } from "@/domain/image";
 import { ErrorBanner, WarningBanner } from "@/components/ui/message-banner";
 import { checkVersionCapacityForQArt, findMinimumQArtVersion } from "@/domain/qart/capacity";
 import { getNumBits } from "@/domain/qr/encoders/utils";
@@ -19,7 +20,14 @@ import { useCanvasSizeSync } from "@/hooks/useCanvasSizeSync";
 import { useQRMatrix } from "@/hooks/useQRMatrix";
 import { createContrastMatrix } from "@/domain/qart/contrastMatrix";
 import { useHalftonePatterns } from "@/hooks/useHalftonePatterns";
-import { renderHalftoneModuleWithAreaSampling } from "@/domain/halftone/rendering";
+import {
+  renderHalftoneModuleWithAreaSampling,
+  clampDotSizes,
+  DOT_SIZE_MAX,
+} from "@/domain/halftone/rendering";
+
+const DEFAULT_MIN_DOT = 0.25;
+const DEFAULT_MAX_DOT = 1.0;
 
 export function QRQArt({
   size: initialSize = 480,
@@ -33,7 +41,7 @@ export function QRQArt({
     blocks,
     versionInfo,
   } = useQRData();
-  const { formatInfo } = useInputs();
+  const { formatInfo, inputs } = useInputs();
   const { qartResult, setQartResult } = useQArtResult();
   const dispatch = useInputDispatch();
   
@@ -70,6 +78,9 @@ export function QRQArt({
   const applyHalftone = combined || enableHalftone;
   const [limitHalftoneToImportant, setLimitHalftoneToImportant] = useState(false); // Limit halftone to important areas
   const [importanceThreshold, setImportanceThreshold] = useState(0.3); // Threshold for importance (0-1)
+  const [halftoneStyle, setHalftoneStyle] = useState("pattern");
+  const [minDotSize, setMinDotSize] = useState(DEFAULT_MIN_DOT);
+  const [maxDotSize, setMaxDotSize] = useState(DEFAULT_MAX_DOT);
   const [priorityFunction, setPriorityFunction] = useState("contrast"); // Priority function type (FR-007)
   const [capacityWarning, setCapacityWarning] = useState(null); // Version capacity warning (FR-015)
   
@@ -108,6 +119,8 @@ export function QRQArt({
     options: {
       priorityFunction,
       appendData: appendDataOptions,
+      minDecodeRedundancy: 0.8,
+      decodeTrials: 1,
     },
     sourceImage,
     transformParams,
@@ -128,6 +141,14 @@ export function QRQArt({
     }
     return checkVersionCapacityForQArt(versionInfo, userInputBits, transformedImageData);
   }, [transformedImageData, versionInfo, userInputBits, segments]);
+
+  const extremeScaling = useMemo(() => {
+    if (!sourceImage || !versionInfo) return { isExtreme: false, warning: null };
+    const qrDimension = versionInfo.version * 4 + 17;
+    const maxDim = Math.max(sourceImage.width, sourceImage.height);
+    if (!maxDim) return { isExtreme: false, warning: null };
+    return detectExtremeScaling(qrDimension / maxDim);
+  }, [sourceImage, versionInfo]);
 
   // Track if we've auto-upgraded to prevent infinite loops
   const autoUpgradedVersionRef = useRef(null);
@@ -217,6 +238,44 @@ export function QRQArt({
     userInputBits,
     errorCorrectionLevel,
     versionInfo,
+    dispatch,
+  ]);
+
+  // Spec 003 FR-013: write optimized append text into a dedicated variation input
+  // so it appears in the sidebar. qartVariation inputs are excluded from encoding.
+  useEffect(() => {
+    const existing = inputs.find((input) => input.qartVariation);
+    if (!appendData.enabled) {
+      if (existing) {
+        dispatch(removeInput(existing.id));
+      }
+      return;
+    }
+    const append = qartResult?.optimizedAppendData;
+    if (!append) return;
+
+    const text = append.originalText ?? "";
+    const mode = append.encodingMode || "byte";
+    if (existing) {
+      if (existing.data !== text || existing.text !== text || existing.mode !== mode) {
+        dispatch(updateInput(existing.id, { text, data: text, mode }));
+      }
+      return;
+    }
+
+    const variation = createInput({
+      type: "string",
+      label: "QArt append",
+      text,
+      data: text,
+      mode,
+      qartVariation: true,
+    });
+    dispatch(setInputs({ inputs: [...inputs, variation] }));
+  }, [
+    appendData.enabled,
+    qartResult?.optimizedAppendData,
+    inputs,
     dispatch,
   ]);
 
@@ -314,6 +373,7 @@ export function QRQArt({
     // CRITICAL: Use halftoneImageData (offscreen canvas) to match the importanceMap
     if (applyHalftone && qartResult && halftoneImageData && importanceMap && patternsDark && patternsLight) {
       // Use halftone rendering with area sampling (same as Combined mode)
+      const { minDotSize: min, maxDotSize: max } = clampDotSizes(minDotSize, maxDotSize);
       renderHalftoneModuleWithAreaSampling(ctx, module, moduleX, moduleY, moduleSize, renderCtx, {
         transformedImageData: halftoneImageData, // Use offscreen canvas image to match importanceMap
         importanceMap,
@@ -322,6 +382,9 @@ export function QRQArt({
         modulePixel,
         reliabilityWeight: 0.0, // QArt already ensures scannability
         importanceThreshold: limitHalftoneToImportant ? importanceThreshold : undefined,
+        style: halftoneStyle,
+        minDotSize: min,
+        maxDotSize: max,
       });
     } else if (showContrastView && contrastMatrix && renderCtx) {
       // If contrast view is enabled, show contrast heatmap
@@ -364,7 +427,10 @@ export function QRQArt({
     }
     
     // Overlay rasterized preview if enabled (works on top of any base rendering)
-    if (showRasterizedPreview && rasterizedGrid && renderCtx) {
+    // Only on the final pass so two-pass dots does not double the overlay
+    const pass = renderCtx?.pass ?? 0;
+    const passes = renderCtx?.passes ?? 1;
+    if (showRasterizedPreview && rasterizedGrid && renderCtx && pass === passes - 1) {
       // renderCtx has x, y properties from QRBase
       const { x: qrX, y: qrY } = renderCtx;
       // Get dimension from renderCtx or matrix
@@ -389,7 +455,7 @@ export function QRQArt({
         }
       }
     }
-  }, [applyHalftone, limitHalftoneToImportant, importanceThreshold, qartResult, halftoneImageData, importanceMap, patternsDark, patternsLight, modulePixel, showRasterizedPreview, showControlView, showContrastView, rasterizedGrid, matrix, controlMatrix, contrastMatrix]);
+  }, [applyHalftone, limitHalftoneToImportant, importanceThreshold, halftoneStyle, minDotSize, maxDotSize, qartResult, halftoneImageData, importanceMap, patternsDark, patternsLight, modulePixel, showRasterizedPreview, showControlView, showContrastView, rasterizedGrid, matrix, controlMatrix, contrastMatrix]);
 
 
   // Listen for canvas size changes from QRBase
@@ -412,12 +478,19 @@ export function QRQArt({
   return (
     <>
       {transformError && <ErrorBanner message={transformError} title="Image Error" />}
+      {extremeScaling?.isExtreme && extremeScaling.warning && (
+        <WarningBanner message={extremeScaling.warning} title="Image scaling" />
+      )}
       {capacityWarning && <WarningBanner message={capacityWarning} title="Capacity Warning" />}
+      {qartResult?.scannabilityWarning && (
+        <WarningBanner message={qartResult.scannabilityWarning} title="Scannability" />
+      )}
       {generationError && <ErrorBanner message={generationError} />}
       <QRBase
         key={canvasKey}
         size={initialSize}
         renderModule={handleBaseRender}
+        renderPasses={applyHalftone && halftoneStyle === "dots" ? 2 : 1}
         onModuleHover={handleModuleHover}
         responsive={true}
         customMatrix={matrix}
@@ -451,6 +524,75 @@ export function QRQArt({
           )}
           {applyHalftone && (
             <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <label htmlFor="qart-halftone-style" style={{ minWidth: 120, color: '#666' }}>
+                  Style:
+                </label>
+                <select
+                  id="qart-halftone-style"
+                  value={halftoneStyle}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setHalftoneStyle(next);
+                    if (next === "dots") {
+                      setMinDotSize(DEFAULT_MIN_DOT);
+                      setMaxDotSize(DEFAULT_MAX_DOT);
+                    }
+                  }}
+                  style={{ maxWidth: 200, padding: '4px 8px' }}
+                >
+                  <option value="pattern">Pattern</option>
+                  <option value="dots">Dots</option>
+                </select>
+              </div>
+              {halftoneStyle === "dots" && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <label htmlFor="qart-min-dot-size" style={{ minWidth: 120, color: '#666' }}>
+                      Min size:
+                    </label>
+                    <input
+                      id="qart-min-dot-size"
+                      type="range"
+                      min="0"
+                      max={DOT_SIZE_MAX}
+                      step="0.05"
+                      value={minDotSize}
+                      onChange={(e) => {
+                        const next = parseFloat(e.target.value);
+                        setMinDotSize(next);
+                        if (next > maxDotSize) setMaxDotSize(next);
+                      }}
+                      style={{ flex: 1, maxWidth: 200 }}
+                    />
+                    <span style={{ fontSize: '12px', color: '#666', minWidth: 40 }}>
+                      {minDotSize.toFixed(2)}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <label htmlFor="qart-max-dot-size" style={{ minWidth: 120, color: '#666' }}>
+                      Max size:
+                    </label>
+                    <input
+                      id="qart-max-dot-size"
+                      type="range"
+                      min="0"
+                      max={DOT_SIZE_MAX}
+                      step="0.05"
+                      value={maxDotSize}
+                      onChange={(e) => {
+                        const next = parseFloat(e.target.value);
+                        setMaxDotSize(next);
+                        if (next < minDotSize) setMinDotSize(next);
+                      }}
+                      style={{ flex: 1, maxWidth: 200 }}
+                    />
+                    <span style={{ fontSize: '12px', color: '#666', minWidth: 40 }}>
+                      {maxDotSize.toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <label htmlFor="limit-halftone-important" style={{ minWidth: 120, color: '#666' }}>
                   Limit to Important:

@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { ErrorBanner } from "@/components/ui/message-banner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -215,7 +216,7 @@ function SortableField({ field, dispatch, input, preview }) {
   );
 }
 
-export function BitFieldInputCard({ input, preview, dispatch }) {
+export function BitFieldInputCard({ input, preview, dispatch, parseError }) {
   const nextLabel = useRef(input.fields?.length || 0);
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -240,6 +241,9 @@ export function BitFieldInputCard({ input, preview, dispatch }) {
         <CardTitle>{input.label}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4">
+        {(parseError || input.error) && (
+          <ErrorBanner message={parseError || input.error} title="Parse error" />
+        )}
         <div className="space-y-2">
           <DndContext
             sensors={sensors}

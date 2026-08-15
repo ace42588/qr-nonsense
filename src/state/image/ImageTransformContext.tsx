@@ -1,6 +1,11 @@
 import { createContext, useContext, useState, useRef, useEffect, useMemo, useCallback, ReactNode, JSX } from "react";
-import { calculateAppropriateCanvasScale, convertTransparencyToWhite } from "@/domain/image";
-import { loadImage, transformImageToCanvas } from "@/adapters/browser/image";
+import {
+  calculateAppropriateCanvasScale,
+  convertTransparencyToWhite,
+  validateImageFile,
+  MAX_IMAGE_DIMENSION,
+} from "@/domain/image";
+import { loadImage, transformImageToCanvas, downscaleImageDataUrl } from "@/adapters/browser/image";
 
 const DEFAULT_IMAGE_URL = "/defcon_k_skull-reg_cropped.jpg";
 
@@ -48,6 +53,7 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
   const lastProcessedImageUrlRef = useRef<string | null>(null);
   const sourceImageRef = useRef<HTMLImageElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadReaderRef = useRef<FileReader | null>(null);
   // Track the canvas size when scale was last calculated, to maintain scale relative to QR code
   // Initialize to 0 - will be set when image is first loaded
   // This ensures we use a stable reference size that doesn't change when switching components
@@ -62,22 +68,59 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
     }
   }, [imageUrl]);
 
-  // Handle image file upload
+  // Handle image file upload with size/type/dimension checks (FR-021, FR-024, FR-025)
   const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setError(validationError);
+      event.target.value = "";
+      return;
+    }
+
+    if (uploadReaderRef.current) {
+      uploadReaderRef.current.abort();
+      uploadReaderRef.current = null;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result;
-      if (typeof dataUrl === "string") {
-        setImageUrl(dataUrl);
+    uploadReaderRef.current = reader;
+    reader.onload = async (e) => {
+      try {
+        const dataUrl = e.target?.result;
+        if (typeof dataUrl !== "string") {
+          setError("Failed to read image file");
+          setIsLoading(false);
+          return;
+        }
+        const processed = await downscaleImageDataUrl(dataUrl, MAX_IMAGE_DIMENSION);
+        setImageUrl(processed);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to process image");
+        setIsLoading(false);
+      } finally {
+        if (uploadReaderRef.current === reader) {
+          uploadReaderRef.current = null;
+        }
       }
     };
     reader.onerror = () => {
       setError("Failed to read image file");
+      setIsLoading(false);
+      uploadReaderRef.current = null;
+    };
+    reader.onabort = () => {
+      if (uploadReaderRef.current === reader) {
+        uploadReaderRef.current = null;
+      }
     };
     reader.readAsDataURL(file);
+    event.target.value = "";
   }, []);
 
 

@@ -103,21 +103,23 @@ export function createInput({
   ...overrides
 }: InputOptions = {}): Input {
   const defaults = getInputTypeDefaults(type);
-  // Map 'text' property to 'data' for string inputs to satisfy Input interface
-  // Priority: overrides.data > overrides.text > defaults.text > defaults.data > ""
-  const defaultsWithText = defaults as unknown as Record<string, unknown>;
-  const overridesWithText = overrides as Record<string, unknown>;
-  const data = (overridesWithText.data as string) 
-    ?? (overridesWithText.text as string) 
-    ?? (defaultsWithText.text as string) 
-    ?? (defaultsWithText.data as string) 
-    ?? "";
-  
+  const defaultsRec = defaults as unknown as Record<string, unknown>;
+  const overridesRec = overrides as Record<string, unknown>;
+  // Canonical string payload is `data`. Keep `text` in sync so UI and parsers agree.
+  const text = String(
+    overridesRec.data ??
+      overridesRec.text ??
+      defaultsRec.text ??
+      defaultsRec.data ??
+      ""
+  );
+
   return {
     id: id || generateId(),
     label,
     ...defaults,
-    data,
     ...overrides,
+    data: text,
+    text,
   } as Input;
 } 

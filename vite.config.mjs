@@ -36,7 +36,6 @@ export default defineConfig({
           // Split vendor libraries into separate chunks
           'react-vendor': ['react', 'react-dom'],
           'ui-vendor': [
-            '@radix-ui/react-accordion',
             '@radix-ui/react-checkbox',
             '@radix-ui/react-collapsible',
             '@radix-ui/react-dropdown-menu',

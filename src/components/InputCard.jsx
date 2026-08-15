@@ -11,14 +11,16 @@ import { MacInputCard } from "./input-types/MacInputCard";
 export function InputCard() {
   const { inputs, activeInputID } = useInputs();
   const dispatch = useInputDispatch();
-  const preview = useParsedInputs()[activeInputID];
+  const { parsed, errors } = useParsedInputs();
+  const preview = parsed[activeInputID];
+  const parseError = errors[activeInputID];
 
   const input = inputs.find((i) => i.id === activeInputID);
   if (!input) return null;
 
   return (
     <Tabs
-      defaultValue={input.type}
+      value={input.type}
       onValueChange={(type) => dispatch(setInputType(activeInputID, type))}
     >
       <TabsList className="@4xl/main:flex">
@@ -29,15 +31,15 @@ export function InputCard() {
       </TabsList>
 
       <TabsContent value="string">
-        <StringInputCard input={input} dispatch={dispatch} />
+        <StringInputCard input={input} dispatch={dispatch} parseError={parseError} />
       </TabsContent>
 
       <TabsContent value="json" className="w-full max-w-3xl">
-        <JsonInputCard input={input} dispatch={dispatch} preview={preview} />
+        <JsonInputCard input={input} dispatch={dispatch} preview={preview} parseError={parseError} />
       </TabsContent>
 
       <TabsContent value="bitfield">
-        <BitFieldInputCard input={input} dispatch={dispatch} preview={preview} />
+        <BitFieldInputCard input={input} dispatch={dispatch} preview={preview} parseError={parseError} />
       </TabsContent>
 
       <TabsContent value="mac">
