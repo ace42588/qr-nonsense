@@ -13,7 +13,6 @@ import { GripVerticalIcon, Plus, MoreHorizontal } from "lucide-react";
 import { useState, useRef } from "react";
 
 // UI Components
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -236,91 +235,86 @@ export function BitFieldInputCard({ input, preview, dispatch, parseError }) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{input.label}</CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        {(parseError || input.error) && (
-          <ErrorBanner message={parseError || input.error} title="Parse error" />
-        )}
-        <div className="space-y-2">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
+    <div className="grid gap-4">
+      <h3 className="text-sm font-semibold text-foreground">{input.label}</h3>
+      {(parseError || input.error) && (
+        <ErrorBanner message={parseError || input.error} title="Parse error" />
+      )}
+      <div className="space-y-2">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={input.fields?.map((f) => f.id) || []}
+            strategy={verticalListSortingStrategy}
           >
-            <SortableContext
-              items={input.fields?.map((f) => f.id) || []}
-              strategy={verticalListSortingStrategy}
-            >
-              {input.fields?.map((field) => (
-                <SortableField
-                  key={field.id}
-                  field={field}
-                  dispatch={dispatch}
-                  input={input}
-                  preview={preview}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
+            {input.fields?.map((field) => (
+              <SortableField
+                key={field.id}
+                field={field}
+                dispatch={dispatch}
+                input={input}
+                preview={preview}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
 
-          <Button
-            onClick={handleAddField}
-            variant="outline"
-            className="w-full"
-          >
-            <Plus className="mr-2 size-4" /> Add Field
-          </Button>
-        </div>
+        <Button
+          onClick={handleAddField}
+          variant="outline"
+          className="w-full"
+        >
+          <Plus className="mr-2 size-4" /> Add Field
+        </Button>
+      </div>
 
-        {/* VISUALIZATION */}
-        {preview?.layout && (
-          <>
-            <Separator />
-            
-            <div>
-              <div className="flex border rounded-md overflow-hidden text-white text-xs">
-                {preview.layout.map((field, idx) => {
-                  const widthPercent = (field.width / preview.totalBits) * 100;
-                  return (
-                    <div
-                      key={field.label}
-                      className="text-center whitespace-nowrap overflow-hidden"
-                      title={`${field.label} (${field.width} bits)`}
-                      style={{
-                        width: `${widthPercent}%`,
-                        backgroundColor: COLORS[idx % COLORS.length],
-                        lineHeight: "30px",
-                      }}
-                    >
-                      {field.label}: {field.startBit}→{field.endBit}
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="text-sm text-muted-foreground mt-2">
-                {preview.totalBits} bits total
-              </div>
+      {preview?.layout && (
+        <>
+          <Separator />
+
+          <div>
+            <div className="flex border rounded-md overflow-hidden text-white text-xs">
+              {preview.layout.map((field, idx) => {
+                const widthPercent = (field.width / preview.totalBits) * 100;
+                return (
+                  <div
+                    key={field.label}
+                    className="text-center whitespace-nowrap overflow-hidden"
+                    title={`${field.label} (${field.width} bits)`}
+                    style={{
+                      width: `${widthPercent}%`,
+                      backgroundColor: COLORS[idx % COLORS.length],
+                      lineHeight: "30px",
+                    }}
+                  >
+                    {field.label}: {field.startBit}→{field.endBit}
+                  </div>
+                );
+              })}
             </div>
-
-            <Separator />
-
-            <div className="text-sm">
-              {preview.encodedBytes ? (
-                <span>
-                  <b>Encoded Bytes:</b> {preview.encodedBytes}
-                </span>
-              ) : (
-                <span className="text-destructive">
-                  (missing or invalid values)
-                </span>
-              )}
+            <div className="text-sm text-muted-foreground mt-2">
+              {preview.totalBits} bits total
             </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+          </div>
+
+          <Separator />
+
+          <div className="text-sm">
+            {preview.encodedBytes ? (
+              <span>
+                <b>Encoded Bytes:</b> {preview.encodedBytes}
+              </span>
+            ) : (
+              <span className="text-destructive">
+                (missing or invalid values)
+              </span>
+            )}
+          </div>
+        </>
+      )}
+    </div>
   );
 }

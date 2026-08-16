@@ -1,6 +1,19 @@
 import GenericGF, { getQRCodeField } from "./GenericGF";
 import GenericGFPoly from "./GenericGFPoly";
 
+export {
+  ReedSolomonDecoder,
+  decodeReedSolomon,
+  type DecodeResult,
+} from "./decoder";
+
+export {
+  buildBitIdIndex,
+  getDamagedReceived,
+  getBlockBitIds,
+  type BitLocation,
+} from "./applyFlips";
+
 export class ReedSolomonEncoder {
   private numEcCodewords: number;
   private field: GenericGF;

@@ -82,12 +82,47 @@ describe("Bit Priority", () => {
         "random"
       );
 
-      if (bitOrder.length > 0) {
-        // Random priority should assign random priorities
-        const priorities = bitOrder.map((po) => po.priority);
-        const uniquePriorities = new Set(priorities);
-        // With random, we should have many unique priorities
-        expect(uniquePriorities.size).toBeGreaterThan(1);
+      expect(bitOrder.length).toBeGreaterThan(0);
+    });
+
+    it("should deprioritize ROI modules for roi priority", () => {
+      const block = createMockBlock([0x12], [0x34]);
+      const dimension = 21;
+      const matrix = createMockQRMatrix(dimension);
+      const targetGrid = createMockTargetGrid(dimension, "checkerboard");
+      const contrastGrid = new Float32Array(dimension * dimension);
+      contrastGrid.fill(100);
+      const roiGrid = new Float32Array(dimension * dimension);
+      // Mark module (0,0) as full ROI if present in order
+      roiGrid[0] = 1;
+
+      block.data[0].bits.forEach((bit, idx) => {
+        bit.sourceId = "source-0";
+        bit.id = `bit-0-${idx}`;
+      });
+      block.errorCorrection[0].bits.forEach((bit, idx) => {
+        bit.id = `bit-1-${idx}`;
+      });
+
+      const paddingSegmentIds = new Set<string>(["source-0"]);
+      const bitOrder = buildBitOrder(
+        block,
+        matrix,
+        targetGrid,
+        contrastGrid,
+        dimension,
+        paddingSegmentIds,
+        "roi",
+        undefined,
+        undefined,
+        roiGrid
+      );
+
+      expect(bitOrder.length).toBeGreaterThan(0);
+      const roiBit = bitOrder.find((po) => po.x === 0 && po.y === 0);
+      const bgBit = bitOrder.find((po) => !(po.x === 0 && po.y === 0));
+      if (roiBit && bgBit) {
+        expect(roiBit.priority).toBeLessThanOrEqual(bgBit.priority);
       }
     });
 

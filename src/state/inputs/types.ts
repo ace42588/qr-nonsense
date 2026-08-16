@@ -20,7 +20,7 @@ export interface Input {
   type: string;
   schemaName?: string;
   schema?: any;
-  encoding?: string;
+  encoding?: string | Record<string, unknown>;
   fields?: Field[];
   values?: any;
   layout?: any;
@@ -28,12 +28,22 @@ export interface Input {
   key?: string;
   algo?: string;
   includedFields?: string[];
+  template?: string;
+  templateFields?: Record<string, unknown>;
+  symbolIndex?: number;
+  totalSymbols?: number;
+  parity?: number;
+  fnc1Position?: "first" | "second";
+  applicationIndicator?: string | number;
+  payloadMode?: "alphanumeric" | "byte" | "numeric";
   data: string;
   mode: string;
   text?: string;
   error?: string;
   qartVariation?: boolean;
 }
+
+export type ActivePayload = "a" | "b";
 
 export interface InputState {
   formatInfo: {
@@ -43,6 +53,10 @@ export interface InputState {
   };
   inputs: Input[];
   activeInputID: string | null;
+  /** Second payload list for Ambiguous / Embed modes. Ignored by other modes. */
+  inputsB: Input[];
+  activeInputIDB: string | null;
+  activePayload: ActivePayload;
 }
 
 export interface InputAction {
@@ -65,5 +79,6 @@ export interface InputAction {
     includedFields?: string[];
     field?: string;
     value?: any;
+    activePayload?: ActivePayload;
   };
 }

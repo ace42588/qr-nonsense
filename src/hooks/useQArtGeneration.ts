@@ -7,7 +7,7 @@ import type { ImageData } from "@/domain/image";
 import type { QArtAppendData } from "@/domain/qart";
 
 interface QArtGenerationOptions {
-  priorityFunction?: "contrast" | "random";
+  priorityFunction?: "contrast" | "random" | "roi";
   appendData?: {
     enabled: boolean;
     method: "existing" | "new";

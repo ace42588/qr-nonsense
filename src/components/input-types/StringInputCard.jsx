@@ -1,6 +1,5 @@
 // UI Components
 import { useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -58,11 +57,12 @@ function labelsForParts(baseLabel, parts) {
 }
 
 export function StringInputCard({ input, dispatch, parseError }) {
-  const { inputs } = useInputs();
+  const { inputs, inputsB, activePayload } = useInputs();
   const { encodeError, versionInfo } = useDerivedQRData();
   const selectedMode = normalizeMode(input.mode);
   const value = stringValue(input);
   const canOptimize = Boolean(value) && input.qartVariation !== true;
+  const list = activePayload === "b" ? inputsB : inputs;
 
   useEffect(() => {
     if (!LEGACY_MIXED_MODES.has(input.mode)) return;
@@ -87,8 +87,8 @@ export function StringInputCard({ input, dispatch, parseError }) {
 
     const baseLabel = input.label || "Input";
     const labels = labelsForParts(baseLabel, parts);
-    const index = inputs.findIndex((item) => item.id === input.id);
-    const at = index >= 0 ? index : inputs.length;
+    const index = list.findIndex((item) => item.id === input.id);
+    const at = index >= 0 ? index : list.length;
 
     const replacements = parts.map((part, i) =>
       createInput({
@@ -101,114 +101,130 @@ export function StringInputCard({ input, dispatch, parseError }) {
     );
 
     const nextInputs = [
-      ...inputs.slice(0, at),
+      ...list.slice(0, at),
       ...replacements,
-      ...inputs.slice(at + 1),
+      ...list.slice(at + 1),
     ];
 
-    dispatch(
-      setInputs({
-        inputs: nextInputs,
-        activeInputID: replacements[0].id,
-      })
-    );
+    // Write back to the active payload list (A or B), not always Payload A.
+    if (activePayload === "b") {
+      dispatch(
+        setInputs({
+          inputsB: nextInputs,
+          activeInputIDB: replacements[0].id,
+        })
+      );
+    } else {
+      dispatch(
+        setInputs({
+          inputs: nextInputs,
+          activeInputID: replacements[0].id,
+        })
+      );
+    }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{input.label}</CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        {(parseError || input.error) && (
-          <ErrorBanner message={parseError || input.error} title="Parse error" />
-        )}
-        {encodeError && <ErrorBanner message={encodeError} title="Encoding error" />}
-        <Select
-          value={selectedMode}
-          onValueChange={(mode) => {
-            // Filter text to match the new mode when switching
-            let filteredText = stringValue(input);
-            if (mode === "numeric" && filteredText) {
-              filteredText = filteredText.replace(/\D/g, "");
-            } else if (mode === "alphanumeric" && filteredText) {
-              filteredText = filteredText.replace(/[^0-9A-Z $%*+\-./:]/gi, "").toUpperCase();
-            }
-            const patch = { mode, text: filteredText, data: filteredText };
-            if (mode === "eci") {
-              const current = eciAssignmentValue(input.encoding);
-              patch.encoding = /^\d+$/.test(current) ? current : "26";
-            }
-            dispatch(updateInput(input.id, patch));
-          }}
+    <div className="space-y-4">
+      <h3 className="text-sm font-semibold text-foreground">{input.label}</h3>
+      {(parseError || input.error) && (
+        <ErrorBanner message={parseError || input.error} title="Parse error" />
+      )}
+      {encodeError && activePayload === "a" && (
+        <ErrorBanner message={encodeError} title="Encoding error" />
+      )}
+      <Select
+        value={selectedMode}
+        onValueChange={(mode) => {
+          let filteredText = stringValue(input);
+          if (mode === "numeric" && filteredText) {
+            filteredText = filteredText.replace(/\D/g, "");
+          } else if (mode === "alphanumeric" && filteredText) {
+            filteredText = filteredText
+              .replace(/[^0-9A-Z $%*+\-./:]/gi, "")
+              .toUpperCase();
+          }
+          const patch = { mode, text: filteredText, data: filteredText };
+          if (mode === "eci") {
+            const current = eciAssignmentValue(input.encoding);
+            patch.encoding = /^\d+$/.test(current) ? current : "26";
+          }
+          dispatch(updateInput(input.id, patch));
+        }}
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {QR_MODES.map((m) => (
+            <SelectItem key={m} value={m}>
+              {QR_MODE_LABELS[m] || m}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <div className="flex flex-col space-y-1.5">
+        <Label htmlFor="text">Text</Label>
+        <Input
+          id="text"
+          value={value}
+          onChange={(e) => setText(e.target.value)}
+          disabled={input.qartVariation === true}
+          className={
+            input.qartVariation === true ? "cursor-not-allowed bg-muted" : ""
+          }
+          title={
+            input.qartVariation === true
+              ? "QArt variation input - value is controlled by Variation Template"
+              : ""
+          }
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="self-start"
+          disabled={!canOptimize}
+          onClick={handleOptimize}
         >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {QR_MODES.map((m) => (
-              <SelectItem key={m} value={m}>
-                {QR_MODE_LABELS[m] || m}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          Optimize
+        </Button>
+      </div>
 
-        <div className="flex flex-col space-y-1.5">
-          <Label htmlFor="text">Text</Label>
-          <Input
-            id="text"
-            value={value}
-            onChange={(e) => setText(e.target.value)}
-            disabled={input.qartVariation === true}
-            className={input.qartVariation === true ? "bg-muted cursor-not-allowed" : ""}
-            title={input.qartVariation === true ? "QArt variation input - value is controlled by Variation Template" : ""}
+      {selectedMode === "byte" && (
+        <div className="flex items-center space-x-2">
+          <Switch
+            checked={input.encoding === "utf-8"}
+            onCheckedChange={(checked) =>
+              dispatch(
+                updateInput(input.id, { encoding: checked ? "utf-8" : "" })
+              )
+            }
           />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="self-start"
-            disabled={!canOptimize}
-            onClick={handleOptimize}
-          >
-            Optimize
-          </Button>
+          <Label>Force UTF-8</Label>
         </div>
+      )}
 
-        {selectedMode === "byte" && (
-          <div className="flex items-center space-x-2">
-            <Switch
-              checked={input.encoding === "utf-8"}
-              onCheckedChange={(checked) =>
-                dispatch(
-                  updateInput(input.id, { encoding: checked ? "utf-8" : "" })
-                )
-              }
-            />
-            <Label>Force UTF-8</Label>
-          </div>
-        )}
-
-        {selectedMode === "eci" && (
-          <div className="flex flex-col space-y-1.5">
-            <Label htmlFor="eci-assignment">ECI assignment</Label>
-            <Input
-              id="eci-assignment"
-              type="number"
-              min={0}
-              max={999999}
-              value={eciAssignmentValue(input.encoding)}
-              onChange={(e) =>
-                dispatch(updateInput(input.id, { encoding: e.target.value }))
-              }
-            />
-            <p className="text-xs text-muted-foreground">
-              Default 26 is UTF-8. The payload is encoded in that character set after the ECI designator.
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {selectedMode === "eci" && (
+        <div className="flex flex-col space-y-1.5">
+          <Label htmlFor="eci-assignment">ECI assignment</Label>
+          <Input
+            id="eci-assignment"
+            type="number"
+            min={0}
+            max={999999}
+            value={eciAssignmentValue(input.encoding)}
+            onChange={(e) =>
+              dispatch(updateInput(input.id, { encoding: e.target.value }))
+            }
+          />
+          <p className="text-xs text-muted-foreground">
+            Default 26 is UTF-8. The payload is encoded in that character set
+            after the ECI designator.
+          </p>
+        </div>
+      )}
+    </div>
   );
 }

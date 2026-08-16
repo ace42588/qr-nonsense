@@ -20,7 +20,8 @@ const FONT_FAMILIES = [
   "Impact",
 ];
 
-const FONT_SIZES = [12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72];
+/** Fixed editor preview size — independent of rendered image sizing */
+const EDITOR_PREVIEW_FONT_SIZE = 16;
 
 // Slate plugins for formatting
 const isBoldMarkActive = (editor) => {
@@ -91,7 +92,6 @@ const renderLeaf = ({ attributes, children, leaf }) => {
 export function TextToImageEditor() {
   const { setImageUrl } = useImageTransform();
   const [fontFamily, setFontFamily] = useState("Arial");
-  const [fontSize, setFontSize] = useState(24);
   const [isRendering, setIsRendering] = useState(false);
 
   // Initialize Slate editor
@@ -141,7 +141,6 @@ export function TextToImageEditor() {
     try {
       const dataUrl = await renderTextToCanvas(text, {
         fontFamily,
-        fontSize,
         bold: hasBold,
         italic: hasItalic,
       });
@@ -152,7 +151,7 @@ export function TextToImageEditor() {
     } finally {
       setIsRendering(false);
     }
-  }, [value, fontFamily, fontSize, hasBold, hasItalic, setImageUrl]);
+  }, [value, fontFamily, hasBold, hasItalic, setImageUrl]);
 
   return (
     <div className="space-y-3">
@@ -172,19 +171,6 @@ export function TextToImageEditor() {
             </SelectContent>
           </Select>
 
-          <Select value={fontSize.toString()} onValueChange={(v) => setFontSize(Number(v))}>
-            <SelectTrigger className="w-[100px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {FONT_SIZES.map((size) => (
-                <SelectItem key={size} value={size.toString()}>
-                  {size}px
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
           <MarkButton format="bold" icon={Bold} aria-label="Bold" />
           <MarkButton format="italic" icon={Italic} aria-label="Italic" />
         </div>
@@ -197,7 +183,7 @@ export function TextToImageEditor() {
             className="outline-none min-h-[80px]"
             style={{
               fontFamily: fontFamily,
-              fontSize: `${fontSize}px`,
+              fontSize: `${EDITOR_PREVIEW_FONT_SIZE}px`,
             }}
           />
         </div>

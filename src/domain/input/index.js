@@ -2,6 +2,9 @@ import { parseBasic } from "./parsers/parseBasic";
 import { parseJson } from "./parsers/parseJson";
 import { parseBitField } from "./parsers/parseBitField";
 import { generateMAC } from "./parsers/generateMAC";
+import { parseTemplate } from "./parsers/parseTemplate";
+import { parseStructuredAppend } from "./parsers/parseStructuredAppend";
+import { parseFnc1 } from "./parsers/parseFnc1";
 import { MAC_FUNCTIONS } from "./parsers/utils/macFunctions";
 import {
   alphaNumericSchema,
@@ -17,6 +20,9 @@ const INPUT_PARSERS = {
   json: parseJson,
   bitfield: parseBitField,
   mac: generateMAC,
+  template: parseTemplate,
+  structuredAppend: parseStructuredAppend,
+  fnc1: parseFnc1,
 };
 
 function handleInput(inputData) {

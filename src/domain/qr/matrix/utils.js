@@ -46,19 +46,23 @@ export function mapQRMatrix(matrix, callbackFn) {
 
 /**
  * Applies data mask to matrix modules.
- * 
+ *
  * CRITICAL: This function must preserve the bit reference from the current module.
  * The bit.id values are used for highlighting, so they must remain unchanged.
  * makeModule preserves the bit reference, so bit.id stays the same.
+ *
+ * CRITICAL: Clones row arrays before writing so callers (especially auto mask
+ * scoring in getMatrix) can reuse an unmasked populated matrix without
+ * corrupting earlier mask candidates.
  */
 export function applyMask(matrix, maskIndex) {
   const maskFunc = DATA_MASKS[maskIndex] || (() => false); // No mask
-  const masked = mapQRMatrix(matrix, ({ x, y }, current) => {
+  const clone = matrix.map((row) => row.slice());
+  return mapQRMatrix(clone, ({ x, y }, current) => {
     const isMasked = maskFunc({ x, y });
     // makeModule preserves the bit reference, ensuring bit.id remains unchanged
     return makeModule({ ...current, isMasked });
   });
-  return masked;
 }
 
 /**

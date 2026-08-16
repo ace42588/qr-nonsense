@@ -12,12 +12,9 @@ export interface ParsedInputsResult {
 
 /**
  * CRITICAL: This hook MUST be memoized to prevent segments from being recreated.
- * 
- * If parseAll is called on every render, it returns a new object reference,
- * which causes getEncodedMessage to recompute, creating new segments with new bit IDs.
- * This breaks highlighting because segment.bitIds won't match the matrix bit.id values.
- * 
- * By memoizing, we ensure segments remain stable unless inputs actually change.
+ *
+ * Always parses Payload A (`inputs`) so useDerivedQRData / left-pane viz stay stable
+ * when the Ambiguous/Embed editor is switched to Payload B.
  */
 export function useParsedInputs(): ParsedInputsResult {
   const { inputs } = useInputs();
@@ -25,4 +22,20 @@ export function useParsedInputs(): ParsedInputsResult {
     const parsed = parseAll(inputs) as ParsedInputs;
     return { parsed, errors: collectParseErrors(parsed) as Record<string, string> };
   }, [inputs]);
+}
+
+/** Parse whichever payload list is currently being edited (A or B). */
+export function useActiveParsedInputs(): ParsedInputsResult {
+  const { inputs, inputsB, activePayload } = useInputs();
+  const list = activePayload === "b" ? inputsB : inputs;
+  return useMemo(() => {
+    const parsed = parseAll(list) as ParsedInputs;
+    return { parsed, errors: collectParseErrors(parsed) as Record<string, string> };
+  }, [list]);
+}
+
+/** Parse a specific payload list (for dual-mode encode). */
+export function parseInputList(list: Input[]): ParsedInputsResult {
+  const parsed = parseAll(list) as ParsedInputs;
+  return { parsed, errors: collectParseErrors(parsed) as Record<string, string> };
 }

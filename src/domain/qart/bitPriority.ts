@@ -53,13 +53,17 @@ function getBitPosition(
 
 /**
  * Priority function type
+ * - contrast: high local variance first (classic QArt)
+ * - random: uniform random order
+ * - roi: prefer matching outside ROI so instance regions stay image-owned
  */
-export type PriorityFunctionType = "contrast" | "random";
+export type PriorityFunctionType = "contrast" | "random" | "roi";
 
 /**
  * Build priority-ordered list of bits for a block
  * 
  * @param priorityType - Priority function type: "contrast" (prioritizes high-contrast regions to match image details) or "random" (uniform distribution)
+ * @param roiGrid - Optional per-module ROI fraction [0,1]; required for "roi" priority
  */
 export function buildBitOrder(
   block: QRBlock,
@@ -70,7 +74,8 @@ export function buildBitOrder(
   editableSegmentIds: Set<string>, // Padding segments + QArt-append segments
   priorityType: PriorityFunctionType = "contrast",
   excludeLastSegmentBits?: Set<string>, // Bit IDs from last segments to exclude (prevents invalid values)
-  appendSegmentIds?: Set<string> // QArt-append segment IDs for deterministic priority
+  appendSegmentIds?: Set<string>, // QArt-append segment IDs for deterministic priority
+  roiGrid?: Float32Array // Per-module ROI [0,1] for IS-QR
 ): BitPosition[] {
   const nd = block.data.length;
   const nc = block.errorCorrection.length;
@@ -123,6 +128,25 @@ export function buildBitOrder(
     // Random priority: uniform random ordering
     for (const po of order) {
       po.priority = Math.floor(Math.random() * 0xFFFFFFFF);
+    }
+  } else if (priorityType === "roi") {
+    // IS-QR: prioritize background modules (low ROI) × contrast so Gauss–Jordan
+    // matching owns the silhouette; instance ROI modules are deprioritized.
+    const QUANTIZATION_STEP = 50;
+    for (const po of order) {
+      const contrast = contrastGrid[po.y * dimension + po.x];
+      const validContrast =
+        typeof contrast === "number" && isFinite(contrast) && contrast >= 0
+          ? contrast
+          : 0;
+      const roi =
+        roiGrid && typeof roiGrid[po.y * dimension + po.x] === "number"
+          ? Math.max(0, Math.min(1, roiGrid[po.y * dimension + po.x]))
+          : 0;
+      const weighted = validContrast * (1 - roi);
+      const quantized =
+        Math.round(weighted / QUANTIZATION_STEP) * QUANTIZATION_STEP;
+      po.priority = Math.min(Math.floor(quantized), 0x7FFFFFFF);
     }
   } else {
     // Contrast-based priority: prioritizes HIGH-contrast regions (matches Go implementation)

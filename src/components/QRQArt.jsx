@@ -23,11 +23,14 @@ import { useHalftonePatterns } from "@/hooks/useHalftonePatterns";
 import {
   renderHalftoneModuleWithAreaSampling,
   clampDotSizes,
-  DOT_SIZE_MAX,
 } from "@/domain/halftone/rendering";
-
-const DEFAULT_MIN_DOT = 0.25;
-const DEFAULT_MAX_DOT = 1.0;
+import { SettingsPanel, ControlRow } from "@/components/qr-controls/SettingsPanel";
+import {
+  HalftoneControls,
+  DEFAULT_MIN_DOT,
+  DEFAULT_MAX_DOT,
+  resetDotDefaults,
+} from "@/components/qr-controls/HalftoneControls";
 
 export function QRQArt({
   size: initialSize = 480,
@@ -495,189 +498,83 @@ export function QRQArt({
         responsive={true}
         customMatrix={matrix}
       />
-      <div style={{
-        marginTop: 16,
-        padding: 16,
-        backgroundColor: '#f5f5f5',
-        borderRadius: 8,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <h3 style={{ margin: '0 0 16px 0', color: '#333' }}>
-          {combined ? "Combined QArt + Halftone Settings" : "QArt Settings"}
-        </h3>
-        <div style={{ display: 'grid', gap: 12 }}>
-          {!combined && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <label htmlFor="enable-halftone" style={{ minWidth: 120, color: '#666' }}>
-                Enable Halftone:
-              </label>
-              <Switch
-                id="enable-halftone"
-                checked={enableHalftone}
-                onCheckedChange={setEnableHalftone}
-                title="Apply halftone effect after QArt generation completes"
-              />
-              <span style={{ fontSize: '12px', color: '#666' }}>
-                Apply halftone patterns for enhanced visual fidelity
-              </span>
-            </div>
-          )}
-          {applyHalftone && (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label htmlFor="qart-halftone-style" style={{ minWidth: 120, color: '#666' }}>
-                  Style:
-                </label>
-                <select
-                  id="qart-halftone-style"
-                  value={halftoneStyle}
-                  onChange={(e) => {
-                    const next = e.target.value;
-                    setHalftoneStyle(next);
-                    if (next === "dots") {
-                      setMinDotSize(DEFAULT_MIN_DOT);
-                      setMaxDotSize(DEFAULT_MAX_DOT);
-                    }
-                  }}
-                  style={{ maxWidth: 200, padding: '4px 8px' }}
-                >
-                  <option value="pattern">Pattern</option>
-                  <option value="dots">Dots</option>
-                </select>
-              </div>
-              {halftoneStyle === "dots" && (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <label htmlFor="qart-min-dot-size" style={{ minWidth: 120, color: '#666' }}>
-                      Min size:
-                    </label>
-                    <input
-                      id="qart-min-dot-size"
-                      type="range"
-                      min="0"
-                      max={DOT_SIZE_MAX}
-                      step="0.05"
-                      value={minDotSize}
-                      onChange={(e) => {
-                        const next = parseFloat(e.target.value);
-                        setMinDotSize(next);
-                        if (next > maxDotSize) setMaxDotSize(next);
-                      }}
-                      style={{ flex: 1, maxWidth: 200 }}
-                    />
-                    <span style={{ fontSize: '12px', color: '#666', minWidth: 40 }}>
-                      {minDotSize.toFixed(2)}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <label htmlFor="qart-max-dot-size" style={{ minWidth: 120, color: '#666' }}>
-                      Max size:
-                    </label>
-                    <input
-                      id="qart-max-dot-size"
-                      type="range"
-                      min="0"
-                      max={DOT_SIZE_MAX}
-                      step="0.05"
-                      value={maxDotSize}
-                      onChange={(e) => {
-                        const next = parseFloat(e.target.value);
-                        setMaxDotSize(next);
-                        if (next < minDotSize) setMinDotSize(next);
-                      }}
-                      style={{ flex: 1, maxWidth: 200 }}
-                    />
-                    <span style={{ fontSize: '12px', color: '#666', minWidth: 40 }}>
-                      {maxDotSize.toFixed(2)}
-                    </span>
-                  </div>
-                </>
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label htmlFor="limit-halftone-important" style={{ minWidth: 120, color: '#666' }}>
-                  Limit to Important:
-                </label>
-                <Switch
-                  id="limit-halftone-important"
-                  checked={limitHalftoneToImportant}
-                  onCheckedChange={setLimitHalftoneToImportant}
-                  title="Only apply halftone effect to important areas of the image (edges, details)"
-                />
-                <span style={{ fontSize: '12px', color: '#666' }}>
-                  Apply halftone only to important image areas
-                </span>
-              </div>
-              {limitHalftoneToImportant && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 128 }}>
-                  <label htmlFor="importance-threshold" style={{ minWidth: 100, color: '#666', fontSize: '12px' }}>
-                    Threshold:
-                  </label>
-                  <input
-                    id="importance-threshold"
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    value={importanceThreshold}
-                    onChange={(e) => setImportanceThreshold(parseFloat(e.target.value))}
-                    style={{ flex: 1, maxWidth: 200 }}
-                  />
-                  <span style={{ fontSize: '12px', color: '#666', minWidth: 40 }}>
-                    {importanceThreshold.toFixed(2)}
-                  </span>
-                  <span style={{ fontSize: '11px', color: '#999' }}>
-                    Lower = more areas get halftone
-                  </span>
-                </div>
-              )}
-            </>
-          )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <label htmlFor="preview-rasterized" style={{ minWidth: 120, color: '#666' }}>
-              Preview Rasterized:
-            </label>
+      <SettingsPanel
+        title={combined ? "Combined QArt + Halftone Settings" : "QArt Settings"}
+      >
+        {!combined && (
+          <ControlRow
+            label="Enable Halftone:"
+            htmlFor="enable-halftone"
+            hint="Apply halftone patterns for enhanced visual fidelity"
+          >
+            <Switch
+              id="enable-halftone"
+              checked={enableHalftone}
+              onCheckedChange={setEnableHalftone}
+              title="Apply halftone effect after QArt generation completes"
+            />
+          </ControlRow>
+        )}
+        {applyHalftone && (
+          <HalftoneControls
+            idPrefix="qart"
+            style={halftoneStyle}
+            onStyleChange={(next) => {
+              setHalftoneStyle(next);
+              if (next === "dots") resetDotDefaults(setMinDotSize, setMaxDotSize);
+            }}
+            minDotSize={minDotSize}
+            maxDotSize={maxDotSize}
+            onMinDotChange={setMinDotSize}
+            onMaxDotChange={setMaxDotSize}
+            showImportance
+            limitToImportant={limitHalftoneToImportant}
+            onLimitToImportantChange={setLimitHalftoneToImportant}
+            importanceThreshold={importanceThreshold}
+            onImportanceThresholdChange={setImportanceThreshold}
+          />
+        )}
+
+        <SettingsPanel title="Advanced" collapsible defaultOpen={false} className="mt-1 border-dashed">
+          <ControlRow
+            label="Preview Rasterized:"
+            htmlFor="preview-rasterized"
+            hint="Overlay target image on QR code"
+          >
             <Switch
               id="preview-rasterized"
               checked={showRasterizedPreview}
               onCheckedChange={setShowRasterizedPreview}
               title="Show rasterized target image overlay on QR code for troubleshooting"
             />
-            <span style={{ fontSize: '12px', color: '#666' }}>
-              Overlay target image on QR code
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <label htmlFor="show-control" style={{ minWidth: 120, color: '#666' }}>
-              Show Control View:
-            </label>
+          </ControlRow>
+          <ControlRow
+            label="Show Control View:"
+            htmlFor="show-control"
+            hint="Highlight controllable modules"
+          >
             <Switch
               id="show-control"
               checked={showControlView}
               onCheckedChange={setShowControlView}
               title="Show which modules are controllable (black/white = controlled, gray = uncontrolled)"
             />
-            <span style={{ fontSize: '12px', color: '#666' }}>
-              Highlight controllable modules
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <label htmlFor="show-contrast" style={{ minWidth: 120, color: '#666' }}>
-              Show Contrast Map:
-            </label>
+          </ControlRow>
+          <ControlRow
+            label="Show Contrast Map:"
+            htmlFor="show-contrast"
+            hint="Show contrast heatmap"
+          >
             <Switch
               id="show-contrast"
               checked={showContrastView}
               onCheckedChange={setShowContrastView}
               title="Show contrast (variance) heatmap (bright = high contrast, dark = low contrast)"
             />
-            <span style={{ fontSize: '12px', color: '#666' }}>
-              Show contrast heatmap
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <label style={{ minWidth: 120, color: '#666' }}>Priority Function:</label>
-            <div style={{ display: 'flex', gap: 16, flex: 1 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+          </ControlRow>
+          <ControlRow label="Priority Function:">
+            <div className="flex flex-1 flex-wrap gap-4">
+              <label className="flex cursor-pointer items-center gap-1.5 text-sm">
                 <input
                   type="radio"
                   name="priorityFunction"
@@ -685,9 +582,9 @@ export function QRQArt({
                   checked={priorityFunction === "contrast"}
                   onChange={(e) => setPriorityFunction(e.target.value)}
                 />
-                <span style={{ fontSize: '14px' }}>Contrast-based</span>
+                Contrast-based
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+              <label className="flex cursor-pointer items-center gap-1.5 text-sm">
                 <input
                   type="radio"
                   name="priorityFunction"
@@ -695,138 +592,148 @@ export function QRQArt({
                   checked={priorityFunction === "random"}
                   onChange={(e) => setPriorityFunction(e.target.value)}
                 />
-                <span style={{ fontSize: '14px' }}>Random</span>
+                Random
               </label>
             </div>
-          </div>
-          <div style={{ borderTop: '1px solid #ddd', paddingTop: 16, marginTop: 8 }}>
-            <h4 style={{ margin: '0 0 12px 0', color: '#333', fontSize: '14px', fontWeight: '600' }}>Append Data</h4>
-            <div style={{ display: 'grid', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <label htmlFor="append-enabled" style={{ minWidth: 120, color: '#666' }}>
-                  Enable Append:
-                </label>
-                <Switch
-                  id="append-enabled"
-                  checked={appendData.enabled}
-                  onCheckedChange={(checked) => setAppendData({ ...appendData, enabled: checked })}
-                  title="Append additional data that QArt can optimize (like padding bits) to match the target image"
-                />
-                <span style={{ fontSize: '12px', color: '#666' }}>
-                  Append optimizable data (QArt will modify it to match image)
-                </span>
-              </div>
-              
-              {appendData.enabled && (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Label htmlFor="append-method" style={{ minWidth: 120, color: '#666' }}>Append Method:</Label>
-                    <div style={{ display: 'flex', gap: 16, flex: 1 }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-                        <input
-                          type="radio"
-                          name="appendMethod"
-                          value="existing"
-                          checked={appendData.method === "existing"}
-                          onChange={(e) => setAppendData({ ...appendData, method: e.target.value })}
-                        />
-                        <span style={{ fontSize: '14px' }}>Existing Segment</span>
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-                        <input
-                          type="radio"
-                          name="appendMethod"
-                          value="new"
-                          checked={appendData.method === "new"}
-                          onChange={(e) => setAppendData({ ...appendData, method: e.target.value })}
-                        />
-                        <span style={{ fontSize: '14px' }}>New Segment</span>
-                      </label>
-                    </div>
-                  </div>
-                  
-                  {appendData.method === "existing" && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <Label htmlFor="append-separator" style={{ color: '#666' }}>Separator:</Label>
-                      <Input
-                        id="append-separator"
-                        type="text"
-                        value={appendData.separator}
-                        onChange={(e) => setAppendData({ ...appendData, separator: e.target.value })}
-                        placeholder="Separator (must match segment encoding mode)"
-                        style={{ maxWidth: 300 }}
+          </ControlRow>
+
+          <div className="mt-1 grid gap-3 border-t border-border pt-3">
+            <h4 className="text-sm font-semibold text-foreground">Append Data</h4>
+            <ControlRow
+              label="Enable Append:"
+              htmlFor="append-enabled"
+              hint="Append optimizable data (QArt will modify it to match image)"
+            >
+              <Switch
+                id="append-enabled"
+                checked={appendData.enabled}
+                onCheckedChange={(checked) =>
+                  setAppendData({ ...appendData, enabled: checked })
+                }
+                title="Append additional data that QArt can optimize (like padding bits) to match the target image"
+              />
+            </ControlRow>
+
+            {appendData.enabled && (
+              <>
+                <ControlRow label="Append Method:">
+                  <div className="flex flex-1 flex-wrap gap-4">
+                    <label className="flex cursor-pointer items-center gap-1.5 text-sm">
+                      <input
+                        type="radio"
+                        name="appendMethod"
+                        value="existing"
+                        checked={appendData.method === "existing"}
+                        onChange={(e) =>
+                          setAppendData({ ...appendData, method: e.target.value })
+                        }
                       />
-                      <span style={{ fontSize: '11px', color: '#999' }}>
-                        Separator will be inserted between original data and appended data
+                      Existing Segment
+                    </label>
+                    <label className="flex cursor-pointer items-center gap-1.5 text-sm">
+                      <input
+                        type="radio"
+                        name="appendMethod"
+                        value="new"
+                        checked={appendData.method === "new"}
+                        onChange={(e) =>
+                          setAppendData({ ...appendData, method: e.target.value })
+                        }
+                      />
+                      New Segment
+                    </label>
+                  </div>
+                </ControlRow>
+
+                {appendData.method === "existing" && (
+                  <div className="flex max-w-sm flex-col gap-1">
+                    <Label htmlFor="append-separator">Separator:</Label>
+                    <Input
+                      id="append-separator"
+                      type="text"
+                      value={appendData.separator}
+                      onChange={(e) =>
+                        setAppendData({ ...appendData, separator: e.target.value })
+                      }
+                      placeholder="Separator (must match segment encoding mode)"
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      Separator will be inserted between original data and appended data
+                    </span>
+                  </div>
+                )}
+
+                {appendData.method === "new" && (
+                  <>
+                    <div className="flex max-w-sm flex-col gap-1">
+                      <Label htmlFor="append-encoding-mode">Encoding Mode:</Label>
+                      <Select
+                        value={appendData.encodingMode}
+                        onValueChange={(value) =>
+                          setAppendData({ ...appendData, encodingMode: value })
+                        }
+                      >
+                        <SelectTrigger id="append-encoding-mode">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="numeric">Numeric (0-9)</SelectItem>
+                          <SelectItem value="alphanumeric">
+                            Alphanumeric (0-9A-Z $%*+-./:)
+                          </SelectItem>
+                          <SelectItem value="byte">Byte (any characters)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex max-w-sm flex-col gap-1">
+                      <Label htmlFor="append-separator-new">Separator:</Label>
+                      <Input
+                        id="append-separator-new"
+                        type="text"
+                        value={appendData.separator || ""}
+                        onChange={(e) =>
+                          setAppendData({ ...appendData, separator: e.target.value })
+                        }
+                        placeholder="Separator (must match encoding mode)"
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        Separator will be inserted before appended data
                       </span>
                     </div>
-                  )}
-                  
-                  {appendData.method === "new" && (
-                    <>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <Label htmlFor="append-encoding-mode" style={{ color: '#666' }}>Encoding Mode:</Label>
-                        <Select
-                          value={appendData.encodingMode}
-                          onValueChange={(value) => setAppendData({ ...appendData, encodingMode: value })}
-                        >
-                          <SelectTrigger id="append-encoding-mode" style={{ maxWidth: 300 }}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="numeric">Numeric (0-9)</SelectItem>
-                            <SelectItem value="alphanumeric">Alphanumeric (0-9A-Z $%*+-./:)</SelectItem>
-                            <SelectItem value="byte">Byte (any characters)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <Label htmlFor="append-separator-new" style={{ color: '#666' }}>Separator:</Label>
-                        <Input
-                          id="append-separator-new"
-                          type="text"
-                          value={appendData.separator || ""}
-                          onChange={(e) => setAppendData({ ...appendData, separator: e.target.value })}
-                          placeholder="Separator (must match encoding mode)"
-                          style={{ maxWidth: 300 }}
-                        />
-                        <span style={{ fontSize: '11px', color: '#999' }}>
-                          Separator will be inserted before appended data
-                        </span>
-                      </div>
-                    </>
-                  )}
-                  
-                  <div style={{ padding: '8px 12px', backgroundColor: '#e3f2fd', borderRadius: 4, fontSize: '12px', color: '#1976d2' }}>
-                    <strong>Auto-calculated:</strong> Append length will be automatically determined based on available QR code capacity. QArt will fill with placeholder data and optimize these bits to match the target image.
-                  </div>
-                  
-                  {qartResult?.optimizedAppendData && (
-                    <div style={{ padding: '12px', backgroundColor: '#e8f5e9', borderRadius: 4, border: '1px solid #c8e6c9' }}>
-                      <div style={{ fontSize: '12px', fontWeight: '600', color: '#2e7d32', marginBottom: 8 }}>
-                        Optimized Append Data:
-                      </div>
-                      <div style={{ fontSize: '13px', fontFamily: 'monospace', color: '#1b5e20', wordBreak: 'break-all' }}>
-                        {qartResult.optimizedAppendData.originalText || '(empty)'}
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#666', marginTop: 4 }}>
-                        Mode: {qartResult.optimizedAppendData.encodingMode} | 
-                        Segments: {qartResult.optimizedAppendData.segments.length}
-                      </div>
+                  </>
+                )}
+
+                <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200">
+                  <strong>Auto-calculated:</strong> Append length will be automatically
+                  determined based on available QR code capacity. QArt will fill with
+                  placeholder data and optimize these bits to match the target image.
+                </div>
+
+                {qartResult?.optimizedAppendData && (
+                  <div className="rounded-md border border-green-200 bg-green-50 p-3 dark:border-green-900 dark:bg-green-950/40">
+                    <div className="mb-2 text-xs font-semibold text-green-800 dark:text-green-200">
+                      Optimized Append Data:
                     </div>
-                  )}
-                </>
-              )}
-            </div>
+                    <div className="break-all font-mono text-sm text-green-900 dark:text-green-100">
+                      {qartResult.optimizedAppendData.originalText || "(empty)"}
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      Mode: {qartResult.optimizedAppendData.encodingMode} | Segments:{" "}
+                      {qartResult.optimizedAppendData.segments.length}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
-          
-          {isGenerating && (
-            <div style={{ padding: '8px 16px', color: '#666', fontSize: '14px' }}>
-              QArt generation is running automatically...
-            </div>
-          )}
-        </div>
-      </div>
+        </SettingsPanel>
+
+        {isGenerating && (
+          <p className="text-sm text-muted-foreground">
+            QArt generation is running automatically...
+          </p>
+        )}
+      </SettingsPanel>
     </>
   );
 }

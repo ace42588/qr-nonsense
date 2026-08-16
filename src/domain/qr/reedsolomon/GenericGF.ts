@@ -7,7 +7,6 @@ export function addOrSubtractGF(a: number, b: number): number {
 class GenericGF {
   private primitive: number;
   private size: number;
-  // @ts-expect-error - Property is declared but not currently used
   private generatorBase: number;
   private expTable: number[];
   private logTable: number[];
@@ -72,6 +71,14 @@ class GenericGF {
 
   exp(a: number): number {
     return this.expTable[a];
+  }
+
+  getSize(): number {
+    return this.size;
+  }
+
+  getGeneratorBase(): number {
+    return this.generatorBase;
   }
 }
 

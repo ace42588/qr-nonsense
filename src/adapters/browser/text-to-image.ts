@@ -1,16 +1,26 @@
 /**
  * Browser-based text-to-image rendering adapter
- * Renders styled text content to canvas and converts to data URL
+ * Renders styled text into a square canvas sized to the QR transform reference
  */
 
 export interface TextStyles {
   fontFamily: string;
-  fontSize: number;
   bold: boolean;
   italic: boolean;
   textColor?: string; // default: black
   backgroundColor?: string; // default: white
   padding?: number; // default: 20px
+  /** Square output size; matches ImageTransform reference canvas (default: 480) */
+  targetSize?: number;
+  /** Fraction of targetSize the text block should fill (default: 0.9) */
+  marginFactor?: number;
+}
+
+interface MeasureStyles {
+  fontFamily: string;
+  fontSize: number;
+  bold: boolean;
+  italic: boolean;
 }
 
 /**
@@ -42,16 +52,22 @@ export function extractTextFromSlate(value: any[]): string {
   return value.map(traverse).join("\n");
 }
 
+function buildFontString(styles: MeasureStyles): string {
+  const fontStyle = styles.italic ? "italic" : "normal";
+  const fontWeight = styles.bold ? "bold" : "normal";
+  return `${fontStyle} ${fontWeight} ${styles.fontSize}px ${styles.fontFamily}`;
+}
+
 /**
  * Measure text dimensions using canvas
  * @param text - Text to measure
- * @param styles - Text styling options
+ * @param styles - Text styling options including fontSize
  * @param maxWidth - Maximum width for word wrapping (optional)
- * @returns Object with width and height
+ * @returns Object with width, height, and wrapped lines
  */
 function measureText(
   text: string,
-  styles: TextStyles,
+  styles: MeasureStyles,
   maxWidth?: number
 ): { width: number; height: number; lines: string[] } {
   const canvas = document.createElement("canvas");
@@ -61,22 +77,15 @@ function measureText(
     throw new Error("Failed to get canvas context for text measurement");
   }
 
-  // Build font string
-  const fontStyle = styles.italic ? "italic" : "normal";
-  const fontWeight = styles.bold ? "bold" : "normal";
-  const fontString = `${fontStyle} ${fontWeight} ${styles.fontSize}px ${styles.fontFamily}`;
-  ctx.font = fontString;
+  ctx.font = buildFontString(styles);
 
-  // Split text into lines and measure
   const lines: string[] = [];
   const paragraphs = text.split("\n");
 
   for (const paragraph of paragraphs) {
     if (!maxWidth || maxWidth <= 0) {
-      // No wrapping - single line
       lines.push(paragraph);
     } else {
-      // Word wrap
       const words = paragraph.split(" ");
       let currentLine = "";
 
@@ -98,9 +107,8 @@ function measureText(
     }
   }
 
-  // Measure all lines
   let maxLineWidth = 0;
-  const lineHeight = styles.fontSize * 1.2; // Line height multiplier
+  const lineHeight = styles.fontSize * 1.2;
   const totalHeight = lines.length * lineHeight;
 
   for (const line of lines) {
@@ -116,10 +124,51 @@ function measureText(
 }
 
 /**
- * Render styled text to canvas and return as data URL
- * @param text - Text content to render
- * @param styles - Text styling options
- * @returns Promise resolving to data URL string
+ * Binary-search the largest font size whose wrapped text fits in the content box.
+ */
+export function findFittingFontSize(
+  text: string,
+  styles: Omit<MeasureStyles, "fontSize">,
+  contentWidth: number,
+  contentHeight: number
+): { fontSize: number; lines: string[]; width: number; height: number } {
+  let low = 1;
+  let high = Math.max(1, Math.floor(Math.min(contentWidth, contentHeight)));
+  let best = {
+    fontSize: 1,
+    lines: [text],
+    width: 0,
+    height: 0,
+  };
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const measured = measureText(
+      text,
+      { ...styles, fontSize: mid },
+      contentWidth
+    );
+
+    if (measured.width <= contentWidth && measured.height <= contentHeight) {
+      best = { fontSize: mid, ...measured };
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+
+  // Re-measure at best size to ensure lines match the chosen font
+  const final = measureText(
+    text,
+    { ...styles, fontSize: best.fontSize },
+    contentWidth
+  );
+  return { fontSize: best.fontSize, ...final };
+}
+
+/**
+ * Render styled text to a square canvas and return as data URL.
+ * Font size is chosen automatically so the text fills the target canvas.
  */
 export async function renderTextToCanvas(
   text: string,
@@ -129,63 +178,55 @@ export async function renderTextToCanvas(
     throw new Error("Text cannot be empty");
   }
 
-  // Ensure fonts are loaded
-  await document.fonts.ready;
+  if (document.fonts?.ready) {
+    await document.fonts.ready;
+  }
 
   const padding = styles.padding ?? 20;
+  const targetSize = styles.targetSize ?? 480;
+  const marginFactor = styles.marginFactor ?? 0.9;
   const textColor = styles.textColor ?? "#000000";
   const backgroundColor = styles.backgroundColor ?? "#FFFFFF";
 
-  // Measure text (with word wrapping if needed)
-  // Use a reasonable max width for wrapping (e.g., 800px)
-  const maxWidth = 800;
-  const { width: textWidth, height: textHeight, lines } = measureText(
+  const contentBox = Math.max(1, targetSize * marginFactor - padding * 2);
+  const measureStyles = {
+    fontFamily: styles.fontFamily,
+    bold: styles.bold,
+    italic: styles.italic,
+  };
+
+  const { fontSize, lines } = findFittingFontSize(
     text,
-    styles,
-    maxWidth
+    measureStyles,
+    contentBox,
+    contentBox
   );
 
-  // Calculate canvas size
-  const minSize = 200;
-  const canvasWidth = Math.max(minSize, textWidth + padding * 2);
-  const canvasHeight = Math.max(minSize, textHeight + padding * 2);
-
-  // Create canvas
   const canvas = document.createElement("canvas");
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
+  canvas.width = targetSize;
+  canvas.height = targetSize;
   const ctx = canvas.getContext("2d");
 
   if (!ctx) {
     throw new Error("Failed to get canvas context");
   }
 
-  // Fill background
   ctx.fillStyle = backgroundColor;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  ctx.fillRect(0, 0, targetSize, targetSize);
 
-  // Set text style
-  const fontStyle = styles.italic ? "italic" : "normal";
-  const fontWeight = styles.bold ? "bold" : "normal";
-  ctx.font = `${fontStyle} ${fontWeight} ${styles.fontSize}px ${styles.fontFamily}`;
+  ctx.font = buildFontString({ ...measureStyles, fontSize });
   ctx.fillStyle = textColor;
   ctx.textBaseline = "top";
   ctx.textAlign = "center";
 
-  // Calculate centered positions
-  const lineHeight = styles.fontSize * 1.2;
+  const lineHeight = fontSize * 1.2;
   const totalTextHeight = lines.length * lineHeight;
-  const startY = (canvasHeight - totalTextHeight) / 2;
+  let y = (targetSize - totalTextHeight) / 2;
 
-  // Draw text lines centered horizontally
-  let y = startY;
   for (const line of lines) {
-    const x = canvasWidth / 2; // Center horizontally
-    ctx.fillText(line, x, y);
+    ctx.fillText(line, targetSize / 2, y);
     y += lineHeight;
   }
 
-  // Convert to data URL
   return canvas.toDataURL("image/png");
 }
-

@@ -1,6 +1,7 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import { useQRData } from "@/state/qr/QRDataContext";
 import { getPatternName } from "@/utils/patternUtils";
+import { applyVisualDamage } from "@/domain/qr/corruption/applyDamage";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,8 +28,14 @@ export function QRBase({
 }) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
-  const { matrix: contextMatrix, highlightedIds, invalidQR, invalidQRReason } = useQRData();
-  const matrix = customMatrix || contextMatrix;
+  const { matrix: contextMatrix, highlightedIds, damagedModuleIds, invalidQR, invalidQRReason } = useQRData();
+  const sourceMatrix = customMatrix || contextMatrix;
+  // Apply visual damage for display/export (skip when a custom matrix is provided)
+  const matrix = useMemo(() => {
+    if (!sourceMatrix) return sourceMatrix;
+    if (!damagedModuleIds?.length || customMatrix) return sourceMatrix;
+    return applyVisualDamage(sourceMatrix, damagedModuleIds);
+  }, [sourceMatrix, damagedModuleIds, customMatrix]);
   const [size, setSize] = useState(initialSize);
   const [hoveredModule, setHoveredModule] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -99,6 +106,12 @@ export function QRBase({
           // When a symbol is clicked, we highlight modules whose bit.id matches the segment's bitIds.
           const moduleBitId = m.bit?.id || m.bitId;
           const isHighlighted = moduleBitId && highlightedIds && Array.isArray(highlightedIds) && highlightedIds.includes(moduleBitId);
+          const isDamaged =
+            !customMatrix &&
+            m.id &&
+            damagedModuleIds &&
+            Array.isArray(damagedModuleIds) &&
+            damagedModuleIds.includes(m.id);
 
           if (renderModule) {
             // Pass exact dimensions in renderCtx for renderModule callbacks that need them
@@ -113,16 +126,23 @@ export function QRBase({
             ctx.fillRect(moduleX, moduleY, finalWidth, finalHeight);
           }
 
-          // Draw highlight border once on the final pass so it sits above all layers
-          if (isHighlighted && pass === passes - 1) {
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(moduleX, moduleY, moduleWidth, moduleHeight);
+          // Draw highlight / damage borders once on the final pass so they sit above all layers
+          if (pass === passes - 1) {
+            if (isDamaged) {
+              ctx.strokeStyle = "#d97706"; // amber-600
+              ctx.lineWidth = 2;
+              ctx.strokeRect(moduleX, moduleY, moduleWidth, moduleHeight);
+            }
+            if (isHighlighted) {
+              ctx.strokeStyle = "red";
+              ctx.lineWidth = 2;
+              ctx.strokeRect(moduleX, moduleY, moduleWidth, moduleHeight);
+            }
           }
         }
       }
     }
-  }, [matrix, size, quietZone, renderModule, renderPasses, highlightedIds]);
+  }, [matrix, size, quietZone, renderModule, renderPasses, highlightedIds, damagedModuleIds]);
 
   const getModuleFromEvent = (event) => {
     if (!matrix) return null;
@@ -209,7 +229,7 @@ export function QRBase({
   };
 
   return (
-    <div ref={containerRef} className="qr-base-container" style={{width: "100%", height: "auto", position: "relative"}}>
+    <div ref={containerRef} className="qr-base-container relative h-auto w-full">
       {invalidQR && <InvalidQRBanner message={invalidQRReason} />}
       <canvas
         ref={canvasRef}
@@ -219,36 +239,21 @@ export function QRBase({
         onContextMenu={handleClick}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        style={{
-          width: "100%",
-          height: "auto",
-          display: "block",
-        }}
+        className="block h-auto w-full"
       />
-      {/* Tooltip for pattern modules */}
       {patternName && hoveredModule && (
         <div
+          className="pointer-events-none absolute z-[1000] -translate-x-1/2 whitespace-nowrap rounded bg-black/80 px-2 py-1 text-xs text-white"
           style={{
-            position: "absolute",
             left: `${tooltipPosition.x + 10}px`,
             top: `${tooltipPosition.y - 30}px`,
-            transform: 'translateX(-50%)',
-            padding: '4px 8px',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            color: 'white',
-            borderRadius: '4px',
-            fontSize: '12px',
-            pointerEvents: 'none',
-            zIndex: 1000,
-            whiteSpace: 'nowrap',
           }}
         >
           {patternName}
         </div>
       )}
-      {/* Download button */}
       {matrix && (
-        <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
+        <div className="mt-2 flex justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" disabled={!matrix}>

@@ -61,6 +61,10 @@ export interface QArtOptions {
   minDecodeRedundancy?: number;
   /** Number of decode trials for verification (default: 1) */
   decodeTrials?: number;
+  /** Per-module ROI fraction [0,1] for IS-QR "roi" priority */
+  roiGrid?: Float32Array;
+  /** Optional precomputed target brightness grid (0–1); skips rasterize when set */
+  targetGridOverride?: Float32Array;
 }
 
 export interface QArtResult {
@@ -122,6 +126,8 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
     transformParams,
     minDecodeRedundancy = 0.8,
     decodeTrials = 1,
+    roiGrid,
+    targetGridOverride,
   } = options;
   
   // Check for cancellation before starting (FR-021)
@@ -322,7 +328,11 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
   }
   
   
-  const targetGrid = rasterizeImageToQRGrid(normalizedTargetImage, dimension);
+  const targetGrid =
+    targetGridOverride &&
+    targetGridOverride.length === dimension * dimension
+      ? targetGridOverride
+      : rasterizeImageToQRGrid(normalizedTargetImage, dimension);
   
   // Compute contrast grid (local variance) for each module position efficiently
   // Uses optimized function that pre-scales values and avoids redundant calculations
@@ -368,7 +378,8 @@ export async function generateQArt(options: QArtOptions): Promise<QArtResult> {
       editableSegmentIds, // Pass editable segment IDs (padding + append)
       priorityFunction, // Pass priority function type (FR-007)
       excludeLastSegmentBits, // Exclude bits from last segments to prevent invalid values
-      appendSegmentIds // Pass append segment IDs for deterministic priority
+      appendSegmentIds, // Pass append segment IDs for deterministic priority
+      roiGrid
     );
     
     

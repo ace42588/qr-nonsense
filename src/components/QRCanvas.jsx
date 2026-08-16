@@ -4,12 +4,23 @@ import { QRBase } from "./QRBase";
 import { useModuleHover } from "@/hooks/useModuleHover";
 
 export function QRCodeCanvas() {
-  const { highlightSegment } = useQRDataDispatch();
+  const { highlightSegment, toggleDamageModule, highlightModules } =
+    useQRDataDispatch();
   const handleModuleHover = useModuleHover();
 
   const handleModuleClick = (module) => {
-    if (module?.bit?.sourceId) {
-      highlightSegment(module.bit.sourceId);
+    if (!module?.id) {
+      if (module?.bit?.sourceId) {
+        highlightSegment(module.bit.sourceId);
+      }
+      return;
+    }
+
+    // Damage any module (data/EC or structural)
+    toggleDamageModule(module.id);
+    const bitId = module?.bit?.id || module?.bitId;
+    if (bitId) {
+      highlightModules([bitId]);
     }
   };
 

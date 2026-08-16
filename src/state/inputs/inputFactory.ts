@@ -1,4 +1,5 @@
 import { jsonSchema } from "@/domain/input/serializationSchemas";
+import { getTemplateDefaults } from "@/domain/input/templates";
 import { Input, Field } from "./types";
 import { generateId } from "@/domain/qr/utils/id";
 
@@ -40,11 +41,38 @@ interface MacTypeDefaults {
   includedFields: string[];
 }
 
+interface TemplateTypeDefaults {
+  type: "template";
+  template: string;
+  templateFields: Record<string, unknown>;
+}
+
+interface StructuredAppendTypeDefaults {
+  type: "structuredAppend";
+  mode: "structuredAppend";
+  symbolIndex: number;
+  totalSymbols: number;
+  parity: number;
+}
+
+interface Fnc1TypeDefaults {
+  type: "fnc1";
+  mode: "fnc1";
+  text: string;
+  fnc1Position: "first" | "second";
+  applicationIndicator: string;
+  payloadMode: "alphanumeric" | "byte" | "numeric";
+  encoding: string;
+}
+
 export type InputTypeDefaults = {
   string: StringTypeDefaults;
   json: JsonTypeDefaults;
   bitfield: BitfieldTypeDefaults;
   mac: MacTypeDefaults;
+  template: TemplateTypeDefaults;
+  structuredAppend: StructuredAppendTypeDefaults;
+  fnc1: Fnc1TypeDefaults;
 };
 
 const inputTypeDefaults: InputTypeDefaults = {
@@ -80,6 +108,27 @@ const inputTypeDefaults: InputTypeDefaults = {
     algo: "Poly1305",
     key: "supersecret",
     includedFields: [],
+  },
+  template: {
+    type: "template",
+    template: "wifi",
+    templateFields: getTemplateDefaults("wifi"),
+  },
+  structuredAppend: {
+    type: "structuredAppend",
+    mode: "structuredAppend",
+    symbolIndex: 0,
+    totalSymbols: 2,
+    parity: 0,
+  },
+  fnc1: {
+    type: "fnc1",
+    mode: "fnc1",
+    text: "0101234567890128",
+    fnc1Position: "first",
+    applicationIndicator: "00",
+    payloadMode: "alphanumeric",
+    encoding: "utf-8",
   },
 };
 
@@ -122,4 +171,4 @@ export function createInput({
     data: text,
     text,
   } as Input;
-} 
+}

@@ -21,6 +21,7 @@ export enum Actions {
   SetMacKey = "SET_MAC_KEY",
   SetMacAlgorithm = "SET_MAC_ALGO",
   SetIncludedFields = "SET_INCLUDED_FIELDS",
+  SetActivePayload = "SET_ACTIVE_PAYLOAD",
 }
 
 export const addInput = (label: string) => ({ type: Actions.Add, payload: { label } });
@@ -110,4 +111,9 @@ export const setMacAlgorithm = (id: string, algo: string) => ({
 export const setIncludedFields = (id: string, includedFields: string[]) => ({
   type: Actions.SetIncludedFields,
   payload: { id, includedFields },
+});
+
+export const setActivePayload = (activePayload: "a" | "b") => ({
+  type: Actions.SetActivePayload,
+  payload: { activePayload },
 }); 

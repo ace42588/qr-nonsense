@@ -3,6 +3,8 @@ import { encodeAlphanumeric } from "./alphanumeric";
 import { encodeByte } from "./byte";
 import { encodeKanji } from "./kanji";
 import { encodeEci } from "./eci";
+import { encodeStructuredAppend } from "./structuredAppend";
+import { encodeFnc1 } from "./fnc1";
 import { encodeMixed } from "./mixed";
 import {
   AUTO_MODE,
@@ -40,6 +42,24 @@ export function encodeInput(mode, input, options = {}, version = 1) {
       return encodeKanji(data);
     case "eci":
       return encodeEci(data, options);
+    case "structuredAppend":
+      return encodeStructuredAppend(data, options);
+    case "fnc1":
+    case "fnc1First":
+    case "fnc1Second": {
+      const base =
+        options != null && typeof options === "object" && !Array.isArray(options)
+          ? options
+          : {};
+      const position =
+        base.position ||
+        (mode === "fnc1Second"
+          ? "second"
+          : mode === "fnc1First"
+            ? "first"
+            : "first");
+      return encodeFnc1(data, { ...base, position });
+    }
     case MIXED_MODE:
     case AUTO_MODE: {
       return encodeMixed(data, mixedEncodeOptions(options, version));

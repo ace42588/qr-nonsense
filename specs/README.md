@@ -34,6 +34,15 @@ This directory contains comprehensive feature specifications for the QR-Nonsense
   - Combined generation merging QArt and halftone techniques
   - Features: Dual optimization, parameter configuration for both techniques, combined statistics
 
+- **[009 - IS-QR Generation](./009-isqr-generation/spec.md)**
+  - Browser IS-QR beautification via saliency instance ROI, ROI-aware QArt, DWT/CSF, and PSNR/MSE/SSIM/FSIM/GMSD metrics
+
+- **[010 - Ambiguous QR Generation](./010-ambiguous-qr-generation/spec.md)**
+  - Dual-payload Ambiguous mode: shared format, 2×2 checkered modules where bits differ
+
+- **[011 - Embedded Dual-Payload QR](./011-embedded-qr-generation/spec.md)**
+  - Dual-payload Embed mode: 3×3 modules with outer eight from Payload A and center from Payload B
+
 ### Supporting Feature Specifications
 
 - **[006 - QR Code Scanner](./006-qr-scanner/spec.md)**

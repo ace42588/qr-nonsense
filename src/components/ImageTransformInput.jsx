@@ -53,11 +53,11 @@ export function ImageTransformInput() {
         </SidebarGroupLabel>
         <CollapsibleContent>
           {error && (
-            <div className="px-2 pb-2">
+            <div className="px-2 pb-1">
               <ErrorBanner message={error} title="Image Error" />
             </div>
           )}
-          <SidebarMenu>
+          <SidebarMenu className="gap-0.5">
             <SidebarMenuItem key="Image URL">
               <SidebarMenuButton asChild isActive={true}>
                 <Input
@@ -72,7 +72,7 @@ export function ImageTransformInput() {
             </SidebarMenuItem>
             <SidebarMenuItem key="Image Upload">
               <SidebarMenuButton asChild isActive={true}>
-                <div className="w-full flex items-center gap-2">
+                <div className="flex w-full items-center gap-2">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -103,19 +103,19 @@ export function ImageTransformInput() {
                     <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/text-collapsible:rotate-180" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="pt-2">
-                  <div className="px-2 pb-2">
+                <CollapsibleContent className="pt-1">
+                  <div className="px-2 pb-1">
                     <TextToImageEditor />
                   </div>
                 </CollapsibleContent>
               </Collapsible>
             </SidebarMenuItem>
             <SidebarMenuItem key="Position">
-              <div className="w-full flex flex-col gap-2 px-2 py-2">
-                <label className="text-sm whitespace-nowrap text-sidebar-foreground">
-                  Position:
+              <div className="flex w-full flex-col gap-1.5 px-2 py-1.5">
+                <label className="whitespace-nowrap text-sm text-sidebar-foreground">
+                  Position
                 </label>
-                <div className="grid grid-cols-3 gap-1 w-full">
+                <div className="grid w-full grid-cols-3 gap-1">
                   <div className="col-start-2">
                     <Button
                       type="button"
@@ -195,12 +195,17 @@ export function ImageTransformInput() {
               </div>
             </SidebarMenuItem>
             <SidebarMenuItem key="Scale">
-              <div className="w-full flex flex-col gap-2 px-2 py-2">
+              <div className="flex w-full flex-col gap-1.5 px-2 py-1.5">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="scale" className="text-sm whitespace-nowrap text-sidebar-foreground">
-                    Scale:
+                  <label
+                    htmlFor="scale"
+                    className="whitespace-nowrap text-sm text-sidebar-foreground"
+                  >
+                    Scale
                   </label>
-                  <span className="text-sm text-muted-foreground">{scale.toFixed(2)}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {scale.toFixed(2)}
+                  </span>
                 </div>
                 <input
                   id="scale"
@@ -210,7 +215,7 @@ export function ImageTransformInput() {
                   step={0.01}
                   value={scale}
                   onChange={(e) => setScale(Number(e.target.value))}
-                  className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary/80 transition-colors [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
+                  className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-secondary accent-primary transition-colors hover:accent-primary/80 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer"
                 />
               </div>
             </SidebarMenuItem>

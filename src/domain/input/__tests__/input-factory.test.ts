@@ -63,6 +63,41 @@ describe('Input Factory Tests', () => {
       expect(Array.isArray(input.includedFields)).toBe(true);
     });
 
+    it('should create template input with all required properties', () => {
+      const input = createInput({ type: 'template', label: 'Template Input' });
+
+      expect(input.type).toBe('template');
+      expect(input.label).toBe('Template Input');
+      expect(input.template).toBe('wifi');
+      expect(typeof input.templateFields).toBe('object');
+      expect(input.templateFields).toHaveProperty('ssid');
+    });
+
+    it('should create structuredAppend input with all required properties', () => {
+      const input = createInput({
+        type: 'structuredAppend',
+        label: 'SA Input',
+      });
+
+      expect(input.type).toBe('structuredAppend');
+      expect(input.mode).toBe('structuredAppend');
+      expect(input.label).toBe('SA Input');
+      expect(input.symbolIndex).toBe(0);
+      expect(input.totalSymbols).toBe(2);
+      expect(input.parity).toBe(0);
+    });
+
+    it('should create fnc1 input with all required properties', () => {
+      const input = createInput({ type: 'fnc1', label: 'FNC1 Input' });
+
+      expect(input.type).toBe('fnc1');
+      expect(input.mode).toBe('fnc1');
+      expect(input.label).toBe('FNC1 Input');
+      expect(input.fnc1Position).toBe('first');
+      expect(input.payloadMode).toBe('alphanumeric');
+      expect(typeof input.data).toBe('string');
+    });
+
     it('should generate unique IDs for each input', () => {
       const input1 = createInput();
       const input2 = createInput();
@@ -131,6 +166,40 @@ describe('Input Factory Tests', () => {
         expect(defaults.algo).toBe('Poly1305');
         expect(typeof defaults.key).toBe('string');
         expect(Array.isArray(defaults.includedFields)).toBe(true);
+      }
+    });
+
+    it('should return template defaults', () => {
+      const defaults = getInputTypeDefaults('template');
+
+      expect(defaults.type).toBe('template');
+      if (defaults.type === 'template') {
+        expect(defaults.template).toBe('wifi');
+        expect(typeof defaults.templateFields).toBe('object');
+        expect(defaults.templateFields).toHaveProperty('ssid');
+      }
+    });
+
+    it('should return structuredAppend defaults', () => {
+      const defaults = getInputTypeDefaults('structuredAppend');
+
+      expect(defaults.type).toBe('structuredAppend');
+      if (defaults.type === 'structuredAppend') {
+        expect(defaults.mode).toBe('structuredAppend');
+        expect(defaults.symbolIndex).toBe(0);
+        expect(defaults.totalSymbols).toBe(2);
+        expect(defaults.parity).toBe(0);
+      }
+    });
+
+    it('should return fnc1 defaults', () => {
+      const defaults = getInputTypeDefaults('fnc1');
+
+      expect(defaults.type).toBe('fnc1');
+      if (defaults.type === 'fnc1') {
+        expect(defaults.mode).toBe('fnc1');
+        expect(defaults.fnc1Position).toBe('first');
+        expect(defaults.payloadMode).toBe('alphanumeric');
       }
     });
   });

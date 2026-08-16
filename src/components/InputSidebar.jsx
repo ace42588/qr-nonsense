@@ -46,6 +46,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 // Feature Components
 import { FormatInput } from "./FormatInput";
@@ -53,18 +54,47 @@ import { ImageTransformInput } from "./ImageTransformInput";
 
 // State and Actions
 import { useInputs, useInputDispatch } from "@/state/inputs/InputContext";
-import { addInput, removeInput, updateInput, setActiveInput, reorderInputs } from "@/state/inputs/inputActions";
+import {
+  addInput,
+  removeInput,
+  updateInput,
+  setActiveInput,
+  reorderInputs,
+  setActivePayload,
+} from "@/state/inputs/inputActions";
 
-export function InputSidebar({ ...props }) {
-  const { inputs, activeInputID } = useInputs();
+export function InputSidebar({ dualPayloadMode = false, ...props }) {
+  const {
+    inputs,
+    inputsB,
+    activeInputID,
+    activeInputIDB,
+    activePayload,
+  } = useInputs();
   const dispatch = useInputDispatch();
   const [renamingId, setRenamingId] = React.useState(null);
-  const nextLabel = React.useRef(inputs?.length || 0);
+
+  const list = dualPayloadMode && activePayload === "b" ? inputsB : inputs;
+  const activeId =
+    dualPayloadMode && activePayload === "b" ? activeInputIDB : activeInputID;
+  const nextLabel = React.useRef(list?.length || 0);
+
+  React.useEffect(() => {
+    nextLabel.current = list?.length || 0;
+  }, [list?.length, activePayload]);
+
+  // Keep editor on Payload A when leaving dual modes
+  React.useEffect(() => {
+    if (!dualPayloadMode && activePayload !== "a") {
+      dispatch(setActivePayload("a"));
+    }
+  }, [dualPayloadMode, activePayload, dispatch]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
+
   function DraggableInput({ input }) {
     const {
       attributes,
@@ -95,7 +125,7 @@ export function InputSidebar({ ...props }) {
             transition: transition,
           }}
           asChild
-          isActive={activeInputID === input.id}
+          isActive={activeId === input.id}
         >
           <a href="#">
             <Button
@@ -126,9 +156,7 @@ export function InputSidebar({ ...props }) {
                 className="flex-1 cursor-pointer px-2 py-1"
                 onClick={() => dispatch(setActiveInput(input.id))}
               >
-                <span>
-                  {input.label}
-                </span>
+                <span>{input.label}</span>
               </div>
             )}
           </a>
@@ -154,8 +182,8 @@ export function InputSidebar({ ...props }) {
 
   const handleDragEnd = ({ active, over }) => {
     if (!over || active.id === over.id) return;
-    const oldIndex = inputs.findIndex((i) => i.id === active.id);
-    const newIndex = inputs.findIndex((i) => i.id === over.id);
+    const oldIndex = list.findIndex((i) => i.id === active.id);
+    const newIndex = list.findIndex((i) => i.id === over.id);
     dispatch(reorderInputs(oldIndex, newIndex));
   };
 
@@ -186,13 +214,37 @@ export function InputSidebar({ ...props }) {
 
       <SidebarSeparator />
       <SidebarGroup>
-        <SidebarGroupLabel>Inputs</SidebarGroupLabel>
+        <SidebarGroupLabel>
+          {dualPayloadMode
+            ? `Inputs (Payload ${activePayload.toUpperCase()})`
+            : "Inputs"}
+        </SidebarGroupLabel>
         <SidebarGroupAction
           title="Add Input"
           onClick={() => dispatch(addInput(`Input ${nextLabel.current++}`))}
         >
           <Plus /> <span className="sr-only">Add Input</span>
         </SidebarGroupAction>
+        {dualPayloadMode && (
+          <div className="px-2 pb-2">
+            <ToggleGroup
+              type="single"
+              size="sm"
+              value={activePayload}
+              onValueChange={(value) =>
+                value && dispatch(setActivePayload(value))
+              }
+              className="w-full justify-start"
+            >
+              <ToggleGroupItem value="a" aria-label="Payload A" className="flex-1">
+                A
+              </ToggleGroupItem>
+              <ToggleGroupItem value="b" aria-label="Payload B" className="flex-1">
+                B
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+        )}
         <SidebarGroupContent>
           <DndContext
             sensors={sensors}
@@ -200,19 +252,12 @@ export function InputSidebar({ ...props }) {
             onDragEnd={handleDragEnd}
           >
             <SortableContext
-              items={inputs.map((i) => i.id)}
+              items={list.map((i) => i.id)}
               strategy={verticalListSortingStrategy}
             >
               <SidebarMenu>
-                {inputs.map((input) => (
-                  <DraggableInput
-                    key={input.id}
-                    input={input}
-                    dispatch={dispatch}
-                    renamingId={renamingId}
-                    setRenamingId={setRenamingId}
-                    isActive={activeInputID === input.id}
-                  />
+                {list.map((input) => (
+                  <DraggableInput key={input.id} input={input} />
                 ))}
               </SidebarMenu>
             </SortableContext>
