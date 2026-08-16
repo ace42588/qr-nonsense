@@ -66,8 +66,8 @@ export interface QArtResult {
   /** Decode verification success rate (0-1) */
   decodeSuccessRate: number;
   
-  /** Number of optimization iterations */
-  iterations: number;
+  /** Number of optimization iterations (legacy; always 1 — omitted from QArtResult) */
+  iterations?: number;
   
   /** Optional: Visualization matrix showing controlled modules */
   controlMatrix?: QRMatrix;

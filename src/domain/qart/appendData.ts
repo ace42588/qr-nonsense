@@ -10,7 +10,7 @@ import { encodeNumeric } from "../qr/encoders/numeric";
 import { encodeAlphanumeric } from "../qr/encoders/alphanumeric";
 import { encodeByte } from "../qr/encoders/byte";
 import { getNumBits } from "../qr/encoders/utils";
-import { QArtAppendData } from "./index";
+import type { QArtAppendData } from "./types";
 import { decodeSegmentValue } from "./decodeSegments";
 import {
   getCharCountIndicatorLength,

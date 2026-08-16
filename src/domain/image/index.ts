@@ -1,4 +1,3 @@
-import { QRMatrix } from "../shared/types";
 import {
   getBrightness,
   mapQrCoordToImagePixel,
@@ -14,89 +13,6 @@ export {
   sampleQrModule,
   rasterizeImageToQRGrid,
 } from "./sampling";
-
-/**
- * Calculate an appropriate scale factor to fit an image within a QR code grid
- * The scale ensures the larger dimension of the image fits nicely within the QR dimension
- * 
- * For QR grid rasterization: effectiveSize = imageSize / scale
- * So scale > 1 zooms in (smaller effective size), scale < 1 zooms out (larger effective size)
- * 
- * @param imageWidth - Width of the source image in pixels
- * @param imageHeight - Height of the source image in pixels
- * @param qrDimension - The dimension of the QR code grid
- * @param marginFactor - Factor to leave margin (0.9 = 90% of QR dimension, leaving 10% margin)
- * @returns Scale factor (scale > 1 zooms in, scale < 1 zooms out)
- */
-export function calculateAppropriateImageScale(
-  imageWidth: number,
-  imageHeight: number,
-  qrDimension: number,
-  marginFactor: number = 0.9
-): number {
-  // Validate inputs - check for valid numbers and non-zero values
-  if (
-    typeof imageWidth !== 'number' || 
-    typeof imageHeight !== 'number' || 
-    typeof qrDimension !== 'number' ||
-    !isFinite(imageWidth) || 
-    !isFinite(imageHeight) || 
-    !isFinite(qrDimension) ||
-    imageWidth <= 0 || 
-    imageHeight <= 0 || 
-    qrDimension <= 0
-  ) {
-    return 1.0;
-  }
-  
-  // Validate marginFactor
-  if (typeof marginFactor !== 'number' || !isFinite(marginFactor) || marginFactor <= 0 || marginFactor > 1) {
-    marginFactor = 0.9;
-  }
-  
-  // Use the larger dimension of the image to determine scale
-  const maxImageDimension = Math.max(imageWidth, imageHeight);
-  
-  // Prevent division by zero
-  if (maxImageDimension <= 0 || qrDimension <= 0) {
-    return 1.0;
-  }
-  
-  // Calculate scale so that the image fits within the QR dimension
-  // 
-  // IMPORTANT: The rasterization uses DIVISIVE scaling: scaledX = centeredX / scale + 0.5
-  // This means:
-  // - scale > 1: zoom IN (see less of image, smaller effective size)  
-  // - scale < 1: zoom OUT (see more of image, larger effective size)
-  //
-  // To match halftone's multiplicative scaling visually, we need to convert the scale.
-  // Halftone uses multiplicative: drawnSize = imgSize * scale (scale < 1 = smaller)
-  // QRArt uses divisive: effectiveSize = imgSize / scale (scale < 1 = zoomed out)
-  //
-  // For visual consistency: if halftone uses scale 0.5 (half size), QRArt should show
-  // the same amount of image content. Since divisive is inverse, we invert the relationship.
-  // Calculate base scale as halftone would (multiplicative)
-  const baseMultiplicativeScale = (qrDimension * marginFactor) / maxImageDimension;
-  
-  // Check for invalid base scale
-  if (!isFinite(baseMultiplicativeScale) || baseMultiplicativeScale <= 0) {
-    return 1.0;
-  }
-  
-  // Convert multiplicative scale to divisive scale for visual matching
-  // The conversion accounts for the inverse relationship and coordinate space differences
-  // For divisive scaling to show the same image content as multiplicative scale S,
-  // we use approximately 1/S, but adjusted for the coordinate transformation
-  const scale = 1.0 / baseMultiplicativeScale;
-  
-  // Validate final scale before clamping
-  if (!isFinite(scale) || scale <= 0) {
-    return 1.0;
-  }
-  
-  // Clamp scale to reasonable bounds
-  return Math.max(0.1, Math.min(10.0, scale));
-}
 
 /**
  * Calculate an appropriate scale factor for canvas-based image drawing (multiplicative scaling)
@@ -160,81 +76,6 @@ export function calculateAppropriateCanvasScale(
   return Math.max(0.1, Math.min(3.0, scale));
 }
 
-
-/**
- * Compute visual error between QR matrix and target image
- * Only considers controllable modules (data + EC, not reserved patterns)
- */
-export function computeVisualError(
-  matrix: QRMatrix,
-  targetGrid: Float32Array,
-  qrDimension: number
-): number {
-  let totalError = 0;
-  let count = 0;
-
-  for (let y = 0; y < qrDimension; y++) {
-    for (let x = 0; x < qrDimension; x++) {
-      const module = matrix[y]?.[x];
-      if (!module || module.nonData) continue; // Skip reserved modules
-
-      const targetBrightness = targetGrid[y * qrDimension + x];
-      const actualBrightness = module.isDark ? 0 : 1;
-      const error = Math.abs(targetBrightness - actualBrightness);
-
-      totalError += error;
-      count++;
-    }
-  }
-
-  return count > 0 ? totalError / count : Infinity;
-}
-
-
-/**
- * Calculate local variance (contrast) for a pixel position
- * Matches Go implementation: calculates variance in an 11x11 neighborhood (radius=5)
- * 
- * IMPORTANT: Uses 0-255 scale values (not normalized 0-1) to match Go implementation's integer arithmetic
- * 
- * @param targetGrid - Rasterized brightness grid (0-1 normalized, will be scaled to 0-255)
- * @param dimension - QR code dimension
- * @param x - Module x position
- * @param y - Module y position
- * @param radius - Neighborhood radius (default 5 for 11x11 window)
- * @returns Variance value on 0-255 scale (higher = more contrast, matches Go integer values)
- */
-export function calculateLocalVariance(
-  targetGrid: Float32Array,
-  dimension: number,
-  x: number,
-  y: number,
-  radius: number = 5
-): number {
-  let sum = 0;
-  let sumSq = 0;
-  let n = 0;
-  
-  for (let dy = -radius; dy <= radius; dy++) {
-    for (let dx = -radius; dx <= radius; dx++) {
-      const nx = x + dx;
-      const ny = y + dy;
-      if (nx >= 0 && nx < dimension && ny >= 0 && ny < dimension) {
-        // Scale from 0-1 to 0-255 to match Go implementation's integer arithmetic
-        const val = targetGrid[ny * dimension + nx] * 255;
-        sum += val;
-        sumSq += val * val;
-        n++;
-      }
-    }
-  }
-  
-  if (n === 0) return 0;
-  const avg = sum / n;
-  // Variance formula: E[X^2] - (E[X])^2
-  // Returns variance on 0-255 scale (matches Go implementation)
-  return (sumSq / n) - (avg * avg);
-}
 
 /**
  * Compute contrast grid (local variance) for all module positions efficiently

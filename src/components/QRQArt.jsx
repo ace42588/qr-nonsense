@@ -25,6 +25,7 @@ import {
   clampDotSizes,
 } from "@/domain/halftone/rendering";
 import { SettingsPanel, ControlRow } from "@/components/qr-controls/SettingsPanel";
+import { EvaluationSummary } from "@/components/qr-controls/EvaluationSummary";
 import {
   HalftoneControls,
   DEFAULT_MIN_DOT,
@@ -489,6 +490,11 @@ export function QRQArt({
         <WarningBanner message={qartResult.scannabilityWarning} title="Scannability" />
       )}
       {generationError && <ErrorBanner message={generationError} />}
+      {qartResult?.evaluation && (
+        <div className="mb-2">
+          <EvaluationSummary evaluation={qartResult.evaluation} />
+        </div>
+      )}
       <QRBase
         key={canvasKey}
         size={initialSize}

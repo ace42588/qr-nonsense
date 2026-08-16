@@ -16,13 +16,25 @@ import {
 } from "./utils";
 import { validateDecode } from "@/adapters/browser/validation";
 
-// Mock validateDecode since jsdom doesn't support canvas
-// The qart module imports from the browser adapter
+const decodeMatrixTrialsMock = vi.fn().mockResolvedValue([
+  { success: true, payload: "A" },
+]);
+
+// Mock decode port since jsdom doesn't support canvas / jsQR reliably
 vi.mock("@/adapters/browser/validation", async () => {
-  const actual = await vi.importActual("@/adapters/browser/validation") as any;
+  const actual = (await vi.importActual(
+    "@/adapters/browser/validation"
+  )) as object;
   return {
     ...actual,
-    validateDecode: vi.fn().mockResolvedValue(1.0), // Always return success in tests
+    validateDecode: vi.fn().mockResolvedValue(1.0),
+    createBrowserEvaluateDecodePort: () => ({
+      decodeMatrixTrials: (...args: unknown[]) =>
+        decodeMatrixTrialsMock(...args),
+      decodeImageData: vi.fn().mockResolvedValue([
+        { success: true, payload: "A" },
+      ]),
+    }),
   };
 });
 
@@ -36,6 +48,9 @@ describe("QArt Integration Tests", () => {
 
   beforeEach(() => {
     vi.mocked(validateDecode).mockResolvedValue(1.0);
+    decodeMatrixTrialsMock.mockResolvedValue([
+      { success: true, payload: "A" },
+    ]);
 
     // Create test input and use proper encoding pipeline
     const testInput: Input = {
@@ -377,7 +392,12 @@ describe("QArt Integration Tests", () => {
     });
 
     it("surfaces a scannability warning when decode rate is below threshold", async () => {
-      vi.mocked(validateDecode).mockResolvedValueOnce(0.25);
+      decodeMatrixTrialsMock.mockResolvedValueOnce([
+        { success: true, payload: "A" },
+        { success: false, payload: null },
+        { success: false, payload: null },
+        { success: false, payload: null },
+      ]);
 
       const options: QArtOptions = {
         segments: testSegments,
@@ -388,7 +408,7 @@ describe("QArt Integration Tests", () => {
         errorCorrectionLevel: 0,
         targetImage: testImage,
         minDecodeRedundancy: 0.8,
-        decodeTrials: 3,
+        decodeTrials: 4,
       };
 
       const result = await generateQArt(options);
@@ -397,7 +417,7 @@ describe("QArt Integration Tests", () => {
       expect(result.decodeSuccessRate).toBe(0.25);
       expect(result.scannabilityWarning).toBeTruthy();
       expect(result.scannabilityWarning).toContain("25%");
-      expect(validateDecode).toHaveBeenCalledWith(expect.anything(), 3);
+      expect(decodeMatrixTrialsMock).toHaveBeenCalledWith(expect.anything(), 4);
     });
   });
 });

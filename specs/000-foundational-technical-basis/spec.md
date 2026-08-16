@@ -134,11 +134,11 @@ src/
 │   ├── image/            # Image processing and transformation
 │   ├── input/            # Input parsing and serialization
 │   ├── qart/             # QArt QR code generation algorithm
+│   ├── evaluate/         # Unified QR quality evaluation (penalty, RS, visual, print)
 │   └── qr/               # Core QR code generation logic
 │       ├── codewords/    # Codeword generation and interleaving
 │       ├── constants/    # QR code constants (error correction, format info, modes)
 │       ├── encoders/     # Mode-specific encoders (numeric, alphanumeric, byte, ECI)
-│       ├── evaluator/    # QR code quality evaluation
 │       ├── matrix/       # QR matrix generation and module placement
 │       └── reedsolomon/  # Reed-Solomon error correction
 ├── hooks/                 # Custom React hooks

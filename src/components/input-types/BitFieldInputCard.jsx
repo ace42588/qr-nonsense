@@ -91,11 +91,14 @@ function SortableField({ field, dispatch, input, preview }) {
 
   const fieldValue = preview?.values?.[field.label] ?? "";
 
+  const bitsHint =
+    field.mode === "max" ? `${bitsNeeded(field.max)} bits` : undefined;
+
   return (
     <div
       ref={setNodeRef}
       data-dragging={isDragging}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 flex items-center rounded-md"
+      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 flex w-full min-w-0 items-center gap-1 rounded-md"
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
@@ -107,13 +110,13 @@ function SortableField({ field, dispatch, input, preview }) {
         style={{ cursor: "grab" }}
         variant="ghost"
         size="icon"
-        className="size-7 text-muted-foreground hover:bg-transparent"
+        className="size-7 shrink-0 text-muted-foreground hover:bg-transparent"
       >
         <GripVerticalIcon />
         <span className="sr-only">Drag to reorder</span>
       </Button>
 
-      <div className="flex-1 flex items-center gap-2">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
         {isRenaming ? (
           <Input
             ref={inputRef}
@@ -124,9 +127,15 @@ function SortableField({ field, dispatch, input, preview }) {
               if (e.key === "Enter") handleRenameCommit();
               if (e.key === "Escape") setIsRenaming(false);
             }}
+            className="min-w-0 flex-1 basis-24"
           />
         ) : (
-          <span className="text-sm px-2 w-24">{field.label}</span>
+          <span
+            className="min-w-0 flex-1 basis-16 truncate text-sm px-2"
+            title={field.label}
+          >
+            {field.label}
+          </span>
         )}
 
         {field.mode === "max" ? (
@@ -140,7 +149,9 @@ function SortableField({ field, dispatch, input, preview }) {
                 })
               )
             }
-            className="w-16"
+            className="w-16 shrink-0"
+            title={bitsHint}
+            aria-label={`${field.label} max (${bitsHint})`}
           />
         ) : (
           <Input
@@ -155,13 +166,14 @@ function SortableField({ field, dispatch, input, preview }) {
                 })
               );
             }}
-            className="w-16"
+            className="w-16 shrink-0"
+            aria-label={`${field.label} bit width`}
           />
         )}
 
-        {field.mode === "max" && (
-          <span className="text-xs text-muted-foreground whitespace-nowrap">
-            ({bitsNeeded(field.max)} bits)
+        {bitsHint && (
+          <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+            ({bitsHint})
           </span>
         )}
 
@@ -176,14 +188,20 @@ function SortableField({ field, dispatch, input, preview }) {
               })
             );
           }}
-          className="w-24"
+          className="w-20 shrink-0"
           placeholder="Value"
+          aria-label={`${field.label} value`}
         />
       </div>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="text-muted-foreground">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 text-muted-foreground"
+            aria-label={`${field.label} field options`}
+          >
             <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
@@ -235,12 +253,12 @@ export function BitFieldInputCard({ input, preview, dispatch, parseError }) {
   };
 
   return (
-    <div className="grid gap-4">
+    <div className="grid min-w-0 gap-4">
       <h3 className="text-sm font-semibold text-foreground">{input.label}</h3>
       {(parseError || input.error) && (
         <ErrorBanner message={parseError || input.error} title="Parse error" />
       )}
-      <div className="space-y-2">
+      <div className="min-w-0 space-y-2">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}

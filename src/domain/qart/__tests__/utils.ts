@@ -6,7 +6,7 @@
 import { QRBlock } from "../../qr/codewords/blocks";
 import { Codeword, Bit, QRMatrix, QRModule } from "../../shared/types";
 import { BlockBasisState } from "../types";
-import { calculateLocalVariance } from "../../image";
+import { computeContrastGrid } from "../../image";
 
 /**
  * Create a mock bit with specified value
@@ -112,13 +112,7 @@ export function createMockContrastGrid(
   dimension: number,
   radius: number = 5
 ): Float32Array {
-  const contrastGrid = new Float32Array(dimension * dimension);
-  for (let y = 0; y < dimension; y++) {
-    for (let x = 0; x < dimension; x++) {
-      contrastGrid[y * dimension + x] = calculateLocalVariance(targetGrid, dimension, x, y, radius);
-    }
-  }
-  return contrastGrid;
+  return computeContrastGrid(targetGrid, dimension, radius);
 }
 
 /**

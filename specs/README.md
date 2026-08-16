@@ -43,6 +43,12 @@ This directory contains comprehensive feature specifications for the QR-Nonsense
 - **[011 - Embedded Dual-Payload QR](./011-embedded-qr-generation/spec.md)**
   - Dual-payload Embed mode: 3×3 modules with outer eight from Payload A and center from Payload B
 
+- **[012 - Generation Pipeline Foundation](./012-generation-pipeline/spec.md)**
+  - Domain generation graph: GenerationContext, stage functions, node catalog, and mode preset graphs (no canvas UI)
+
+- **[013 - Unified QR Evaluation](./013-qr-evaluation/spec.md)**
+  - Domain evaluation API: mask penalty, RS budget, visual/image/print metrics, decode trials, comparable EvaluationReport
+
 ### Supporting Feature Specifications
 
 - **[006 - QR Code Scanner](./006-qr-scanner/spec.md)**

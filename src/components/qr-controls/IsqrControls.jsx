@@ -1,5 +1,6 @@
 import { Switch } from "@/components/ui/switch";
 import { ControlRow } from "./SettingsPanel";
+import { EvaluationSummary } from "./EvaluationSummary";
 
 /**
  * IS-QR controls: ROI threshold, CSF/HVS, mask upload, metrics display.
@@ -23,6 +24,7 @@ export function IsqrControls({
   metrics,
   instanceCount,
   decodeSuccessRate,
+  evaluation,
 }) {
   return (
     <>
@@ -137,43 +139,12 @@ export function IsqrControls({
         ) : null}
       </ControlRow>
 
-      {(metrics || decodeSuccessRate != null || instanceCount != null) && (
-        <div className="rounded-md border bg-background/80 p-3 text-xs">
-          <div className="mb-2 font-semibold text-foreground">Quality metrics</div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 tabular-nums text-muted-foreground">
-            {decodeSuccessRate != null && (
-              <>
-                <span>Decode rate</span>
-                <span>{(decodeSuccessRate * 100).toFixed(0)}%</span>
-              </>
-            )}
-            {instanceCount != null && (
-              <>
-                <span>Instances</span>
-                <span>{instanceCount}</span>
-              </>
-            )}
-            {metrics && (
-              <>
-                <span>MSE</span>
-                <span>{metrics.mse.toFixed(2)}</span>
-                <span>PSNR</span>
-                <span>
-                  {Number.isFinite(metrics.psnr)
-                    ? `${metrics.psnr.toFixed(2)} dB`
-                    : "∞"}
-                </span>
-                <span>SSIM</span>
-                <span>{metrics.ssim.toFixed(4)}</span>
-                <span>FSIM</span>
-                <span>{metrics.fsim.toFixed(4)}</span>
-                <span>GMSD</span>
-                <span>{metrics.gmsd.toFixed(4)}</span>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      <EvaluationSummary
+        evaluation={evaluation}
+        metrics={metrics}
+        decodeSuccessRate={decodeSuccessRate}
+        instanceCount={instanceCount}
+      />
     </>
   );
 }

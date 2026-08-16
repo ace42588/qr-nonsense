@@ -1,5 +1,5 @@
 import { createMatrix, addCodewords, applyMask, attachModuleIndex } from "./utils";
-import { calculatePenalty } from "./calculatePenalty";
+import { calculatePenalty } from "@/domain/evaluate/maskPenalty";
 import { addPatterns, updateFormatInfoModules, addVersionInfo } from "./modules";
 
 /**

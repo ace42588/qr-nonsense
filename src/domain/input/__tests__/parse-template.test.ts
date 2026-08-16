@@ -41,6 +41,8 @@ describe("buildTemplatePayload", () => {
       })
     ).toBe("WIFI:T:WPA3;S:Secure;P:secret;;");
   });
+
+  it("builds a Wi-Fi payload with nopass", () => {
     expect(
       buildTemplatePayload("wifi", {
         ssid: "Open",

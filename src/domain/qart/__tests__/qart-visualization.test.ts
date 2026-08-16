@@ -3,7 +3,8 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { rasterizeImageToQRGrid, computeVisualError } from "../../image";
+import { rasterizeImageToQRGrid } from "../../image";
+import { computeVisualError } from "../../evaluate/visual";
 import { QRMatrix } from "../../shared/types";
 import {
   createTestImageData,

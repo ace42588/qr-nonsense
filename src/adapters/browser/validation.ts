@@ -5,6 +5,16 @@
 
 import jsQR from "jsqr";
 import { QRMatrix } from "@/domain/shared/types";
+import type { ImageData as DomainImageData } from "@/domain/image";
+import type {
+  DecodeTrialResult,
+  EvaluateDecodePort,
+} from "@/domain/evaluate";
+import {
+  MATRIX_RENDER_SIZE,
+  paintMatrixToContext,
+  renderMatrixToImageData,
+} from "./renderMatrix";
 
 /**
  * Deterministic pseudo-random number generator for consistent perturbations
@@ -19,65 +29,23 @@ function deterministicRandom(seed: number): () => number {
 }
 
 function renderMatrixToCanvas(matrix: QRMatrix): HTMLCanvasElement | null {
-  if (!matrix || matrix.length === 0 || !matrix[0] || matrix[0].length === 0) {
-    return null;
-  }
-
-  const dimension = matrix.length;
-  if (matrix.some((row) => !row || row.length !== dimension)) {
-    return null;
-  }
-
-  // QR codes require a quiet zone (white border) of at least 4 modules on all sides
-  const quietZone = 4;
-  const totalDimension = dimension + quietZone * 2;
+  if (typeof document === "undefined") return null;
   const canvas = document.createElement("canvas");
-  const size = 400; // Render at high resolution for better decode
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = MATRIX_RENDER_SIZE;
+  canvas.height = MATRIX_RENDER_SIZE;
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
-
-  ctx.imageSmoothingEnabled = false;
-  ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, size, size);
-
-  const moduleSize = size / totalDimension;
-  for (let y = 0; y < dimension; y++) {
-    for (let x = 0; x < dimension; x++) {
-      const module = matrix[y]?.[x];
-      if (!module) continue;
-
-      const moduleX = Math.round((x + quietZone) * moduleSize);
-      const moduleY = Math.round((y + quietZone) * moduleSize);
-      const moduleWidth =
-        Math.round((x + quietZone + 1) * moduleSize) - moduleX;
-      const moduleHeight =
-        Math.round((y + quietZone + 1) * moduleSize) - moduleY;
-
-      ctx.fillStyle = module.isDark ? "black" : "white";
-      ctx.fillRect(moduleX, moduleY, moduleWidth, moduleHeight);
-    }
-  }
-
+  if (!paintMatrixToContext(ctx, matrix)) return null;
   return canvas;
 }
 
-/**
- * Decode a QR matrix once with jsQR (no perturbations). Returns payload text or null.
- */
-export async function decodeMatrixPayload(
-  matrix: QRMatrix
-): Promise<string | null> {
-  const canvas = renderMatrixToCanvas(matrix);
-  if (!canvas) return null;
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
-
+function decodeImageDataOnce(
+  data: Uint8ClampedArray,
+  width: number,
+  height: number
+): string | null {
   try {
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    const code = jsQR(data, width, height);
     return code?.data ?? null;
   } catch (error) {
     console.error(error);
@@ -86,45 +54,63 @@ export async function decodeMatrixPayload(
 }
 
 /**
- * Validate QR code can be decoded with light perturbations using jsQR
- *
- * This function:
- * 1. Renders the QR matrix to a canvas
- * 2. Applies perturbations (scale variations, slight blur, rotation)
- * 3. Attempts decode with jsQR
- * 4. Returns success rate
- *
- * @param matrix - The QR code matrix to validate
- * @param trials - Number of decode attempts. If 1, no perturbations are applied.
- * @returns Success rate (0.0 to 1.0) of successful decodes
+ * Decode a QR matrix once with jsQR (no perturbations). Returns payload text or null.
  */
-export async function validateDecode(
+export async function decodeMatrixPayload(
+  matrix: QRMatrix
+): Promise<string | null> {
+  const buffer = renderMatrixToImageData(matrix);
+  if (!buffer) return null;
+  return decodeImageDataOnce(buffer.data, buffer.width, buffer.height);
+}
+
+/**
+ * Decode raw ImageData with jsQR (expects quiet zone already present).
+ */
+export async function decodeRenderedImageData(
+  image: DomainImageData
+): Promise<string | null> {
+  return decodeImageDataOnce(image.data, image.width, image.height);
+}
+
+/**
+ * Run decode trials with optional perturbations; returns per-trial results.
+ */
+export async function decodeMatrixTrials(
   matrix: QRMatrix,
   trials: number
-): Promise<number> {
+): Promise<DecodeTrialResult[]> {
   const canvas = renderMatrixToCanvas(matrix);
-  if (!canvas) return 0;
+  if (!canvas) {
+    return Array.from({ length: trials }, () => ({
+      success: false,
+      payload: null,
+    }));
+  }
 
   const size = canvas.width;
-  let successCount = 0;
   const usePerturbations = trials > 1;
+  const results: DecodeTrialResult[] = [];
 
   for (let trial = 0; trial < trials; trial++) {
     const trialCanvas = document.createElement("canvas");
     trialCanvas.width = size;
     trialCanvas.height = size;
     const trialCtx = trialCanvas.getContext("2d");
-    if (!trialCtx) continue;
+    if (!trialCtx) {
+      results.push({ success: false, payload: null });
+      continue;
+    }
 
     trialCtx.imageSmoothingEnabled = false;
     trialCtx.fillStyle = "white";
     trialCtx.fillRect(0, 0, size, size);
 
-    if (usePerturbations) {
+    if (usePerturbations && typeof trialCtx.save === "function") {
       const rand = deterministicRandom(trial);
-      const scale = 0.9 + rand() * 0.2; // 0.9 to 1.1
-      const rotation = (rand() - 0.5) * 0.1; // ±0.05 radians (~±3 degrees)
-      const blur = rand() < 0.3 ? 0.5 : 0; // 30% chance of slight blur
+      const scale = 0.9 + rand() * 0.2;
+      const rotation = (rand() - 0.5) * 0.1;
+      const blur = rand() < 0.3 ? 0.5 : 0;
 
       trialCtx.save();
       trialCtx.translate(size / 2, size / 2);
@@ -132,7 +118,7 @@ export async function validateDecode(
       trialCtx.scale(scale, scale);
       trialCtx.translate(-size / 2, -size / 2);
 
-      if (blur > 0) {
+      if (blur > 0 && "filter" in trialCtx) {
         trialCtx.filter = `blur(${blur}px)`;
       }
       trialCtx.drawImage(canvas, 0, 0);
@@ -142,18 +128,55 @@ export async function validateDecode(
     }
 
     const imageData = trialCtx.getImageData(0, 0, size, size);
-
-    try {
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
-      if (code && code.data) {
-        successCount++;
-      }
-    } catch (error) {
-      console.error(error);
-      continue;
-    }
+    const payload = decodeImageDataOnce(
+      imageData.data,
+      imageData.width,
+      imageData.height
+    );
+    results.push({
+      success: payload != null && payload.length > 0,
+      payload,
+    });
   }
 
-  return successCount / trials;
+  return results;
 }
 
+/**
+ * Decode rendered ImageData across trials (no geometry perturbations when trials=1).
+ */
+export async function decodeImageDataTrials(
+  image: DomainImageData,
+  trials: number
+): Promise<DecodeTrialResult[]> {
+  const results: DecodeTrialResult[] = [];
+  for (let i = 0; i < trials; i++) {
+    const payload = await decodeRenderedImageData(image);
+    results.push({
+      success: payload != null && payload.length > 0,
+      payload,
+    });
+  }
+  return results;
+}
+
+/**
+ * Validate QR code can be decoded with light perturbations using jsQR
+ * @returns Success rate (0.0 to 1.0) of successful decodes
+ */
+export async function validateDecode(
+  matrix: QRMatrix,
+  trials: number
+): Promise<number> {
+  const results = await decodeMatrixTrials(matrix, trials);
+  if (results.length === 0) return 0;
+  return results.filter((r) => r.success).length / results.length;
+}
+
+/** Decode port for evaluateGeneratedQr (DIP). */
+export function createBrowserEvaluateDecodePort(): EvaluateDecodePort {
+  return {
+    decodeMatrixTrials,
+    decodeImageData: decodeImageDataTrials,
+  };
+}

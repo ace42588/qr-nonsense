@@ -1,22 +1,19 @@
 /**
- * IS-QR generation orchestrator (browser BlendMask approximation).
+ * IS-QR generation orchestrator — composed from stage helpers + QArt.
  */
 
 import { generateQArt, type QArtOptions, type QArtResult } from "../qart";
-import { resizeImageDataNearest, type ImageData } from "../image";
+import type { ImageData } from "../image";
+import type { InstanceMaskResult } from "./segmentation";
+import type { CsfOptions } from "./csf";
+import type { ImageQualityMetrics } from "./metrics";
 import {
-  computeInstanceMask,
-  maskFromImageData,
-  maskToModuleGrid,
-  type InstanceMaskResult,
-} from "./segmentation";
-import { computeModuleBinaryTarget } from "./moduleBinary";
-import { fuseColorQr } from "./fusion";
-import { applyDwtCsf, type CsfOptions } from "./csf";
-import {
-  computeImageQualityMetrics,
-  type ImageQualityMetrics,
-} from "./metrics";
+  computeRoi,
+  computeModuleBinaryTarget,
+  fuseIsqrColor,
+  applyIsqrDwtCsf,
+  computeIsqrMetrics,
+} from "./stages";
 
 export interface IsqrOptions {
   qart: QArtOptions;
@@ -64,48 +61,12 @@ export async function generateIsqr(options: IsqrOptions): Promise<IsqrResult> {
   const version = qart.versionInfo.version;
   const dimension = version * 4 + 17;
 
-  // ROI on transformed (square) image
-  let pixelMask: Float32Array;
-  let roiMeta: InstanceMaskResult;
-
-  if (maskImage) {
-    const resized =
-      maskImage.width === transformedImage.width &&
-      maskImage.height === transformedImage.height
-        ? maskImage
-        : resizeImageDataNearest(
-            maskImage,
-            Math.max(transformedImage.width, transformedImage.height)
-          );
-    // If resize made square from non-square dims, ensure match
-    const aligned =
-      resized.width === transformedImage.width &&
-      resized.height === transformedImage.height
-        ? resized
-        : resizeImageDataNearest(maskImage, transformedImage.width);
-    pixelMask = maskFromImageData(aligned);
-    roiMeta = {
-      mask: pixelMask,
-      saliency: pixelMask,
-      labels: new Int32Array(pixelMask.length),
-      instanceCount: 1,
-      width: transformedImage.width,
-      height: transformedImage.height,
-    };
-    for (let i = 0; i < pixelMask.length; i++) {
-      roiMeta.labels[i] = pixelMask[i] > 0.5 ? 1 : 0;
-    }
-  } else {
-    roiMeta = computeInstanceMask(transformedImage, roiThresholdBias);
-    pixelMask = roiMeta.mask;
-  }
-
-  const roiGrid = maskToModuleGrid(
-    pixelMask,
-    transformedImage.width,
-    transformedImage.height,
-    dimension
-  );
+  const { roiMeta, roiGrid } = computeRoi({
+    transformedImage,
+    dimension,
+    maskImage,
+    roiThresholdBias,
+  });
 
   const binaryTarget = computeModuleBinaryTarget(transformedImage, dimension);
 
@@ -120,22 +81,20 @@ export async function generateIsqr(options: IsqrOptions): Promise<IsqrResult> {
     throw new Error("IS-QR generation was cancelled");
   }
 
-  // Prefer offscreen canvas image from QArt (QR-dimension based) for fusion source
   const sourceForFusion =
     qartResult.offscreenCanvasImage || transformedImage;
 
-  // Align ROI grid sampling already at module level; fusion uses module ROI
-  let fused = fuseColorQr(qartResult.matrix, sourceForFusion, {
+  let fused = fuseIsqrColor({
+    matrix: qartResult.matrix,
+    sourceImage: sourceForFusion,
     roiGrid,
     modulePixel,
     qrBlend,
   });
 
-  fused = applyDwtCsf(fused, csf);
+  fused = applyIsqrDwtCsf(fused, csf);
 
-  // Metrics vs resized reference to fused size
-  const reference = resizeImageDataNearest(transformedImage, fused.width);
-  const metrics = computeImageQualityMetrics(reference, fused);
+  const metrics = computeIsqrMetrics(transformedImage, fused);
 
   return {
     qart: qartResult,

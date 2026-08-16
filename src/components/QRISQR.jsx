@@ -276,6 +276,7 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
           metrics={isqrResult?.metrics}
           instanceCount={isqrResult?.instanceCount}
           decodeSuccessRate={isqrResult?.qart?.decodeSuccessRate}
+          evaluation={isqrResult?.qart?.evaluation}
         />
         {isGenerating && (
           <p className="text-sm text-muted-foreground">

@@ -8,7 +8,7 @@ export {
   type InstanceMaskResult,
 } from "./segmentation";
 
-export { computeModuleBinaryTarget, toGrayscaleImageData } from "./moduleBinary";
+export { computeModuleBinaryTarget } from "./moduleBinary";
 
 export {
   haarForward2D,
@@ -46,3 +46,10 @@ export {
   type IsqrOptions,
   type IsqrResult,
 } from "./generate";
+
+export {
+  computeRoi,
+  fuseIsqrColor,
+  applyIsqrDwtCsf,
+  computeIsqrMetrics,
+} from "./stages";
