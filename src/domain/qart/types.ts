@@ -46,7 +46,7 @@ export interface QArtOptions {
   signal?: AbortSignal;
   priorityFunction?: PriorityFunctionType;
   appendData?: QArtAppendData;
-  sourceImage?: HTMLImageElement;
+  sourceImage?: HTMLImageElement | ImageBitmap | ImageData;
   transformParams?: {
     scale: number;
     offsetX: number;

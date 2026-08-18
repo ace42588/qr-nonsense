@@ -163,7 +163,7 @@ export interface PrepareImageGridsResult {
 export async function prepareImageGrids(options: {
   version: number;
   targetImage: ImageData;
-  sourceImage?: HTMLImageElement;
+  sourceImage?: HTMLImageElement | ImageBitmap | ImageData;
   transformParams?: { scale: number; offsetX: number; offsetY: number };
   targetGridOverride?: Float32Array;
 }): Promise<PrepareImageGridsResult> {
@@ -205,54 +205,49 @@ export async function prepareImageGrids(options: {
       targetImage.width !== offscreenCanvasSize ||
       targetImage.height !== offscreenCanvasSize
     ) {
-      const canvas = document.createElement("canvas");
-      canvas.width = offscreenCanvasSize;
-      canvas.height = offscreenCanvasSize;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.imageSmoothingEnabled = false;
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, offscreenCanvasSize, offscreenCanvasSize);
+      try {
+        const { create2dCanvas } = await import("@/adapters/browser/canvasPort");
+        const dest = create2dCanvas(offscreenCanvasSize, offscreenCanvasSize);
+        dest.ctx.imageSmoothingEnabled = false;
+        dest.ctx.fillStyle = "white";
+        dest.ctx.fillRect(0, 0, offscreenCanvasSize, offscreenCanvasSize);
 
-        const tempCanvas = document.createElement("canvas");
-        tempCanvas.width = targetImage.width;
-        tempCanvas.height = targetImage.height;
-        const tempCtx = tempCanvas.getContext("2d");
-        if (tempCtx) {
-          tempCtx.putImageData(targetImage, 0, 0);
+        const temp = create2dCanvas(targetImage.width, targetImage.height);
+        temp.ctx.putImageData(targetImage, 0, 0);
 
-          const sourceAspect = targetImage.width / targetImage.height;
-          let drawWidth = offscreenCanvasSize;
-          let drawHeight = offscreenCanvasSize;
-          let drawX = 0;
-          let drawY = 0;
+        const sourceAspect = targetImage.width / targetImage.height;
+        let drawWidth = offscreenCanvasSize;
+        let drawHeight = offscreenCanvasSize;
+        let drawX = 0;
+        let drawY = 0;
 
-          if (sourceAspect > 1) {
-            drawHeight = offscreenCanvasSize / sourceAspect;
-            drawY = (offscreenCanvasSize - drawHeight) / 2;
-          } else {
-            drawWidth = offscreenCanvasSize * sourceAspect;
-            drawX = (offscreenCanvasSize - drawWidth) / 2;
-          }
-
-          ctx.drawImage(
-            tempCanvas,
-            0,
-            0,
-            targetImage.width,
-            targetImage.height,
-            drawX,
-            drawY,
-            drawWidth,
-            drawHeight
-          );
-          normalizedTargetImage = ctx.getImageData(
-            0,
-            0,
-            offscreenCanvasSize,
-            offscreenCanvasSize
-          );
+        if (sourceAspect > 1) {
+          drawHeight = offscreenCanvasSize / sourceAspect;
+          drawY = (offscreenCanvasSize - drawHeight) / 2;
+        } else {
+          drawWidth = offscreenCanvasSize * sourceAspect;
+          drawX = (offscreenCanvasSize - drawWidth) / 2;
         }
+
+        dest.ctx.drawImage(
+          temp.canvas as CanvasImageSource,
+          0,
+          0,
+          targetImage.width,
+          targetImage.height,
+          drawX,
+          drawY,
+          drawWidth,
+          drawHeight
+        );
+        normalizedTargetImage = dest.ctx.getImageData(
+          0,
+          0,
+          offscreenCanvasSize,
+          offscreenCanvasSize
+        );
+      } catch {
+        normalizedTargetImage = targetImage;
       }
     }
   }
@@ -477,27 +472,32 @@ export function qartSolve(options: {
     );
   }
 
-  let allECCorrect = true;
+  verifyOptimizedBlocks(workingBlocks, ecCodewordsPerBlock, cachedEncoder);
+
+  return { workingBlocks, controlledBits, totalBitsOptimized };
+}
+
+/**
+ * Verify Reed-Solomon EC bytes after QArt block optimization.
+ */
+export function verifyOptimizedBlocks(
+  workingBlocks: QRBlock[],
+  ecCodewordsPerBlock: number,
+  encoder?: ReedSolomonEncoder
+): void {
+  const cachedEncoder = encoder ?? new ReedSolomonEncoder(ecCodewordsPerBlock);
   for (let i = 0; i < workingBlocks.length; i++) {
     const block = workingBlocks[i];
     const { dataBytes, ecBytes: actualEC } = codewordsToBytes(block);
     const expectedEC = cachedEncoder.encode(dataBytes);
     for (let j = 0; j < expectedEC.length; j++) {
       if (expectedEC[j] !== actualEC[j]) {
-        allECCorrect = false;
-        break;
+        throw new Error(
+          "Reed-Solomon encoding verification failed. QArt optimization may have corrupted the QR code."
+        );
       }
     }
-    if (!allECCorrect) break;
   }
-
-  if (!allECCorrect) {
-    throw new Error(
-      "Reed-Solomon encoding verification failed. QArt optimization may have corrupted the QR code."
-    );
-  }
-
-  return { workingBlocks, controlledBits, totalBitsOptimized };
 }
 
 /**

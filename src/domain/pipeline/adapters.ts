@@ -4,11 +4,12 @@
 
 import type { QArtOptions, QArtResult } from "@/domain/qart/types";
 import type { IsqrOptions, IsqrResult } from "@/domain/isqr/generate";
+import { computeIsqrMetrics } from "@/domain/isqr/stages";
 import type { AmbiguousOptions, AmbiguousResult } from "@/domain/ambiguous";
 import type { EmbedOptions, EmbedResult } from "@/domain/embed";
 import { createGenerationContext } from "./context";
-import { runGraph } from "./run";
-import { QART_FROM_MATRIX_NODES } from "./presets";
+import { runPipeline } from "./runner";
+import { QART_FROM_MATRIX_NODES, ISQR_FROM_MATRIX_NODES } from "./presets";
 import type { GenerationContext } from "./types";
 
 export function contextFromQArtOptions(
@@ -61,7 +62,7 @@ export function qartResultFromContext(ctx: GenerationContext): QArtResult {
 export async function generateQArtViaPipeline(
   options: QArtOptions
 ): Promise<QArtResult> {
-  const ctx = await runGraph(
+  const ctx = await runPipeline(
     [...QART_FROM_MATRIX_NODES],
     contextFromQArtOptions(options)
   );
@@ -130,7 +131,7 @@ export function embedResultFromContext(ctx: GenerationContext): EmbedResult {
 export async function generateAmbiguousViaPipeline(
   options: AmbiguousOptions
 ): Promise<AmbiguousResult> {
-  const ctx = await runGraph(
+  const ctx = await runPipeline(
     "ambiguous",
     contextFromDualOptions(options)
   );
@@ -140,7 +141,7 @@ export async function generateAmbiguousViaPipeline(
 export async function generateEmbedViaPipeline(
   options: EmbedOptions
 ): Promise<EmbedResult> {
-  const ctx = await runGraph("embed", contextFromDualOptions(options));
+  const ctx = await runPipeline("embed", contextFromDualOptions(options));
   return embedResultFromContext(ctx);
 }
 
@@ -166,15 +167,29 @@ export function isqrResultFromContext(
   ctx: GenerationContext,
   qart: QArtResult
 ): IsqrResult {
-  if (!ctx.fusedImage || !ctx.roiMeta || !ctx.roiGrid || !ctx.metrics) {
+  if (!ctx.fusedImage || !ctx.roiMeta || !ctx.roiGrid) {
     throw new Error("IS-QR pipeline finished without fusion/metrics");
   }
+  const reference =
+    ctx.targetImage ?? ctx.offscreenCanvasImage ?? ctx.fusedImage;
+  const metrics =
+    ctx.metrics ?? computeIsqrMetrics(reference, ctx.fusedImage);
   return {
     qart,
     roi: ctx.roiMeta,
     roiGrid: ctx.roiGrid,
     fusedImage: ctx.fusedImage,
-    metrics: ctx.metrics,
+    metrics,
     instanceCount: ctx.roiMeta.instanceCount,
   };
+}
+
+export async function generateIsqrViaPipeline(
+  options: IsqrOptions
+): Promise<IsqrResult> {
+  const ctx = await runPipeline(
+    [...ISQR_FROM_MATRIX_NODES],
+    contextFromIsqrOptions(options)
+  );
+  return isqrResultFromContext(ctx, qartResultFromContext(ctx));
 }

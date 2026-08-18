@@ -81,6 +81,17 @@ export const QART_FROM_MATRIX_NODES = [
   "evaluate",
 ] as const;
 
+/** IS-QR stages when context already has encode/matrix (UI path). */
+export const ISQR_FROM_MATRIX_NODES = [
+  "isqrRoi",
+  "rasterize",
+  "qartOptimize",
+  "qartRebuild",
+  "isqrFuse",
+  "dwtCsf",
+  "evaluate",
+] as const;
+
 export function getPreset(id: string): PresetGraph | undefined {
   return PRESETS[id as PresetId];
 }

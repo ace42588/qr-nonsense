@@ -11,7 +11,9 @@ import {
   listPresetIds,
   listNodeIds,
   NODE_CATALOG,
+  isqrResultFromContext,
 } from "@/domain/pipeline";
+import type { QArtResult } from "@/domain/qart";
 
 vi.mock("@/adapters/browser/validation", async () => {
   const actual = (await vi.importActual(
@@ -215,6 +217,51 @@ describe("presets smoke", () => {
     );
     expect(emb.fusedImage).toBeTruthy();
     expect(emb.renderIntent).toBe("embed");
+
+    const isqr = await runGraph(
+      "isqr",
+      createGenerationContext({
+        inputs: [sampleInput("A")],
+        version: -1,
+        errorCorrectionLevel: 0,
+        dataMask: 0,
+        targetImage: image,
+        modulePixel: 3,
+      })
+    );
+    expect(isqr.fusedImage).toBeTruthy();
+    expect(isqr.roiGrid).toBeTruthy();
+    expect(isqr.roiMeta).toBeTruthy();
+    expect(isqr.renderIntent).toBe("isqr");
+  });
+
+  it("computes IS-QR metrics when evaluate deferred them", () => {
+    const fused = tinyImage(21);
+    const result = isqrResultFromContext(
+      createGenerationContext({
+        fusedImage: fused,
+        targetImage: tinyImage(32),
+        roiGrid: new Float32Array(21 * 21),
+        roiMeta: {
+          mask: new Float32Array(1),
+          saliency: new Float32Array(1),
+          labels: new Int32Array(1),
+          instanceCount: 1,
+          width: 1,
+          height: 1,
+        },
+      }),
+      {
+        matrix: [],
+        dataMask: 0,
+        segments: [],
+        error: 0,
+        decodeSuccessRate: 1,
+      } as QArtResult
+    );
+    expect(result.fusedImage).toBe(fused);
+    expect(result.metrics.ssim).toBeGreaterThanOrEqual(0);
+    expect(result.instanceCount).toBe(1);
   });
 
   it("runs qart preset with image and mocked decode", async () => {

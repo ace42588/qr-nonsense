@@ -1,6 +1,6 @@
 /**
- * Parallel brute-force collision search via Web Workers.
- * First worker to find a collision terminates the rest.
+ * Parallel brute-force collision search via the shared worker pool.
+ * First shard to find a collision aborts the rest (pool is kept).
  */
 
 import {
@@ -9,14 +9,18 @@ import {
   type BruteForceCollisionProgress,
   type BruteForceCollisionResult,
 } from "@/domain/qr/solver";
-import type { QRMatrix, QRModule } from "@/domain/shared/types";
+import type { QRMatrix } from "@/domain/shared/types";
 import { decodeMatrixPayload } from "./validation";
-import type {
-  CollisionWorkerInMessage,
-  CollisionWorkerOutMessage,
-} from "./collision.worker";
+import {
+  getWorkerPool,
+  clampWorkerCount,
+  canUseWorkers,
+  JobCancelledError,
+} from "./workers/pool";
+import { serializeMatrixForWorker } from "./workers/serialize";
+import type { CollisionShardPayload } from "./workers/protocol";
 
-const MAX_WORKERS = 16;
+export { clampWorkerCount, serializeMatrixForWorker };
 
 export interface ParallelCollisionOptions {
   matrix: QRMatrix;
@@ -33,59 +37,6 @@ export interface ParallelCollisionOptions {
   ) => void | Promise<void>;
 }
 
-function defaultWorkerCount(): number {
-  if (typeof navigator !== "undefined" && navigator.hardwareConcurrency) {
-    return navigator.hardwareConcurrency;
-  }
-  return 4;
-}
-
-export function clampWorkerCount(requested?: number): number {
-  const n =
-    requested == null || !Number.isFinite(requested)
-      ? defaultWorkerCount()
-      : Math.floor(requested);
-  return Math.min(MAX_WORKERS, Math.max(1, n));
-}
-
-/** Plain-clone matrix rows for structured clone (drop getModuleByBitId). */
-export function serializeMatrixForWorker(matrix: QRMatrix): QRModule[][] {
-  return matrix.map((row) =>
-    row.map((m) => {
-      if (!m) return m;
-      return {
-        id: m.id,
-        bitId: m.bitId,
-        bit: {
-          id: m.bit?.id,
-          value: m.bit?.value ?? 0,
-          sourceId: m.bit?.sourceId,
-          type: m.bit?.type,
-        },
-        x: m.x,
-        y: m.y,
-        isDark: m.isDark,
-        isMasked: m.isMasked,
-        type: m.type,
-        nonData: m.nonData,
-        source: m.source ? { ...m.source } : undefined,
-      } as QRModule;
-    })
-  );
-}
-
-function canUseWorkers(): boolean {
-  return (
-    typeof Worker !== "undefined" &&
-    typeof OffscreenCanvas !== "undefined" &&
-    typeof URL !== "undefined"
-  );
-}
-
-/**
- * Run collision search across workers. First hit wins and stops peers.
- * Falls back to main-thread search when workers/OffscreenCanvas unavailable.
- */
 export async function findBruteForceCollisionParallel(
   options: ParallelCollisionOptions
 ): Promise<BruteForceCollisionResult | null> {
@@ -101,7 +52,6 @@ export async function findBruteForceCollisionParallel(
   } = options;
 
   const workerCount = clampWorkerCount(options.workerCount);
-
   if (signal?.aborted) return null;
 
   if (!canUseWorkers() || workerCount === 1) {
@@ -120,172 +70,133 @@ export async function findBruteForceCollisionParallel(
     });
   }
 
-  const serialized = serializeMatrixForWorker(matrix);
-  const workers: Worker[] = [];
-  const trialsByWorker = new Array<number>(workerCount).fill(0);
+  return runCollisionShards({
+    mode: "uniform",
+    matrix,
+    originalPayload,
+    maxFlips,
+    maxTrials,
+    maxExhaustive,
+    seed,
+    workerCount,
+    signal,
+    onProgress,
+  });
+}
+
+export async function runCollisionShards(args: {
+  mode: "uniform" | "targeted";
+  matrix: QRMatrix;
+  originalPayload: string;
+  maxFlips: number;
+  maxTrials: number;
+  maxExhaustive: number;
+  seed: number;
+  workerCount: number;
+  signal?: AbortSignal;
+  onProgress?: (
+    progress: BruteForceCollisionProgress
+  ) => void | Promise<void>;
+  extra?: Partial<CollisionShardPayload>;
+}): Promise<BruteForceCollisionResult | null> {
+  const pool = getWorkerPool();
+  const serialized = serializeMatrixForWorker(args.matrix);
+  const trialsByWorker = new Array<number>(args.workerCount).fill(0);
   let latestMeta: Pick<
     BruteForceCollisionProgress,
-    "k" | "maxFlips" | "mode" | "eligibleCount"
+    "k" | "maxFlips" | "mode" | "eligibleCount" | "phase"
   > = {
     k: 1,
-    maxFlips,
+    maxFlips: args.maxFlips,
     mode: "exhaustive",
     eligibleCount: 0,
   };
 
-  let settled = false;
-  let foundResult: BruteForceCollisionResult | null = null;
-  let rejectError: Error | null = null;
-  let doneCount = 0;
+  const controllers = Array.from(
+    { length: args.workerCount },
+    () => new AbortController()
+  );
 
-  const terminateAll = () => {
-    for (const w of workers) {
-      try {
-        w.terminate();
-      } catch {
-        /* ignore */
-      }
-    }
-    workers.length = 0;
+  const onParentAbort = () => {
+    for (const c of controllers) c.abort();
   };
+  if (args.signal) {
+    if (args.signal.aborted) return null;
+    args.signal.addEventListener("abort", onParentAbort, { once: true });
+  }
 
-  const reportAggregate = async () => {
+  const report = async () => {
     const trialsUsed = trialsByWorker.reduce((a, b) => a + b, 0);
-    await onProgress?.({
+    await args.onProgress?.({
       trialsUsed,
-      maxTrials,
+      maxTrials: args.maxTrials,
       k: latestMeta.k,
       maxFlips: latestMeta.maxFlips,
       mode: latestMeta.mode,
       eligibleCount: latestMeta.eligibleCount,
-      workerCount,
+      phase: latestMeta.phase,
+      workerCount: args.workerCount,
     });
   };
 
-  return new Promise<BruteForceCollisionResult | null>((resolve, reject) => {
-    const finish = (result: BruteForceCollisionResult | null) => {
-      if (settled) return;
-      settled = true;
-      signal?.removeEventListener("abort", onAbort);
-      terminateAll();
-      resolve(result);
-    };
-
-    const fail = (err: Error) => {
-      if (settled) return;
-      settled = true;
-      signal?.removeEventListener("abort", onAbort);
-      terminateAll();
-      reject(err);
-    };
-
-    const onAbort = () => {
-      finish(null);
-    };
-
-    if (signal) {
-      if (signal.aborted) {
-        finish(null);
-        return;
-      }
-      signal.addEventListener("abort", onAbort, { once: true });
-    }
-
-    for (let i = 0; i < workerCount; i++) {
-      let worker: Worker;
-      try {
-        worker = new Worker(
-          new URL("./collision.worker.ts", import.meta.url),
-          { type: "module" }
-        );
-      } catch {
-        terminateAll();
-        // Fallback if worker construction fails
-        findBruteForceCollision({
-          matrix,
-          originalPayload,
-          decode: decodeMatrixPayload,
-          maxFlips,
-          maxTrials,
-          maxExhaustive,
-          seed,
-          workerIndex: 0,
-          workerCount: 1,
-          signal,
-          onProgress,
-        })
-          .then(finish)
-          .catch(fail);
-        return;
-      }
-
-      workers.push(worker);
-
-      worker.onmessage = (event: MessageEvent<CollisionWorkerOutMessage>) => {
-        if (settled) return;
-        const msg = event.data;
-        if (!msg) return;
-
-        if (msg.type === "progress") {
-          const p = msg.progress;
-          if (typeof p.workerIndex === "number") {
-            trialsByWorker[p.workerIndex] = p.trialsUsed;
-          }
-          latestMeta = {
-            k: p.k,
-            maxFlips: p.maxFlips,
-            mode: p.mode,
-            eligibleCount: p.eligibleCount,
-          };
-          void reportAggregate();
-          return;
-        }
-
-        if (msg.type === "found") {
-          trialsByWorker[msg.workerIndex] = msg.result.trialsUsed;
-          const trialsUsed = trialsByWorker.reduce((a, b) => a + b, 0);
-          foundResult = {
-            ...msg.result,
-            trialsUsed,
-          };
-          finish(foundResult);
-          return;
-        }
-
-        if (msg.type === "done") {
-          doneCount += 1;
-          if (doneCount >= workerCount) {
-            finish(null);
-          }
-          return;
-        }
-
-        if (msg.type === "error") {
-          rejectError = new Error(msg.message);
-          fail(rejectError);
-        }
-      };
-
-      worker.onerror = (event) => {
-        fail(new Error(event.message || "Collision worker failed"));
-      };
-
-      const startMsg: CollisionWorkerInMessage = {
-        type: "start",
-        mode: "uniform",
+  try {
+    const jobs = controllers.map((controller, i) => {
+      const payload: CollisionShardPayload = {
+        mode: args.mode,
         matrix: serialized,
-        originalPayload,
-        maxFlips,
-        maxTrials,
-        maxExhaustive,
-        seed,
+        originalPayload: args.originalPayload,
+        maxFlips: args.maxFlips,
+        maxTrials: args.maxTrials,
+        maxExhaustive: args.maxExhaustive,
+        seed: args.seed,
         workerIndex: i,
-        workerCount,
+        workerCount: args.workerCount,
+        ...args.extra,
       };
-      worker.postMessage(startMsg);
-    }
-  });
+      return pool
+        .enqueue<BruteForceCollisionResult | null>({
+          type: "collisionShard",
+          payload,
+          signal: controller.signal,
+          onProgress: (progress) => {
+            const p = progress as BruteForceCollisionProgress;
+            if (typeof p.workerIndex === "number") {
+              trialsByWorker[p.workerIndex] = p.trialsUsed;
+            }
+            latestMeta = {
+              k: p.k,
+              maxFlips: p.maxFlips,
+              mode: p.mode,
+              eligibleCount: p.eligibleCount,
+              phase: p.phase,
+            };
+            void report();
+          },
+        })
+        .then((result) => {
+          if (result) {
+            trialsByWorker[i] = result.trialsUsed;
+            for (let j = 0; j < controllers.length; j++) {
+              if (j !== i) controllers[j].abort();
+            }
+            return {
+              ...result,
+              trialsUsed: trialsByWorker.reduce((a, b) => a + b, 0),
+            };
+          }
+          return null;
+        })
+        .catch((err) => {
+          if (err instanceof JobCancelledError) return null;
+          throw err;
+        });
+    });
+
+    const results = await Promise.all(jobs);
+    return results.find((r) => r != null) ?? null;
+  } finally {
+    args.signal?.removeEventListener("abort", onParentAbort);
+  }
 }
 
-/** Main-thread options helper when callers already have a decode fn. */
 export type { BruteForceCollisionOptions };

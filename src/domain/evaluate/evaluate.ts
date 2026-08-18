@@ -195,8 +195,12 @@ export async function evaluateGeneratedQr(
     }
   }
 
-  // Image metrics
-  if (input.referenceImage && input.renderedImage) {
+  // Image metrics (optional — can be filled in by a follow-up worker job)
+  if (
+    !input.deferImageMetrics &&
+    input.referenceImage &&
+    input.renderedImage
+  ) {
     let ref = input.referenceImage;
     const rendered = input.renderedImage;
     if (ref.width !== rendered.width || ref.height !== rendered.height) {

@@ -1,4 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+import { generateIsqr } from "../generate";
+import { getEncodedMessage } from "@/domain/qr";
+import { generateCodewords } from "@/domain/qr/codewords";
+import { getMatrix } from "@/domain/qr/matrix";
+import { getVersionInfo } from "@/domain/qr/versionUtils";
+import type { Input } from "@/app/types";
 import {
   otsuThreshold,
   computeFtSaliency,
@@ -178,5 +184,63 @@ describe("IS-QR module binary", () => {
     for (let i = 0; i < grid.length; i++) {
       expect(grid[i] === 0 || grid[i] === 1).toBe(true);
     }
+  });
+});
+
+vi.mock("@/adapters/browser/validation", async () => {
+  const actual = (await vi.importActual(
+    "@/adapters/browser/validation"
+  )) as object;
+  return {
+    ...actual,
+    validateDecode: vi.fn().mockResolvedValue(1.0),
+    createBrowserEvaluateDecodePort: () => ({
+      decodeMatrixTrials: vi.fn().mockResolvedValue([
+        { success: true, payload: "A" },
+      ]),
+      decodeImageData: vi.fn().mockResolvedValue([
+        { success: true, payload: "A" },
+      ]),
+    }),
+  };
+});
+
+describe("generateIsqr", () => {
+  it("returns fused image and metrics without the pipeline adapter", async () => {
+    const input: Input = {
+      id: "test-input-1",
+      type: "string",
+      mode: "byte",
+      data: "A",
+    };
+    const encoded = getEncodedMessage([input], -1, 0);
+    const versionInfo = getVersionInfo(0, encoded.version);
+    const { codewords, blocks } = generateCodewords(
+      encoded.segments,
+      encoded.version,
+      0
+    );
+    const { matrix } = getMatrix(codewords, 0, encoded.version, 0);
+    const transformedImage = checkerImage(64);
+
+    const result = await generateIsqr({
+      transformedImage,
+      modulePixel: 3,
+      qart: {
+        segments: encoded.segments,
+        codewords,
+        blocks,
+        initialMatrix: matrix,
+        versionInfo,
+        errorCorrectionLevel: 0,
+        targetImage: transformedImage,
+      },
+    });
+
+    expect(result.fusedImage.width).toBe(matrix.length * 3);
+    expect(result.fusedImage.height).toBe(matrix.length * 3);
+    expect(result.metrics.ssim).toBeGreaterThanOrEqual(0);
+    expect(result.roiGrid.length).toBe(matrix.length * matrix.length);
+    expect(result.qart.matrix.length).toBe(matrix.length);
   });
 });

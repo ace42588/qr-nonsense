@@ -136,6 +136,8 @@ export interface EvaluateInput {
   /** User input bit count for capacity section */
   userInputBits?: number;
   targetImageForCapacity?: ImageData | null;
+  /** Skip SSIM/FSIM/GMSD (fill in later). */
+  deferImageMetrics?: boolean;
 }
 
 export interface DecodeTrialResult {

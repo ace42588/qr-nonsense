@@ -21,7 +21,6 @@ import {
   eligibleCollisionModules,
 } from "@/domain/qr/corruption";
 import {
-  findMinimalCharacterChangeFlips,
   exhaustiveSearchSpaceSize,
 } from "@/domain/qr/solver";
 import {
@@ -32,6 +31,7 @@ import {
   clampWorkerCount,
 } from "@/adapters/browser/findBruteForceCollisionParallel";
 import { findTargetedCollisionParallel } from "@/adapters/browser/findTargetedCollisionParallel";
+import { findCharacterChangeOffthread } from "@/adapters/browser/workers/jobs";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -210,14 +210,14 @@ export function RsDecodeCard() {
     }
   };
 
-  const runCharacterSolver = () => {
+  const runCharacterSolver = async () => {
     if (!matrix || !blocks?.length || !versionInfo) return;
     setSolverBusy(true);
     setSolverMessage(null);
     setScanResult(null);
     setScanDecoded(null);
     try {
-      const solution = findMinimalCharacterChangeFlips({
+      const solution = await findCharacterChangeOffthread({
         inputs: orderedInputs,
         version: versionInfo.version,
         errorCorrectionLevel: formatInfo.errorCorrectionLevel,

@@ -6,8 +6,8 @@ import { useInputDispatch } from "@/state/inputs/InputContext";
 import { setInputs } from "@/state/inputs/inputActions";
 import { inputsFromScan } from "@/domain/input/scanToInputs";
 
-// External Libraries
-import jsQR from "jsqr";
+import { decodeScanFrameOffthread } from "@/adapters/browser/workers/jobs";
+import { ScanFrameGate } from "@/adapters/browser/workers/latestWins";
 
 // UI Components
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +41,7 @@ export function ScannerCard() {
   const rafRef = useRef(null);
   const scanningRef = useRef(true);
   const startIdRef = useRef(0);
+  const decodeGateRef = useRef(new ScanFrameGate());
 
   const [scanning, setScanning] = useState(true);
   const [error, setError] = useState(null);
@@ -82,6 +83,10 @@ export function ScannerCard() {
     }
 
     if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      if (!decodeGateRef.current.tryBegin()) {
+        rafRef.current = requestAnimationFrame(scanQR);
+        return;
+      }
       canvasElement.height = video.videoHeight;
       canvasElement.width = video.videoWidth;
       canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
@@ -91,34 +96,41 @@ export function ScannerCard() {
         canvasElement.width,
         canvasElement.height
       );
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      void decodeScanFrameOffthread(imageData)
+        .then((code) => {
+          if (!scanningRef.current) return;
+          if (code && code.data !== "") {
+            scanningRef.current = false;
+            setScanning(false);
+            stopStream();
 
-      if (code && code.data !== "") {
-        scanningRef.current = false;
-        setScanning(false);
-        stopStream();
+            const inputs = inputsFromScan(code);
+            if (inputs.length === 0) {
+              setError("QR code detected but contained no usable data.");
+              return;
+            }
 
-        const inputs = inputsFromScan(code);
-        if (inputs.length === 0) {
-          setError("QR code detected but contained no usable data.");
-          return;
-        }
-
-        const formatInfo = code.formatInfo || {};
-        dispatch(
-          setInputs({
-            formatInfo: {
-              errorCorrectionLevel: formatInfo.errorCorrectionLevel ?? 0,
-              dataMask: formatInfo.dataMask ?? -1,
-              version: code.version ?? -1,
-            },
-            inputs,
-            activeInputID: inputs[0].id,
-          })
-        );
-        setScanComplete(true);
-        return;
-      }
+            const formatInfo = code.formatInfo || {};
+            dispatch(
+              setInputs({
+                formatInfo: {
+                  errorCorrectionLevel: formatInfo.errorCorrectionLevel ?? 0,
+                  dataMask: formatInfo.dataMask ?? -1,
+                  version: code.version ?? -1,
+                },
+                inputs,
+                activeInputID: inputs[0].id,
+              })
+            );
+            setScanComplete(true);
+          }
+        })
+        .catch(() => {
+          /* keep scanning */
+        })
+        .finally(() => {
+          decodeGateRef.current.end();
+        });
     }
 
     rafRef.current = requestAnimationFrame(scanQR);

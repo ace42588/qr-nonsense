@@ -25,8 +25,8 @@ import {
   finalizeQArtMatrix,
   extractOptimizedAppendData,
 } from "@/domain/qart/stages";
-import { createBrowserEvaluateDecodePort } from "@/adapters/browser/validation";
 import { evaluateGeneratedQr } from "@/domain/evaluate";
+import type { EvaluateDecodePort } from "@/domain/evaluate";
 import { applyVisualDamage } from "@/domain/qr/corruption/applyDamage";
 import {
   selectConstraintDamage,
@@ -54,6 +54,20 @@ function requireFormat(ctx: GenerationContext): {
   const dataMask =
     ctx.dataMask === undefined ? -1 : (ctx.dataMask as number | null);
   return { version, errorCorrectionLevel, dataMask };
+}
+
+async function resolveDecodePort(
+  ctx: GenerationContext
+): Promise<EvaluateDecodePort | undefined> {
+  if (ctx.decodePort) return ctx.decodePort;
+  try {
+    const { createBrowserEvaluateDecodePort } = await import(
+      "@/adapters/browser/validation"
+    );
+    return createBrowserEvaluateDecodePort();
+  } catch {
+    return undefined;
+  }
 }
 
 export const NODE_CATALOG: Record<string, PipelineNode> = {
@@ -429,8 +443,9 @@ export const NODE_CATALOG: Record<string, PipelineNode> = {
           matrixB: ctx.matrixB,
           decodeTrials: trials,
           minDecodeRedundancy: ctx.minDecodeRedundancy,
+          deferImageMetrics: ctx.deferImageMetrics,
         },
-        { decode: createBrowserEvaluateDecodePort() }
+        { decode: await resolveDecodePort(ctx) }
       );
 
       const primaryScan = evaluation.scannability?.[0];

@@ -1,5 +1,5 @@
 /**
- * IS-QR generation orchestrator — composed from stage helpers + QArt.
+ * IS-QR generation orchestrator — ROI + off-thread QArt + color fusion + DWT/CSF.
  */
 
 import { generateQArt, type QArtOptions, type QArtResult } from "../qart";
@@ -42,6 +42,8 @@ export interface IsqrResult {
 
 /**
  * Run full IS-QR pipeline: ROI → module binary → ROI-aware QArt → color fusion → DWT/CSF → metrics.
+ * QArt optimization runs through the shared worker pool; fusion/metrics stay on this side
+ * of the ImageData so display size and fused size cannot drift apart.
  */
 export async function generateIsqr(options: IsqrOptions): Promise<IsqrResult> {
   const {
@@ -81,8 +83,14 @@ export async function generateIsqr(options: IsqrOptions): Promise<IsqrResult> {
     throw new Error("IS-QR generation was cancelled");
   }
 
+  const offscreen = qartResult.offscreenCanvasImage;
   const sourceForFusion =
-    qartResult.offscreenCanvasImage || transformedImage;
+    offscreen &&
+    offscreen.width > 0 &&
+    offscreen.height > 0 &&
+    offscreen.data?.length > 0
+      ? offscreen
+      : transformedImage;
 
   let fused = fuseIsqrColor({
     matrix: qartResult.matrix,

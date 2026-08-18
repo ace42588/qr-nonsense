@@ -24,6 +24,7 @@ export {
   qartSelectEditable,
   qartBitPriority,
   qartSolve,
+  verifyOptimizedBlocks,
   rebuildFromBlocks,
   finalizeQArtMatrix,
   extractOptimizedAppendData,

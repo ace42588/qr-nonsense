@@ -11,8 +11,7 @@ import type {
 } from "@/domain/shared/types";
 import type { QRBlock } from "@/domain/qr/codewords/blocks";
 import type { ImageData } from "@/domain/image";
-import type { ImageQualityMetrics } from "@/domain/isqr/metrics";
-import type { EvaluationReport } from "@/domain/evaluate";
+import type { ImageQualityMetrics, EvaluationReport, EvaluateDecodePort } from "@/domain/evaluate";
 import type { InstanceMaskResult } from "@/domain/isqr/segmentation";
 import type {
   QArtAppendData,
@@ -26,6 +25,12 @@ import type {
 import type { QArtEditableSelection } from "@/domain/qart/stages";
 import type { CsfOptions } from "@/domain/isqr/csf";
 import type { ConstraintSet } from "@/domain/constraints";
+
+/** Source image transferable across workers (HTMLImageElement is not). */
+export type PipelineSourceImage =
+  | HTMLImageElement
+  | ImageBitmap
+  | ImageData;
 
 /** Edit-time port tags for wiring validation (not runtime classes). */
 export type PortType =
@@ -95,7 +100,7 @@ export interface GenerationContext {
   phaseFlip?: boolean;
 
   // Image
-  sourceImage?: HTMLImageElement | null;
+  sourceImage?: PipelineSourceImage | null;
   transformParams?: {
     scale: number;
     offsetX: number;
@@ -148,6 +153,10 @@ export interface GenerationContext {
 
   // Run
   signal?: AbortSignal;
+  /** Injected decode port (DIP). Workers set an OffscreenCanvas implementation. */
+  decodePort?: EvaluateDecodePort;
+  /** Skip SSIM/FSIM/GMSD so first paint is not blocked on image metrics. */
+  deferImageMetrics?: boolean;
 }
 
 export type NodeParams = Record<string, unknown>;

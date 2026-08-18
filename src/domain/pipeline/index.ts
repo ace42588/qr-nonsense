@@ -29,6 +29,7 @@ export {
 export {
   PRESETS,
   QART_FROM_MATRIX_NODES,
+  ISQR_FROM_MATRIX_NODES,
   getPreset,
   resolvePresetNodes,
   listPresetIds,
@@ -40,6 +41,8 @@ export {
   validateNodeSequence,
   PipelineError,
 } from "./run";
+
+export { runPipeline, setPipelineRunner } from "./runner";
 
 export type {
   ConstraintStrength,
@@ -73,6 +76,7 @@ export {
   generateEmbedViaPipeline,
   contextFromIsqrOptions,
   isqrResultFromContext,
+  generateIsqrViaPipeline,
 } from "./adapters";
 
 export type { EvaluationReport } from "@/domain/evaluate";

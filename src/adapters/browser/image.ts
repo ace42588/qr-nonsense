@@ -1,7 +1,14 @@
 /**
  * Browser-based image loading and transformation adapter
- * Uses browser APIs (HTMLImageElement, canvas) for image operations
+ * Uses browser APIs (HTMLImageElement, canvas, OffscreenCanvas) for image operations
  */
+
+import {
+  create2dCanvas,
+  isHtmlImage,
+  isImageBitmap,
+  type DrawableImage,
+} from "./canvasPort";
 
 /**
  * Load and process an image from a URL
@@ -27,14 +34,13 @@ export async function loadImage(imageUrl: string): Promise<HTMLImageElement> {
  * @param offsetY - Vertical offset in pixels (0 = centered)
  * @returns Transformed ImageData sized to canvasSize x canvasSize
  */
-export async function transformImageToCanvas(
-  image: HTMLImageElement | ImageData | string,
+export async function transformDrawableToCanvas(
+  sourceImage: DrawableImage,
   canvasSize: number,
   scale: number = 1.0,
   offsetX: number = 0,
   offsetY: number = 0
 ): Promise<ImageData> {
-  // Validate inputs
   if (!canvasSize || canvasSize <= 0 || !isFinite(canvasSize)) {
     throw new Error("Invalid canvasSize");
   }
@@ -46,64 +52,79 @@ export async function transformImageToCanvas(
   if (!isFinite(offsetX)) offsetX = 0;
   if (!isFinite(offsetY)) offsetY = 0;
 
-  // Load image if needed
-  let sourceImage: HTMLImageElement | ImageData;
-  
+  const { canvas, ctx } = create2dCanvas(canvasSize, canvasSize);
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+  const drawFromBitmapOrElement = (
+    width: number,
+    height: number,
+    draw: (dx: number, dy: number, dw: number, dh: number) => void
+  ) => {
+    const drawWidth = width * scale;
+    const drawHeight = height * scale;
+    const drawX = canvasSize / 2 - drawWidth / 2 + offsetX;
+    const drawY = canvasSize / 2 - drawHeight / 2 + offsetY;
+    draw(drawX, drawY, drawWidth, drawHeight);
+  };
+
+  if (isHtmlImage(sourceImage) || isImageBitmap(sourceImage)) {
+    drawFromBitmapOrElement(
+      sourceImage.width,
+      sourceImage.height,
+      (dx, dy, dw, dh) => {
+        ctx.drawImage(sourceImage, dx, dy, dw, dh);
+      }
+    );
+  } else if (
+    sourceImage instanceof OffscreenCanvas ||
+    (typeof HTMLCanvasElement !== "undefined" &&
+      sourceImage instanceof HTMLCanvasElement)
+  ) {
+    drawFromBitmapOrElement(
+      sourceImage.width,
+      sourceImage.height,
+      (dx, dy, dw, dh) => {
+        ctx.drawImage(sourceImage as CanvasImageSource, dx, dy, dw, dh);
+      }
+    );
+  } else {
+    const imageData = sourceImage as ImageData;
+    const temp = create2dCanvas(imageData.width, imageData.height);
+    temp.ctx.putImageData(imageData, 0, 0);
+    drawFromBitmapOrElement(
+      imageData.width,
+      imageData.height,
+      (dx, dy, dw, dh) => {
+        ctx.drawImage(temp.canvas as CanvasImageSource, dx, dy, dw, dh);
+      }
+    );
+  }
+
+  void canvas;
+  return ctx.getImageData(0, 0, canvasSize, canvasSize);
+}
+
+export async function transformImageToCanvas(
+  image: HTMLImageElement | ImageBitmap | ImageData | string,
+  canvasSize: number,
+  scale: number = 1.0,
+  offsetX: number = 0,
+  offsetY: number = 0
+): Promise<ImageData> {
+  let sourceImage: DrawableImage;
   if (typeof image === "string") {
     sourceImage = await loadImage(image);
   } else {
     sourceImage = image;
   }
-
-  // Create canvas for transformation
-  const canvas = document.createElement("canvas");
-  canvas.width = canvasSize;
-  canvas.height = canvasSize;
-  const ctx = canvas.getContext("2d");
-  
-  if (!ctx) {
-    throw new Error("Failed to get canvas context");
-  }
-
-  // Fill with white background
-  ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, canvasSize, canvasSize);
-
-  // Draw image with transformation
-  if (sourceImage instanceof HTMLImageElement) {
-    const drawWidth = sourceImage.width * scale;
-    const drawHeight = sourceImage.height * scale;
-    
-    // Center the image, then apply offset
-    const drawX = canvasSize / 2 - drawWidth / 2 + offsetX;
-    const drawY = canvasSize / 2 - drawHeight / 2 + offsetY;
-    
-    ctx.drawImage(sourceImage, drawX, drawY, drawWidth, drawHeight);
-  } else {
-    // For ImageData, we need to draw it to a temporary canvas first
-    const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = sourceImage.width;
-    tempCanvas.height = sourceImage.height;
-    const tempCtx = tempCanvas.getContext("2d");
-    
-    if (!tempCtx) {
-      throw new Error("Failed to get temporary canvas context");
-    }
-    
-    tempCtx.putImageData(sourceImage, 0, 0);
-    
-    const drawWidth = sourceImage.width * scale;
-    const drawHeight = sourceImage.height * scale;
-    
-    // Center the image, then apply offset
-    const drawX = canvasSize / 2 - drawWidth / 2 + offsetX;
-    const drawY = canvasSize / 2 - drawHeight / 2 + offsetY;
-    
-    ctx.drawImage(tempCanvas, drawX, drawY, drawWidth, drawHeight);
-  }
-
-  // Return the transformed ImageData
-  return ctx.getImageData(0, 0, canvasSize, canvasSize);
+  return transformDrawableToCanvas(
+    sourceImage,
+    canvasSize,
+    scale,
+    offsetX,
+    offsetY
+  );
 }
 
 /**
