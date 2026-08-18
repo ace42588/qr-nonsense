@@ -21,6 +21,7 @@ export function IsqrControls({
   onMaskFileChange,
   hasMask,
   onClearMask,
+  maskEnabled = true,
   metrics,
   instanceCount,
   decodeSuccessRate,
@@ -120,24 +121,26 @@ export function IsqrControls({
         </span>
       </ControlRow>
 
-      <ControlRow label="ROI mask:" htmlFor="isqr-mask">
-        <input
-          id="isqr-mask"
-          type="file"
-          accept="image/*"
-          onChange={onMaskFileChange}
-          className="max-w-[14rem] text-xs"
-        />
-        {hasMask ? (
-          <button
-            type="button"
-            onClick={onClearMask}
-            className="text-xs text-muted-foreground underline"
-          >
-            Clear
-          </button>
-        ) : null}
-      </ControlRow>
+      {maskEnabled && (
+        <ControlRow label="ROI mask:" htmlFor="isqr-mask">
+          <input
+            id="isqr-mask"
+            type="file"
+            accept="image/*"
+            onChange={onMaskFileChange}
+            className="max-w-[14rem] text-xs"
+          />
+          {hasMask ? (
+            <button
+              type="button"
+              onClick={onClearMask}
+              className="text-xs text-muted-foreground underline"
+            >
+              Clear
+            </button>
+          ) : null}
+        </ControlRow>
+      )}
 
       <EvaluationSummary
         evaluation={evaluation}

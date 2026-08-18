@@ -12,7 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { downloadCanvasAsPNG, downloadCanvasAsSVG, downloadQRAsSTL } from "@/utils/downloadUtils";
+import { downloadCanvasAsPNG, downloadCanvasAsSVG, downloadQRAsSTL, downloadCanvasFramesAsGif } from "@/utils/downloadUtils";
+import { paintQrCanvas } from "@/utils/paintQrCanvas";
 import { InvalidQRBanner } from "@/components/ui/message-banner";
 
 export function QRBase({ 
@@ -25,6 +26,7 @@ export function QRBase({
   children,
   responsive = true,
   customMatrix = null,
+  gifExport = null,
 }) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
@@ -58,91 +60,16 @@ export function QRBase({
   useEffect(() => {
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx || !matrix) return;
-
-    // Disable image smoothing for pixel-perfect rendering
-    ctx.imageSmoothingEnabled = false;
-
-    const dimension = matrix.length;
-    const totalDimension = dimension + quietZone * 2;
-    const moduleSize = size / totalDimension;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, size, size);
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, size, size);
-
-    // Pre-calculate all module boundaries to ensure perfect edge-to-edge alignment
-    // Calculate boundaries for all positions first, then use them consistently
-    const xBoundaries = [];
-    const yBoundaries = [];
-    for (let i = 0; i <= dimension; i++) {
-      xBoundaries[i] = Math.round((i + quietZone) * moduleSize);
-      yBoundaries[i] = Math.round((i + quietZone) * moduleSize);
-    }
-    
-    const passes = Math.max(1, renderPasses | 0);
-    for (let pass = 0; pass < passes; pass++) {
-      for (let y = 0; y < dimension; y++) {
-        const moduleY = yBoundaries[y];
-        const nextModuleY = yBoundaries[y + 1];
-        const moduleHeight = nextModuleY - moduleY;
-        
-        for (let x = 0; x < dimension; x++) {
-          const m = matrix[y][x];
-          if (!m) continue;
-
-          const moduleX = xBoundaries[x];
-          const nextModuleX = xBoundaries[x + 1];
-          const moduleWidth = nextModuleX - moduleX;
-          
-          // Ensure minimum size of 1 pixel
-          const finalWidth = Math.max(1, moduleWidth);
-          const finalHeight = Math.max(1, moduleHeight);
-          const moduleSizeSquare = Math.max(finalWidth, finalHeight);
-
-          // Check if module should be highlighted
-          // CRITICAL: Modules have both bitId and bit.id - we check both for compatibility.
-          // The bit.id comes from the codewords, and segment.bitIds contain these same IDs.
-          // When a symbol is clicked, we highlight modules whose bit.id matches the segment's bitIds.
-          const moduleBitId = m.bit?.id || m.bitId;
-          const isHighlighted = moduleBitId && highlightedIds && Array.isArray(highlightedIds) && highlightedIds.includes(moduleBitId);
-          const isDamaged =
-            !customMatrix &&
-            m.id &&
-            damagedModuleIds &&
-            Array.isArray(damagedModuleIds) &&
-            damagedModuleIds.includes(m.id);
-
-          if (renderModule) {
-            // Pass exact dimensions in renderCtx for renderModule callbacks that need them
-            renderModule(ctx, m, moduleX, moduleY, moduleSizeSquare, {
-              size, quietZone, moduleX, moduleY, x, y, dimension,
-              moduleWidth: finalWidth, moduleHeight: finalHeight,
-              pass, passes,
-            });
-          } else if (pass === 0) {
-            // Default rendering - use exact calculated dimensions for edge-to-edge coverage
-            ctx.fillStyle = m.isDark ? "black" : "white";
-            ctx.fillRect(moduleX, moduleY, finalWidth, finalHeight);
-          }
-
-          // Draw highlight / damage borders once on the final pass so they sit above all layers
-          if (pass === passes - 1) {
-            if (isDamaged) {
-              ctx.strokeStyle = "#d97706"; // amber-600
-              ctx.lineWidth = 2;
-              ctx.strokeRect(moduleX, moduleY, moduleWidth, moduleHeight);
-            }
-            if (isHighlighted) {
-              ctx.strokeStyle = "red";
-              ctx.lineWidth = 2;
-              ctx.strokeRect(moduleX, moduleY, moduleWidth, moduleHeight);
-            }
-          }
-        }
-      }
-    }
-  }, [matrix, size, quietZone, renderModule, renderPasses, highlightedIds, damagedModuleIds]);
+    paintQrCanvas(ctx, {
+      matrix,
+      size,
+      quietZone,
+      renderModule,
+      renderPasses,
+      highlightedIds,
+      damagedModuleIds: customMatrix ? null : damagedModuleIds,
+    });
+  }, [matrix, size, quietZone, renderModule, renderPasses, highlightedIds, damagedModuleIds, customMatrix]);
 
   const getModuleFromEvent = (event) => {
     if (!matrix) return null;
@@ -207,20 +134,36 @@ export function QRBase({
 
   const patternName = hoveredModule ? getPatternName(hoveredModule) : null;
 
-  const handleDownload = (format) => {
+  const handleDownload = async (format) => {
     if (!matrix || !canvasRef.current) return;
 
     try {
       if (format === "png") {
         downloadCanvasAsPNG(canvasRef.current);
       } else if (format === "svg") {
-        // Use canvas-based SVG to preserve rendered appearance (QArt, halftone, etc.)
         downloadCanvasAsSVG(canvasRef.current);
+      } else if (format === "gif") {
+        if (!gifExport?.delaysMs?.length || !gifExport.getGifFrame) return;
+        const frameImages = [];
+        for (let i = 0; i < gifExport.delaysMs.length; i++) {
+          const canvas = document.createElement("canvas");
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) continue;
+          gifExport.getGifFrame(i, ctx, {
+            size,
+            quietZone,
+            paintQrCanvas,
+            matrix,
+            renderPasses,
+          });
+          frameImages.push(ctx.getImageData(0, 0, size, size));
+        }
+        await downloadCanvasFramesAsGif(frameImages, gifExport.delaysMs);
       } else if (format === "stl-single") {
-        // Single-color STL: light modules taller than dark modules
         downloadQRAsSTL(matrix, size, quietZone, 'single', 1.0, 2.0, 1.5, 0.1, includeQuietZoneSTL);
       } else if (format === "stl-multicolor") {
-        // Multicolor STL: separate files for light and dark modules
         downloadQRAsSTL(matrix, size, quietZone, 'multicolor', 1.0, 2.0, 1.5, 0.1, includeQuietZoneSTL);
       }
     } catch (error) {
@@ -268,6 +211,11 @@ export function QRBase({
               <DropdownMenuItem onClick={() => handleDownload("svg")}>
                 Download as SVG
               </DropdownMenuItem>
+              {gifExport?.delaysMs?.length > 1 && gifExport.getGifFrame && (
+                <DropdownMenuItem onClick={() => handleDownload("gif")}>
+                  Download as GIF
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleDownload("stl-single")}>
                 Download as STL (Single Color)

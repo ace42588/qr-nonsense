@@ -5,6 +5,7 @@ import { QRMatrix, Segment, Codeword } from "@/domain/shared/types";
 import { QRBlock } from "@/domain/qr/codewords/blocks";
 import { VersionInfo } from "@/domain/qr/versionUtils";
 import type { ImageData } from "@/domain/image";
+import type { GenerationProgress } from "@/hooks/useQArtGeneration";
 
 export interface IsqrGenerationOptions {
   roiThresholdBias?: number;
@@ -31,12 +32,15 @@ interface UseIsqrGenerationParams {
   options?: IsqrGenerationOptions;
   debounceMs?: number;
   autoGenerate?: boolean;
-  sourceImage?: HTMLImageElement | null;
+  sourceImage?: HTMLImageElement | ImageData | null;
   transformParams?: {
     scale: number;
     offsetX: number;
     offsetY: number;
   } | null;
+  isAnimated?: boolean;
+  sourceFrames?: ImageData[];
+  transformedFrames?: ImageData[];
 }
 
 interface UseIsqrGenerationReturn {
@@ -44,10 +48,13 @@ interface UseIsqrGenerationReturn {
   generationError: string | null;
   isqrResult: IsqrResult | null;
   generateIsqrCode: () => Promise<void>;
+  frameResults: IsqrResult[];
+  generationProgress: GenerationProgress | null;
 }
 
 /**
- * Abortable, debounced IS-QR generation hook.
+ * Abortable, debounced IS-QR generation. Animated sources generate per frame
+ * with auto ROI only (no mask).
  */
 export function useIsqrGeneration({
   segments,
@@ -64,10 +71,16 @@ export function useIsqrGeneration({
   autoGenerate = true,
   sourceImage,
   transformParams,
+  isAnimated = false,
+  sourceFrames = [],
+  transformedFrames = [],
 }: UseIsqrGenerationParams): UseIsqrGenerationReturn {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [isqrResult, setIsqrResult] = useState<IsqrResult | null>(null);
+  const [frameResults, setFrameResults] = useState<IsqrResult[]>([]);
+  const [generationProgress, setGenerationProgress] =
+    useState<GenerationProgress | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
 
   const {
@@ -82,23 +95,30 @@ export function useIsqrGeneration({
     decodeTrials = 1,
   } = options;
 
+  const imageReady = isAnimated
+    ? sourceFrames.length > 1 && transformedFrames.length === sourceFrames.length
+    : !!sourceImage;
+
   const generateIsqrCode = useCallback(async () => {
-    if (!sourceImage) {
+    if (!imageReady) {
       setGenerationError("No image loaded. Please upload an image for IS-QR.");
       setQartResult(null);
       setIsqrResult(null);
+      setFrameResults([]);
       return;
     }
     if (!segments || segments.length === 0) {
       setGenerationError("No segments available. Please add an input.");
       setQartResult(null);
       setIsqrResult(null);
+      setFrameResults([]);
       return;
     }
     if (!transformedImageData) {
       setGenerationError("No transformed image available.");
       setQartResult(null);
       setIsqrResult(null);
+      setFrameResults([]);
       return;
     }
     if (!codewords || !blocks || !contextMatrix || !versionInfo) {
@@ -116,11 +136,13 @@ export function useIsqrGeneration({
     setGenerationError(null);
     setQartResult(null);
     setIsqrResult(null);
+    setFrameResults([]);
+    setGenerationProgress(null);
 
-    try {
-      const result = await generateIsqr({
-        transformedImage: transformedImageData,
-        maskImage,
+    const runOne = async (target: ImageData, frameSource: HTMLImageElement | ImageData | null | undefined) => {
+      return generateIsqr({
+        transformedImage: target,
+        maskImage: isAnimated ? null : maskImage,
         roiThresholdBias,
         modulePixel,
         qrBlend,
@@ -136,16 +158,41 @@ export function useIsqrGeneration({
           initialMatrix: contextMatrix,
           versionInfo,
           errorCorrectionLevel,
-          targetImage: transformedImageData,
+          targetImage: target,
           signal: abortController.signal,
           minDecodeRedundancy,
           decodeTrials,
-          sourceImage: sourceImage ?? undefined,
+          sourceImage: frameSource ?? undefined,
           transformParams: transformParams ?? undefined,
         },
       });
+    };
 
+    try {
+      if (isAnimated && sourceFrames.length > 1) {
+        const results: IsqrResult[] = [];
+        const total = sourceFrames.length;
+        for (let i = 0; i < total; i++) {
+          if (abortController.signal.aborted) return;
+          setGenerationProgress({ current: i + 1, total });
+          const target = transformedFrames[i] ?? transformedImageData;
+          const result = await runOne(target, sourceFrames[i]);
+          if (abortController.signal.aborted || !result) return;
+          results.push(result);
+        }
+        if (!abortController.signal.aborted) {
+          setFrameResults(results);
+          setIsqrResult(results[0] ?? null);
+          setQartResult(results[0]?.qart ?? null);
+          setGenerationError(null);
+          setGenerationProgress(null);
+        }
+        return;
+      }
+
+      const result = await runOne(transformedImageData, sourceImage);
       if (!abortController.signal.aborted) {
+        setFrameResults([result]);
         setIsqrResult(result);
         setQartResult(result.qart);
         setGenerationError(null);
@@ -161,6 +208,7 @@ export function useIsqrGeneration({
     } finally {
       if (controllerRef.current === abortController) {
         setIsGenerating(false);
+        setGenerationProgress(null);
       }
     }
   }, [
@@ -183,11 +231,15 @@ export function useIsqrGeneration({
     minDecodeRedundancy,
     decodeTrials,
     setQartResult,
+    imageReady,
+    isAnimated,
+    sourceFrames,
+    transformedFrames,
   ]);
 
   useEffect(() => {
     if (!autoGenerate) return;
-    if (isLoadingTransform || !sourceImage || !segments || segments.length === 0) {
+    if (isLoadingTransform || !imageReady || !segments || segments.length === 0) {
       return;
     }
     const timeoutId = setTimeout(() => {
@@ -214,6 +266,10 @@ export function useIsqrGeneration({
     qrBlend,
     maskImage,
     generateIsqrCode,
+    imageReady,
+    isAnimated,
+    sourceFrames,
+    transformedFrames,
   ]);
 
   return {
@@ -221,5 +277,7 @@ export function useIsqrGeneration({
     generationError,
     isqrResult,
     generateIsqrCode,
+    frameResults,
+    generationProgress,
   };
 }

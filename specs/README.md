@@ -49,6 +49,10 @@ This directory contains comprehensive feature specifications for the QR-Nonsense
 - **[013 - Unified QR Evaluation](./013-qr-evaluation/spec.md)**
   - Domain evaluation API: mask penalty, RS budget, visual/image/print metrics, decode trials, comparable EvaluationReport
 
+- **[014 - Animated GIF Inputs](./014-animated-gif-inputs/spec.md)**
+  - Multi-frame GIF upload for QArt, halftone, and IS-QR with per-frame generation, playback, and GIF export
+  - Features: Frame decode/composite, 24-frame cap, animated preview, GIF download; IS-QR auto ROI per frame (no mask)
+
 ### Supporting Feature Specifications
 
 - **[006 - QR Code Scanner](./006-qr-scanner/spec.md)**

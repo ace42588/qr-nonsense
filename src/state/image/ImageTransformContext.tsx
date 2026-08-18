@@ -6,6 +6,7 @@ import {
   MAX_IMAGE_DIMENSION,
 } from "@/domain/image";
 import { loadImage, transformImageToCanvas, downscaleImageDataUrl } from "@/adapters/browser/image";
+import { decodeGif, isGifBuffer } from "@/adapters/browser/gif";
 
 const DEFAULT_IMAGE_URL = "/sample-mark.png";
 
@@ -18,6 +19,11 @@ interface ImageTransformState {
   canvasSize: number;
   isLoading: boolean;
   error: string | null;
+  sourceFrames: ImageData[];
+  frames: ImageData[];
+  frameDelaysMs: number[];
+  isAnimated: boolean;
+  animationWarning: string | null;
 }
 
 interface ImageTransformContextValue extends ImageTransformState {
@@ -26,10 +32,8 @@ interface ImageTransformContextValue extends ImageTransformState {
   setOffsetY: (offsetY: number) => void;
   setImageUrl: (imageUrl: string | null) => void;
   setCanvasSize: (canvasSize: number) => void;
-  // Image upload handling
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  // Source image for offscreen canvas transformation
   sourceImage: HTMLImageElement | null;
 }
 
@@ -48,27 +52,36 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
   const [canvasSize, setCanvasSize] = useState(480);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Track the last processed image URL to only auto-calculate on new images
+  const [sourceFrames, setSourceFrames] = useState<ImageData[]>([]);
+  const [frames, setFrames] = useState<ImageData[]>([]);
+  const [frameDelaysMs, setFrameDelaysMs] = useState<number[]>([]);
+  const [animationWarning, setAnimationWarning] = useState<string | null>(null);
+  const [sourceImage, setSourceImage] = useState<HTMLImageElement | null>(null);
+
   const lastProcessedImageUrlRef = useRef<string | null>(null);
   const sourceImageRef = useRef<HTMLImageElement | null>(null);
+  const sourceFramesRef = useRef<ImageData[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadReaderRef = useRef<FileReader | null>(null);
-  // Track the canvas size when scale was last calculated, to maintain scale relative to QR code
-  // Initialize to 0 - will be set when image is first loaded
-  // This ensures we use a stable reference size that doesn't change when switching components
+  const blobUrlRef = useRef<string | null>(null);
+  const loadAbortRef = useRef<AbortController | null>(null);
   const referenceCanvasSizeRef = useRef<number>(0);
-  // Track if we're currently adjusting scale due to canvasSize change (to avoid loops)
   const isAdjustingScaleRef = useRef<boolean>(false);
 
-  // Initialize with default image URL if not set
   useEffect(() => {
     if (!imageUrl) {
       setImageUrl(DEFAULT_IMAGE_URL);
     }
   }, [imageUrl]);
 
-  // Handle image file upload with size/type/dimension checks (FR-021, FR-024, FR-025)
+  const replaceImageUrl = useCallback((nextUrl: string | null) => {
+    if (blobUrlRef.current && blobUrlRef.current !== nextUrl) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
+    setImageUrl(nextUrl);
+  }, []);
+
   const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -88,6 +101,19 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
     setIsLoading(true);
     setError(null);
 
+    const isGif =
+      (file.type || "").toLowerCase() === "image/gif" ||
+      (file.name || "").toLowerCase().endsWith(".gif");
+
+    if (isGif) {
+      const url = URL.createObjectURL(file);
+      if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = url;
+      setImageUrl(url);
+      event.target.value = "";
+      return;
+    }
+
     const reader = new FileReader();
     uploadReaderRef.current = reader;
     reader.onload = async (e) => {
@@ -99,7 +125,7 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
           return;
         }
         const processed = await downscaleImageDataUrl(dataUrl, MAX_IMAGE_DIMENSION);
-        setImageUrl(processed);
+        replaceImageUrl(processed);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to process image");
         setIsLoading(false);
@@ -121,32 +147,121 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
     };
     reader.readAsDataURL(file);
     event.target.value = "";
-  }, []);
+  }, [replaceImageUrl]);
 
-
-  // Wrapper for setScale that updates reference canvas size when user manually changes scale
   const setScaleWithReference = useCallback((newScale: number) => {
     setScale(newScale);
-    // Update reference when user manually changes scale (not during automatic adjustment)
     if (!isAdjustingScaleRef.current) {
       referenceCanvasSizeRef.current = canvasSize;
     }
   }, [canvasSize]);
 
-  // NOTE: Auto-scaling on window resize has been removed per user request.
-  // The image should only scale/resize when first loaded, not when the window resizes.
-  // The reference canvas size is still tracked for initial image loading.
+  const applyAutoScale = useCallback((width: number, height: number, url: string) => {
+    if (lastProcessedImageUrlRef.current === url) return;
+    if (referenceCanvasSizeRef.current === 0) {
+      referenceCanvasSizeRef.current = 480;
+    }
+    const calculatedScale = calculateAppropriateCanvasScale(
+      width,
+      height,
+      referenceCanvasSizeRef.current
+    );
+    isAdjustingScaleRef.current = true;
+    setScale(calculatedScale);
+    setOffsetX(0);
+    setOffsetY(0);
+    lastProcessedImageUrlRef.current = url;
+    setTimeout(() => {
+      isAdjustingScaleRef.current = false;
+    }, 0);
+  }, []);
 
-  // Transform image whenever imageUrl, scale, or offset changes
-  // NOTE: canvasSize is NOT in dependencies - we use a fixed reference size to prevent
-  // image scale from changing when switching between components (which have different canvas sizes)
-  // The visible canvas size is handled by CSS scaling, not by retransforming the image
+  // Load source still or GIF frames when the URL changes.
+  useEffect(() => {
+    if (!imageUrl) return;
+    const url = imageUrl;
+
+    loadAbortRef.current?.abort();
+    const abortController = new AbortController();
+    loadAbortRef.current = abortController;
+    let isMounted = true;
+
+    lastProcessedImageUrlRef.current = null;
+    sourceImageRef.current = null;
+    sourceFramesRef.current = [];
+    setSourceImage(null);
+    setSourceFrames([]);
+    setFrames([]);
+    setFrameDelaysMs([]);
+    setAnimationWarning(null);
+
+    async function loadSource() {
+      setIsLoading(true);
+      setError(null);
+      try {
+        let decodedGif: ReturnType<typeof decodeGif> | null = null;
+        try {
+          const response = await fetch(url, { signal: abortController.signal });
+          if (response.ok) {
+            const buffer = await response.arrayBuffer();
+            if (isGifBuffer(buffer)) {
+              decodedGif = decodeGif(buffer);
+            }
+          }
+        } catch {
+          if (abortController.signal.aborted) return;
+          // Fall back to <img> for non-GIF / CORS-limited stills.
+        }
+
+        if (abortController.signal.aborted || !isMounted) return;
+
+        if (decodedGif && decodedGif.frames.length > 1) {
+          sourceFramesRef.current = decodedGif.frames;
+          sourceImageRef.current = null;
+          setSourceFrames(decodedGif.frames);
+          setFrameDelaysMs(decodedGif.delaysMs);
+          setAnimationWarning(decodedGif.warning);
+          setSourceImage(null);
+          applyAutoScale(
+            decodedGif.frames[0].width,
+            decodedGif.frames[0].height,
+            url
+          );
+          return;
+        }
+
+        const img = await loadImage(url);
+        if (abortController.signal.aborted || !isMounted) return;
+        sourceImageRef.current = img;
+        sourceFramesRef.current = [];
+        setSourceImage(img);
+        setSourceFrames([]);
+        setFrameDelaysMs([]);
+        setAnimationWarning(null);
+        applyAutoScale(img.width, img.height, url);
+      } catch (err) {
+        if (abortController.signal.aborted || !isMounted) return;
+        console.error("Error loading image:", err);
+        setError(err instanceof Error ? err.message : "Failed to load image");
+        setIsLoading(false);
+      }
+    }
+
+    loadSource();
+    return () => {
+      isMounted = false;
+      abortController.abort();
+    };
+  }, [imageUrl, applyAutoScale]);
+
+  // Transform still image or every GIF frame when source/transform changes.
   useEffect(() => {
     let isMounted = true;
-    
-    async function transformImage() {
-      if (!imageUrl) {
-        setTransformedImageData(null);
+
+    async function transform() {
+      const gifFrames = sourceFramesRef.current;
+      const img = sourceImageRef.current;
+      if (!imageUrl || (!img && gifFrames.length === 0)) {
         return;
       }
 
@@ -154,40 +269,27 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
       setError(null);
 
       try {
-        // Load source image if needed
-        const isNewImage = !sourceImageRef.current || sourceImageRef.current.src !== imageUrl;
-        if (isNewImage) {
-          const img = await loadImage(imageUrl);
-          if (!isMounted) return;
-          sourceImageRef.current = img;
-          
-          // Auto-calculate scale for new images using reference canvas size
-          if (lastProcessedImageUrlRef.current !== imageUrl) {
-            // Set reference canvas size on first image load
-            // Use a fixed standard size (480) to ensure consistency across all modes
-            // This prevents scale inconsistency when switching between components with different canvas sizes
-            if (referenceCanvasSizeRef.current === 0) {
-              referenceCanvasSizeRef.current = 480; // Fixed standard size
-            }
-            
-            const calculatedScale = calculateAppropriateCanvasScale(
-              img.width,
-              img.height,
-              referenceCanvasSizeRef.current
-            );
+        const transformSize = referenceCanvasSizeRef.current || 480;
 
-            isAdjustingScaleRef.current = true;
-            setScale(calculatedScale);
-            setOffsetX(0);
-            setOffsetY(0);
-            lastProcessedImageUrlRef.current = imageUrl;
-            setTimeout(() => {
-              isAdjustingScaleRef.current = false;
-            }, 0);
+        if (gifFrames.length > 1) {
+          const transformed: ImageData[] = [];
+          for (const frame of gifFrames) {
+            const drawn = await transformImageToCanvas(
+              frame,
+              transformSize,
+              scale,
+              offsetX,
+              offsetY
+            );
+            transformed.push(convertTransparencyToWhite(drawn));
           }
+          if (!isMounted) return;
+          setFrames(transformed);
+          setTransformedImageData(transformed[0] ?? null);
+          setIsLoading(false);
+          return;
         }
 
-        const img = sourceImageRef.current;
         if (!img) {
           if (isMounted) {
             setError("Image not loaded");
@@ -195,54 +297,37 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
           }
           return;
         }
-        
-        // Use reference canvas size for transformation to keep image scale consistent
-        // This prevents the image from changing scale when switching between components
-        // Always use the fixed reference size (480) to ensure consistency
-        const transformSize = referenceCanvasSizeRef.current || 480;
-        
-        // Transform image to reference canvas size (not current canvasSize)
-        // This ensures the image scale remains consistent when switching components
-        const transformed = await transformImageToCanvas(
+
+        const drawn = await transformImageToCanvas(
           img,
           transformSize,
           scale,
           offsetX,
           offsetY
         );
-
-        // Convert transparency to white background before QArt processing (FR-028)
-        const finalImageData = convertTransparencyToWhite(transformed);
-
-        if (isMounted) {
-          setTransformedImageData(finalImageData);
-          setIsLoading(false);
-        }
+        const finalImageData = convertTransparencyToWhite(drawn);
+        if (!isMounted) return;
+        setFrames([]);
+        setTransformedImageData(finalImageData);
+        setIsLoading(false);
       } catch (err) {
         console.error("Error transforming image:", err);
         if (isMounted) {
           setError(err instanceof Error ? err.message : "Failed to transform image");
           setIsLoading(false);
           setTransformedImageData(null);
+          setFrames([]);
         }
       }
     }
 
-    transformImage();
-
+    transform();
     return () => {
       isMounted = false;
     };
-  }, [imageUrl, scale, offsetX, offsetY]); // Removed canvasSize from dependencies
+  }, [imageUrl, sourceImage, sourceFrames, scale, offsetX, offsetY]);
 
-  // Reset tracking when image URL changes
-  useEffect(() => {
-    if (imageUrl !== lastProcessedImageUrlRef.current) {
-      // New image - reset will happen in autoCalculateScale
-      lastProcessedImageUrlRef.current = null;
-      sourceImageRef.current = null;
-    }
-  }, [imageUrl]);
+  const isAnimated = sourceFrames.length > 1;
 
   const value: ImageTransformContextValue = useMemo(() => ({
     scale,
@@ -253,15 +338,38 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
     canvasSize,
     isLoading,
     error,
+    sourceFrames,
+    frames,
+    frameDelaysMs,
+    isAnimated,
+    animationWarning,
     setScale: setScaleWithReference,
     setOffsetX,
     setOffsetY,
-    setImageUrl,
+    setImageUrl: replaceImageUrl,
     setCanvasSize,
     fileInputRef,
     handleImageUpload,
-    sourceImage: sourceImageRef.current,
-  }), [scale, offsetX, offsetY, imageUrl, transformedImageData, canvasSize, isLoading, error, handleImageUpload, setScaleWithReference]);
+    sourceImage,
+  }), [
+    scale,
+    offsetX,
+    offsetY,
+    imageUrl,
+    transformedImageData,
+    canvasSize,
+    isLoading,
+    error,
+    sourceFrames,
+    frames,
+    frameDelaysMs,
+    isAnimated,
+    animationWarning,
+    handleImageUpload,
+    setScaleWithReference,
+    replaceImageUrl,
+    sourceImage,
+  ]);
 
   return (
     <ImageTransformContext.Provider value={value}>
@@ -277,4 +385,3 @@ export function useImageTransform(): ImageTransformContextValue {
   }
   return context;
 }
-

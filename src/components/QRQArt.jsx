@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQArtGeneration } from "@/hooks/useQArtGeneration";
+import { useAnimationPlayback } from "@/hooks/useAnimationPlayback";
 import { useCanvasSizeSync } from "@/hooks/useCanvasSizeSync";
 import { useQRMatrix } from "@/hooks/useQRMatrix";
 import { createContrastMatrix } from "@/domain/qart/contrastMatrix";
@@ -70,6 +71,10 @@ export function QRQArt({
     scale,
     offsetX,
     offsetY,
+    isAnimated,
+    sourceFrames,
+    frames,
+    frameDelaysMs,
   } = useImageTransform();
   
   const handleModuleHover = useModuleHover();
@@ -99,9 +104,9 @@ export function QRQArt({
   // Memoize transformParams to prevent constant regeneration
   // Only recreate when scale, offsetX, or offsetY actually change
   const transformParams = useMemo(() => {
-    if (!sourceImage) return null;
+    if (!sourceImage && sourceFrames.length === 0) return null;
     return { scale, offsetX, offsetY };
-  }, [sourceImage, scale, offsetX, offsetY]);
+  }, [sourceImage, sourceFrames.length, scale, offsetX, offsetY]);
 
   // Memoize appendData options to prevent constant regeneration
   const appendDataOptions = useMemo(() => {
@@ -109,7 +114,7 @@ export function QRQArt({
   }, [appendData]);
 
   // Use QArt generation hook
-  const { isGenerating, generationError } = useQArtGeneration({
+  const { isGenerating, generationError, frameResults, generationProgress } = useQArtGeneration({
     segments,
     codewords,
     blocks,
@@ -128,7 +133,24 @@ export function QRQArt({
     },
     sourceImage,
     transformParams,
+    isAnimated,
+    sourceFrames,
+    transformedFrames: frames,
   });
+
+  const { frameIndex } = useAnimationPlayback({
+    delaysMs: frameDelaysMs,
+    enabled: isAnimated && frameResults.length > 1,
+    paused: isGenerating,
+  });
+
+  useEffect(() => {
+    if (!isAnimated || frameResults.length === 0) return;
+    const next = frameResults[frameIndex] ?? frameResults[0];
+    if (next && next !== qartResult) {
+      setQartResult(next);
+    }
+  }, [isAnimated, frameResults, frameIndex, qartResult, setQartResult]);
 
   // Calculate user input bits (excluding padding segments) (FR-014)
   const userInputBits = useMemo(() => {
@@ -147,12 +169,13 @@ export function QRQArt({
   }, [transformedImageData, versionInfo, userInputBits, segments]);
 
   const extremeScaling = useMemo(() => {
-    if (!sourceImage || !versionInfo) return { isExtreme: false, warning: null };
+    const src = sourceImage || sourceFrames[0];
+    if (!src || !versionInfo) return { isExtreme: false, warning: null };
     const qrDimension = versionInfo.version * 4 + 17;
-    const maxDim = Math.max(sourceImage.width, sourceImage.height);
+    const maxDim = Math.max(src.width, src.height);
     if (!maxDim) return { isExtreme: false, warning: null };
     return detectExtremeScaling(qrDimension / maxDim);
-  }, [sourceImage, versionInfo]);
+  }, [sourceImage, sourceFrames, versionInfo]);
 
   // Track if we've auto-upgraded to prevent infinite loops
   const autoUpgradedVersionRef = useRef(null);
@@ -308,10 +331,18 @@ export function QRQArt({
   // CRITICAL: Use offscreen canvas from qartResult (QR dimension-based) for consistency
   // This ensures halftone matches what QArt actually optimized
   const halftoneImageData = qartResult?.offscreenCanvasImage || transformedImageData;
-  const { patternsDark, patternsLight, importanceMap } = useHalftonePatterns({
+  const qartHalftoneFrames = useMemo(() => {
+    if (!isAnimated || frameResults.length <= 1) return null;
+    const images = frameResults.map((r) => r.offscreenCanvasImage).filter(Boolean);
+    return images.length > 1 ? images : null;
+  }, [isAnimated, frameResults]);
+
+  const { patternsDark, patternsLight, importanceMap, importanceMaps } = useHalftonePatterns({
     transformedImageData: halftoneImageData,
-    canvasSize: halftoneImageData?.width || canvasSize, // Pass image width, not canvasSize
+    canvasSize: halftoneImageData?.width || canvasSize,
     importanceWeight: 0.5,
+    frames: qartHalftoneFrames,
+    frameIndex,
   });
 
   // Compute rasterized target grid for preview
@@ -479,6 +510,76 @@ export function QRQArt({
     renderModule: baseRenderModule,
   });
 
+  const gifExport = useMemo(() => {
+    if (!isAnimated || frameResults.length <= 1) return null;
+    const { minDotSize: min, maxDotSize: max } = clampDotSizes(minDotSize, maxDotSize);
+    return {
+      delaysMs: frameDelaysMs,
+      getGifFrame: (index, ctx, helpers) => {
+        const result = frameResults[index] ?? frameResults[0];
+        if (!result?.matrix) return;
+        const image = result.offscreenCanvasImage || transformedImageData;
+        const map = importanceMaps?.[index] ?? importanceMap;
+        helpers.paintQrCanvas(ctx, {
+          matrix: result.matrix,
+          size: helpers.size,
+          quietZone: helpers.quietZone,
+          renderPasses: applyHalftone && halftoneStyle === "dots" ? 2 : 1,
+          renderModule: (c, module, moduleX, moduleY, moduleSize, renderCtx) => {
+            if (applyHalftone && image && map && patternsDark && patternsLight) {
+              renderHalftoneModuleWithAreaSampling(
+                c,
+                module,
+                moduleX,
+                moduleY,
+                moduleSize,
+                renderCtx,
+                {
+                  transformedImageData: image,
+                  importanceMap: map,
+                  patternsDark,
+                  patternsLight,
+                  modulePixel,
+                  reliabilityWeight: 0.0,
+                  importanceThreshold: limitHalftoneToImportant
+                    ? importanceThreshold
+                    : undefined,
+                  style: halftoneStyle,
+                  minDotSize: min,
+                  maxDotSize: max,
+                }
+              );
+              return;
+            }
+            c.fillStyle = module.isDark ? "black" : "white";
+            c.fillRect(
+              moduleX,
+              moduleY,
+              renderCtx?.moduleWidth ?? moduleSize,
+              renderCtx?.moduleHeight ?? moduleSize
+            );
+          },
+        });
+      },
+    };
+  }, [
+    isAnimated,
+    frameResults,
+    frameDelaysMs,
+    transformedImageData,
+    importanceMaps,
+    importanceMap,
+    patternsDark,
+    patternsLight,
+    applyHalftone,
+    halftoneStyle,
+    minDotSize,
+    maxDotSize,
+    modulePixel,
+    limitHalftoneToImportant,
+    importanceThreshold,
+  ]);
+
   return (
     <>
       {transformError && <ErrorBanner message={transformError} title="Image Error" />}
@@ -503,6 +604,7 @@ export function QRQArt({
         onModuleHover={handleModuleHover}
         responsive={true}
         customMatrix={matrix}
+        gifExport={gifExport}
       />
       <SettingsPanel
         title={combined ? "Combined QArt + Halftone Settings" : "QArt Settings"}
@@ -736,7 +838,9 @@ export function QRQArt({
 
         {isGenerating && (
           <p className="text-sm text-muted-foreground">
-            QArt generation is running automatically...
+            {generationProgress
+              ? `Generating QArt frame ${generationProgress.current}/${generationProgress.total}…`
+              : "QArt generation is running automatically..."}
           </p>
         )}
       </SettingsPanel>

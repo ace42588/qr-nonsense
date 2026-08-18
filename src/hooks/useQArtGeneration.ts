@@ -32,131 +32,219 @@ interface UseQArtGenerationParams {
   options?: QArtGenerationOptions;
   debounceMs?: number;
   autoGenerate?: boolean;
-  // Source image and transform params for offscreen canvas
-  sourceImage?: HTMLImageElement | null;
+  sourceImage?: HTMLImageElement | ImageData | null;
   transformParams?: {
     scale: number;
     offsetX: number;
     offsetY: number;
   } | null;
+  isAnimated?: boolean;
+  sourceFrames?: ImageData[];
+  transformedFrames?: ImageData[];
+}
+
+export interface GenerationProgress {
+  current: number;
+  total: number;
 }
 
 interface UseQArtGenerationReturn {
   isGenerating: boolean;
   generationError: string | null;
   generateQArtCode: () => Promise<void>;
+  frameResults: QArtResult[];
+  generationProgress: GenerationProgress | null;
+}
+
+function buildQArtOptions(args: {
+  segments: Segment[];
+  codewords: Codeword[];
+  blocks: QRBlock[];
+  initialMatrix: QRMatrix;
+  versionInfo: VersionInfo;
+  errorCorrectionLevel: number;
+  targetImage: ImageData;
+  signal: AbortSignal;
+  priorityFunction?: "contrast" | "random" | "roi";
+  appendData?: QArtGenerationOptions["appendData"];
+  minDecodeRedundancy?: number;
+  decodeTrials?: number;
+  frameSource?: HTMLImageElement | ImageData | null;
+  transformParams?: {
+    scale: number;
+    offsetX: number;
+    offsetY: number;
+  } | null;
+}): Parameters<typeof generateQArt>[0] {
+  const generateOptions: Parameters<typeof generateQArt>[0] = {
+    segments: args.segments,
+    codewords: args.codewords,
+    blocks: args.blocks,
+    initialMatrix: args.initialMatrix,
+    versionInfo: args.versionInfo,
+    errorCorrectionLevel: args.errorCorrectionLevel,
+    targetImage: args.targetImage,
+    signal: args.signal,
+  };
+
+  if (args.priorityFunction) {
+    generateOptions.priorityFunction = args.priorityFunction;
+  }
+  if (args.appendData?.enabled) {
+    generateOptions.appendData = args.appendData as QArtAppendData;
+  }
+  if (args.minDecodeRedundancy != null) {
+    generateOptions.minDecodeRedundancy = args.minDecodeRedundancy;
+  }
+  if (args.decodeTrials != null) {
+    generateOptions.decodeTrials = args.decodeTrials;
+  }
+  if (args.frameSource && args.transformParams) {
+    generateOptions.sourceImage = args.frameSource;
+    generateOptions.transformParams = args.transformParams;
+  }
+  return generateOptions;
 }
 
 /**
  * Hook for managing QArt QR code generation with abort controller, error handling,
- * and debounced auto-generation.
+ * and debounced auto-generation. Animated sources generate one result per frame.
  */
-export function useQArtGeneration({
-  segments,
-  codewords,
-  blocks,
-  contextMatrix,
-  versionInfo,
-  errorCorrectionLevel,
-  transformedImageData,
-  isLoadingTransform,
-  qartResult: _qartResult,
-  setQartResult,
-  options = {},
-  debounceMs = 300,
-  autoGenerate = true,
-  sourceImage,
-  transformParams,
-}: UseQArtGenerationParams): UseQArtGenerationReturn {
+export function useQArtGeneration(
+  params: UseQArtGenerationParams
+): UseQArtGenerationReturn {
+  const {
+    segments,
+    codewords,
+    blocks,
+    contextMatrix,
+    versionInfo,
+    errorCorrectionLevel,
+    transformedImageData,
+    isLoadingTransform,
+    setQartResult,
+    options = {},
+    debounceMs = 300,
+    autoGenerate = true,
+    sourceImage,
+    transformParams,
+    isAnimated = false,
+    sourceFrames = [],
+    transformedFrames = [],
+  } = params;
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [frameResults, setFrameResults] = useState<QArtResult[]>([]);
+  const [generationProgress, setGenerationProgress] =
+    useState<GenerationProgress | null>(null);
   const searchControllerRef = useRef<AbortController | null>(null);
 
-  const {
-    priorityFunction = "contrast",
-    appendData,
-    minDecodeRedundancy,
-    decodeTrials,
-  } = options;
+  const { priorityFunction = "contrast", appendData, minDecodeRedundancy, decodeTrials } = options;
 
-  // Generate QArt QR code - automatically triggered by state changes
+  const imageReady = isAnimated
+    ? sourceFrames.length > 1 && transformedFrames.length === sourceFrames.length
+    : !!sourceImage;
+
   const generateQArtCode = useCallback(async () => {
-    // Image requirement validation
-    // CRITICAL: Check sourceImage for offscreen canvas, not transformedImageData
-    // transformedImageData changes with window resize, but sourceImage is stable
-    if (!sourceImage) {
+    if (!imageReady) {
       setGenerationError("No image loaded. Please upload an image to generate QArt QR codes.");
       setQartResult(null);
+      setFrameResults([]);
       return;
     }
 
     if (!segments || segments.length === 0) {
       setGenerationError("No segments available. Please add an input in the left panel.");
       setQartResult(null);
+      setFrameResults([]);
       return;
     }
 
     if (!transformedImageData) {
       setGenerationError("No transformed image available. Please wait for the image to finish loading.");
       setQartResult(null);
+      setFrameResults([]);
       return;
     }
 
-    // Cancel any ongoing generation
     if (searchControllerRef.current) {
       searchControllerRef.current.abort();
     }
 
-    // Create new AbortController for this generation
     const abortController = new AbortController();
     searchControllerRef.current = abortController;
 
     setIsGenerating(true);
     setGenerationError(null);
     setQartResult(null);
+    setFrameResults([]);
+    setGenerationProgress(null);
 
     try {
-      const generateOptions: Parameters<typeof generateQArt>[0] = {
-        segments,
-        codewords: codewords!,
-        blocks: blocks!,
-        initialMatrix: contextMatrix!,
-        versionInfo: versionInfo!,
-        errorCorrectionLevel,
-        targetImage: transformedImageData,
-        signal: abortController.signal,
-      };
+      if (isAnimated && sourceFrames.length > 1) {
+        const results: QArtResult[] = [];
+        const total = sourceFrames.length;
+        for (let i = 0; i < total; i++) {
+          if (abortController.signal.aborted) return;
+          setGenerationProgress({ current: i + 1, total });
+          const target = transformedFrames[i] ?? transformedImageData;
+          const result = await generateQArt(
+            buildQArtOptions({
+              segments: segments!,
+              codewords: codewords!,
+              blocks: blocks!,
+              initialMatrix: contextMatrix!,
+              versionInfo: versionInfo!,
+              errorCorrectionLevel,
+              targetImage: target,
+              signal: abortController.signal,
+              priorityFunction,
+              appendData,
+              minDecodeRedundancy,
+              decodeTrials,
+              frameSource: sourceFrames[i],
+              transformParams,
+            })
+          );
+          if (abortController.signal.aborted || !result) return;
+          results.push(result);
+        }
+        if (!abortController.signal.aborted) {
+          setFrameResults(results);
+          setQartResult(results[0] ?? null);
+          setGenerationError(null);
+          setGenerationProgress(null);
+        }
+        return;
+      }
 
-      // Add optional parameters
-      if (priorityFunction) {
-        generateOptions.priorityFunction = priorityFunction;
-      }
-      if (appendData?.enabled) {
-        generateOptions.appendData = appendData as QArtAppendData;
-      }
-      if (minDecodeRedundancy != null) {
-        generateOptions.minDecodeRedundancy = minDecodeRedundancy;
-      }
-      if (decodeTrials != null) {
-        generateOptions.decodeTrials = decodeTrials;
-      }
-      // Add source image and transform params for offscreen canvas
-      if (sourceImage && transformParams) {
-        generateOptions.sourceImage = sourceImage;
-        generateOptions.transformParams = transformParams;
-      }
+      const result = await generateQArt(
+        buildQArtOptions({
+          segments: segments!,
+          codewords: codewords!,
+          blocks: blocks!,
+          initialMatrix: contextMatrix!,
+          versionInfo: versionInfo!,
+          errorCorrectionLevel,
+          targetImage: transformedImageData,
+          signal: abortController.signal,
+          priorityFunction,
+          appendData,
+          minDecodeRedundancy,
+          decodeTrials,
+          frameSource: sourceImage,
+          transformParams,
+        })
+      );
 
-      const result = await generateQArt(generateOptions);
-
-      // Only update state if not cancelled
       if (!abortController.signal.aborted && result) {
+        setFrameResults([result]);
         setQartResult(result);
         setGenerationError(null);
       }
     } catch (err) {
-      // Don't set error if cancellation was intentional
       if (err instanceof Error && err.message.includes("cancelled")) {
-        // Cancellation is expected, don't show error
         return;
       }
       console.error("Error generating QArt:", err);
@@ -164,16 +252,12 @@ export function useQArtGeneration({
         err instanceof Error ? err.message : "Failed to generate QArt QR code"
       );
     } finally {
-      // Only clear generating state if this is still the current generation
       if (searchControllerRef.current === abortController) {
         setIsGenerating(false);
+        setGenerationProgress(null);
       }
     }
   }, [
-    // CRITICAL: Do NOT include transformedImageData in dependencies
-    // transformedImageData changes when canvasSize changes (visible canvas),
-    // but QArt uses offscreen canvas (sourceImage + transformParams) which is stable
-    // Including transformedImageData would cause QArt regeneration on window resize
     segments,
     codewords,
     blocks,
@@ -182,39 +266,33 @@ export function useQArtGeneration({
     versionInfo,
     priorityFunction,
     appendData,
-    minDecodeRedundancy,
-    decodeTrials,
     sourceImage,
     transformParams,
     transformedImageData,
     setQartResult,
+    imageReady,
+    isAnimated,
+    sourceFrames,
+    transformedFrames,
+    minDecodeRedundancy,
+    decodeTrials,
   ]);
 
-  // Automatically generate QArt when dependencies change
-  // Debounce rapid changes (like slider movements) to avoid excessive regeneration
   useEffect(() => {
     if (!autoGenerate) return;
-
-    // Don't generate if image is still loading or if we don't have required data
-    // CRITICAL: Check sourceImage instead of transformedImageData for offscreen canvas
-    if (isLoadingTransform || !sourceImage || !segments || segments.length === 0) {
+    if (isLoadingTransform || !imageReady || !segments || segments.length === 0) {
       return;
     }
 
-    // Debounce rapid changes (especially for sliders)
     const timeoutId = setTimeout(() => {
       generateQArtCode();
     }, debounceMs);
 
     return () => {
       clearTimeout(timeoutId);
-      // Note: Abort is handled in generateQArtCode when it's called again
     };
   }, [
-    // CRITICAL: Do NOT include transformedImageData in dependencies
-    // Use sourceImage instead - it's stable and doesn't change with window resize
     sourceImage,
-    // transformParams is memoized in the component, so it only changes when scale/offset change
     transformParams,
     segments,
     codewords,
@@ -223,7 +301,6 @@ export function useQArtGeneration({
     versionInfo,
     errorCorrectionLevel,
     priorityFunction,
-    // appendData object reference might change - use deep comparison or extract values
     appendData?.enabled,
     appendData?.method,
     appendData?.separator,
@@ -232,11 +309,17 @@ export function useQArtGeneration({
     generateQArtCode,
     autoGenerate,
     debounceMs,
+    imageReady,
+    isAnimated,
+    sourceFrames,
+    transformedFrames,
   ]);
 
   return {
     isGenerating,
     generationError,
     generateQArtCode,
+    frameResults,
+    generationProgress,
   };
 }

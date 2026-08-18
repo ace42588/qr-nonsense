@@ -20,7 +20,7 @@ import { ChevronDown, Upload, Type, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, R
 // State
 import { useImageTransform } from "@/state/image/ImageTransformContext";
 import { TextToImageEditor } from "@/components/TextToImageEditor";
-import { ErrorBanner } from "@/components/ui/message-banner";
+import { ErrorBanner, WarningBanner } from "@/components/ui/message-banner";
 
 export function ImageTransformInput() {
   const {
@@ -36,6 +36,10 @@ export function ImageTransformInput() {
     fileInputRef,
     handleImageUpload,
     error,
+    isAnimated,
+    frames,
+    frameDelaysMs,
+    animationWarning,
   } = useImageTransform();
 
   return (
@@ -56,6 +60,16 @@ export function ImageTransformInput() {
             <div className="px-2 pb-1">
               <ErrorBanner message={error} title="Image Error" />
             </div>
+          )}
+          {animationWarning && (
+            <div className="px-2 pb-1">
+              <WarningBanner message={animationWarning} title="Animation" />
+            </div>
+          )}
+          {isAnimated && (
+            <p className="px-2 pb-1 text-xs text-muted-foreground">
+              {frames.length} frames · {frameDelaysMs.reduce((a, b) => a + b, 0)}ms
+            </p>
           )}
           <SidebarMenu className="gap-0.5">
             <SidebarMenuItem key="Image URL">

@@ -21,6 +21,30 @@ export function generateFilename(prefix: string, extension: string): string {
 }
 
 /**
+ * Downloads composited canvas frames as an animated GIF.
+ */
+export async function downloadCanvasFramesAsGif(
+  frames: ImageData[],
+  delaysMs: number[],
+  filename?: string
+): Promise<void> {
+  if (!frames.length) {
+    throw new Error("No frames to encode");
+  }
+  const { encodeGif } = await import("@/adapters/browser/gif");
+  const bytes = encodeGif(frames, delaysMs);
+  const blob = new Blob([bytes], { type: "image/gif" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename || generateFilename("qr-code", "gif");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
  * Downloads a canvas element as a PNG image file
  */
 export function downloadCanvasAsPNG(canvas: HTMLCanvasElement, filename?: string): void {

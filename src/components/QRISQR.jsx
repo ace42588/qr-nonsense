@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { QRBase } from "./QRBase";
 import { useQRData } from "@/state/qr/QRDataContext";
 import { useInputs } from "@/state/inputs/InputContext";
@@ -10,6 +10,7 @@ import { ErrorBanner, WarningBanner } from "@/components/ui/message-banner";
 import { checkVersionCapacityForQArt } from "@/domain/qart/capacity";
 import { getNumBits } from "@/domain/qr/encoders/utils";
 import { useIsqrGeneration } from "@/hooks/useIsqrGeneration";
+import { useAnimationPlayback } from "@/hooks/useAnimationPlayback";
 import { useCanvasSizeSync } from "@/hooks/useCanvasSizeSync";
 import { useQRMatrix } from "@/hooks/useQRMatrix";
 import { SettingsPanel } from "@/components/qr-controls/SettingsPanel";
@@ -43,6 +44,10 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
     scale,
     offsetX,
     offsetY,
+    isAnimated,
+    sourceFrames,
+    frames,
+    frameDelaysMs,
   } = useImageTransform();
 
   const handleModuleHover = useModuleHover();
@@ -97,7 +102,7 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
     userInputBits,
   ]);
 
-  const { isGenerating, generationError, isqrResult } = useIsqrGeneration({
+  const { isGenerating, generationError, isqrResult, frameResults, generationProgress } = useIsqrGeneration({
     segments,
     codewords,
     blocks,
@@ -109,6 +114,9 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
     setQartResult,
     sourceImage,
     transformParams,
+    isAnimated,
+    sourceFrames,
+    transformedFrames: frames,
     options: {
       roiThresholdBias,
       modulePixel,
@@ -116,36 +124,48 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
       printDpi,
       viewingDistanceInches,
       qrBlend,
-      maskImage,
+      maskImage: isAnimated ? null : maskImage,
     },
   });
+
+  const { frameIndex } = useAnimationPlayback({
+    delaysMs: frameDelaysMs,
+    enabled: isAnimated && frameResults.length > 1,
+    paused: isGenerating,
+  });
+
+  const currentIsqr = isAnimated
+    ? frameResults[frameIndex] ?? isqrResult
+    : isqrResult;
+
+  useEffect(() => {
+    if (!isAnimated || frameResults.length === 0) return;
+    const next = frameResults[frameIndex] ?? frameResults[0];
+    if (next?.qart) setQartResult(next.qart);
+  }, [isAnimated, frameResults, frameIndex, setQartResult]);
 
   const matrix = useQRMatrix({
     qartResult,
     contextMatrix,
   });
 
-  const fusedCanvasRef = useRef(null);
-  useEffect(() => {
-    const fused = isqrResult?.fusedImage;
-    if (!fused) {
-      fusedCanvasRef.current = null;
-      return;
-    }
+  const fusedCanvas = useMemo(() => {
+    const fused = currentIsqr?.fusedImage;
+    if (!fused) return null;
     const canvas = document.createElement("canvas");
     canvas.width = fused.width;
     canvas.height = fused.height;
     const ctx = canvas.getContext("2d");
     if (ctx) {
       ctx.putImageData(fused, 0, 0);
-      fusedCanvasRef.current = canvas;
     }
-  }, [isqrResult?.fusedImage]);
+    return canvas;
+  }, [currentIsqr?.fusedImage]);
 
   const canvasKey = useMemo(() => {
     const matrixLength = qartResult?.matrix?.length || matrix?.length || 0;
-    return `isqr-canvas-${matrixLength}-${isqrResult?.fusedImage?.width || 0}`;
-  }, [qartResult?.matrix?.length, matrix?.length, isqrResult?.fusedImage?.width]);
+    return `isqr-canvas-${matrixLength}-${currentIsqr?.fusedImage?.width || 0}`;
+  }, [qartResult?.matrix?.length, matrix?.length, currentIsqr?.fusedImage?.width]);
 
   const renderModule = useCallback(
     (ctx, module, moduleX, moduleY, moduleSize, renderCtx) => {
@@ -158,8 +178,7 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
       const size = width === height ? width : Math.max(width, height);
       const mx = renderCtx?.x ?? 0;
       const my = renderCtx?.y ?? 0;
-      const fusedCanvas = fusedCanvasRef.current;
-      const roiGrid = isqrResult?.roiGrid;
+      const roiGrid = currentIsqr?.roiGrid;
 
       if (fusedCanvas && renderCtx) {
         const mp = modulePixel;
@@ -193,8 +212,41 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
         }
       }
     },
-    [isqrResult?.roiGrid, modulePixel, showRoi, matrix?.length]
+    [currentIsqr?.roiGrid, fusedCanvas, modulePixel, showRoi, matrix?.length]
   );
+
+  const gifExport = useMemo(() => {
+    if (!isAnimated || frameResults.length <= 1) return null;
+    return {
+      delaysMs: frameDelaysMs,
+      getGifFrame: (index, ctx, helpers) => {
+        const result = frameResults[index] ?? frameResults[0];
+        const fused = result?.fusedImage;
+        const frameMatrix = result?.qart?.matrix;
+        if (!fused || !frameMatrix) return;
+        const canvas = document.createElement("canvas");
+        canvas.width = fused.width;
+        canvas.height = fused.height;
+        const fusedCtx = canvas.getContext("2d");
+        if (fusedCtx) fusedCtx.putImageData(fused, 0, 0);
+        helpers.paintQrCanvas(ctx, {
+          matrix: frameMatrix,
+          size: helpers.size,
+          quietZone: helpers.quietZone,
+          renderModule: (c, module, moduleX, moduleY, moduleSize, renderCtx) => {
+            if (!renderCtx) return;
+            const mp = modulePixel;
+            const mx = renderCtx.x ?? 0;
+            const my = renderCtx.y ?? 0;
+            const width = renderCtx.moduleWidth ?? moduleSize;
+            const height = renderCtx.moduleHeight ?? moduleSize;
+            const size = width === height ? width : Math.max(width, height);
+            c.drawImage(canvas, mx * mp, my * mp, mp, mp, moduleX, moduleY, size, size);
+          },
+        });
+      },
+    };
+  }, [isAnimated, frameResults, frameDelaysMs, modulePixel]);
 
   const handleBaseRender = useCanvasSizeSync({
     canvasSize,
@@ -242,7 +294,7 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
         />
       )}
       {generationError && <ErrorBanner message={generationError} />}
-      {!sourceImage && (
+      {!sourceImage && !isAnimated && (
         <WarningBanner
           message="Upload an image in the sidebar to generate an IS-QR code."
           title="Image required"
@@ -255,6 +307,7 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
         onModuleHover={handleModuleHover}
         responsive={true}
         customMatrix={matrix}
+        gifExport={gifExport}
       />
       <SettingsPanel title="IS-QR Settings">
         <IsqrControls
@@ -273,14 +326,17 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
           onMaskFileChange={handleMaskFileChange}
           hasMask={!!maskImage}
           onClearMask={() => setMaskImage(null)}
-          metrics={isqrResult?.metrics}
-          instanceCount={isqrResult?.instanceCount}
-          decodeSuccessRate={isqrResult?.qart?.decodeSuccessRate}
-          evaluation={isqrResult?.qart?.evaluation}
+          maskEnabled={!isAnimated}
+          metrics={currentIsqr?.metrics}
+          instanceCount={currentIsqr?.instanceCount}
+          decodeSuccessRate={currentIsqr?.qart?.decodeSuccessRate}
+          evaluation={currentIsqr?.qart?.evaluation}
         />
         {isGenerating && (
           <p className="text-sm text-muted-foreground">
-            IS-QR generation is running…
+            {generationProgress
+              ? `Generating IS-QR frame ${generationProgress.current}/${generationProgress.total}…`
+              : "IS-QR generation is running…"}
           </p>
         )}
       </SettingsPanel>

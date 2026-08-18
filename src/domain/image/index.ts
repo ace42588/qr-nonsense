@@ -415,6 +415,19 @@ export function detectExtremeScaling(scaleFactor: number): {
   };
 }
 
+export {
+  MAX_ANIMATION_FRAMES,
+  DEFAULT_GIF_FRAME_DELAY_MS,
+  isGifBuffer,
+  normalizeGifDelayMs,
+  createImageData,
+  cloneImageData,
+  scaleImageDataToMaxDimension,
+  compositeGifFrames,
+  subsampleAnimation,
+} from "./gif";
+export type { GifPatchFrame, CompositedGif, SubsampledAnimation } from "./gif";
+
 export const MAX_IMAGE_FILE_SIZE = 10 * 1024 * 1024; // 10MB (FR-024)
 export const MAX_IMAGE_DIMENSION = 4096; // FR-025
 export const ALLOWED_IMAGE_MIME_TYPES = [

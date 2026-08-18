@@ -1,10 +1,11 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { QRBase } from "./QRBase";
 import { useModuleHover } from "@/hooks/useModuleHover";
 import { useImageTransform } from "@/state/image/ImageTransformContext";
 import { ErrorBanner } from "@/components/ui/message-banner";
 import { useCanvasSizeSync } from "@/hooks/useCanvasSizeSync";
 import { useHalftonePatterns } from "@/hooks/useHalftonePatterns";
+import { useAnimationPlayback } from "@/hooks/useAnimationPlayback";
 import {
   renderHalftoneModule,
   clampDotSizes,
@@ -26,6 +27,10 @@ export function QRImageHalftone({
     canvasSize,
     error: transformError,
     setCanvasSize,
+    isAnimated,
+    frames,
+    frameDelaysMs,
+    isLoading: isLoadingTransform,
   } = useImageTransform();
 
   const handleModuleHover = useModuleHover();
@@ -34,10 +39,23 @@ export function QRImageHalftone({
   const [minDotSize, setMinDotSize] = useState(DEFAULT_MIN_DOT);
   const [maxDotSize, setMaxDotSize] = useState(DEFAULT_MAX_DOT);
 
-  const { patternsDark, patternsLight, importanceMap } = useHalftonePatterns({
-    transformedImageData,
+  const { frameIndex } = useAnimationPlayback({
+    delaysMs: frameDelaysMs,
+    enabled: isAnimated && frames.length > 1,
+    paused: isLoadingTransform,
+  });
+
+  const currentImage =
+    isAnimated && frames.length > 1
+      ? frames[frameIndex] ?? frames[0]
+      : transformedImageData;
+
+  const { patternsDark, patternsLight, importanceMap, importanceMaps } = useHalftonePatterns({
+    transformedImageData: currentImage,
     canvasSize,
     importanceWeight: 0.5,
+    frames: isAnimated ? frames : null,
+    frameIndex,
   });
 
   const handleStyleChange = (next) => {
@@ -49,7 +67,7 @@ export function QRImageHalftone({
 
   const renderModule = useCallback(
     (ctx, module, moduleX, moduleY, moduleSize, renderCtx) => {
-      if (!transformedImageData || !importanceMap || !patternsDark || !patternsLight)
+      if (!currentImage || !importanceMap || !patternsDark || !patternsLight)
         return;
 
       const { minDotSize: min, maxDotSize: max } = clampDotSizes(
@@ -57,7 +75,7 @@ export function QRImageHalftone({
         maxDotSize
       );
       renderHalftoneModule(ctx, module, moduleX, moduleY, moduleSize, renderCtx, {
-        transformedImageData,
+        transformedImageData: currentImage,
         importanceMap,
         patternsDark,
         patternsLight,
@@ -69,7 +87,7 @@ export function QRImageHalftone({
       });
     },
     [
-      transformedImageData,
+      currentImage,
       importanceMap,
       modulePixel,
       patternsDark,
@@ -79,6 +97,50 @@ export function QRImageHalftone({
       maxDotSize,
     ]
   );
+
+  const gifExport = useMemo(() => {
+    if (!isAnimated || frames.length <= 1) return null;
+    const { minDotSize: min, maxDotSize: max } = clampDotSizes(minDotSize, maxDotSize);
+    return {
+      delaysMs: frameDelaysMs,
+      getGifFrame: (index, ctx, helpers) => {
+        const image = frames[index] ?? frames[0];
+        const map = importanceMaps?.[index] ?? importanceMap;
+        if (!image || !map || !patternsDark || !patternsLight) return;
+        helpers.paintQrCanvas(ctx, {
+          matrix: helpers.matrix,
+          size: helpers.size,
+          quietZone: helpers.quietZone,
+          renderPasses: halftoneStyle === "dots" ? 2 : 1,
+          renderModule: (c, module, moduleX, moduleY, moduleSize, renderCtx) => {
+            renderHalftoneModule(c, module, moduleX, moduleY, moduleSize, renderCtx, {
+              transformedImageData: image,
+              importanceMap: map,
+              patternsDark,
+              patternsLight,
+              modulePixel,
+              reliabilityWeight: 0.0,
+              style: halftoneStyle,
+              minDotSize: min,
+              maxDotSize: max,
+            });
+          },
+        });
+      },
+    };
+  }, [
+    isAnimated,
+    frames,
+    frameDelaysMs,
+    importanceMaps,
+    importanceMap,
+    patternsDark,
+    patternsLight,
+    minDotSize,
+    maxDotSize,
+    halftoneStyle,
+    modulePixel,
+  ]);
 
   const handleBaseRender = useCanvasSizeSync({
     canvasSize,
@@ -95,6 +157,7 @@ export function QRImageHalftone({
         renderPasses={halftoneStyle === "dots" ? 2 : 1}
         onModuleHover={handleModuleHover}
         responsive={true}
+        gifExport={gifExport}
       />
       <SettingsPanel title="Halftone Settings">
         <HalftoneControls

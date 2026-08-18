@@ -49,6 +49,8 @@
     "@vitejs/plugin-react": "^4.4.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "gifenc": "^1.0.3",
+    "gifuct-js": "^2.1.2",
     "js-sha3": "^0.9.3",
     "jsqr": "github:ace42588/jsqr#77562296f4c83ab73c485098128d853757797195",
     "libsodium-wrappers-sumo": "^0.7.15",
