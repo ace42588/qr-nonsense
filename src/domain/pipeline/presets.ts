@@ -59,6 +59,17 @@ export const PRESETS: Record<PresetId, PresetGraph> = {
     label: "Embedded dual-payload",
     nodes: ["encodePair", "embedFuse", "evaluate"],
   },
+  damage: {
+    id: "damage",
+    label: "Constraint damage overlay",
+    nodes: [
+      ...QR_CORE,
+      "rasterize",
+      "constraintDamage",
+      "applyDamage",
+      "evaluate",
+    ],
+  },
 };
 
 /** QArt stages when context already has encode/matrix (UI path). */

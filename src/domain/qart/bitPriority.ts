@@ -59,33 +59,31 @@ function getBitPosition(
  */
 export type PriorityFunctionType = "contrast" | "random" | "roi";
 
+/** Round priority weights to the nearest 50 for stability. */
+const QUANTIZATION_STEP = 50;
+
 /**
- * Build priority-ordered list of bits for a block
- * 
- * @param priorityType - Priority function type: "contrast" (prioritizes high-contrast regions to match image details) or "random" (uniform distribution)
- * @param roiGrid - Optional per-module ROI fraction [0,1]; required for "roi" priority
+ * Collect all controllable bits (data + EC) together for unified
+ * prioritization, with priority left at 0.
+ *
+ * CRITICAL: Include ALL data bits from editable segments (padding or
+ * QArt-append). The basis matrix algorithm (setBlockBit) will check if a
+ * basis vector affects user data bytes and reject it if necessary. We
+ * should include all editable bits and let setBlockBit decide. This allows
+ * controlling individual bits even when they're in codewords that also
+ * contain user data.
  */
-export function buildBitOrder(
+function collectControllableBits(
   block: QRBlock,
   matrix: QRMatrix,
-  _targetGrid: Float32Array, // Kept for API compatibility, but contrastGrid is used for priority
-  contrastGrid: Float32Array, // Pre-computed local variance (contrast) for each module
-  dimension: number,
-  editableSegmentIds: Set<string>, // Padding segments + QArt-append segments
-  priorityType: PriorityFunctionType = "contrast",
-  excludeLastSegmentBits?: Set<string>, // Bit IDs from last segments to exclude (prevents invalid values)
-  appendSegmentIds?: Set<string>, // QArt-append segment IDs for deterministic priority
-  roiGrid?: Float32Array // Per-module ROI [0,1] for IS-QR
+  editableSegmentIds: Set<string>,
+  excludeLastSegmentBits?: Set<string>,
+  appendSegmentIds?: Set<string>
 ): BitPosition[] {
   const nd = block.data.length;
   const nc = block.errorCorrection.length;
   const order: BitPosition[] = [];
 
-  // Collect all controllable bits (data + EC) together for unified prioritization
-  // CRITICAL: Include ALL data bits from editable segments (padding or QArt-append)
-  // The basis matrix algorithm (setBlockBit) will check if a basis vector affects user data bytes
-  // and reject it if necessary. We should include all editable bits and let setBlockBit decide.
-  // This allows controlling individual bits even when they're in codewords that also contain user data.
   for (let cwIdx = 0; cwIdx < block.data.length; cwIdx++) {
     const codeword = block.data[cwIdx];
     if (!codeword?.bits) continue;
@@ -122,56 +120,73 @@ export function buildBitOrder(
     if (pos) order.push(pos);
   }
 
-  // Calculate priority based on priority function type
+  return order;
+}
+
+/**
+ * Build priority-ordered list of bits for a block from a per-module weight
+ * grid (ConstraintSet.weightGrid semantics: raw, un-quantized weights such
+ * as contrast × (1 − roi)). The legacy "contrast" and "roi" priority
+ * branches both collapse into this single weight lookup; pass the literal
+ * "random" for uniform random ordering ("random" stays a parameter because
+ * it is not a property of the constraints).
+ *
+ * Priority per bit (preserved EXACTLY from the pre-split implementation):
+ * - validity clamp: weight must be a finite number >= 0, else 0
+ *   (out-of-bounds grid reads yield undefined and also clamp to 0)
+ * - quantize to the nearest QUANTIZATION_STEP (= 50)
+ * - floor and clamp to int32 (0x7FFFFFFF)
+ * - sort descending with deterministic tie-break by bit index
+ *
+ * Precision decision: ConstraintSet.weightGrid is a Float32Array holding
+ * the raw product validContrast * (1 − roi); the pre-split code computed
+ * that product in float64 before quantizing. Float32 storage rounds the
+ * product by at most half an ulp, which can only change the quantized
+ * priority when the true product lies within that distance of a
+ * quantization boundary (a multiple of QUANTIZATION_STEP / 2). The golden
+ * suites (qart, isqr, pipeline) pass unchanged with float32, so we keep
+ * the Float32Array representation; this function also accepts a
+ * Float64Array so callers needing exact legacy precision (the legacy
+ * buildBitOrder signature below) can pass float64 weights.
+ */
+export function buildBitOrderFromWeights(
+  block: QRBlock,
+  matrix: QRMatrix,
+  dimension: number,
+  editableSegmentIds: Set<string>, // Padding segments + QArt-append segments
+  weights: Float32Array | Float64Array | "random",
+  excludeLastSegmentBits?: Set<string>, // Bit IDs from last segments to exclude (prevents invalid values)
+  appendSegmentIds?: Set<string> // QArt-append segment IDs for deterministic priority
+): BitPosition[] {
+  const order = collectControllableBits(
+    block,
+    matrix,
+    editableSegmentIds,
+    excludeLastSegmentBits,
+    appendSegmentIds
+  );
+
+  // Calculate priority
   // IMPORTANT: EC bits need to be prioritized alongside data bits to ensure they can be controlled
-  if (priorityType === "random") {
+  if (weights === "random") {
     // Random priority: uniform random ordering
     for (const po of order) {
       po.priority = Math.floor(Math.random() * 0xFFFFFFFF);
     }
-  } else if (priorityType === "roi") {
-    // IS-QR: prioritize background modules (low ROI) × contrast so Gauss–Jordan
-    // matching owns the silhouette; instance ROI modules are deprioritized.
-    const QUANTIZATION_STEP = 50;
-    for (const po of order) {
-      const contrast = contrastGrid[po.y * dimension + po.x];
-      const validContrast =
-        typeof contrast === "number" && isFinite(contrast) && contrast >= 0
-          ? contrast
-          : 0;
-      const roi =
-        roiGrid && typeof roiGrid[po.y * dimension + po.x] === "number"
-          ? Math.max(0, Math.min(1, roiGrid[po.y * dimension + po.x]))
-          : 0;
-      const weighted = validContrast * (1 - roi);
-      const quantized =
-        Math.round(weighted / QUANTIZATION_STEP) * QUANTIZATION_STEP;
-      po.priority = Math.min(Math.floor(quantized), 0x7FFFFFFF);
-    }
   } else {
-    // Contrast-based priority: prioritizes HIGH-contrast regions (matches Go implementation)
-    // Go implementation uses contrast (variance) value directly as priority
-    // Higher contrast (edges, boundaries) = higher priority = controlled first
-    // This preserves image details by controlling high-contrast areas to match the image
-    // Variance is calculated on 0-255 scale, so values can be large (up to ~16000 for high contrast)
-    // Match Go: use contrast value directly as priority, no random tie-breaking
-    
-    // EC bits are given equal priority consideration to ensure they can be optimized
-    // All bits (padding, append, EC) use contrast-based priority for QArt effect
-    const QUANTIZATION_STEP = 50; // Round contrast values to nearest 50 for stability
     for (const po of order) {
-      const contrast = contrastGrid[po.y * dimension + po.x];
-      // Use contrast value directly as priority (matches Go implementation exactly)
-      // Go code: po.Priority = pinfo.Contrast (no encoding, no random)
-      // Handle invalid values: ensure contrast is a valid finite number
-      // Invalid/NaN values get priority 0 (lowest priority)
-      const validContrast = (typeof contrast === 'number' && isFinite(contrast) && contrast >= 0) 
-        ? contrast 
-        : 0;
+      const weight = weights[po.y * dimension + po.x];
+      // Handle invalid values: out-of-bounds reads yield undefined, and
+      // NaN/negative weights get priority 0 (lowest priority)
+      const validWeight =
+        typeof weight === "number" && isFinite(weight) && weight >= 0
+          ? weight
+          : 0;
       // Quantize aggressively to reduce sensitivity to small differences
-      const quantizedContrast = Math.round(validContrast / QUANTIZATION_STEP) * QUANTIZATION_STEP;
-      // Clamp to ensure it fits in 32-bit integer (though contrast values should be much smaller)
-      po.priority = Math.min(Math.floor(quantizedContrast), 0x7FFFFFFF);
+      const quantized =
+        Math.round(validWeight / QUANTIZATION_STEP) * QUANTIZATION_STEP;
+      // Clamp to ensure it fits in 32-bit integer (though weights should be much smaller)
+      po.priority = Math.min(Math.floor(quantized), 0x7FFFFFFF);
     }
   }
 
@@ -186,5 +201,79 @@ export function buildBitOrder(
   });
   
   return order;
+}
+
+/**
+ * Build priority-ordered list of bits for a block (legacy grid signature).
+ *
+ * Computes the per-module weight in float64 exactly as the pre-split
+ * branches did, then delegates to buildBitOrderFromWeights:
+ * - "contrast": weight = valid contrast (roiGrid is IGNORED, matching the
+ *   classic QArt / Go implementation which uses contrast directly)
+ * - "roi": weight = valid contrast × (1 − roi clamped to [0,1]), so IS-QR
+ *   instance regions stay image-owned
+ * - "random": uniform random ordering
+ *
+ * @param priorityType - Priority function type: "contrast" (prioritizes high-contrast regions to match image details) or "random" (uniform distribution)
+ * @param roiGrid - Optional per-module ROI fraction [0,1]; required for "roi" priority
+ */
+export function buildBitOrder(
+  block: QRBlock,
+  matrix: QRMatrix,
+  _targetGrid: Float32Array, // Kept for API compatibility, but contrastGrid is used for priority
+  contrastGrid: Float32Array, // Pre-computed local variance (contrast) for each module
+  dimension: number,
+  editableSegmentIds: Set<string>, // Padding segments + QArt-append segments
+  priorityType: PriorityFunctionType = "contrast",
+  excludeLastSegmentBits?: Set<string>, // Bit IDs from last segments to exclude (prevents invalid values)
+  appendSegmentIds?: Set<string>, // QArt-append segment IDs for deterministic priority
+  roiGrid?: Float32Array // Per-module ROI [0,1] for IS-QR
+): BitPosition[] {
+  if (priorityType === "random") {
+    return buildBitOrderFromWeights(
+      block,
+      matrix,
+      dimension,
+      editableSegmentIds,
+      "random",
+      excludeLastSegmentBits,
+      appendSegmentIds
+    );
+  }
+
+  // Float64Array preserves the exact pre-split float64 weight computation
+  // for direct callers of this legacy signature.
+  const size = dimension * dimension;
+  const weights = new Float64Array(size);
+  for (let i = 0; i < size; i++) {
+    const contrast = contrastGrid[i];
+    const validContrast =
+      typeof contrast === "number" && isFinite(contrast) && contrast >= 0
+        ? contrast
+        : 0;
+    if (priorityType === "roi") {
+      // IS-QR: prioritize background modules (low ROI) × contrast so Gauss–Jordan
+      // matching owns the silhouette; instance ROI modules are deprioritized.
+      const roi =
+        roiGrid && typeof roiGrid[i] === "number"
+          ? Math.max(0, Math.min(1, roiGrid[i]))
+          : 0;
+      weights[i] = validContrast * (1 - roi);
+    } else {
+      // Contrast-based priority: prioritizes HIGH-contrast regions (matches
+      // Go implementation, which uses the contrast value directly).
+      weights[i] = validContrast;
+    }
+  }
+
+  return buildBitOrderFromWeights(
+    block,
+    matrix,
+    dimension,
+    editableSegmentIds,
+    weights,
+    excludeLastSegmentBits,
+    appendSegmentIds
+  );
 }
 

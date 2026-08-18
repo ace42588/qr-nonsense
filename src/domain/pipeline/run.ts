@@ -94,6 +94,26 @@ function markPortsSatisfied(
       case "Grid":
         next.targetGrid = next.targetGrid ?? new Float32Array(1);
         break;
+      case "Constraints":
+        next.constraints =
+          next.constraints ?? {
+            dimension: 1,
+            valueGrid: new Float32Array(1),
+            weightGrid: new Float32Array(1),
+          };
+        break;
+      case "EditableSelection":
+        next.editableSelection =
+          next.editableSelection ?? {
+            editableSegmentIds: new Set<string>(),
+            appendSegmentIds: new Set<string>(),
+            editableCodewordIndices: [],
+            excludeLastSegmentBits: new Set<string>(),
+          };
+        break;
+      case "BitOrders":
+        next.bitOrders = next.bitOrders ?? [];
+        break;
       case "Damage":
         next.damagedModuleIds = next.damagedModuleIds ?? [];
         break;

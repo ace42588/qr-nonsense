@@ -79,7 +79,16 @@ describe("pipeline catalog", () => {
 
   it("lists all mode presets", () => {
     expect(listPresetIds().sort()).toEqual(
-      ["ambiguous", "combined", "embed", "hqr", "isqr", "qart", "qr"].sort()
+      [
+        "ambiguous",
+        "combined",
+        "damage",
+        "embed",
+        "hqr",
+        "isqr",
+        "qart",
+        "qr",
+      ].sort()
     );
     expect(PRESETS.qr.nodes).toEqual([
       "parseInputs",

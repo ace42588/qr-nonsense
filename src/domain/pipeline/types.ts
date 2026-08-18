@@ -19,8 +19,13 @@ import type {
   QArtOptimizedAppendData,
 } from "@/domain/qart/types";
 import type { AmbiguousStats } from "@/domain/ambiguous";
-import type { PriorityFunctionType } from "@/domain/qart/bitPriority";
+import type {
+  BitPosition,
+  PriorityFunctionType,
+} from "@/domain/qart/bitPriority";
+import type { QArtEditableSelection } from "@/domain/qart/stages";
 import type { CsfOptions } from "@/domain/isqr/csf";
+import type { ConstraintSet } from "@/domain/constraints";
 
 /** Edit-time port tags for wiring validation (not runtime classes). */
 export type PortType =
@@ -35,6 +40,9 @@ export type PortType =
   | "MatrixB"
   | "Image"
   | "Grid"
+  | "Constraints"
+  | "EditableSelection"
+  | "BitOrders"
   | "Damage"
   | "Render"
   | "Report";
@@ -99,6 +107,14 @@ export interface GenerationContext {
   contrastGrid?: Float32Array;
   roiGrid?: Float32Array;
   roiMeta?: InstanceMaskResult;
+
+  // Constraints (shared visual-intent model; grids above stay the hot path)
+  constraints?: ConstraintSet;
+
+  // QArt split-optimizer slices (transient intermediates produced by
+  // qartSelectEditable / qartBitPriority and consumed by qartSolve)
+  editableSelection?: QArtEditableSelection;
+  bitOrders?: BitPosition[][];
 
   // QArt / IS-QR
   controlMatrix?: QRMatrix;
@@ -166,4 +182,5 @@ export type PresetId =
   | "combined"
   | "isqr"
   | "ambiguous"
-  | "embed";
+  | "embed"
+  | "damage";

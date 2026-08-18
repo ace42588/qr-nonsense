@@ -87,6 +87,9 @@ const PORT_FIELDS: Record<PortType, (ctx: GenerationContext) => boolean> = {
     c.fusedImage != null,
   Grid: (c) =>
     c.targetGrid != null || c.contrastGrid != null || c.roiGrid != null,
+  Constraints: (c) => c.constraints != null,
+  EditableSelection: (c) => c.editableSelection != null,
+  BitOrders: (c) => Array.isArray(c.bitOrders),
   Damage: (c) => Array.isArray(c.damagedModuleIds),
   Render: (c) => c.renderIntent != null || c.fusedImage != null,
   Report: (c) =>

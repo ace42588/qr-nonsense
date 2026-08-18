@@ -13,8 +13,16 @@ import {
 } from "../image";
 import { computeVisualError } from "../evaluate/visual";
 import { QRBlock } from "../qr/codewords/blocks";
-import { buildBitOrder, PriorityFunctionType } from "./bitPriority";
+import {
+  buildBitOrderFromWeights,
+  PriorityFunctionType,
+  type BitPosition,
+} from "./bitPriority";
 import { optimizeBlock } from "./blockOptimizer";
+import {
+  constraintsFromImageGrids,
+  type ConstraintSet,
+} from "../constraints";
 import { createControlMatrix } from "./controlMatrix";
 import { ReedSolomonEncoder } from "../qr/reedsolomon";
 import { codewordsToBytes } from "./codewordConversion";
@@ -270,30 +278,40 @@ export interface OptimizeQArtBlocksResult {
   totalBitsOptimized: number;
 }
 
-export function optimizeQArtBlocks(options: {
+/**
+ * Editable-selection context slice produced by qartSelectEditable and
+ * consumed by qartBitPriority / qartSolve.
+ */
+export interface QArtEditableSelection {
+  /** Segment ids whose bits may be rewritten (padding + qartAppend). */
+  editableSegmentIds: Set<string>;
+  /** Subset of editableSegmentIds coming from qartAppend segments. */
+  appendSegmentIds: Set<string>;
+  /**
+   * Per-block sets of data-codeword indices whose bits are ALL owned by
+   * editable segments (parallel to the blocks array). Used by setBlockBit
+   * safety checks.
+   */
+  editableCodewordIndices: Set<number>[];
+  /**
+   * Bit ids excluded from control to prevent invalid segment values.
+   * Reserved hook — currently always empty, preserved from the pre-split
+   * implementation.
+   */
+  excludeLastSegmentBits: Set<string>;
+}
+
+/**
+ * Discover which segments/codewords QArt may rewrite: padding and
+ * qartAppend segments, plus the per-block editable codeword index sets.
+ * Throws when nothing is editable or when the matrix cannot resolve bits.
+ */
+export function qartSelectEditable(options: {
   segments: Segment[];
   workingBlocks: QRBlock[];
   matrixForBitLookup: QRMatrix;
-  targetGrid: Float32Array;
-  contrastGrid: Float32Array;
-  dimension: number;
-  ecCodewordsPerBlock: number;
-  priorityFunction?: PriorityFunctionType;
-  roiGrid?: Float32Array;
-  signal?: AbortSignal;
-}): OptimizeQArtBlocksResult {
-  const {
-    segments,
-    workingBlocks,
-    matrixForBitLookup,
-    targetGrid,
-    contrastGrid,
-    dimension,
-    ecCodewordsPerBlock,
-    priorityFunction = "contrast",
-    roiGrid,
-    signal,
-  } = options;
+}): QArtEditableSelection {
+  const { segments, workingBlocks, matrixForBitLookup } = options;
 
   const paddingSegments = segments.filter((s) => s.type === "padding");
   const appendSegments = segments.filter((s) => s.type === "qartAppend");
@@ -315,13 +333,8 @@ export function optimizeQArtBlocks(options: {
     );
   }
 
-  const excludeLastSegmentBits = new Set<string>();
-  const cachedEncoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
-  const controlledBits = new Map<string, boolean>();
-  let totalBitsOptimized = 0;
-
-  const buildEditableCodewordSet = (block: QRBlock): Set<number> => {
-    const editableCodewordIndices = new Set<number>();
+  const editableCodewordIndices = workingBlocks.map((block) => {
+    const indices = new Set<number>();
     for (let cwIdx = 0; cwIdx < block.data.length; cwIdx++) {
       const codeword = block.data[cwIdx];
       if (
@@ -330,11 +343,104 @@ export function optimizeQArtBlocks(options: {
           (bit) => bit?.sourceId && editableSegmentIds.has(bit.sourceId)
         )
       ) {
-        editableCodewordIndices.add(cwIdx);
+        indices.add(cwIdx);
       }
     }
-    return editableCodewordIndices;
+    return indices;
+  });
+
+  return {
+    editableSegmentIds,
+    appendSegmentIds,
+    editableCodewordIndices,
+    excludeLastSegmentBits: new Set<string>(),
   };
+}
+
+/**
+ * Build the per-block priority-ordered bit lists. Priority weights come
+ * from ConstraintSet.weightGrid (which already encodes contrast × (1 − roi),
+ * so the legacy "contrast"/"roi" priority functions are both a weight
+ * lookup); "random" stays a parameter and draws uniform random priorities.
+ *
+ * Bit ordering is a pure function of block structure (bit ids/sources),
+ * not bit values, so it can run for all blocks before any block is solved.
+ */
+export function qartBitPriority(options: {
+  workingBlocks: QRBlock[];
+  matrixForBitLookup: QRMatrix;
+  constraints: ConstraintSet;
+  selection: QArtEditableSelection;
+  priorityFunction?: PriorityFunctionType;
+  signal?: AbortSignal;
+}): BitPosition[][] {
+  const {
+    workingBlocks,
+    matrixForBitLookup,
+    constraints,
+    selection,
+    priorityFunction = "contrast",
+    signal,
+  } = options;
+
+  const weights =
+    priorityFunction === "random"
+      ? ("random" as const)
+      : constraints.weightGrid;
+
+  const bitOrders: BitPosition[][] = [];
+  for (const block of workingBlocks) {
+    if (signal?.aborted) {
+      throw new Error("QArt generation was cancelled");
+    }
+    bitOrders.push(
+      buildBitOrderFromWeights(
+        block,
+        matrixForBitLookup,
+        constraints.dimension,
+        selection.editableSegmentIds,
+        weights,
+        selection.excludeLastSegmentBits,
+        selection.appendSegmentIds
+      )
+    );
+  }
+  return bitOrders;
+}
+
+/**
+ * Solve every block: initBlockBasis + setBlockBit loop + applyBlockBasis
+ * (via optimizeBlock), then a final Reed-Solomon verification pass.
+ *
+ * Desired bits come from ConstraintSet.valueGrid (targetGrid semantics:
+ * value < 0.5 means "want a dark module"). optimizeBlock converts desired
+ * darkness into raw bit values ASSUMING MASK 0 ((x + y) % 2 === 0); QArt
+ * pins maskIndex 0 end-to-end (finalizeQArtMatrix throws if getMatrix
+ * settles on a different mask), so the assumption holds.
+ *
+ * A single ReedSolomonEncoder is cached across blocks (solve + verify),
+ * matching the pre-split implementation.
+ */
+export function qartSolve(options: {
+  workingBlocks: QRBlock[];
+  bitOrders: BitPosition[][];
+  constraints: ConstraintSet;
+  selection: QArtEditableSelection;
+  ecCodewordsPerBlock: number;
+  signal?: AbortSignal;
+}): OptimizeQArtBlocksResult {
+  const {
+    workingBlocks,
+    bitOrders,
+    constraints,
+    selection,
+    ecCodewordsPerBlock,
+    signal,
+  } = options;
+
+  const cachedEncoder = new ReedSolomonEncoder(ecCodewordsPerBlock);
+  const controlledBits = new Map<string, boolean>();
+  let totalBitsOptimized = 0;
 
   for (let blockNum = 0; blockNum < workingBlocks.length; blockNum++) {
     if (signal?.aborted) {
@@ -342,20 +448,7 @@ export function optimizeQArtBlocks(options: {
     }
 
     const block = workingBlocks[blockNum];
-    const editableCodewordIndices = buildEditableCodewordSet(block);
-
-    const bitOrder = buildBitOrder(
-      block,
-      matrixForBitLookup,
-      targetGrid,
-      contrastGrid,
-      dimension,
-      editableSegmentIds,
-      priorityFunction,
-      excludeLastSegmentBits,
-      appendSegmentIds,
-      roiGrid
-    );
+    const bitOrder = bitOrders[blockNum] ?? [];
 
     if (bitOrder.length === 0) {
       continue;
@@ -364,10 +457,10 @@ export function optimizeQArtBlocks(options: {
     const stats = optimizeBlock(
       block,
       bitOrder,
-      targetGrid,
-      dimension,
+      constraints.valueGrid,
+      constraints.dimension,
       ecCodewordsPerBlock,
-      editableCodewordIndices,
+      selection.editableCodewordIndices[blockNum],
       cachedEncoder
     );
 
@@ -404,6 +497,71 @@ export function optimizeQArtBlocks(options: {
   }
 
   return { workingBlocks, controlledBits, totalBitsOptimized };
+}
+
+/**
+ * Thin compatibility wrapper over the qartSelectEditable → qartBitPriority
+ * → qartSolve split. Builds a ConstraintSet from the legacy grid arguments
+ * and runs the three stages; the exported signature is unchanged.
+ */
+export function optimizeQArtBlocks(options: {
+  segments: Segment[];
+  workingBlocks: QRBlock[];
+  matrixForBitLookup: QRMatrix;
+  targetGrid: Float32Array;
+  contrastGrid: Float32Array;
+  dimension: number;
+  ecCodewordsPerBlock: number;
+  priorityFunction?: PriorityFunctionType;
+  roiGrid?: Float32Array;
+  signal?: AbortSignal;
+}): OptimizeQArtBlocksResult {
+  const {
+    segments,
+    workingBlocks,
+    matrixForBitLookup,
+    targetGrid,
+    contrastGrid,
+    dimension,
+    ecCodewordsPerBlock,
+    priorityFunction = "contrast",
+    roiGrid,
+    signal,
+  } = options;
+
+  const selection = qartSelectEditable({
+    segments,
+    workingBlocks,
+    matrixForBitLookup,
+  });
+
+  // Fold roiGrid into the weights only for the "roi" priority function —
+  // the legacy "contrast" branch ignored roiGrid, and that behavior is
+  // preserved exactly.
+  const constraints = constraintsFromImageGrids(
+    targetGrid,
+    contrastGrid,
+    priorityFunction === "roi" ? roiGrid : undefined,
+    dimension
+  );
+
+  const bitOrders = qartBitPriority({
+    workingBlocks,
+    matrixForBitLookup,
+    constraints,
+    selection,
+    priorityFunction,
+    signal,
+  });
+
+  return qartSolve({
+    workingBlocks,
+    bitOrders,
+    constraints,
+    selection,
+    ecCodewordsPerBlock,
+    signal,
+  });
 }
 
 export interface RebuildFromBlocksResult {

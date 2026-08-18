@@ -20,6 +20,12 @@ export {
 } from "./applyDamage";
 
 export {
+  selectConstraintDamage,
+  DEFAULT_SAFETY_MARGIN,
+  type ConstraintDamageOptions,
+} from "./constraintDamage";
+
+export {
   damageFinderCorner,
   corruptFormatInfo,
   damageTiming,

@@ -41,6 +41,27 @@ export {
   PipelineError,
 } from "./run";
 
+export type {
+  ConstraintStrength,
+  ConstraintSource,
+  ModuleConstraint,
+  ConstraintSet,
+  ConstraintGrids,
+  ConstraintsFromMatrixOptions,
+} from "@/domain/constraints";
+
+export {
+  constraintsFromImageGrids,
+  constraintsFromMatrix,
+  constraintsToGrids,
+  mergeConstraintItems,
+} from "@/domain/constraints";
+
+// Context slice types for the qartSelectEditable/qartBitPriority/qartSolve
+// split (referenced by GenerationContext.editableSelection / .bitOrders).
+export type { QArtEditableSelection } from "@/domain/qart/stages";
+export type { BitPosition } from "@/domain/qart/bitPriority";
+
 export {
   contextFromQArtOptions,
   qartResultFromContext,

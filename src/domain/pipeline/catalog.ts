@@ -18,6 +18,9 @@ import {
   appendQArtData,
   prepareImageGrids,
   optimizeQArtBlocks,
+  qartSelectEditable,
+  qartBitPriority,
+  qartSolve,
   rebuildFromBlocks,
   finalizeQArtMatrix,
   extractOptimizedAppendData,
@@ -26,11 +29,16 @@ import { createBrowserEvaluateDecodePort } from "@/adapters/browser/validation";
 import { evaluateGeneratedQr } from "@/domain/evaluate";
 import { applyVisualDamage } from "@/domain/qr/corruption/applyDamage";
 import {
+  selectConstraintDamage,
+  type ConstraintDamageOptions,
+} from "@/domain/qr/corruption/constraintDamage";
+import {
   computeRoi,
   computeModuleBinaryTarget,
   fuseIsqrColor,
   applyIsqrDwtCsf,
 } from "@/domain/isqr/stages";
+import { constraintsFromImageGrids } from "@/domain/constraints";
 import { withMatrix, withBlocks, attachMatrixLookup } from "./context";
 import type { GenerationContext, PipelineNode, NodeParams } from "./types";
 
@@ -194,7 +202,7 @@ export const NODE_CATALOG: Record<string, PipelineNode> = {
     id: "rasterize",
     stage: "raster",
     in: ["Image", "Matrix"],
-    out: ["Grid", "Image"],
+    out: ["Grid", "Image", "Constraints"],
     async run(ctx) {
       const version =
         ctx.versionInfo?.version ??
@@ -209,13 +217,28 @@ export const NODE_CATALOG: Record<string, PipelineNode> = {
           data: new Uint8ClampedArray(8 * 8 * 4).fill(255),
         } as ImageData);
 
+      const normalizedVersion = Math.max(1, Math.round(version));
       const grids = await prepareImageGrids({
-        version: Math.max(1, Math.round(version)),
+        version: normalizedVersion,
         targetImage,
         sourceImage: ctx.sourceImage ?? undefined,
         transformParams: ctx.transformParams ?? undefined,
         targetGridOverride: ctx.targetGrid,
       });
+
+      // Mirror the grids as a ConstraintSet (grids remain the hot path).
+      // A prior isqrRoi node may have set roiGrid; fold it into the weights.
+      const dimension = normalizedVersion * 4 + 17;
+      const roiGrid =
+        ctx.roiGrid && ctx.roiGrid.length === dimension * dimension
+          ? ctx.roiGrid
+          : undefined;
+      const constraints = constraintsFromImageGrids(
+        grids.targetGrid,
+        grids.contrastGrid,
+        roiGrid,
+        dimension
+      );
 
       return {
         ...ctx,
@@ -223,10 +246,18 @@ export const NODE_CATALOG: Record<string, PipelineNode> = {
         targetGrid: grids.targetGrid,
         contrastGrid: grids.contrastGrid,
         targetImage: grids.normalizedTargetImage,
+        constraints,
       };
     },
   },
 
+  /**
+   * Facade over the qartSelectEditable → qartBitPriority → qartSolve split:
+   * optimizeQArtBlocks builds a ConstraintSet from the grid arguments and
+   * runs the three stage functions in sequence. Id, stage, and ports are
+   * unchanged from the pre-split node; the three stages are also registered
+   * as individual nodes below for future graphs.
+   */
   qartOptimize: {
     id: "qartOptimize",
     stage: "optimize",
@@ -247,6 +278,70 @@ export const NODE_CATALOG: Record<string, PipelineNode> = {
         ecCodewordsPerBlock: versionInfo.ecCodewordsPerBlock,
         priorityFunction: ctx.priorityFunction,
         roiGrid: ctx.roiGrid,
+        signal: ctx.signal,
+      });
+      return {
+        ...ctx,
+        blocks: result.workingBlocks,
+        controlledBits: result.controlledBits,
+      };
+    },
+  },
+
+  qartSelectEditable: {
+    id: "qartSelectEditable",
+    stage: "optimize",
+    in: ["Segments", "Blocks", "Matrix"],
+    out: ["EditableSelection"],
+    run(ctx) {
+      const editableSelection = qartSelectEditable({
+        segments: ctx.segments!,
+        workingBlocks: ctx.blocks!,
+        matrixForBitLookup: ctx.matrix!,
+      });
+      return { ...ctx, editableSelection };
+    },
+  },
+
+  qartBitPriority: {
+    id: "qartBitPriority",
+    stage: "optimize",
+    in: ["Blocks", "Matrix", "EditableSelection", "Constraints"],
+    out: ["BitOrders"],
+    run(ctx) {
+      const bitOrders = qartBitPriority({
+        workingBlocks: ctx.blocks!,
+        matrixForBitLookup: ctx.matrix!,
+        constraints: ctx.constraints!,
+        selection: ctx.editableSelection!,
+        priorityFunction: ctx.priorityFunction,
+        signal: ctx.signal,
+      });
+      return { ...ctx, bitOrders };
+    },
+  },
+
+  /**
+   * GF(2) solve. Desired module values come from ConstraintSet.valueGrid;
+   * the solver assumes mask 0 when converting desired darkness into raw
+   * bit values (QArt pins maskIndex 0 end-to-end — see qartSolve in
+   * domain/qart/stages.ts).
+   */
+  qartSolve: {
+    id: "qartSolve",
+    stage: "optimize",
+    in: ["Blocks", "EditableSelection", "BitOrders", "Constraints", "Format"],
+    out: ["Blocks"],
+    run(ctx) {
+      const versionInfo =
+        ctx.versionInfo ??
+        getVersionInfo(ctx.errorCorrectionLevel ?? 0, ctx.version ?? 1);
+      const result = qartSolve({
+        workingBlocks: ctx.blocks!,
+        bitOrders: ctx.bitOrders!,
+        constraints: ctx.constraints!,
+        selection: ctx.editableSelection!,
+        ecCodewordsPerBlock: versionInfo.ecCodewordsPerBlock,
         signal: ctx.signal,
       });
       return {
@@ -386,7 +481,7 @@ export const NODE_CATALOG: Record<string, PipelineNode> = {
     id: "isqrRoi",
     stage: "optimize",
     in: ["Image", "Format"],
-    out: ["Grid"],
+    out: ["Grid", "Constraints"],
     run(ctx) {
       const version = ctx.versionInfo?.version ?? ctx.version ?? 1;
       const dimension = version * 4 + 17;
@@ -408,6 +503,19 @@ export const NODE_CATALOG: Record<string, PipelineNode> = {
         transformedImage,
         dimension
       );
+      // Mirror grids as a ConstraintSet. contrastGrid usually doesn't exist
+      // yet (rasterize runs after in the isqr preset and re-emits richer
+      // constraints); fall back to the binary target as qartOptimize does.
+      const contrastGrid =
+        ctx.contrastGrid && ctx.contrastGrid.length === dimension * dimension
+          ? ctx.contrastGrid
+          : binaryTarget;
+      const constraints = constraintsFromImageGrids(
+        binaryTarget,
+        contrastGrid,
+        roiGrid,
+        dimension
+      );
       return {
         ...ctx,
         roiMeta,
@@ -415,6 +523,7 @@ export const NODE_CATALOG: Record<string, PipelineNode> = {
         targetGrid: binaryTarget,
         priorityFunction: "roi",
         targetImage: transformedImage,
+        constraints,
       };
     },
   },
@@ -512,6 +621,32 @@ export const NODE_CATALOG: Record<string, PipelineNode> = {
         ctx.damagedModuleIds ?? []
       );
       return withMatrix(ctx, damaged);
+    },
+  },
+
+  constraintDamage: {
+    id: "constraintDamage",
+    stage: "mutate",
+    in: ["Constraints", "Blocks", "Matrix"],
+    out: ["Damage"],
+    run(ctx, params) {
+      const options: ConstraintDamageOptions = {};
+      if (typeof params?.safetyMargin === "number") {
+        options.safetyMargin = params.safetyMargin;
+      }
+      if (typeof params?.maxBudgetFraction === "number") {
+        options.maxBudgetFraction = params.maxBudgetFraction;
+      }
+      if (typeof params?.minWeight === "number") {
+        options.minWeight = params.minWeight;
+      }
+      const damagedModuleIds = selectConstraintDamage(
+        ctx.constraints!,
+        ctx.blocks!,
+        ctx.matrix!,
+        options
+      );
+      return { ...ctx, damagedModuleIds };
     },
   },
 };

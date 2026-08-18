@@ -21,11 +21,15 @@ export {
   appendQArtData,
   prepareImageGrids,
   optimizeQArtBlocks,
+  qartSelectEditable,
+  qartBitPriority,
+  qartSolve,
   rebuildFromBlocks,
   finalizeQArtMatrix,
   extractOptimizedAppendData,
   deepCopyBlock,
 } from "./stages";
+export type { QArtEditableSelection } from "./stages";
 
 /**
  * Generate QArt QR code via pipeline stage nodes.
