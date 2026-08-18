@@ -376,7 +376,7 @@ export function RsDecodeCard() {
   return (
     <Card className="w-full flex flex-col min-h-0">
       <CardHeader className="space-y-3">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-lg font-semibold">RS Decode</h3>
           <Button
             variant="outline"

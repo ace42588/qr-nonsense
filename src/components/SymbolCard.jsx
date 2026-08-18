@@ -56,7 +56,7 @@ export function SymbolCard() {
       </CardHeader>
       <CardContent className="relative">
         <TooltipProvider>
-          <ScrollArea className="flex-1 pr-4">
+          <ScrollArea className="h-[min(50vh,24rem)] flex-1 pr-4 md:h-full">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-1">
               {segments.map((segment) => {
                 return (

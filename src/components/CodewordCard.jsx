@@ -71,7 +71,7 @@ export function CodewordCard() {
       </CardHeader>
       <CardContent className="relative">
         <TooltipProvider>
-          <ScrollArea className="flex-1 pr-4">
+          <ScrollArea className="h-[min(50vh,24rem)] flex-1 pr-4 md:h-full">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {codewords.map((codeword) => (
                 <Tooltip key={codeword.id}>

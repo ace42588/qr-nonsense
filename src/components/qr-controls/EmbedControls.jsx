@@ -29,7 +29,7 @@ export function EmbedControls({
           step="0.01"
           value={centerSeed}
           onChange={(e) => onCenterSeedChange(parseFloat(e.target.value))}
-          className="h-2 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
+          className="h-2 min-w-0 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
         />
         <span className="w-12 text-xs tabular-nums text-muted-foreground">
           {centerSeed.toFixed(2)}
@@ -45,7 +45,7 @@ export function EmbedControls({
           step="0.05"
           value={polarityStrength}
           onChange={(e) => onPolarityStrengthChange(parseFloat(e.target.value))}
-          className="h-2 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
+          className="h-2 min-w-0 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
         />
         <span className="w-12 text-xs tabular-nums text-muted-foreground">
           {polarityStrength.toFixed(2)}
@@ -61,7 +61,7 @@ export function EmbedControls({
           step="0.05"
           value={csfStrength}
           onChange={(e) => onCsfStrengthChange(parseFloat(e.target.value))}
-          className="h-2 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
+          className="h-2 min-w-0 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
         />
         <span className="w-12 text-xs tabular-nums text-muted-foreground">
           {csfStrength.toFixed(2)}

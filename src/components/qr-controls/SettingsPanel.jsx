@@ -50,11 +50,11 @@ export function SettingsPanel({
 /** Labeled control row for settings panels. */
 export function ControlRow({ label, htmlFor, hint, children, className }) {
   return (
-    <div className={cn("flex flex-wrap items-center gap-2", className)}>
+    <div className={cn("flex min-w-0 flex-wrap items-center gap-2", className)}>
       {label ? (
         <label
           htmlFor={htmlFor}
-          className="min-w-[7.5rem] text-sm text-muted-foreground"
+          className="w-full text-sm text-muted-foreground sm:w-auto sm:min-w-[7.5rem]"
         >
           {label}
         </label>

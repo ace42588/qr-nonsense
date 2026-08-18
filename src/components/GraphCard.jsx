@@ -591,7 +591,7 @@ export function GraphCard() {
         <h3 className="text-lg font-semibold">Data Flow Graph</h3>
       </CardHeader>
       <CardContent className="relative flex-1 min-h-0">
-        <ScrollArea className="flex-1 w-full h-full">
+        <ScrollArea className="h-[min(50vh,24rem)] w-full flex-1 md:h-full">
           <div
             ref={containerRef}
             className="w-full h-full relative"

@@ -77,7 +77,7 @@ export function HalftoneControls({
               step="0.05"
               value={minDotSize}
               onChange={(e) => handleMinChange(e.target.value)}
-              className="h-2 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
+              className="h-2 min-w-0 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
             />
             <span className="min-w-10 text-xs text-muted-foreground">
               {minDotSize.toFixed(2)}
@@ -92,7 +92,7 @@ export function HalftoneControls({
               step="0.05"
               value={maxDotSize}
               onChange={(e) => handleMaxChange(e.target.value)}
-              className="h-2 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
+              className="h-2 min-w-0 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
             />
             <span className="min-w-10 text-xs text-muted-foreground">
               {maxDotSize.toFixed(2)}
@@ -132,7 +132,7 @@ export function HalftoneControls({
                 onChange={(e) =>
                   onImportanceThresholdChange(parseFloat(e.target.value))
                 }
-                className="h-2 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
+                className="h-2 min-w-0 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
               />
               <span className="min-w-10 text-xs text-muted-foreground">
                 {importanceThreshold.toFixed(2)}

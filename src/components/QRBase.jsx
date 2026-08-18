@@ -172,7 +172,7 @@ export function QRBase({
   };
 
   return (
-    <div ref={containerRef} className="qr-base-container relative h-auto w-full">
+    <div ref={containerRef} className="qr-base-container relative h-auto w-full max-w-full">
       {invalidQR && <InvalidQRBanner message={invalidQRReason} />}
       <canvas
         ref={canvasRef}

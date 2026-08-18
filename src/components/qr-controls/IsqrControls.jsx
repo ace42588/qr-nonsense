@@ -1,9 +1,8 @@
 import { Switch } from "@/components/ui/switch";
 import { ControlRow } from "./SettingsPanel";
-import { EvaluationSummary } from "./EvaluationSummary";
 
 /**
- * IS-QR controls: ROI threshold, CSF/HVS, mask upload, metrics display.
+ * IS-QR controls: ROI threshold, CSF/HVS, mask upload.
  */
 export function IsqrControls({
   roiThresholdBias,
@@ -22,10 +21,6 @@ export function IsqrControls({
   hasMask,
   onClearMask,
   maskEnabled = true,
-  metrics,
-  instanceCount,
-  decodeSuccessRate,
-  evaluation,
 }) {
   return (
     <>
@@ -54,7 +49,7 @@ export function IsqrControls({
           step="0.01"
           value={roiThresholdBias}
           onChange={(e) => onRoiThresholdBiasChange(parseFloat(e.target.value))}
-          className="h-2 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
+            className="h-2 min-w-0 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
         />
         <span className="w-12 text-xs tabular-nums text-muted-foreground">
           {roiThresholdBias.toFixed(2)}
@@ -70,7 +65,7 @@ export function IsqrControls({
           step="0.05"
           value={csfStrength}
           onChange={(e) => onCsfStrengthChange(parseFloat(e.target.value))}
-          className="h-2 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
+            className="h-2 min-w-0 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
         />
         <span className="w-12 text-xs tabular-nums text-muted-foreground">
           {csfStrength.toFixed(2)}
@@ -114,7 +109,7 @@ export function IsqrControls({
           step="0.05"
           value={qrBlend}
           onChange={(e) => onQrBlendChange(parseFloat(e.target.value))}
-          className="h-2 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
+            className="h-2 min-w-0 max-w-[12.5rem] flex-1 cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
         />
         <span className="w-12 text-xs tabular-nums text-muted-foreground">
           {qrBlend.toFixed(2)}
@@ -128,7 +123,7 @@ export function IsqrControls({
             type="file"
             accept="image/*"
             onChange={onMaskFileChange}
-            className="max-w-[14rem] text-xs"
+            className="w-full min-w-0 max-w-full text-xs sm:max-w-[14rem]"
           />
           {hasMask ? (
             <button
@@ -141,13 +136,6 @@ export function IsqrControls({
           ) : null}
         </ControlRow>
       )}
-
-      <EvaluationSummary
-        evaluation={evaluation}
-        metrics={metrics}
-        decodeSuccessRate={decodeSuccessRate}
-        instanceCount={instanceCount}
-      />
     </>
   );
 }

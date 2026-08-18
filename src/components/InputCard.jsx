@@ -30,7 +30,7 @@ export function InputCard() {
       value={input.type}
       onValueChange={(type) => dispatch(setInputType(activeId, type))}
     >
-      <TabsList className="@4xl/main:flex flex-wrap h-auto">
+      <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1">
         <TabsTrigger value="string">String</TabsTrigger>
         <TabsTrigger value="json">JSON</TabsTrigger>
         <TabsTrigger value="bitfield">BitField</TabsTrigger>

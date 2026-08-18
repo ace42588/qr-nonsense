@@ -591,11 +591,6 @@ export function QRQArt({
         <WarningBanner message={qartResult.scannabilityWarning} title="Scannability" />
       )}
       {generationError && <ErrorBanner message={generationError} />}
-      {qartResult?.evaluation && (
-        <div className="mb-2">
-          <EvaluationSummary evaluation={qartResult.evaluation} />
-        </div>
-      )}
       <QRBase
         key={canvasKey}
         size={initialSize}
@@ -606,6 +601,9 @@ export function QRQArt({
         customMatrix={matrix}
         gifExport={gifExport}
       />
+      {qartResult?.evaluation && (
+        <EvaluationSummary evaluation={qartResult.evaluation} />
+      )}
       <SettingsPanel
         title={combined ? "Combined QArt + Halftone Settings" : "QArt Settings"}
       >

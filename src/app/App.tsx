@@ -60,16 +60,18 @@ export default function App(): JSX.Element {
           <SidebarProvider>
             <InputSidebar dualPayloadMode={dualPayloadMode} />
             <SidebarInset>
-            <header className="sticky top-0 z-[200] flex shrink-0 items-center gap-2 border-b bg-background p-4">
-              <div className="flex flex-1 items-center gap-2 px-3">
-                <SidebarTrigger className="-ml-1" />
-                <Separator orientation="vertical" className="mr-2 h-4" />
-                <ToggleGroup
-                  type="single"
-                  value={leftCard}
-                  onValueChange={(value: LeftCard) => value && setLeftCard(value)}
-                  size="sm"
-                >
+            <header className="sticky top-0 z-[200] flex shrink-0 flex-col gap-2 border-b bg-background pb-2 pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pt-[max(0.5rem,env(safe-area-inset-top))] md:flex-row md:items-center md:gap-2 md:p-4">
+              <div className="flex min-w-0 items-center gap-1 md:flex-1 md:gap-2 md:px-3">
+                <SidebarTrigger className="-ml-1 shrink-0" />
+                <Separator orientation="vertical" className="mr-1 h-4 shrink-0 md:mr-2" />
+                <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <ToggleGroup
+                    type="single"
+                    value={leftCard}
+                    onValueChange={(value: LeftCard) => value && setLeftCard(value)}
+                    size="sm"
+                    className="w-max justify-start"
+                  >
                   <ToggleGroupItem value="manual" aria-label="Manual input" title="Input" className="gap-1.5 px-2.5">
                     <SquarePen className="h-4 w-4" />
                     <span className={modeLabelClass}>Input</span>
@@ -96,13 +98,15 @@ export default function App(): JSX.Element {
                     <span className={modeLabelClass}>RS</span>
                   </ToggleGroupItem>
                 </ToggleGroup>
+                </div>
               </div>
-              <div className="flex flex-1 items-center gap-2 px-3">
+              <div className="min-w-0 overflow-x-auto md:flex-1 md:px-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <ToggleGroup
                   type="single"
                   value={qrType}
                   onValueChange={(value: QrType) => value && setQrType(value)}
                   size="sm"
+                  className="w-max justify-start"
                 >
                   <ToggleGroupItem value="qr" aria-label="QR" title="QR" className="gap-1.5 px-2.5">
                     <QrCode className="h-4 w-4" />
@@ -147,9 +151,9 @@ export default function App(): JSX.Element {
             </header>
             <QRDataProvider>
               <QArtProvider>
-                <div className="flex flex-1 flex-col gap-4 p-4 min-h-0">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0">
-                    <div className="min-w-0 flex-1 flex flex-col min-h-0">
+                <div className="flex flex-1 flex-col gap-4 overflow-x-hidden p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:min-h-0 md:p-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:flex-1 md:min-h-0">
+                    <div className="flex min-w-0 flex-col md:min-h-0 md:flex-1">
                       {leftCard === "manual" && <InputCard />}
                       {leftCard === "scanner" && <ScannerCard />}
                       {leftCard === "symbols" && <SymbolCard />}
@@ -157,7 +161,7 @@ export default function App(): JSX.Element {
                       {leftCard === "graph" && <GraphCard />}
                       {leftCard === "rs" && <RsDecodeCard />}
                     </div>
-                    <div className="min-w-0 flex-1 flex flex-col min-h-0">
+                    <div className="flex min-w-0 flex-col md:min-h-0 md:flex-1">
                       {qrType === "qr" && <QRCodeCanvas />}
                       {qrType === "hqr" && <QRImageHalftone />}
                       {qrType === "qart" && <QRQArt />}

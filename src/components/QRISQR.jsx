@@ -15,6 +15,7 @@ import { useCanvasSizeSync } from "@/hooks/useCanvasSizeSync";
 import { useQRMatrix } from "@/hooks/useQRMatrix";
 import { SettingsPanel } from "@/components/qr-controls/SettingsPanel";
 import { IsqrControls } from "@/components/qr-controls/IsqrControls";
+import { EvaluationSummary } from "@/components/qr-controls/EvaluationSummary";
 
 export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
   const {
@@ -309,6 +310,12 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
         customMatrix={matrix}
         gifExport={gifExport}
       />
+      <EvaluationSummary
+        evaluation={currentIsqr?.qart?.evaluation}
+        metrics={currentIsqr?.metrics}
+        decodeSuccessRate={currentIsqr?.qart?.decodeSuccessRate}
+        instanceCount={currentIsqr?.instanceCount}
+      />
       <SettingsPanel title="IS-QR Settings">
         <IsqrControls
           roiThresholdBias={roiThresholdBias}
@@ -327,10 +334,6 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
           hasMask={!!maskImage}
           onClearMask={() => setMaskImage(null)}
           maskEnabled={!isAnimated}
-          metrics={currentIsqr?.metrics}
-          instanceCount={currentIsqr?.instanceCount}
-          decodeSuccessRate={currentIsqr?.qart?.decodeSuccessRate}
-          evaluation={currentIsqr?.qart?.evaluation}
         />
         {isGenerating && (
           <p className="text-sm text-muted-foreground">

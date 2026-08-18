@@ -2,6 +2,13 @@
  * Thin UI summary for EvaluationReport metrics.
  */
 
+import { ChevronDown } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+
 function formatMetric(m) {
   if (m.id === "print.overallGradeRank" && m.details?.grade != null) {
     return String(m.details.grade);
@@ -74,6 +81,7 @@ export function EvaluationSummary({
   instanceCount,
   metricIds = DEFAULT_IDS,
   className,
+  defaultOpen = false,
 }) {
   const rows = [];
 
@@ -114,20 +122,27 @@ export function EvaluationSummary({
   if (rows.length === 0) return null;
 
   return (
-    <div
+    <Collapsible
+      defaultOpen={defaultOpen}
       className={
-        className ?? "rounded-md border bg-background/80 p-3 text-xs"
+        className ??
+        "group/metrics mt-2 rounded-md border bg-background/80 text-xs"
       }
     >
-      <div className="mb-2 font-semibold text-foreground">Quality metrics</div>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 tabular-nums text-muted-foreground">
-        {rows.map((r) => (
-          <div key={r.label} className="contents">
-            <span>{r.label}</span>
-            <span className="break-words">{r.value}</span>
-          </div>
-        ))}
-      </div>
-    </div>
+      <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-left font-semibold text-foreground hover:bg-muted/50">
+        Quality metrics
+        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/metrics:rotate-180" />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="px-3 pb-3">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 tabular-nums text-muted-foreground">
+          {rows.map((r) => (
+            <div key={r.label} className="contents">
+              <span>{r.label}</span>
+              <span className="break-words">{r.value}</span>
+            </div>
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
