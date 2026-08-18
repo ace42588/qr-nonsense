@@ -20,7 +20,12 @@ import {
 } from "@/domain/evaluate";
 import { computeImportanceMap, convertTransparencyToWhite } from "@/domain/image";
 import jsQR from "jsqr";
-import { hydrateContext, hydrateMatrix, asImageData } from "./serialize";
+import {
+  hydrateContext,
+  hydrateMatrix,
+  asImageData,
+  serializeContext,
+} from "./serialize";
 import type {
   JobType,
   RunNodesPayload,
@@ -87,7 +92,6 @@ async function handleRunNodes(
   const result = await runGraph(payload.nodeIds, ctx, {
     params: payload.params,
   });
-  const { serializeContext } = await import("./serialize");
   return serializeContext(result);
 }
 

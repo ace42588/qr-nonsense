@@ -11,6 +11,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
+  // Module workers (pool.ts uses `type: "module"`). Vite's default IIFE
+  // format cannot code-split, and the compute worker has dynamic imports.
+  worker: {
+    format: 'es',
+  },
   server: {
     host: '0.0.0.0',
     port: 3000,
