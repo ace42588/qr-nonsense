@@ -17,10 +17,23 @@ import { paintQrCanvas } from "@/utils/paintQrCanvas";
 import { InvalidQRBanner } from "@/components/ui/message-banner";
 import { advanceAnimationClock } from "@/domain/image/animationClock";
 
+function isDrawableFrame(frame) {
+  if (!frame) return false;
+  if (typeof ImageBitmap !== "undefined" && frame instanceof ImageBitmap) {
+    return frame.width > 0 && frame.height > 0;
+  }
+  return (frame.width ?? 0) > 0 && (frame.height ?? 0) > 0;
+}
+
 function blitPlaybackFrame(ctx, frame, size) {
+  if (!isDrawableFrame(frame)) return;
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, size, size);
-  ctx.drawImage(frame, 0, 0, size, size);
+  try {
+    ctx.drawImage(frame, 0, 0, size, size);
+  } catch {
+    // ImageBitmap may have been closed between the check and draw.
+  }
 }
 
 async function imageDataFromPlaybackFrame(frame, size) {
@@ -29,7 +42,12 @@ async function imageDataFromPlaybackFrame(frame, size) {
   canvas.height = size;
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
-  ctx.drawImage(frame, 0, 0, size, size);
+  if (!isDrawableFrame(frame)) return null;
+  try {
+    ctx.drawImage(frame, 0, 0, size, size);
+  } catch {
+    return null;
+  }
   return ctx.getImageData(0, 0, size, size);
 }
 
