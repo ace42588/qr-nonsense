@@ -9,7 +9,7 @@
 
 2. **Clone and Deploy:**
    ```bash
-   git clone <your-repo-url> qr-nonsense
+   git clone https://github.com/ace42588/qr-nonsense.git qr-nonsense
    cd qr-nonsense
    chmod +x deploy.sh
    ./deploy.sh

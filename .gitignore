@@ -57,17 +57,6 @@ Thumbs.db
 .cache
 .parcel-cache
 
-# Firebase
-.firebase
-.firebaserc
-firebase.json
-firestore.rules
-firestore.indexes.json
-
-# Glitch
-.glitchdotcom.json
-.glitch-assets
-
 # Package manager locks (keep pnpm-lock.yaml, ignore others)
 package-lock.json
 yarn.lock

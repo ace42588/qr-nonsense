@@ -6,6 +6,7 @@
  */
 
 import { Segment } from "../shared/types";
+import { logger as log } from "@/adapters/logger";
 
 // Alphanumeric character map (same as encoder)
 const ALPHANUMERIC_CHAR_MAP = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
@@ -98,7 +99,7 @@ export function decodeSegmentValue(segment: Segment, mode: string): string {
       return decodeByteSegment(segment);
     default:
       // Fallback: try to get text property or return empty
-      console.debug('decodeSegmentValue', 'Fallback: try to get text property or return empty', segmentMode); 
+      log.debug('decodeSegmentValue', 'Fallback: try to get text property or return empty', segmentMode); 
       return (segment as any).text || "";
   }
 }

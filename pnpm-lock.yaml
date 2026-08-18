@@ -87,7 +87,7 @@ importers:
         specifier: ^0.9.3
         version: 0.9.3
       jsqr:
-        specifier: https://github.com/ace42588/jsqr
+        specifier: github:ace42588/jsqr#77562296f4c83ab73c485098128d853757797195
         version: https://codeload.github.com/ace42588/jsqr/tar.gz/77562296f4c83ab73c485098128d853757797195
       libsodium-wrappers-sumo:
         specifier: ^0.7.15
@@ -195,6 +195,9 @@ importers:
       postcss-import:
         specifier: ^16.1.0
         version: 16.1.0(postcss@8.5.3)
+      prettier:
+        specifier: ^3.9.6
+        version: 3.9.6
       shadcn:
         specifier: ^2.3.0
         version: 2.5.0(@types/node@22.15.21)(typescript@5.8.3)
@@ -4074,6 +4077,11 @@ packages:
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
+
+  prettier@3.9.6:
+    resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==}
+    engines: {node: '>=14'}
+    hasBin: true
 
   pretty-format@27.5.1:
     resolution: {integrity: sha512-Qb1gy5OrP5+zDf2Bvnzdl3jsTf1qXVMazbvCoKhtKqVs4/YK4ozX4gKQJJVyNe+cajNPn0KoC0MC3FUmaHWEmQ==}
@@ -9315,6 +9323,8 @@ snapshots:
       source-map-js: 1.2.1
 
   prelude-ls@1.2.1: {}
+
+  prettier@3.9.6: {}
 
   pretty-format@27.5.1:
     dependencies:

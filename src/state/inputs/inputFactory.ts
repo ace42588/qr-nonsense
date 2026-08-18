@@ -106,7 +106,7 @@ const inputTypeDefaults: InputTypeDefaults = {
   mac: {
     type: "mac",
     algo: "Poly1305",
-    key: "supersecret",
+    key: "",
     includedFields: [],
   },
   template: {

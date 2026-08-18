@@ -7,7 +7,7 @@ import {
 } from "@/domain/image";
 import { loadImage, transformImageToCanvas, downscaleImageDataUrl } from "@/adapters/browser/image";
 
-const DEFAULT_IMAGE_URL = "/defcon_k_skull-reg_cropped.jpg";
+const DEFAULT_IMAGE_URL = "/sample-mark.png";
 
 interface ImageTransformState {
   scale: number;

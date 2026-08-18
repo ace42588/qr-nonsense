@@ -1,4 +1,7 @@
 import "@testing-library/jest-dom";
+import { log, LogLevel } from "@/lib/logger";
+
+log.setLevel(LogLevel.WARN);
 
 class MockImageData {
   data: Uint8ClampedArray;

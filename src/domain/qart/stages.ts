@@ -31,6 +31,7 @@ import { addFill, addPadding, addTerminator, getNumBits } from "../qr/encoders/u
 import { updateCharCountIndicatorLengths } from "../qr/charCount";
 import { updateSegmentTextFromCodewords, decodeSegmentValue } from "./decodeSegments";
 import type { QArtAppendData, QArtOptimizedAppendData } from "./types";
+import { logger as log } from "@/adapters/logger";
 
 export function deepCopyBlock(block: QRBlock): QRBlock {
   const copyCodeword = (codeword: Codeword): Codeword => {
@@ -868,11 +869,11 @@ export function extractTextFromAppendSegments(
   _endIndex: number,
   mode: string
 ): string {
-  console.debug(segments, _startIndex, _endIndex, mode);
+  log.debug("extractTextFromAppendSegments", segments, _startIndex, _endIndex, mode);
   const appendSegments = segments.filter((s) => s.type === "qartAppend");
 
   if (appendSegments.length === 0) {
-    console.debug("extractTextFromAppendSegments", "No append segments found");
+    log.debug("extractTextFromAppendSegments", "No append segments found");
     return "";
   }
 

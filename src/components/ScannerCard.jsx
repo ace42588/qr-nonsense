@@ -10,7 +10,7 @@ import { inputsFromScan } from "@/domain/input/scanToInputs";
 import jsQR from "jsqr";
 
 // UI Components
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Camera, RefreshCw } from "lucide-react";
@@ -266,6 +266,9 @@ export function ScannerCard() {
           <Camera className="h-5 w-5" />
           QR Code Scanner
         </CardTitle>
+        <CardDescription>
+          Camera frames stay in your browser and are never uploaded.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="relative aspect-square w-full max-w-md mx-auto">
@@ -276,6 +279,7 @@ export function ScannerCard() {
             }`}
             playsInline
             muted
+            aria-label="Live camera preview for QR scanning"
           />
           <canvas ref={canvasRef} className="hidden" />
 
