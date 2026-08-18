@@ -2,10 +2,11 @@ import React, { useCallback, useMemo, useState } from "react";
 import { QRBase } from "./QRBase";
 import { useModuleHover } from "@/hooks/useModuleHover";
 import { useImageTransform } from "@/state/image/ImageTransformContext";
+import { useQRData } from "@/state/qr/QRDataContext";
 import { ErrorBanner } from "@/components/ui/message-banner";
 import { useCanvasSizeSync } from "@/hooks/useCanvasSizeSync";
 import { useHalftonePatterns } from "@/hooks/useHalftonePatterns";
-import { useAnimationPlayback } from "@/hooks/useAnimationPlayback";
+import { useRasterizedPlaybackFrames } from "@/hooks/useRasterizedPlaybackFrames";
 import {
   renderHalftoneModule,
   clampDotSizes,
@@ -33,29 +34,21 @@ export function QRImageHalftone({
     isLoading: isLoadingTransform,
   } = useImageTransform();
 
+  const { matrix } = useQRData();
   const handleModuleHover = useModuleHover();
 
   const [halftoneStyle, setHalftoneStyle] = useState("pattern");
   const [minDotSize, setMinDotSize] = useState(DEFAULT_MIN_DOT);
   const [maxDotSize, setMaxDotSize] = useState(DEFAULT_MAX_DOT);
 
-  const { frameIndex } = useAnimationPlayback({
-    delaysMs: frameDelaysMs,
-    enabled: isAnimated && frames.length > 1,
-    paused: isLoadingTransform,
-  });
-
-  const currentImage =
-    isAnimated && frames.length > 1
-      ? frames[frameIndex] ?? frames[0]
-      : transformedImageData;
+  const currentImage = transformedImageData;
 
   const { patternsDark, patternsLight, importanceMap, importanceMaps } = useHalftonePatterns({
     transformedImageData: currentImage,
     canvasSize,
     importanceWeight: 0.5,
     frames: isAnimated ? frames : null,
-    frameIndex,
+    frameIndex: 0,
   });
 
   const handleStyleChange = (next) => {
@@ -142,6 +135,15 @@ export function QRImageHalftone({
     modulePixel,
   ]);
 
+  const playbackFrames = useRasterizedPlaybackFrames({
+    enabled: isAnimated && !isLoadingTransform && frames.length > 1,
+    size: canvasSize || initialSize,
+    frameCount: frames.length,
+    paintFrame: gifExport?.getGifFrame,
+    matrix,
+    renderPasses: halftoneStyle === "dots" ? 2 : 1,
+  });
+
   const handleBaseRender = useCanvasSizeSync({
     canvasSize,
     setCanvasSize,
@@ -158,6 +160,15 @@ export function QRImageHalftone({
         onModuleHover={handleModuleHover}
         responsive={true}
         gifExport={gifExport}
+        playback={
+          playbackFrames.length > 1
+            ? {
+                frames: playbackFrames,
+                delaysMs: frameDelaysMs,
+                paused: isLoadingTransform,
+              }
+            : null
+        }
       />
       <SettingsPanel title="Halftone Settings">
         <HalftoneControls

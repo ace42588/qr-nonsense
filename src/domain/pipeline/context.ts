@@ -1,4 +1,6 @@
-import type { QRMatrix, QRModule } from "@/domain/shared/types";
+import type { Codeword, QRMatrix, QRModule, Segment } from "@/domain/shared/types";
+import { attachModuleIndex } from "@/domain/qr/matrix/utils";
+import { deepCopyBlock } from "@/domain/qart/stages";
 import type { GenerationContext, PortType } from "./types";
 
 /**
@@ -65,6 +67,71 @@ export function withBlocks(
     blocks,
     ...(codewords !== undefined ? { codewords } : {}),
   };
+}
+
+function cloneMatrix(matrix: QRMatrix): QRMatrix {
+  const rows = matrix.map((row) =>
+    row.map((m) => {
+      if (!m) return m;
+      return {
+        ...m,
+        bit: m.bit ? { ...m.bit } : m.bit,
+        source: m.source ? { ...m.source } : m.source,
+      };
+    })
+  ) as QRMatrix;
+  attachModuleIndex(rows, true);
+  return attachMatrixLookup(rows);
+}
+
+function cloneCodeword(codeword: Codeword): Codeword {
+  return {
+    ...codeword,
+    bits: codeword.bits.map((bit) => ({ ...bit })),
+    source: codeword.source ? { ...codeword.source } : codeword.source,
+  };
+}
+
+function cloneSegment(segment: Segment): Segment {
+  return {
+    ...segment,
+    bitIds: segment.bitIds ? [...segment.bitIds] : segment.bitIds,
+  };
+}
+
+/**
+ * Deep-clone encode/append outputs so parallel per-frame solves cannot mutate
+ * a shared matrix or block list. Image buffers are left unset for the caller.
+ */
+export function cloneContextForFrame(ctx: GenerationContext): GenerationContext {
+  const next = cloneContext(ctx);
+  if (next.matrix) next.matrix = cloneMatrix(next.matrix);
+  if (next.controlMatrix) next.controlMatrix = cloneMatrix(next.controlMatrix);
+  if (next.matrixA) next.matrixA = cloneMatrix(next.matrixA);
+  if (next.matrixB) next.matrixB = cloneMatrix(next.matrixB);
+  if (next.blocks) next.blocks = next.blocks.map(deepCopyBlock);
+  if (next.codewords) next.codewords = next.codewords.map(cloneCodeword);
+  if (next.segments) next.segments = next.segments.map(cloneSegment);
+  next.targetImage = undefined;
+  next.sourceImage = undefined;
+  next.offscreenCanvasImage = undefined;
+  next.fusedImage = undefined;
+  next.roiGrid = undefined;
+  next.roiMeta = undefined;
+  next.metrics = undefined;
+  next.evaluation = undefined;
+  next.contrastGrid = undefined;
+  next.targetGrid = undefined;
+  next.constraints = undefined;
+  next.editableSelection = undefined;
+  next.bitOrders = undefined;
+  next.controlledBits = undefined;
+  next.decodeSuccessRate = undefined;
+  next.visualError = undefined;
+  next.optimizedAppendData = undefined;
+  next.scannabilityWarning = undefined;
+  next.signal = undefined;
+  return next;
 }
 
 /** Map port tags to context fields that satisfy them. */

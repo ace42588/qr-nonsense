@@ -47,6 +47,9 @@ export {
   type IsqrResult,
 } from "./generate";
 
+export { generateIsqrForFrames } from "@/domain/pipeline/adapters";
+export type { IsqrFrameSource } from "@/domain/pipeline/adapters";
+
 export {
   computeRoi,
   fuseIsqrColor,

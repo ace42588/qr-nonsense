@@ -13,6 +13,7 @@ export {
   sampleQrModule,
   rasterizeImageToQRGrid,
 } from "./sampling";
+export { advanceAnimationClock } from "./animationClock";
 
 /**
  * Calculate an appropriate scale factor for canvas-based image drawing (multiplicative scaling)

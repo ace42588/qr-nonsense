@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQArtGeneration } from "@/hooks/useQArtGeneration";
-import { useAnimationPlayback } from "@/hooks/useAnimationPlayback";
+import { useRasterizedPlaybackFrames } from "@/hooks/useRasterizedPlaybackFrames";
 import { useCanvasSizeSync } from "@/hooks/useCanvasSizeSync";
 import { useQRMatrix } from "@/hooks/useQRMatrix";
 import { createContrastMatrix } from "@/domain/qart/contrastMatrix";
@@ -137,20 +137,6 @@ export function QRQArt({
     sourceFrames,
     transformedFrames: frames,
   });
-
-  const { frameIndex } = useAnimationPlayback({
-    delaysMs: frameDelaysMs,
-    enabled: isAnimated && frameResults.length > 1,
-    paused: isGenerating,
-  });
-
-  useEffect(() => {
-    if (!isAnimated || frameResults.length === 0) return;
-    const next = frameResults[frameIndex] ?? frameResults[0];
-    if (next && next !== qartResult) {
-      setQartResult(next);
-    }
-  }, [isAnimated, frameResults, frameIndex, qartResult, setQartResult]);
 
   // Calculate user input bits (excluding padding segments) (FR-014)
   const userInputBits = useMemo(() => {
@@ -342,7 +328,7 @@ export function QRQArt({
     canvasSize: halftoneImageData?.width || canvasSize,
     importanceWeight: 0.5,
     frames: qartHalftoneFrames,
-    frameIndex,
+    frameIndex: 0,
   });
 
   // Compute rasterized target grid for preview
@@ -580,6 +566,15 @@ export function QRQArt({
     importanceThreshold,
   ]);
 
+  const playbackFrames = useRasterizedPlaybackFrames({
+    enabled: isAnimated && !isGenerating && frameResults.length > 1,
+    size: canvasSize || initialSize,
+    frameCount: frameResults.length,
+    paintFrame: gifExport?.getGifFrame,
+    matrix,
+    renderPasses: applyHalftone && halftoneStyle === "dots" ? 2 : 1,
+  });
+
   return (
     <>
       {transformError && <ErrorBanner message={transformError} title="Image Error" />}
@@ -600,6 +595,15 @@ export function QRQArt({
         responsive={true}
         customMatrix={matrix}
         gifExport={gifExport}
+        playback={
+          playbackFrames.length > 1
+            ? {
+                frames: playbackFrames,
+                delaysMs: frameDelaysMs,
+                paused: isGenerating || isLoadingTransform,
+              }
+            : null
+        }
       />
       {qartResult?.evaluation && (
         <EvaluationSummary evaluation={qartResult.evaluation} />

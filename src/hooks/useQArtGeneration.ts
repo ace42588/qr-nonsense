@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { generateQArt, QArtResult } from "@/domain/qart";
+import { generateQArt, generateQArtForFrames, QArtResult } from "@/domain/qart";
 import { QRMatrix, Segment, Codeword } from "@/domain/shared/types";
 import { QRBlock } from "@/domain/qr/codewords/blocks";
 import { VersionInfo } from "@/domain/qr/versionUtils";
@@ -183,39 +183,38 @@ export function useQArtGeneration(
 
     try {
       if (isAnimated && sourceFrames.length > 1) {
-        const results: QArtResult[] = [];
         const total = sourceFrames.length;
-        for (let i = 0; i < total; i++) {
-          if (abortController.signal.aborted) return;
-          setGenerationProgress({ current: i + 1, total });
-          const target = transformedFrames[i] ?? transformedImageData;
-          const result = await generateQArt(
-            buildQArtOptions({
-              segments: segments!,
-              codewords: codewords!,
-              blocks: blocks!,
-              initialMatrix: contextMatrix!,
-              versionInfo: versionInfo!,
-              errorCorrectionLevel,
-              targetImage: target,
-              signal: abortController.signal,
-              priorityFunction,
-              appendData,
-              minDecodeRedundancy,
-              decodeTrials,
-              frameSource: sourceFrames[i],
-              transformParams,
-            })
-          );
-          if (abortController.signal.aborted || !result) return;
-          results.push(result);
-        }
-        if (!abortController.signal.aborted) {
-          setFrameResults(results);
-          setQartResult(results[0] ?? null);
-          setGenerationError(null);
-          setGenerationProgress(null);
-        }
+        setGenerationProgress({ current: 0, total });
+        const results = await generateQArtForFrames(
+          buildQArtOptions({
+            segments: segments!,
+            codewords: codewords!,
+            blocks: blocks!,
+            initialMatrix: contextMatrix!,
+            versionInfo: versionInfo!,
+            errorCorrectionLevel,
+            targetImage: transformedFrames[0] ?? transformedImageData,
+            signal: abortController.signal,
+            priorityFunction,
+            appendData,
+            minDecodeRedundancy,
+            decodeTrials,
+            frameSource: sourceFrames[0],
+            transformParams,
+          }),
+          sourceFrames.map((frameSource, i) => ({
+            targetImage: transformedFrames[i] ?? transformedImageData,
+            sourceImage: frameSource,
+          })),
+          (current, progressTotal) => {
+            setGenerationProgress({ current, total: progressTotal });
+          }
+        );
+        if (abortController.signal.aborted) return;
+        setFrameResults(results);
+        setQartResult(results[0] ?? null);
+        setGenerationError(null);
+        setGenerationProgress(null);
         return;
       }
 

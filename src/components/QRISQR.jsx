@@ -10,7 +10,7 @@ import { ErrorBanner, WarningBanner } from "@/components/ui/message-banner";
 import { checkVersionCapacityForQArt } from "@/domain/qart/capacity";
 import { getNumBits } from "@/domain/qr/encoders/utils";
 import { useIsqrGeneration } from "@/hooks/useIsqrGeneration";
-import { useAnimationPlayback } from "@/hooks/useAnimationPlayback";
+import { useRasterizedPlaybackFrames } from "@/hooks/useRasterizedPlaybackFrames";
 import { useCanvasSizeSync } from "@/hooks/useCanvasSizeSync";
 import { useQRMatrix } from "@/hooks/useQRMatrix";
 import { SettingsPanel } from "@/components/qr-controls/SettingsPanel";
@@ -129,21 +129,7 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
     },
   });
 
-  const { frameIndex } = useAnimationPlayback({
-    delaysMs: frameDelaysMs,
-    enabled: isAnimated && frameResults.length > 1,
-    paused: isGenerating,
-  });
-
-  const currentIsqr = isAnimated
-    ? frameResults[frameIndex] ?? isqrResult
-    : isqrResult;
-
-  useEffect(() => {
-    if (!isAnimated || frameResults.length === 0) return;
-    const next = frameResults[frameIndex] ?? frameResults[0];
-    if (next?.qart) setQartResult(next.qart);
-  }, [isAnimated, frameResults, frameIndex, setQartResult]);
+  const currentIsqr = isqrResult;
 
   const matrix = useQRMatrix({
     qartResult,
@@ -230,6 +216,8 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
         canvas.height = fused.height;
         const fusedCtx = canvas.getContext("2d");
         if (fusedCtx) fusedCtx.putImageData(fused, 0, 0);
+        const roiGrid = result?.roiGrid;
+        const dimension = frameMatrix.length;
         helpers.paintQrCanvas(ctx, {
           matrix: frameMatrix,
           size: helpers.size,
@@ -243,11 +231,29 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
             const height = renderCtx.moduleHeight ?? moduleSize;
             const size = width === height ? width : Math.max(width, height);
             c.drawImage(canvas, mx * mp, my * mp, mp, mp, moduleX, moduleY, size, size);
+            if (showRoi && roiGrid && dimension > 0) {
+              const roi = roiGrid[my * dimension + mx] ?? 0;
+              if (roi > 0.15) {
+                c.save();
+                c.globalAlpha = 0.25 * roi;
+                c.fillStyle = "rgb(0, 180, 80)";
+                c.fillRect(moduleX, moduleY, size, size);
+                c.restore();
+              }
+            }
           },
         });
       },
     };
-  }, [isAnimated, frameResults, frameDelaysMs, modulePixel]);
+  }, [isAnimated, frameResults, frameDelaysMs, modulePixel, showRoi]);
+
+  const playbackFrames = useRasterizedPlaybackFrames({
+    enabled: isAnimated && !isGenerating && frameResults.length > 1,
+    size: canvasSize || initialSize,
+    frameCount: frameResults.length,
+    paintFrame: gifExport?.getGifFrame,
+    matrix,
+  });
 
   const handleBaseRender = useCanvasSizeSync({
     canvasSize,
@@ -309,6 +315,15 @@ export function QRISQR({ size: initialSize = 480, modulePixel = 3 }) {
         responsive={true}
         customMatrix={matrix}
         gifExport={gifExport}
+        playback={
+          playbackFrames.length > 1
+            ? {
+                frames: playbackFrames,
+                delaysMs: frameDelaysMs,
+                paused: isGenerating || isLoadingTransform,
+              }
+            : null
+        }
       />
       <EvaluationSummary
         evaluation={currentIsqr?.qart?.evaluation}

@@ -13,9 +13,9 @@ export class LatestWinsScheduler {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
+    this.controller?.abort();
     const run = () => {
       this.timeoutId = null;
-      this.controller?.abort();
       const controller = new AbortController();
       this.controller = controller;
       const gen = ++this.generation;

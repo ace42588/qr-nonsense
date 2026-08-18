@@ -7,6 +7,7 @@
 
 import {
   generateQArtViaPipeline,
+  generateQArtForFrames,
 } from "@/domain/pipeline/adapters";
 import type { QArtOptions, QArtResult } from "./types";
 
@@ -31,6 +32,8 @@ export {
   deepCopyBlock,
 } from "./stages";
 export type { QArtEditableSelection } from "./stages";
+export { generateQArtForFrames };
+export type { QArtFrameSource } from "@/domain/pipeline/adapters";
 
 /**
  * Generate QArt QR code via pipeline stage nodes.

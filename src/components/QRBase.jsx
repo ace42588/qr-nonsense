@@ -15,6 +15,23 @@ import {
 import { downloadCanvasAsPNG, downloadCanvasAsSVG, downloadQRAsSTL, downloadCanvasFramesAsGif } from "@/utils/downloadUtils";
 import { paintQrCanvas } from "@/utils/paintQrCanvas";
 import { InvalidQRBanner } from "@/components/ui/message-banner";
+import { advanceAnimationClock } from "@/domain/image/animationClock";
+
+function blitPlaybackFrame(ctx, frame, size) {
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, size, size);
+  ctx.drawImage(frame, 0, 0, size, size);
+}
+
+async function imageDataFromPlaybackFrame(frame, size) {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.drawImage(frame, 0, 0, size, size);
+  return ctx.getImageData(0, 0, size, size);
+}
 
 export function QRBase({ 
   size: initialSize = 420,
@@ -27,9 +44,11 @@ export function QRBase({
   responsive = true,
   customMatrix = null,
   gifExport = null,
+  playback = null,
 }) {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
+  const playbackIndexRef = useRef(0);
   const { matrix: contextMatrix, highlightedIds, damagedModuleIds, invalidQR, invalidQRReason } = useQRData();
   const sourceMatrix = customMatrix || contextMatrix;
   // Apply visual damage for display/export (skip when a custom matrix is provided)
@@ -42,6 +61,11 @@ export function QRBase({
   const [hoveredModule, setHoveredModule] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [includeQuietZoneSTL, setIncludeQuietZoneSTL] = useState(false);
+
+  const playbackFrames = playback?.frames;
+  const playbackDelays = playback?.delaysMs;
+  const playbackPaused = Boolean(playback?.paused);
+  const playbackActive = Array.isArray(playbackFrames) && playbackFrames.length > 1;
 
   // Responsive resizing
   useEffect(() => {
@@ -60,6 +84,43 @@ export function QRBase({
   useEffect(() => {
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx || !matrix) return;
+
+    if (playbackActive) {
+      const frames = playbackFrames;
+      const delays = playbackDelays?.length === frames.length
+        ? playbackDelays
+        : frames.map(() => 100);
+
+      playbackIndexRef.current = 0;
+      blitPlaybackFrame(ctx, frames[0], size);
+
+      if (playbackPaused) {
+        return;
+      }
+
+      let elapsed = 0;
+      let last = performance.now();
+      let rafId = 0;
+      const loop = (now) => {
+        const dt = now - last;
+        last = now;
+        const next = advanceAnimationClock(
+          elapsed + dt,
+          delays,
+          playbackIndexRef.current
+        );
+        elapsed = next.elapsedMs;
+        if (next.index !== playbackIndexRef.current) {
+          playbackIndexRef.current = next.index;
+          const frame = frames[next.index] ?? frames[0];
+          if (frame) blitPlaybackFrame(ctx, frame, size);
+        }
+        rafId = requestAnimationFrame(loop);
+      };
+      rafId = requestAnimationFrame(loop);
+      return () => cancelAnimationFrame(rafId);
+    }
+
     paintQrCanvas(ctx, {
       matrix,
       size,
@@ -69,7 +130,20 @@ export function QRBase({
       highlightedIds,
       damagedModuleIds: customMatrix ? null : damagedModuleIds,
     });
-  }, [matrix, size, quietZone, renderModule, renderPasses, highlightedIds, damagedModuleIds, customMatrix]);
+  }, [
+    matrix,
+    size,
+    quietZone,
+    renderModule,
+    renderPasses,
+    highlightedIds,
+    damagedModuleIds,
+    customMatrix,
+    playbackActive,
+    playbackFrames,
+    playbackDelays,
+    playbackPaused,
+  ]);
 
   const getModuleFromEvent = (event) => {
     if (!matrix) return null;
@@ -143,9 +217,18 @@ export function QRBase({
       } else if (format === "svg") {
         downloadCanvasAsSVG(canvasRef.current);
       } else if (format === "gif") {
-        if (!gifExport?.delaysMs?.length || !gifExport.getGifFrame) return;
+        if (!gifExport?.delaysMs?.length) return;
         const frameImages = [];
+        const canBlit =
+          playbackActive &&
+          playbackFrames.length === gifExport.delaysMs.length;
         for (let i = 0; i < gifExport.delaysMs.length; i++) {
+          if (canBlit) {
+            const image = await imageDataFromPlaybackFrame(playbackFrames[i], size);
+            if (image) frameImages.push(image);
+            continue;
+          }
+          if (!gifExport.getGifFrame) return;
           const canvas = document.createElement("canvas");
           canvas.width = size;
           canvas.height = size;
@@ -211,7 +294,7 @@ export function QRBase({
               <DropdownMenuItem onClick={() => handleDownload("svg")}>
                 Download as SVG
               </DropdownMenuItem>
-              {gifExport?.delaysMs?.length > 1 && gifExport.getGifFrame && (
+              {gifExport?.delaysMs?.length > 1 && (gifExport.getGifFrame || playbackActive) && (
                 <DropdownMenuItem onClick={() => handleDownload("gif")}>
                   Download as GIF
                 </DropdownMenuItem>

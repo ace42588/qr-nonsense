@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { advanceAnimationClock } from "@/domain/image/animationClock";
 
 interface UseAnimationPlaybackParams {
   delaysMs: number[];
@@ -11,8 +12,8 @@ interface UseAnimationPlaybackReturn {
 }
 
 /**
- * Delay-based GIF playback clock. Pauses while `paused` is true and resets
- * when the delay list or enabled flag changes.
+ * rAF GIF playback clock with skip-if-behind. Pauses while `paused` is true
+ * and resets when the delay list or enabled flag changes.
  */
 export function useAnimationPlayback({
   delaysMs,
@@ -36,25 +37,31 @@ export function useAnimationPlayback({
     }
 
     let cancelled = false;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let elapsed = 0;
+    let last = performance.now();
+    let rafId = 0;
 
-    const tick = () => {
+    const loop = (now: number) => {
       if (cancelled) return;
-      const delays = delaysRef.current;
-      const delay = delays[indexRef.current] ?? 100;
-      timeoutId = setTimeout(() => {
-        if (cancelled) return;
-        const next = (indexRef.current + 1) % delaysRef.current.length;
-        indexRef.current = next;
-        setFrameIndex(next);
-        tick();
-      }, Math.max(1, delay));
+      const dt = now - last;
+      last = now;
+      const next = advanceAnimationClock(
+        elapsed + dt,
+        delaysRef.current,
+        indexRef.current
+      );
+      elapsed = next.elapsedMs;
+      if (next.index !== indexRef.current) {
+        indexRef.current = next.index;
+        setFrameIndex(next.index);
+      }
+      rafId = requestAnimationFrame(loop);
     };
 
-    tick();
+    rafId = requestAnimationFrame(loop);
     return () => {
       cancelled = true;
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
+      cancelAnimationFrame(rafId);
     };
   }, [delayKey, enabled, paused]);
 

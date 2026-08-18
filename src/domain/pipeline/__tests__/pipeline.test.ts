@@ -12,6 +12,7 @@ import {
   listNodeIds,
   NODE_CATALOG,
   isqrResultFromContext,
+  generateQArtForFrames,
 } from "@/domain/pipeline";
 import type { QArtResult } from "@/domain/qart";
 
@@ -304,5 +305,73 @@ describe("presets smoke", () => {
     expect(() =>
       validateNodeSequence(["evaluate"], createGenerationContext())
     ).toThrow(/missing required ports/);
+  });
+
+  it("runs qartAppend once then generates independent frames", async () => {
+    const encoded = await runGraph(
+      ["encode", "codewords", "matrix"],
+      createGenerationContext({
+        inputs: [sampleInput("A")],
+        version: -1,
+        errorCorrectionLevel: 0,
+        dataMask: 0,
+      })
+    );
+    const appendSpy = vi.spyOn(NODE_CATALOG.qartAppend, "run");
+    const dark = tinyImage(32);
+    const light = tinyImage(32);
+    light.data.fill(255);
+
+    const results = await generateQArtForFrames(
+      {
+        segments: encoded.segments!,
+        codewords: encoded.codewords!,
+        blocks: encoded.blocks!,
+        initialMatrix: encoded.matrix!,
+        versionInfo: encoded.versionInfo!,
+        errorCorrectionLevel: 0,
+        targetImage: dark,
+      },
+      [
+        { targetImage: dark },
+        { targetImage: light },
+      ]
+    );
+
+    expect(appendSpy).toHaveBeenCalledTimes(1);
+    expect(results).toHaveLength(2);
+    expect(results[0].matrix).toBeTruthy();
+    expect(results[1].matrix).toBeTruthy();
+    expect(results[0].matrix).not.toBe(results[1].matrix);
+    appendSpy.mockRestore();
+  });
+
+  it("cancels frame generation when the signal is aborted", async () => {
+    const encoded = await runGraph(
+      ["encode", "codewords", "matrix"],
+      createGenerationContext({
+        inputs: [sampleInput("A")],
+        version: -1,
+        errorCorrectionLevel: 0,
+        dataMask: 0,
+      })
+    );
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      generateQArtForFrames(
+        {
+          segments: encoded.segments!,
+          codewords: encoded.codewords!,
+          blocks: encoded.blocks!,
+          initialMatrix: encoded.matrix!,
+          versionInfo: encoded.versionInfo!,
+          errorCorrectionLevel: 0,
+          targetImage: tinyImage(32),
+          signal: controller.signal,
+        },
+        [{ targetImage: tinyImage(32) }, { targetImage: tinyImage(32) }]
+      )
+    ).rejects.toThrow(/cancel/i);
   });
 });

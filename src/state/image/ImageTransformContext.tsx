@@ -1,12 +1,18 @@
 import { createContext, useContext, useState, useRef, useEffect, useMemo, useCallback, ReactNode, JSX } from "react";
 import {
   calculateAppropriateCanvasScale,
-  convertTransparencyToWhite,
   validateImageFile,
   MAX_IMAGE_DIMENSION,
 } from "@/domain/image";
-import { loadImage, transformImageToCanvas, downscaleImageDataUrl } from "@/adapters/browser/image";
+import { loadImage, downscaleImageDataUrl } from "@/adapters/browser/image";
 import { decodeAnimatedImage } from "@/adapters/browser/animation";
+import { transformImageOffthread } from "@/adapters/browser/workers/jobs";
+import { LatestWinsScheduler } from "@/adapters/browser/workers/latestWins";
+import { JobCancelledError } from "@/adapters/browser/workers/pool";
+import {
+  ANIMATION_FRAME_CONCURRENCY,
+  mapLimit,
+} from "@/utils/mapLimit";
 
 const DEFAULT_IMAGE_URL = "/sample-mark.png";
 
@@ -67,6 +73,12 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
   const loadAbortRef = useRef<AbortController | null>(null);
   const referenceCanvasSizeRef = useRef<number>(0);
   const isAdjustingScaleRef = useRef<boolean>(false);
+  const transformSchedulerRef = useRef<LatestWinsScheduler | null>(null);
+  if (!transformSchedulerRef.current) {
+    transformSchedulerRef.current = new LatestWinsScheduler();
+  }
+  const lastTransformSourceKeyRef = useRef<string | null>(null);
+  const lastTransformLayoutKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!imageUrl) {
@@ -254,34 +266,47 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
 
   // Transform still image or every animation frame when source/transform changes.
   useEffect(() => {
-    let isMounted = true;
+    const animationFrames = sourceFramesRef.current;
+    const img = sourceImageRef.current;
+    if (!imageUrl || (!img && animationFrames.length === 0)) {
+      return;
+    }
 
-    async function transform() {
-      const animationFrames = sourceFramesRef.current;
-      const img = sourceImageRef.current;
-      if (!imageUrl || (!img && animationFrames.length === 0)) {
-        return;
-      }
+    const sourceKey = `${imageUrl}|${animationFrames.length}|${img ? `${img.width}x${img.height}` : "none"}`;
+    const layoutKey = `${scale}|${offsetX}|${offsetY}`;
+    const sourceChanged = lastTransformSourceKeyRef.current !== sourceKey;
+    const layoutChanged = lastTransformLayoutKeyRef.current !== layoutKey;
+    lastTransformSourceKeyRef.current = sourceKey;
+    lastTransformLayoutKeyRef.current = layoutKey;
+    const debounceMs = !sourceChanged && layoutChanged ? 150 : 0;
 
-      setIsLoading(true);
-      setError(null);
+    setIsLoading(true);
+    setError(null);
 
+    const scheduler = transformSchedulerRef.current!;
+    scheduler.schedule(async (signal) => {
       try {
         const transformSize = referenceCanvasSizeRef.current || 480;
 
         if (animationFrames.length > 1) {
-          const transformed: ImageData[] = [];
-          for (const frame of animationFrames) {
-            const drawn = await transformImageToCanvas(
-              frame,
-              transformSize,
-              scale,
-              offsetX,
-              offsetY
-            );
-            transformed.push(convertTransparencyToWhite(drawn));
-          }
-          if (!isMounted) return;
+          const transformed = await mapLimit(
+            animationFrames,
+            ANIMATION_FRAME_CONCURRENCY,
+            async (frame) => {
+              if (signal.aborted) {
+                throw new JobCancelledError();
+              }
+              return transformImageOffthread(
+                frame,
+                transformSize,
+                scale,
+                offsetX,
+                offsetY,
+                signal
+              );
+            }
+          );
+          if (signal.aborted) return;
           setFrames(transformed);
           setTransformedImageData(transformed[0] ?? null);
           setIsLoading(false);
@@ -289,39 +314,35 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
         }
 
         if (!img) {
-          if (isMounted) {
-            setError("Image not loaded");
-            setIsLoading(false);
-          }
+          setError("Image not loaded");
+          setIsLoading(false);
           return;
         }
 
-        const drawn = await transformImageToCanvas(
+        const finalImageData = await transformImageOffthread(
           img,
           transformSize,
           scale,
           offsetX,
-          offsetY
+          offsetY,
+          signal
         );
-        const finalImageData = convertTransparencyToWhite(drawn);
-        if (!isMounted) return;
+        if (signal.aborted) return;
         setFrames([]);
         setTransformedImageData(finalImageData);
         setIsLoading(false);
       } catch (err) {
+        if (signal.aborted || err instanceof JobCancelledError) return;
         console.error("Error transforming image:", err);
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : "Failed to transform image");
-          setIsLoading(false);
-          setTransformedImageData(null);
-          setFrames([]);
-        }
+        setError(err instanceof Error ? err.message : "Failed to transform image");
+        setIsLoading(false);
+        setTransformedImageData(null);
+        setFrames([]);
       }
-    }
+    }, debounceMs);
 
-    transform();
     return () => {
-      isMounted = false;
+      scheduler.abort();
     };
   }, [imageUrl, sourceImage, sourceFrames, scale, offsetX, offsetY]);
 

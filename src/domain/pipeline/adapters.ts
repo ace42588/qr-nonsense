@@ -7,10 +7,35 @@ import type { IsqrOptions, IsqrResult } from "@/domain/isqr/generate";
 import { computeIsqrMetrics } from "@/domain/isqr/stages";
 import type { AmbiguousOptions, AmbiguousResult } from "@/domain/ambiguous";
 import type { EmbedOptions, EmbedResult } from "@/domain/embed";
-import { createGenerationContext } from "./context";
+import { cloneContextForFrame, createGenerationContext } from "./context";
 import { runPipeline } from "./runner";
 import { QART_FROM_MATRIX_NODES, ISQR_FROM_MATRIX_NODES } from "./presets";
-import type { GenerationContext } from "./types";
+import type { GenerationContext, PipelineSourceImage } from "./types";
+import { PipelineError } from "./run";
+import {
+  ANIMATION_FRAME_CONCURRENCY,
+  mapLimit,
+} from "@/utils/mapLimit";
+import type { ImageData } from "@/domain/image";
+
+const QART_APPEND_NODES = ["qartAppend"] as const;
+const QART_FRAME_NODES = [
+  "rasterize",
+  "qartOptimize",
+  "qartRebuild",
+  "evaluate",
+] as const;
+
+export interface QArtFrameSource {
+  targetImage: ImageData;
+  sourceImage?: PipelineSourceImage | null;
+}
+
+function assertNotCancelled(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw new PipelineError("Pipeline run was cancelled");
+  }
+}
 
 export function contextFromQArtOptions(
   options: QArtOptions
@@ -67,6 +92,44 @@ export async function generateQArtViaPipeline(
     contextFromQArtOptions(options)
   );
   return qartResultFromContext(ctx);
+}
+
+/**
+ * Run qartAppend once, then rasterize/optimize each frame with limited parallelism.
+ */
+export async function generateQArtForFrames(
+  options: QArtOptions,
+  frames: QArtFrameSource[],
+  onProgress?: (current: number, total: number) => void
+): Promise<QArtResult[]> {
+  if (frames.length === 0) return [];
+  assertNotCancelled(options.signal);
+
+  const baseOptions = {
+    ...options,
+    targetImage: frames[0].targetImage,
+    sourceImage: frames[0].sourceImage ?? options.sourceImage,
+  };
+  const appended = await runPipeline(
+    [...QART_APPEND_NODES],
+    contextFromQArtOptions(baseOptions)
+  );
+  assertNotCancelled(options.signal);
+
+  let completed = 0;
+  const total = frames.length;
+  return mapLimit(frames, ANIMATION_FRAME_CONCURRENCY, async (frame) => {
+    assertNotCancelled(options.signal);
+    const frameCtx = cloneContextForFrame(appended);
+    frameCtx.targetImage = frame.targetImage;
+    frameCtx.sourceImage = frame.sourceImage ?? undefined;
+    frameCtx.transformParams = options.transformParams ?? appended.transformParams;
+    frameCtx.signal = options.signal;
+    const out = await runPipeline([...QART_FRAME_NODES], frameCtx);
+    completed += 1;
+    onProgress?.(completed, total);
+    return qartResultFromContext(out);
+  });
 }
 
 export function contextFromDualOptions(
@@ -192,4 +255,53 @@ export async function generateIsqrViaPipeline(
     contextFromIsqrOptions(options)
   );
   return isqrResultFromContext(ctx, qartResultFromContext(ctx));
+}
+
+export interface IsqrFrameSource {
+  transformedImage: ImageData;
+  sourceImage?: PipelineSourceImage | null;
+}
+
+/**
+ * Clone shared encode/matrix context once, then run IS-QR nodes per frame.
+ */
+export async function generateIsqrForFrames(
+  options: IsqrOptions,
+  frames: IsqrFrameSource[],
+  onProgress?: (current: number, total: number) => void
+): Promise<IsqrResult[]> {
+  if (frames.length === 0) return [];
+  assertNotCancelled(options.qart.signal);
+
+  const shared = contextFromIsqrOptions({
+    ...options,
+    transformedImage: frames[0].transformedImage,
+    qart: {
+      ...options.qart,
+      targetImage: frames[0].transformedImage,
+      sourceImage: frames[0].sourceImage ?? options.qart.sourceImage,
+      priorityFunction: options.qart.priorityFunction ?? "roi",
+    },
+  });
+
+  let completed = 0;
+  const total = frames.length;
+  return mapLimit(frames, ANIMATION_FRAME_CONCURRENCY, async (frame) => {
+    assertNotCancelled(options.qart.signal);
+    const frameCtx = cloneContextForFrame(shared);
+    frameCtx.targetImage = frame.transformedImage;
+    frameCtx.sourceImage = frame.sourceImage ?? undefined;
+    frameCtx.maskImage = options.maskImage;
+    frameCtx.roiThresholdBias = options.roiThresholdBias;
+    frameCtx.modulePixel = options.modulePixel;
+    frameCtx.csf = options.csf;
+    frameCtx.qrBlend = options.qrBlend;
+    frameCtx.transformParams =
+      options.qart.transformParams ?? shared.transformParams;
+    frameCtx.signal = options.qart.signal;
+    const out = await runPipeline([...ISQR_FROM_MATRIX_NODES], frameCtx);
+    completed += 1;
+    onProgress?.(completed, total);
+    return isqrResultFromContext(out, qartResultFromContext(out));
+  });
 }

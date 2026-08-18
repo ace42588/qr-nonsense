@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { generateIsqr, type IsqrResult } from "@/domain/isqr";
+import { generateIsqr, generateIsqrForFrames, type IsqrResult } from "@/domain/isqr";
 import type { QArtResult } from "@/domain/qart";
 import { QRMatrix, Segment, Codeword } from "@/domain/shared/types";
 import { QRBlock } from "@/domain/qr/codewords/blocks";
@@ -170,23 +170,49 @@ export function useIsqrGeneration({
 
     try {
       if (isAnimated && sourceFrames.length > 1) {
-        const results: IsqrResult[] = [];
         const total = sourceFrames.length;
-        for (let i = 0; i < total; i++) {
-          if (abortController.signal.aborted) return;
-          setGenerationProgress({ current: i + 1, total });
-          const target = transformedFrames[i] ?? transformedImageData;
-          const result = await runOne(target, sourceFrames[i]);
-          if (abortController.signal.aborted || !result) return;
-          results.push(result);
-        }
-        if (!abortController.signal.aborted) {
-          setFrameResults(results);
-          setIsqrResult(results[0] ?? null);
-          setQartResult(results[0]?.qart ?? null);
-          setGenerationError(null);
-          setGenerationProgress(null);
-        }
+        setGenerationProgress({ current: 0, total });
+        const results = await generateIsqrForFrames(
+          {
+            transformedImage: transformedFrames[0] ?? transformedImageData,
+            maskImage: null,
+            roiThresholdBias,
+            modulePixel,
+            qrBlend,
+            csf: {
+              strength: csfStrength,
+              printDpi,
+              viewingDistanceInches,
+            },
+            qart: {
+              segments,
+              codewords,
+              blocks,
+              initialMatrix: contextMatrix,
+              versionInfo,
+              errorCorrectionLevel,
+              targetImage: transformedFrames[0] ?? transformedImageData,
+              signal: abortController.signal,
+              minDecodeRedundancy,
+              decodeTrials,
+              sourceImage: sourceFrames[0],
+              transformParams: transformParams ?? undefined,
+            },
+          },
+          sourceFrames.map((frameSource, i) => ({
+            transformedImage: transformedFrames[i] ?? transformedImageData,
+            sourceImage: frameSource,
+          })),
+          (current, progressTotal) => {
+            setGenerationProgress({ current, total: progressTotal });
+          }
+        );
+        if (abortController.signal.aborted) return;
+        setFrameResults(results);
+        setIsqrResult(results[0] ?? null);
+        setQartResult(results[0]?.qart ?? null);
+        setGenerationError(null);
+        setGenerationProgress(null);
         return;
       }
 

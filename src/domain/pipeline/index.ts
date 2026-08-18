@@ -12,6 +12,7 @@ export type {
 export {
   createGenerationContext,
   cloneContext,
+  cloneContextForFrame,
   attachMatrixLookup,
   withMatrix,
   withBlocks,
@@ -69,6 +70,7 @@ export {
   contextFromQArtOptions,
   qartResultFromContext,
   generateQArtViaPipeline,
+  generateQArtForFrames,
   contextFromDualOptions,
   ambiguousResultFromContext,
   embedResultFromContext,
@@ -77,6 +79,7 @@ export {
   contextFromIsqrOptions,
   isqrResultFromContext,
   generateIsqrViaPipeline,
+  generateIsqrForFrames,
 } from "./adapters";
 
 export type { EvaluationReport } from "@/domain/evaluate";
