@@ -2,11 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   isGifBuffer,
   normalizeGifDelayMs,
-  subsampleAnimation,
   compositeGifFrames,
   createImageData,
   scaleImageDataToMaxDimension,
-  MAX_ANIMATION_FRAMES,
 } from "@/domain/image/gif";
 import { decodeGif, encodeGif } from "@/adapters/browser/gif";
 
@@ -56,28 +54,6 @@ describe("normalizeGifDelayMs", () => {
   });
 });
 
-describe("subsampleAnimation", () => {
-  it("leaves short animations unchanged", () => {
-    const items = [1, 2, 3];
-    const result = subsampleAnimation(items, [10, 20, 30], 24);
-    expect(result.items).toEqual([1, 2, 3]);
-    expect(result.delaysMs).toEqual([10, 20, 30]);
-    expect(result.warning).toBeNull();
-  });
-
-  it("caps length and preserves total duration", () => {
-    const items = Array.from({ length: 48 }, (_, i) => i);
-    const delays = items.map(() => 20);
-    const result = subsampleAnimation(items, delays, MAX_ANIMATION_FRAMES);
-    expect(result.items).toHaveLength(MAX_ANIMATION_FRAMES);
-    expect(result.items[0]).toBe(0);
-    expect(result.items[result.items.length - 1]).toBe(47);
-    const total = result.delaysMs.reduce((a, b) => a + b, 0);
-    expect(total).toBe(48 * 20);
-    expect(result.warning).toMatch(/48 frames/);
-  });
-});
-
 describe("compositeGifFrames", () => {
   it("composites a static full-frame patch", () => {
     const { frames } = compositeGifFrames(2, 2, [
@@ -122,6 +98,26 @@ describe("compositeGifFrames", () => {
     expect(Array.from(frames[1].data.slice(0, 4))).toEqual([255, 255, 255, 255]);
     expect(Array.from(frames[1].data.slice(4, 8))).toEqual([0, 0, 255, 255]);
   });
+
+  it("overwrites the rectangle when overwrite is set", () => {
+    const { frames } = compositeGifFrames(2, 1, [
+      {
+        dims: { left: 0, top: 0, width: 2, height: 1 },
+        delay: 50,
+        disposalType: 1,
+        patch: solidPatch(2, 1, 255, 0, 0),
+      },
+      {
+        dims: { left: 0, top: 0, width: 1, height: 1 },
+        delay: 50,
+        disposalType: 1,
+        patch: solidPatch(1, 1, 0, 255, 0),
+        overwrite: true,
+      },
+    ]);
+    expect(Array.from(frames[1].data.slice(0, 4))).toEqual([0, 255, 0, 255]);
+    expect(Array.from(frames[1].data.slice(4, 8))).toEqual([255, 0, 0, 255]);
+  });
 });
 
 describe("scaleImageDataToMaxDimension", () => {
@@ -145,5 +141,16 @@ describe("encodeGif / decodeGif roundtrip", () => {
     expect(decoded.frames[0].width).toBe(2);
     expect(decoded.frames[0].data[0]).toBeGreaterThan(200);
     expect(decoded.frames[1].data[2]).toBeGreaterThan(200);
+  });
+
+  it("keeps every source frame through encode and decode", () => {
+    const count = 30;
+    const frames = Array.from({ length: count }, (_, i) =>
+      createImageData(2, 2, solidPatch(2, 2, i % 256, 0, 255 - (i % 256)))
+    );
+    const delays = frames.map((_, i) => 40 + i * 10);
+    const decoded = decodeGif(encodeGif(frames, delays));
+    expect(decoded.frames).toHaveLength(count);
+    expect(decoded.delaysMs).toEqual(delays);
   });
 });

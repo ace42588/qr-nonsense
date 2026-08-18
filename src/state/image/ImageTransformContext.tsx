@@ -6,7 +6,7 @@ import {
   MAX_IMAGE_DIMENSION,
 } from "@/domain/image";
 import { loadImage, transformImageToCanvas, downscaleImageDataUrl } from "@/adapters/browser/image";
-import { decodeGif, isGifBuffer } from "@/adapters/browser/gif";
+import { decodeAnimatedImage } from "@/adapters/browser/animation";
 
 const DEFAULT_IMAGE_URL = "/sample-mark.png";
 
@@ -101,11 +101,9 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
     setIsLoading(true);
     setError(null);
 
-    const isGif =
-      (file.type || "").toLowerCase() === "image/gif" ||
-      (file.name || "").toLowerCase().endsWith(".gif");
+    const keepOriginalBytes = isAnimationContainerFile(file);
 
-    if (isGif) {
+    if (keepOriginalBytes) {
       const url = URL.createObjectURL(file);
       if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
       blobUrlRef.current = url;
@@ -176,7 +174,7 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
     }, 0);
   }, []);
 
-  // Load source still or GIF frames when the URL changes.
+  // Load source still or animation frames when the URL changes.
   useEffect(() => {
     if (!imageUrl) return;
     const url = imageUrl;
@@ -199,32 +197,32 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
       setIsLoading(true);
       setError(null);
       try {
-        let decodedGif: ReturnType<typeof decodeGif> | null = null;
+        let decodedAnimation: Awaited<
+          ReturnType<typeof decodeAnimatedImage>
+        > | null = null;
         try {
           const response = await fetch(url, { signal: abortController.signal });
           if (response.ok) {
             const buffer = await response.arrayBuffer();
-            if (isGifBuffer(buffer)) {
-              decodedGif = decodeGif(buffer);
-            }
+            decodedAnimation = await decodeAnimatedImage(buffer);
           }
         } catch {
           if (abortController.signal.aborted) return;
-          // Fall back to <img> for non-GIF / CORS-limited stills.
+          // Fall back to <img> for stills / CORS-limited URLs.
         }
 
         if (abortController.signal.aborted || !isMounted) return;
 
-        if (decodedGif && decodedGif.frames.length > 1) {
-          sourceFramesRef.current = decodedGif.frames;
+        if (decodedAnimation && decodedAnimation.frames.length > 1) {
+          sourceFramesRef.current = decodedAnimation.frames;
           sourceImageRef.current = null;
-          setSourceFrames(decodedGif.frames);
-          setFrameDelaysMs(decodedGif.delaysMs);
-          setAnimationWarning(decodedGif.warning);
+          setSourceFrames(decodedAnimation.frames);
+          setFrameDelaysMs(decodedAnimation.delaysMs);
+          setAnimationWarning(decodedAnimation.warning);
           setSourceImage(null);
           applyAutoScale(
-            decodedGif.frames[0].width,
-            decodedGif.frames[0].height,
+            decodedAnimation.frames[0].width,
+            decodedAnimation.frames[0].height,
             url
           );
           return;
@@ -254,14 +252,14 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
     };
   }, [imageUrl, applyAutoScale]);
 
-  // Transform still image or every GIF frame when source/transform changes.
+  // Transform still image or every animation frame when source/transform changes.
   useEffect(() => {
     let isMounted = true;
 
     async function transform() {
-      const gifFrames = sourceFramesRef.current;
+      const animationFrames = sourceFramesRef.current;
       const img = sourceImageRef.current;
-      if (!imageUrl || (!img && gifFrames.length === 0)) {
+      if (!imageUrl || (!img && animationFrames.length === 0)) {
         return;
       }
 
@@ -271,9 +269,9 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
       try {
         const transformSize = referenceCanvasSizeRef.current || 480;
 
-        if (gifFrames.length > 1) {
+        if (animationFrames.length > 1) {
           const transformed: ImageData[] = [];
-          for (const frame of gifFrames) {
+          for (const frame of animationFrames) {
             const drawn = await transformImageToCanvas(
               frame,
               transformSize,
@@ -375,6 +373,17 @@ export function ImageTransformProvider({ children }: ImageTransformProviderProps
     <ImageTransformContext.Provider value={value}>
       {children}
     </ImageTransformContext.Provider>
+  );
+}
+
+function isAnimationContainerFile(file: File): boolean {
+  const type = (file.type || "").toLowerCase();
+  const name = (file.name || "").toLowerCase();
+  return (
+    type === "image/gif" ||
+    type === "image/webp" ||
+    name.endsWith(".gif") ||
+    name.endsWith(".webp")
   );
 }
 

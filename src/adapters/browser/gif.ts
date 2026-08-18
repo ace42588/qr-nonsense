@@ -3,9 +3,7 @@ import { GIFEncoder, quantize, applyPalette } from "gifenc";
 import {
   compositeGifFrames,
   isGifBuffer,
-  MAX_ANIMATION_FRAMES,
   scaleImageDataToMaxDimension,
-  subsampleAnimation,
   type CompositedGif,
 } from "@/domain/image/gif";
 import { MAX_IMAGE_DIMENSION } from "@/domain/image";
@@ -56,17 +54,12 @@ export function decodeGif(buffer: ArrayBuffer | Uint8Array): DecodedGif {
   const scaled = composited.frames.map((frame) =>
     scaleImageDataToMaxDimension(frame, MAX_IMAGE_DIMENSION)
   );
-  const subsampled = subsampleAnimation(
-    scaled,
-    composited.delaysMs,
-    MAX_ANIMATION_FRAMES
-  );
 
   return {
-    frames: subsampled.items,
-    delaysMs: subsampled.delaysMs,
+    frames: scaled,
+    delaysMs: composited.delaysMs,
     loopCount: 0,
-    warning: subsampled.warning,
+    warning: null,
   };
 }
 

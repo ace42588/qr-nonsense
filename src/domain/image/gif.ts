@@ -1,6 +1,5 @@
 import type { ImageData } from "./sampling";
 
-export const MAX_ANIMATION_FRAMES = 24;
 export const DEFAULT_GIF_FRAME_DELAY_MS = 100;
 
 export interface GifPatchFrame {
@@ -8,17 +7,13 @@ export interface GifPatchFrame {
   delay: number;
   disposalType: number;
   patch: Uint8ClampedArray;
+  /** When true, copy every pixel in the patch (WebP blend=source). */
+  overwrite?: boolean;
 }
 
 export interface CompositedGif {
   frames: ImageData[];
   delaysMs: number[];
-}
-
-export interface SubsampledAnimation<T> {
-  items: T[];
-  delaysMs: number[];
-  warning: string | null;
 }
 
 export function isGifBuffer(buffer: ArrayBuffer | Uint8Array): boolean {
@@ -107,15 +102,23 @@ function blitPatch(
 ): void {
   const { left, top, width, height } = frame.dims;
   const patch = frame.patch;
+  const overwrite = frame.overwrite === true;
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const pi = (y * width + x) * 4;
       const a = patch[pi + 3] ?? 255;
-      if (a === 0) continue;
+      if (!overwrite && a === 0) continue;
       const cx = left + x;
       const cy = top + y;
       if (cx < 0 || cy < 0 || cx >= canvasWidth) continue;
       const ci = (cy * canvasWidth + cx) * 4;
+      if (overwrite) {
+        canvas[ci] = patch[pi];
+        canvas[ci + 1] = patch[pi + 1];
+        canvas[ci + 2] = patch[pi + 2];
+        canvas[ci + 3] = a;
+        continue;
+      }
       if (a === 255) {
         canvas[ci] = patch[pi];
         canvas[ci + 1] = patch[pi + 1];
@@ -197,48 +200,4 @@ export function compositeGifFrames(
   }
 
   return { frames: outFrames, delaysMs };
-}
-
-/**
- * Evenly pick at most maxFrames items. Stretch delays so the sum matches
- * the original total duration.
- */
-export function subsampleAnimation<T>(
-  items: T[],
-  delaysMs: number[],
-  maxFrames: number = MAX_ANIMATION_FRAMES
-): SubsampledAnimation<T> {
-  const n = items.length;
-  if (n === 0) {
-    return { items: [], delaysMs: [], warning: null };
-  }
-  if (n <= maxFrames) {
-    return {
-      items: items.slice(),
-      delaysMs: delaysMs.map(normalizeGifDelayMs),
-      warning: null,
-    };
-  }
-
-  const pickedItems: T[] = [];
-  const pickedDelays: number[] = [];
-  for (let i = 0; i < maxFrames; i++) {
-    const index = Math.round((i * (n - 1)) / (maxFrames - 1));
-    pickedItems.push(items[index]);
-  }
-
-  const total = delaysMs.reduce((sum, d) => sum + normalizeGifDelayMs(d), 0);
-  const base = Math.max(1, Math.round(total / maxFrames));
-  let allocated = 0;
-  for (let i = 0; i < maxFrames; i++) {
-    const delay = i === maxFrames - 1 ? Math.max(1, total - allocated) : base;
-    pickedDelays.push(delay);
-    allocated += delay;
-  }
-
-  return {
-    items: pickedItems,
-    delaysMs: pickedDelays,
-    warning: `Animation has ${n} frames; using ${maxFrames} evenly spaced frames.`,
-  };
 }
